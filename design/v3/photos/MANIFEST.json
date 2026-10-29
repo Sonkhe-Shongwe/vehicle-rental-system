@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-29",
+  "expected_count": 5,
+  "downloaded_count": 3,
+  "photos": [
+    {
+      "id": "C001",
+      "path": "toyota_corolla.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Toyota_Corolla_IMG_6391.JPG",
+      "credit": "01x07x2022000",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "width": 1300,
+      "height": 975,
+      "size_bytes": 474168,
+      "sha256": "b65aff8f4ac6af427a2c6747da159d2ac1b03b69eca57def52c68281141cf968",
+      "transformations": "EXIF stripped; resized to fit 1300\u00d7975; JPEG quality 83"
+    },
+    {
+      "id": "C002",
+      "path": "ford_ranger.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Ford_Ranger_US-Spec_(52179269642).jpg",
+      "credit": "crash71100",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "width": 1300,
+      "height": 781,
+      "size_bytes": 242423,
+      "sha256": "4a16d1174bac0eb40c5bdafc9f249269e896c13deb14d819d548b22dc94c515b",
+      "transformations": "EXIF stripped; resized to fit 1300\u00d7975; JPEG quality 83"
+    },
+    {
+      "id": "C003",
+      "path": "hyundai_i20.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Hyundai_i20_133151.jpg",
+      "credit": "Trop86",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "width": 1255,
+      "height": 975,
+      "size_bytes": 449047,
+      "sha256": "bfa8cce6c3275c87231e7e77edcb1d8aae34adabdcca02398e0ad11a7861d276",
+      "transformations": "EXIF stripped; resized to fit 1300\u00d7975; JPEG quality 83"
+    }
+  ],
+  "pending": [
+    {
+      "id": "M001",
+      "status": "rate_limited",
+      "source": "https://commons.wikimedia.org/wiki/File:2021_Honda_CB500F.jpg",
+      "error": "HTTP Error 429: Too Many Requests (015d12c)"
+    },
+    {
+      "id": "M002",
+      "status": "not_attempted_after_rate_limit",
+      "source": "https://commons.wikimedia.org/wiki/File:YAMAHA_MT-07.JPG"
+    }
+  ],
+  "review_status": "visual approval not yet completed"
+}
