@@ -8,6 +8,7 @@ on:
       - main.cpp
       - mainwindow.cpp
       - mainwindow.h
+      - 'tests/**'
       - resources/portfolio.qrc
       - assets/ford_ranger.jpg
       - .github/workflows/qt-visual-review.yml
