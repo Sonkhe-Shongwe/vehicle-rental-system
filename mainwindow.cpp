@@ -398,7 +398,7 @@ QWidget* MainWindow::createDashboardPage()
     } else {
         photo->setText("Representative vehicle photo unavailable");
     }
-    QLabel* photoCredit = new QLabel("Ford Ranger · crash71100 / CC0 · illustrative");
+    QLabel* photoCredit = new QLabel("Ford Ranger · Hyins / CC0 · illustrative");
     photoCredit->setObjectName("FleetPhotoCredit");
     photoCredit->setAlignment(Qt::AlignRight);
     photograph->addWidget(photo);
@@ -1305,7 +1305,7 @@ void MainWindow::updateFleetInspector()
                                                (scaled.height() - box.height()) / 2,
                                                box.width(), box.height()));
         fleetAssetCredit->setText(id == "C001" ? "Corolla / 01x07x2022000 · CC0"
-                                  : id == "C002" ? "Ranger / crash71100 · CC0"
+                                  : id == "C002" ? "Ranger / Hyins · CC0"
                                   : "i20 / Trop86 · CC0");
     } else {
         fleetAssetPhoto->setPixmap(QPixmap());

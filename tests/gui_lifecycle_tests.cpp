@@ -7,6 +7,7 @@
 #include <QAbstractButton>
 #include <QFile>
 #include <QKeyEvent>
+#include <QPixmap>
 #include <QPair>
 #include <QLabel>
 #include <QLineEdit>
@@ -282,6 +283,12 @@ int main(int argc, char* argv[])
     };
 
     try {
+        // Photo must decode from a local Qt resource, not an unreachable
+        // network URL. This verifies bundling only, not photographic taste.
+        const QPixmap rangerPhoto(":/portfolio/ford_ranger.jpg");
+        require(!rangerPhoto.isNull() && rangerPhoto.width() >= 1000 &&
+                rangerPhoto.height() >= 500,
+                "Licensed review-only Ranger photograph must decode from Qt resources");
         const QString vehiclesPath = isolated.filePath("vehicles.txt");
         const QString rentalsPath = isolated.filePath("rentals.txt");
         // Exercise the same five real Qt workspaces at both required sizes

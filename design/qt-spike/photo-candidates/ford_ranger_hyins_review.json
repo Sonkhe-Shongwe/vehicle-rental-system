@@ -1,5 +1,5 @@
 {
-  "review_status": "UNAPPROVED_CANDIDATE_NOT_BUNDLED",
+  "review_status": "BUNDLED_IN_DRAFT_QT_VISUAL_BRANCH_UNAPPROVED",
   "commons_file_page": "https://commons.wikimedia.org/wiki/File:2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg",
   "declared_license": "CC0",
   "artist": "Hyins",
@@ -16,5 +16,6 @@
     "size": 3287750,
     "mime": "image/jpeg"
   },
-  "disclosure": "Representative Ford Ranger, NOT an actual rental-fleet vehicle. Do not use in Qt until a separate visual review and licence acceptance."
+  "disclosure": "China-market 2025 Ford Ranger XLT promotional showroom photograph. Representative illustrative photo only; not an actual fleet vehicle, actual registered plate, year, trim or endorsement. Requires owner aesthetic approval and native Windows Qt Creator visual check before merging.",
+  "derivative_reused_for_resource": "assets/ford_ranger.jpg"
 }
