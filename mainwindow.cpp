@@ -105,6 +105,9 @@ void MainWindow::applyStyles()
         "QLabel#FleetPhotoCredit { color: #e0eae2; font-size: 10px; }"
         "QFrame#Card, QFrame#FormCard { background-color: #fffefa; border: 1px solid #e1e5dd; border-radius: 11px; }"
         "QFrame#SecondaryCard { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
+        "QFrame#MetricsStrip { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
+        "QLabel#CompactTitle { font-size: 11px; color: #647671; }"
+        "QLabel#CompactValue { font-size: 18px; font-weight: 700; color: #172830; }"
         "QLabel#CardTitle { font-size: 12px; color: #60746f; }"
         "QLabel#CardValue { font-size: 24px; font-weight: bold; color: #1b2d31; }"
         "QFrame#SecondaryCard QLabel#CardValue { font-size: 20px; }"
@@ -209,7 +212,7 @@ void MainWindow::setupMainContent()
     actionStack = new QStackedWidget();
     // Preserve the dashboard hero and two metric rows above the shared table.
     // Without a minimum, the table's stretch factor compresses these cards.
-    actionStack->setMinimumHeight(365);
+    actionStack->setMinimumHeight(430);
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
@@ -335,19 +338,31 @@ QWidget* MainWindow::createDashboardPage()
     cards->addWidget(createStatCard("Active Rentals", activeRentalsValue), 0, 2);
     cards->addWidget(createStatCard("Fleet Utilisation", utilisationValue), 0, 3);
 
-    QFrame* rentedCard = createStatCard("Rented Vehicles", rentedVehiclesValue);
-    QFrame* carsCard = createStatCard("Cars", carsValue);
-    QFrame* motorcycleCard = createStatCard("Motorcycles", motorcyclesValue);
-    QFrame* bookedValueCard = createStatCard("Booked Rental Value", revenueValue);
-    for (QFrame* card : {rentedCard, carsCard, motorcycleCard, bookedValueCard}) {
-        card->setObjectName("SecondaryCard");
-        card->setMinimumHeight(74);
-    }
-    cards->addWidget(rentedCard, 1, 0);
-    cards->addWidget(carsCard, 1, 1);
-    cards->addWidget(motorcycleCard, 1, 2);
-    cards->addWidget(bookedValueCard, 1, 3);
+    // Four secondary indicators are grouped in one compact strip so the hero,
+    // four primary KPIs and recent-rental table remain visible at desktop sizes.
     pageLayout->addLayout(cards);
+    QFrame* metricStrip = new QFrame();
+    metricStrip->setObjectName("MetricsStrip");
+    metricStrip->setMinimumHeight(61);
+    QHBoxLayout* stripLayout = new QHBoxLayout(metricStrip);
+    stripLayout->setContentsMargins(20, 7, 20, 7);
+    stripLayout->setSpacing(18);
+    auto appendCompactMetric = [stripLayout](const QString& title, QLabel*& value) {
+        QVBoxLayout* group = new QVBoxLayout();
+        group->setSpacing(1);
+        QLabel* label = new QLabel(title);
+        label->setObjectName("CompactTitle");
+        value = new QLabel("0");
+        value->setObjectName("CompactValue");
+        group->addWidget(label);
+        group->addWidget(value);
+        stripLayout->addLayout(group, 1);
+    };
+    appendCompactMetric("Rented", rentedVehiclesValue);
+    appendCompactMetric("Cars", carsValue);
+    appendCompactMetric("Motorcycles", motorcyclesValue);
+    appendCompactMetric("Booked Rental Value", revenueValue);
+    pageLayout->addWidget(metricStrip);
     page->setLayout(pageLayout);
     return page;
 }
