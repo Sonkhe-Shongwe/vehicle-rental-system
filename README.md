@@ -4,6 +4,8 @@
 
 > **Product reset — 29 October 2026:** The owner has rejected the existing Qt Widgets UI's **aesthetic direction**. A new **light-first, warm, sophisticated and genuinely interactive** experience is being designed. The existing executable and functional tests remain valuable reference software, **not an approved visual baseline or released product**. No replacement QML UI has been built or validated. The [master product audit](docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) records the decisions, risks and future acceptance gates.
 
+**Current product rebuild tracking:** [GitHub Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5) (new agreed direction). The old [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) is a functionally tested but aesthetically rejected reference and remains unmerged.
+
 ## The intended product
 
 A beautiful, approachable local rental-operations desktop experience for a small automotive fleet. The new information architecture has three workspaces: **Overview**, **Fleet**, and **Rentals**.

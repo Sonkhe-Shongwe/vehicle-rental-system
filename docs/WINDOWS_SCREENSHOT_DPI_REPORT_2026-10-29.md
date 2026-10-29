@@ -1,3 +1,5 @@
+> **HISTORICAL SYNTHETIC-DPI REPORT — old Qt Widgets source, 29 October 2026.** Generated PNGs and simulated scale are not physical Windows native DPI testing or new-product visual approval. The old look has been owner-rejected. Current [rebuild audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) and [new Windows acceptance](WINDOWS_ACCEPTANCE.md).
+
 # Windows Two-Size & Synthetic DPI Acceptance | 29 October 2026
 
 **Branch:** `feature/qt-hybrid-visual-spike-20261029`  

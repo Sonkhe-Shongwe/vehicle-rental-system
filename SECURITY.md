@@ -1,3 +1,5 @@
+> **Rebuild security baseline — 29 October 2026:** The owner has authorised an architectural rebuild, **not** the publication or in-place conversion of private customer records. Any new storage path, database or migration must include backups, rollback, input validation, explicit errors and independent tests. The current code is a reference implementation; the planned light-first UI and SQLite are not yet implemented. [Full rebuild audit](docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md).
+
 # Security and Privacy Notes
 
 This is an educational desktop rental management application, not a certified enterprise rental service. It stores customer names and phone numbers in local human-readable files without encryption or account-level access control.

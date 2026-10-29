@@ -18,4 +18,6 @@ Current decisions: [Master Product Rebuild Audit](../PRODUCT_REBUILD_MASTER_AUDI
 
 Historical design source: [Old specification](../../design/archive/DESIGN_SPEC_PRE_RESET_2026-10-29.md) and [Old photographic plan](../../design/archive/ASSET_STRATEGY_PRE_RESET_2026-10-29.md).
 
+**Archive caveat:** These documents are byte-identical snapshots of files that formerly lived at different paths; some of their relative links may not resolve from this archive folder. For original path-relative navigation, consult the exact historical commit [d1704ec](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/tree/d1704ec3174b765e3dc82ff03a5531f09e8b507e).
+
 History remains in Git as well. Never portray these archival documents as present release instructions.

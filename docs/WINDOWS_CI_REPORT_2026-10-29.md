@@ -1,3 +1,5 @@
+> **HISTORICAL WINDOWS CI EVIDENCE — old Qt Widgets source, 29 October 2026.** This is a genuine pass at its dated source SHA, **not** evidence that the new light-first/QML rebuild exists or was aesthetically approved. Owner rejected previous Qt Widgets visuals. Current [Master Audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) and [new Windows Gate](WINDOWS_ACCEPTANCE.md).
+
 # Hosted Windows Qt Acceptance | Verified Checkpoint
 
 **Date:** 29 October 2026 (SAST)  

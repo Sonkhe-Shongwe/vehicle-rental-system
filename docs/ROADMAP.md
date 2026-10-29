@@ -5,6 +5,8 @@
 **Current status:** PRODUCT DIRECTION AGREED; VISUAL SYSTEM / TOOLKIT PROOF / REPLACEMENT NOT IMPLEMENTED  
 **The former 30 October 2026 app-deadline plan is superseded and preserved at** [archive](archive/ROADMAP_PRE_RESET_2026-10-29.md).
 
+**Tracking issue:** [Full product rebuild #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5). **Historical UI review:** Draft PR #4, unmerged.
+
 ## Governing rules
 
 - No sacred old UI, data model or code. Rewrite when it meaningfully improves the product.

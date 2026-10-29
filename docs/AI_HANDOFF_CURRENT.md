@@ -4,6 +4,8 @@
 **Canonical decision:** [Master Product Rebuild Audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md)  
 **Present stage:** product architecture/design ideation, **not implementation**.
 
+**Active rebuild tracker:** [Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5). The old [Issue #2](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/2) and Draft PR #4 are historical Qt Widgets context, not the active aesthetic milestone.
+
 ## Current owner decisions
 
 - Existing aesthetic **rejected comprehensively**. Do not continue small fixes to the previous graphite/lime Widget interface.

@@ -8,6 +8,8 @@
 **This document supersedes:** earlier assumptions that the graphite/lime Qt Widgets interface is an acceptable final baseline, the old fixed 30 October shipping roadmap, and "no architecture change" limitations.
 **Preserve:** original source, historical screenshots, CI logs, licences, and original audit reports as evidence, not as required design direction.
 
+**Active tracking:** [Product rebuild Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5). Earlier Issue #2 / Draft PR #4 document the now-rejected aesthetic reference.
+
 ## Executive decision
 
 We are developing a **distinctive, inviting, light-first automotive rental operations application**. The owner rejects the previous look across the product, explicitly authorises full redesign of presentation, code, architecture and data structures where beneficial, and wants **design discussions and cohesive visual approval before an application rewrite**.
