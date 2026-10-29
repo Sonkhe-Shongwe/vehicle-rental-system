@@ -1193,8 +1193,8 @@ void MainWindow::refreshVehicleTable(const QList<Vehicle*>& vehicles)
 
             if (column == 5) {
                 item->setForeground(vehicle->getIsRented()
-                                    ? QColor(220, 38, 38)
-                                    : QColor(22, 163, 74));
+                                    ? QColor(185, 28, 28)
+                                    : QColor(21, 128, 61));
             }
 
             dataTable->setItem(row, column, item);
@@ -1350,10 +1350,10 @@ void MainWindow::refreshRentalTable(const QList<Rental*>& rentals)
 
             if (!returnPageVisible && column == 9) {
                 if (rental->getIsArchived()) {
-                    item->setForeground(QColor(107, 114, 128));
+                    item->setForeground(QColor(75, 85, 99));
                 }
                 else if (rental->getIsReturned()) {
-                    item->setForeground(QColor(22, 163, 74));
+                    item->setForeground(QColor(21, 128, 61));
                 }
                 else {
                     item->setForeground(QColor(37, 99, 235));
@@ -1408,7 +1408,7 @@ void MainWindow::refreshDashboardRecentRentals()
 
             if (column == 6) {
                 item->setForeground(rental->getIsReturned()
-                                    ? QColor(22, 163, 74)
+                                    ? QColor(21, 128, 61)
                                     : QColor(37, 99, 235));
             }
             dataTable->setItem(row, column, item);

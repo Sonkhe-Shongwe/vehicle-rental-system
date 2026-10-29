@@ -2,6 +2,8 @@
 #include "rentalsystem.h"
 
 #include <QApplication>
+#include <QColor>
+#include <QComboBox>
 #include <QAbstractButton>
 #include <QFile>
 #include <QLabel>
@@ -13,6 +15,8 @@
 #include <QTemporaryDir>
 #include <QTimer>
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -46,6 +50,38 @@ void navigate(MainWindow& window, const char* slot)
     require(QMetaObject::invokeMethod(&window, slot, Qt::DirectConnection),
             QString("Qt navigation slot failed: %1").arg(slot));
     QApplication::processEvents();
+}
+
+// Both actual Qt table background tokens are checked, including zebra stripes.
+// WCAG AA normal text needs at least 4.5:1 contrast.
+double channel(int component)
+{
+    const double x = component / 255.0;
+    return x <= 0.04045 ? x / 12.92 : std::pow((x + 0.055) / 1.055, 2.4);
+}
+double luminance(const QColor& color)
+{
+    return 0.2126 * channel(color.red()) +
+           0.7152 * channel(color.green()) +
+           0.0722 * channel(color.blue());
+}
+double contrast(const QColor& foreground, const QColor& background)
+{
+    const double first = luminance(foreground);
+    const double second = luminance(background);
+    return (std::max(first, second) + 0.05) /
+           (std::min(first, second) + 0.05);
+}
+void verifyTableStatusContrast(QTableWidgetItem* status, const QString& state)
+{
+    require(status != nullptr, "Missing status cell: " + state);
+    const QColor ink = status->foreground().color();
+    for (const QColor& surface : {QColor("#fffefa"), QColor("#f5f7f0")}) {
+        const double ratio = contrast(ink, surface);
+        require(ratio >= 4.5,
+                QString("%1 table text contrast below 4.5:1: %2")
+                    .arg(state).arg(ratio, 0, 'f', 2));
+    }
 }
 
 QByteArray contents(const QString& path)
@@ -135,6 +171,7 @@ int main(int argc, char* argv[])
             navigate(*window, "showAllVehicles");
             require(window->findChild<QTableWidget*>()->rowCount() == 2,
                     "GUI fleet table reflects both created vehicles");
+            verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 5), "Available");
 
             navigate(*window, "showRentPage");
             auto* rentalVehicle = widget<QLineEdit>(*window, "RentalVehicleID");
@@ -183,6 +220,9 @@ int main(int argc, char* argv[])
                     contents(rentalsPath) == beforeRestartRentals,
                     "Reopening the real GUI does not rewrite source files");
 
+            navigate(*window, "showAllVehicles");
+            verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 5), "Rented");
+
             navigate(*window, "showRentalRecordsPage");
             require(window->findChild<QTableWidget*>()->rowCount() == 1,
                     "Saved active contract appears in Rental History");
@@ -197,8 +237,11 @@ int main(int argc, char* argv[])
             perform(*window, "Complete return", {"Return Error"});
 
             navigate(*window, "showRentalRecordsPage");
+            verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 9), "Returned");
             widget<QLineEdit>(*window, "RentalRecordID")->setText("R001");
             perform(*window, "Archive returned", {"Confirm Archive", "Record Archived"});
+            widget<QComboBox>(*window, "RentalHistoryFilter")->setCurrentIndex(3);
+            verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 9), "Archived");
             widget<QLineEdit>(*window, "RentalRecordID")->setText("R001");
             perform(*window, "Delete archived", {"Confirm Permanent Deletion", "Record Deleted"});
         }
