@@ -22,7 +22,13 @@ for m in catalogue['items']:
         if im.width < 400 or im.height < 300: raise ValueError('Existing asset too small: '+m['id'])
         print('CACHED',m['id'],im.size,flush=True)
     else:
-        url='https://commons.wikimedia.org/wiki/Special:Redirect/file/'+urllib.parse.quote(m['file'],safe='')+'?width=1300'
+        # Use a single directly published Commons original for the two remaining bikes.
+        # These URLs are taken from each verified Commons file page, not guessed.
+        original_urls={
+            'M001':'https://upload.wikimedia.org/wikipedia/commons/d/d2/2021_Honda_CB500F.jpg',
+            'M002':'https://upload.wikimedia.org/wikipedia/commons/f/fb/YAMAHA_MT-07.JPG',
+        }
+        url=original_urls.get(m['id']) or ('https://commons.wikimedia.org/wiki/Special:Redirect/file/'+urllib.parse.quote(m['file'],safe='')+'?width=1300')
         try:
             req=urllib.request.Request(url,headers={'User-Agent':'VehicleRentalPortfolioDesign/1.0 (GitHub design project; Wikimedia source and author credited)', 'Accept':'image/jpeg,image/png,image/*;q=0.8'})
             with urllib.request.urlopen(req,timeout=35) as response:
