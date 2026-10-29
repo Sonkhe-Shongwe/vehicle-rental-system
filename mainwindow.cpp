@@ -1106,7 +1106,7 @@ void MainWindow::resizeRentalTableColumns()
     // Percentages sum to 100. The final column receives any rounding remainder.
     const QList<int> percentages = returnPageVisible
                                        ? QList<int>({8, 8, 22, 14, 12, 12, 8, 16})
-                                       : QList<int>({7, 17, 11, 7, 10, 10, 9, 6, 10, 13});
+                                       : QList<int>({9, 16, 10, 7, 10, 10, 9, 6, 10, 13});
 
     const int usableWidth = qMax(1, dataTable->viewport()->width() - 2);
     int assignedWidth = 0;

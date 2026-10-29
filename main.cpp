@@ -52,16 +52,6 @@ int main(int argc, char *argv[])
                 app.exit(3);
                 return;
             }
-            const int stripBottom = strip->mapTo(&window, QPoint(0, strip->height())).y();
-            const int headingTop = recentHeading->mapTo(&window, QPoint(0, 0)).y();
-            // Diagnostic render: checkout geometry is still being tuned.
-            // Retain strict non-overlap checks for the previously verified pages.
-            if (!rentalPreview && headingTop < stripBottom + 3) {
-                qWarning() << "Qt visual test: section heading overlaps metrics"
-                           << headingTop << stripBottom;
-                app.exit(4);
-                return;
-            }
             if (fleetPreview) {
                 QLabel* identity = window.findChild<QLabel*>("FleetAssetName");
                 QWidget* inspector = window.findChild<QWidget*>("FleetInspector");
@@ -149,6 +139,19 @@ int main(int argc, char *argv[])
                     app.exit(18); return;
                 }
                 identifier->setText("R001"); // visual only: no return submitted
+            }
+            // Run layout checks AFTER changing values and filters, since
+            // Qt may reflow the cards when their display text is updated.
+            QApplication::processEvents();
+            const int stripBottom =
+                strip->mapTo(&window, QPoint(0, strip->height())).y();
+            const int headingTop =
+                recentHeading->mapTo(&window, QPoint(0, 0)).y();
+            if (headingTop < stripBottom + 3) {
+                qWarning() << "Qt visual test: section title overlaps the panel"
+                           << headingTop << stripBottom;
+                app.exit(4);
+                return;
             }
             const bool saved = window.grab().save("portfolio-qt-review.png", "PNG");
             app.exit(saved ? 0 : 2);
