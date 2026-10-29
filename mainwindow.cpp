@@ -212,7 +212,7 @@ void MainWindow::setupMainContent()
     actionStack = new QStackedWidget();
     // Preserve the dashboard hero and two metric rows above the shared table.
     // Without a minimum, the table's stretch factor compresses these cards.
-    actionStack->setMinimumHeight(430);
+    actionStack->setMinimumHeight(370);
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
@@ -283,7 +283,7 @@ QWidget* MainWindow::createDashboardPage()
     // calculated from real runtime vehicles, never hard-coded demo statistics.
     QFrame* hero = new QFrame();
     hero->setObjectName("FleetHero");
-    hero->setMinimumHeight(157);
+    hero->setFixedHeight(166);
     QHBoxLayout* heroLayout = new QHBoxLayout(hero);
     heroLayout->setContentsMargins(26, 14, 18, 14);
     heroLayout->setSpacing(18);
@@ -343,7 +343,7 @@ QWidget* MainWindow::createDashboardPage()
     pageLayout->addLayout(cards);
     QFrame* metricStrip = new QFrame();
     metricStrip->setObjectName("MetricsStrip");
-    metricStrip->setMinimumHeight(61);
+    metricStrip->setFixedHeight(58);
     QHBoxLayout* stripLayout = new QHBoxLayout(metricStrip);
     stripLayout->setContentsMargins(20, 7, 20, 7);
     stripLayout->setSpacing(18);
@@ -363,6 +363,7 @@ QWidget* MainWindow::createDashboardPage()
     appendCompactMetric("Motorcycles", motorcyclesValue);
     appendCompactMetric("Booked Rental Value", revenueValue);
     pageLayout->addWidget(metricStrip);
+    pageLayout->addStretch(1); // consume surplus space below the complete metric group
     page->setLayout(pageLayout);
     return page;
 }
