@@ -5,6 +5,7 @@ on:
       - feature/qt-hybrid-visual-spike-20261029
     paths:
       - CMakeLists.txt
+      - README.md
       - main.cpp
       - mainwindow.cpp
       - mainwindow.h
@@ -29,6 +30,8 @@ jobs:
           cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build --parallel 2
           ctest --test-dir build --output-on-failure
+      - name: Validate published real-Qt screenshot references and PNG integrity
+        run: python3 tests/verify_readme_screenshots.py
       - name: Render real Qt UI using fictional records
         run: |
           cp demo/vehicles.txt vehicles.txt
