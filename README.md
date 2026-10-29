@@ -4,6 +4,8 @@ A C++17 / Qt Widgets desktop application for managing a small car and motorcycle
 
 > **Status (29 October 2026):** The complete sanitized C++/Qt source is committed. [GitHub Actions run 40872123623](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623) **passed** on Ubuntu 24.04 with Qt 6 (fixture hygiene, CMake configuration, compilation, CTest). An interactive **Windows Qt Creator GUI test is still pending**. This is not a production-certified rental service.
 
+> **Current AI/developer handoff:** [Start here: latest implementation branch, test evidence and next acceptance steps](docs/AI_HANDOFF_CURRENT.md). The redesigned Qt UI lives in **unmerged Draft PR #4**, not on stable `main`; Windows GUI acceptance is still pending. Older design/roadmap notes are chronological, not the current source of truth.
+
 ## Core features
 
 - Add, search and remove cars or motorcycles, with sequential IDs and input validation.
