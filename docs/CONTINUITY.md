@@ -1,3 +1,11 @@
+## Real Qt Rental Management V2 checkpoint | 29 October 2026
+
+**Completed on separate, unmerged [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4):** The new Qt Widgets rental checkout, transaction history and return forms now share the premium graphite/mineral/lime design with Dashboard and Fleet. Checkout has a live **estimated rental total** (not collected revenue), updates availability and due date, and requires nonempty customer name/phone before enabling confirmation. The existing rental backend, same-day processing, archive, delete and file storage rules remain unchanged. Full details, screenshots, testing history and limitations: [Rental UI review](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/design/qt-spike/RENTALS_REVIEW.md).
+
+**Verified:** Ubuntu 24.04 hosted Qt6 compile + CTest + [ten-screen capture and non-destructive UI smoke tests](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40914456325) passed on 29 October. Two window sizes (1500x860 and 1280x720) for Dashboard, Fleet, New Rental, Rental History and Process Return. Checkout tested rented-vehicle rejection and R1350 3-day Corolla quote; confirmation-field gating; history status filters; one active return record, with no rental/return/archive operation committed by tests. Fake data only.
+
+**Outstanding:** Windows Qt Creator and high-DPI GUI checks; full rent/return/archive/restart acceptance on disposable data; photographic quality improvements; owner final aesthetic approval. Leave PR #4 as draft and **do not merge into stable main** solely because Linux CI passes. Note that geometry assertions cover Dashboard and Fleet, while rental layout is inspected from captured images.
+
 ## Real Qt Fleet workspace checkpoint — 29 October 2026
 
 The existing Qt review branch now implements a **branded, task-oriented Fleet Inventory page**, not just an HTML concept:
