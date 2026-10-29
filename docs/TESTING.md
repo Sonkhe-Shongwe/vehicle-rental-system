@@ -1,3 +1,11 @@
+## Windows + Linux exact-source verification update | 29 October 2026
+
+**Source SHA `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`:**
+- [Windows Actions 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521): **PASS**, GitHub-hosted Windows Server 2022, MSVC 2022, Qt 6.8.3, CMake Release. CTest **2/2**: `vehicle_rental_domain` and `vehicle_rental_gui_lifecycle`; ten compiled Qt UI renders at two sizes and two synthetic DPI, complete PNG/dimensions/integrity verification, fictional demo fixture hashes unchanged.
+- [Linux Actions 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760): **PASS**, Ubuntu 24.04 GCC/Qt6 CMake Release, CTest **2/2**. The Linux failure on earlier `fdecb35` is not reclassified as passing.
+
+**Remaining tests not executed:** genuine Windows Qt Creator interaction with native keyboard, focus, confirmation and physical display scale at 100/125/150%; user visual approval; crash/power-loss. Hosted offscreen tests are execution evidence, not desktop sign-off.
+
 ## New regression evidence | 29 October 2026
 
 **Source commit:** `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`. **Platform:** GitHub-hosted Ubuntu 24.04, Qt 6 (system qt6-base-dev), GCC, CMake/Ninja, Release. **Run:** [40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760).

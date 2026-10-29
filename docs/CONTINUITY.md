@@ -1,3 +1,9 @@
+## Windows automated acceptance follow-up | 29 October 2026
+
+**PASSED** [Windows run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521) for source `aaf2cee`: hosted Windows Server 2022, MSVC 2022, Qt 6.8.3, Release build, CTest **2/2** (including new persisted real Qt GUI lifecycle test), ten 1500x860/1280x720 compiled Qt UI captures, two synthetic DPI render checks, and original fictional fixture SHA-256 unchanged. Earlier "Windows pending" text below predates completion and is superseded. The initial `fdecb35` failed build remains a real failed attempt, subsequently fixed.
+
+**Not accepted:** interactive Windows Qt Creator on a physical display, keyboard focus/confirmation flow, 100/125/150% real OS scaling, final aesthetic/photo rights sign-off and owner approval. Draft PR #4 remains unmerged.
+
 ## Current Qt lifecycle integration checkpoint | 29 October 2026
 
 **Supersedes historical "no Qt redesign" and "no Windows CI" status statements below.** Draft PR #4 now contains the redesigned real Qt Dashboard, Fleet, New Rental, Rental History and Return Processing workspaces. The code remains C++17/Qt Widgets with flat-file storage. Stable `main` is unchanged.

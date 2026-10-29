@@ -1,3 +1,7 @@
+## Qt acceptance evidence update | 29 October 2026
+
+The live review branch has passing automated Qt functional validation on both platforms for source `aaf2cee`: [Linux 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760) and [Windows 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), each **CTest 2/2** including new GUI add/rent/restart/return/archive/delete; Windows also passes 12 synthetic screenshot/DPI cases. This does not complete the visual acceptance phase. Remaining: actual Windows physical scaling and keyboard UX, detailed aesthetic review and licensing, owner sign-off, and review of any defects found. Do not start a separate architectural milestone yet.
+
 ## Current priority override | Qt visual-acceptance milestone, 29 October 2026
 
 The historical research/design-only notes below describe earlier checkpoints. **Current implementation:** Dashboard, Fleet, New Rental, Rental History and Return Processing have been redesigned in actual Qt Widgets on Draft PR #4. The existing one-phase-at-a-time requirement now takes precedence over the old forward-looking P1/P2 list.

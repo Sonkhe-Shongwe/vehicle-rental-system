@@ -1,3 +1,7 @@
+## Follow-up Windows real-Qt verification | 29 October 2026
+
+[Windows Qt6/MSVC 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521) on source `aaf2cee`: **PASS** Qt build, CTest **2/2** including the new full GUI lifecycle regression in an isolated data directory, plus ten compiled-Qt captures at 1500x860/1280x720 and two synthetic DPI cases. These are automated offscreen checks, not actual Qt Creator keyboard/mouse usage or final visual approval. Previous "Windows pending" state below was written before the run finished. Owner approval and physical Windows scaling remain open.
+
 ## 29 October 2026: real Qt lifecycle regression improvement
 
 The initial Rental Management screenshot proof did not click through persistent transactions. A subsequent increment added a **new real Qt Widgets GUI integration test**, with explicit test data directory injection in `MainWindow` for safety, unique control object names and guarded handling of expected confirmation dialogs. It checks Add Vehicle, customer gating, live quote, Rent, duplicate-rental blocking, closing/reopening the Qt GUI without rewriting original files, Return and repeated-return rejection, premature archive/delete refusal, archive, and deletion persistence.

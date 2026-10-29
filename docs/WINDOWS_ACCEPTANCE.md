@@ -1,3 +1,9 @@
+## Windows hosted CTest + GUI lifecycle check completed | 29 October 2026
+
+**PASS** [Actions run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), code `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`. Hosted Windows Server 2022 / Visual Studio 2022 x64 / Qt 6.8.3. CMake Release build, **CTest 2/2**, now including `vehicle_rental_gui_lifecycle` with temporary fictional records and persistence/restart. Five compiled Qt screens at 1500x860, five at 1280x720, Fleet synthetic 125% and Rent synthetic 150%; all twelve PNG integrity and dimensions verified. Existing demo files passed pre/post SHA-256 integrity comparisons. The previous "Windows pending" entry below is a timestamped interim note, now superseded.
+
+**Not run:** real monitor DPI, Qt Creator keyboard/mouse and confirmation review, and full manual sign-off. Continue the separate disposable-clone procedure below. No approval to merge PR #4.
+
 ## Additional automated GUI lifecycle regression | 29 October 2026
 
 A new `vehicle_rental_gui_lifecycle` CTest now uses a deliberately isolated `QTemporaryDir`, not source-adjacent runtime data, and exercises buttons and dialogs for Add Vehicle, Rent, application restart, Return, Archive and Delete with fictional records. [Linux compile + both CTests passed at code `aaf2cee` in run 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760). [Windows CI for this source commit: run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), **result pending when authored**. The older Windows 12-screen automated report remains relevant to its exact earlier source commit.

@@ -1,3 +1,5 @@
+> **Latest evidence update, 29 October 2026:** [Windows 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521) has now **PASSED** for source `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`. Hosted Windows Server 2022, MSVC 2022, Qt 6.8.3, Release build, **CTest 2/2** (domain + real Qt GUI lifecycle), all 12 offscreen compiled-Qt screens (1500x860, 1280x720, synthetic 125% and 150% DPI), and before/after fictional fixture hash integrity passed. The earlier "Windows pending" paragraph below is a preserved status-at-authorship note, now superseded. **Physical-monitor scaling, Windows Qt Creator hands-on UX, keyboard/focus, final aesthetic review and owner approval remain PENDING.** Stable `main` stays untouched; PR #4 draft/unmerged.
+
 # AI Handoff | Vehicle Rental System
 
 **Dated checkpoint: 29 October 2026.** This is the authoritative short current-state record for the review branch, **not a live branch pointer**. Always recheck GitHub PR #4 head SHA, workflow conclusions and Issue #2 before editing.
