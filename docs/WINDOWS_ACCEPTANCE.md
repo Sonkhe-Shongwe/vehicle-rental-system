@@ -3,7 +3,7 @@
 **Checkpoint:** 29 October 2026  
 **Active review:** [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4)  
 **Branch:** `feature/qt-hybrid-visual-spike-20261029`  
-**Status:** A Windows-hosted CI workflow has been added, but this document does not claim its result until a completed workflow is verified. Manual Qt Creator testing remains mandatory and is **not** replaced by offscreen automation.
+**Status:** Hosted Windows CI **PASSED** at tested code SHA `7d9027bde4fe3c6f87c57b6d29195fc8fd6d1383` ([run 40921642782](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40921642782), [evidence report](WINDOWS_CI_REPORT_2026-10-29.md)). Manual Qt Creator, full persisted rental-lifecycle and high-DPI testing remain **PENDING**. Offscreen automation does not replace them.
 
 ## Safety prerequisite
 
