@@ -1,3 +1,9 @@
+## V2 comparative art-direction checkpoint — 29 October 2026
+
+Aesthetic-only comparison [design/v2/COMPARISON.md](../design/v2/COMPARISON.md) now contains three high-resolution browser-rendered dashboard directions and a self-contained switchable visual preview. A = Precision Atelier (graphite, warm white, lime), B = Nocturne Instrument (dark technical blue), C = Editorial Grand Touring (ivory, burnt copper, serif and a different panoramic composition). All display the same **5 fictional vehicles, 4 available, 1 active rental, R2,300 booked value, 1 due on 30 Oct 2026** from repository demo files. The date is frozen to 29 October 2026 for fair comparisons. The concept controls other than the art-direction selector are inert. Browser screenshots were checked at 1440×900 and one 1280×720 viewport, with no horizontal overflow; the lower area scrolls at 1280×720. This is not Qt acceptance.
+
+**Not decided:** The owner has not selected a direction. The next step is an explicit visual review, then Fleet and Rentals concepts in the chosen aesthetic. C++ source, tests and persistence remain unchanged in this phase. Do not call any V2 concept an implemented Qt screen. Do not reuse the generated exploratory moodboard with inaccurate figures as an application screenshot.
+
 # Project Continuity - 29 October 2026
 
 ## Objective
