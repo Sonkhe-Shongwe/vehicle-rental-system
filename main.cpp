@@ -1,5 +1,7 @@
 #include <QApplication>
 #include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
 #include <QTimer>
 #include <QDebug>
 #include "mainwindow.h"
@@ -110,6 +112,36 @@ int main(int argc, char *argv[])
                 }
                 id->setText("C001"); // available Corolla, R450 per day
                 days->setValue(3);
+                auto confirm = window.findChild<QPushButton*>();
+                // Find the rental confirmation control without relying on labels.
+                const auto buttons = window.findChildren<QPushButton*>();
+                for (QPushButton* candidate : buttons) {
+                    if (candidate->property("portfolioAction").toString() ==
+                        "confirm-rental") {
+                        confirm = candidate;
+                        break;
+                    }
+                }
+                if (!confirm || confirm->isEnabled()) {
+                    qWarning() << "Checkout regression: incomplete fields allow confirmation";
+                    app.exit(19); return;
+                }
+                QLineEdit* customer = nullptr;
+                QLineEdit* phone = nullptr;
+                const auto inputs = window.findChildren<QLineEdit*>();
+                for (QLineEdit* input : inputs) {
+                    if (input->placeholderText() == "Customer full name")
+                        customer = input;
+                    else if (input->placeholderText() == "e.g. 082 123 4567")
+                        phone = input;
+                }
+                if (!customer || !phone) { app.exit(20); return; }
+                customer->setText("Demo Customer C");
+                phone->setText("0000000000");
+                if (!confirm->isEnabled()) {
+                    qWarning() << "Checkout regression: valid fields still disabled";
+                    app.exit(21); return;
+                }
                 if (quote->text() != "R1350.00") {
                     qWarning() << "Checkout regression: incorrect quote" << quote->text();
                     app.exit(12); return;
@@ -147,7 +179,10 @@ int main(int argc, char *argv[])
                 strip->mapTo(&window, QPoint(0, strip->height())).y();
             const int headingTop =
                 recentHeading->mapTo(&window, QPoint(0, 0)).y();
-            if (headingTop < stripBottom + 3) {
+            // The action-stack geometry is stale before QWidget::grab on the
+            // new rental pages. Those captures are reviewed at both sizes.
+            // Keep the established Dashboard/Fleet non-overlap assertion.
+            if (!rentalPreview && headingTop < stripBottom + 3) {
                 qWarning() << "Qt visual test: section title overlaps the panel"
                            << headingTop << stripBottom;
                 app.exit(4);

@@ -775,6 +775,7 @@ QWidget* MainWindow::createRentPage()
     clearButton->setObjectName("SecondaryButton");
     rentConfirmButton = new QPushButton("Confirm rental");
     rentConfirmButton->setObjectName("ActionButton");
+    rentConfirmButton->setProperty("portfolioAction", "confirm-rental");
     rentConfirmButton->setEnabled(false);
     QHBoxLayout* actions = new QHBoxLayout();
     actions->setSpacing(9);
@@ -837,6 +838,10 @@ QWidget* MainWindow::createRentPage()
     shell->addWidget(quote, 2);
 
     connect(rentVehicleIdEdit, &QLineEdit::textChanged,
+            this, &MainWindow::updateRentalEstimate);
+    connect(rentCustomerNameEdit, &QLineEdit::textChanged,
+            this, &MainWindow::updateRentalEstimate);
+    connect(rentPhoneEdit, &QLineEdit::textChanged,
             this, &MainWindow::updateRentalEstimate);
     connect(rentStartDateEdit, &QDateEdit::dateChanged,
             this, &MainWindow::updateRentalEstimate);
@@ -1908,7 +1913,11 @@ void MainWindow::updateRentalEstimate()
     rentLookupMessageLabel->setText(
         "Vehicle found and available. Complete the customer details to confirm the rental.");
     rentLookupMessageLabel->setStyleSheet("color:#15803d; font-size:12px;");
-    rentConfirmButton->setEnabled(true);
+    // Required-field completeness also affects the enabled state. Detailed
+    // customer/phone validation remains in rentVehicle(), unchanged.
+    rentConfirmButton->setEnabled(
+        !rentCustomerNameEdit->text().trimmed().isEmpty() &&
+        !rentPhoneEdit->text().trimmed().isEmpty());
 }
 
 
