@@ -88,8 +88,11 @@ jobs:
               throw "$mode failed: exit code $($process.ExitCode)"
             }
             if (-not (Test-Path portfolio-qt-review.png)) { throw "$mode did not create screenshot" }
-            if ((Get-Item portfolio-qt-review.png).Length -lt 25000) {
-              throw "$mode produced an unexpectedly small screenshot"
+            # A correctly rendered image can compress below a fixed byte limit.
+            # Instead, validate PNG chunks/CRCs, exact dimensions and content.
+            & python tests/verify_qt_png.py portfolio-qt-review.png 1500 860
+            if ($LASTEXITCODE -ne 0) {
+              throw "$mode produced an invalid or visually empty PNG"
             }
           }
           if ((Get-FileHash vehicles.txt -Algorithm SHA256).Hash -ne $beforeVehicles) {
