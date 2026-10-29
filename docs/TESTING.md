@@ -1,3 +1,12 @@
+## New Qt keyboard regression verified | 29 October 2026
+
+**Source revision:** `525099b09114748159a06220d2565990d72ee50b` (test harness correction; implementation `49db913`). The compiled real Qt Widgets lifecycle test sends `QKeyEvent` to the visible New Rental vehicle field to assert Tab advances to customer name, then Enter on Return Rental ID to submit a real disposable rental return and reject repeated return. Full add/rent/restart/archive/delete, 4.5:1 table-status contrast and temporary-file isolation assertions are retained, not skipped. Production UI has new explicit visible button focus styles.
+
+- **Linux verified:** [40935419732](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419732), hosted Ubuntu 24.04, Qt6/GCC, Release configure/build, CTest **2/2**, ten real Qt screenshot captures at 1500x860 and 1280x720.
+- **Windows verified:** [40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768), hosted Windows Server 2022, MSVC2022/Qt6.8.3, Release configure/build, CTest **2/2**, ten 1500x860 and 1280x720 offscreen captures and two synthetic DPI cases (Fleet 125%, New Rental 150%); PNG validation and unchanged SHA-256 fictional demo files.
+- **Precursor failures:** `49db913` and `bfe8848` keyboard GUI lifecycle tests failed because the Qt offscreen test window had no active focus owner, then failed after modal dialogs. Corrected test setup via explicit Qt application focus activation in `e44ca84` and `525099b`. These failures remain recorded, not rewritten as passes. `bfe8848` also made Linux visual CI run on test-only changes.
+- **Unverified:** physical Windows Qt Creator input, visible focus appearance on a monitor, real native 100/125/150% monitor scaling, full manual acceptance and owner approval. A QKeyEvent in Qt offscreen mode does not prove actual user-input accessibility.
+
 ## Verified contrast regression and screenshot acceptance | 29 October 2026
 
 **Exact tested source:** `c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91`. New Qt GUI lifecycle CTest checks actual table widget item status foreground colours for **Available, Rented, Returned and Archived**, against the table backgrounds `#FFFEFA` and `#F5F7F0`, asserting normal-text contrast ratio at least **4.5:1**. It also retains all real Qt lifecycle, modal, restart and persistence checks in isolated `QTemporaryDir`.

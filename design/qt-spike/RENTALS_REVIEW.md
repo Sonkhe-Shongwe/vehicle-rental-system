@@ -1,3 +1,11 @@
+## Rental form and return keyboard regression | 29 October 2026
+
+**Implemented:** visible-focus styling for existing Qt action buttons, and actual Qt-key-event tests in the disposable GUI lifecycle regression: Tab from New Rental vehicle ID reaches customer-name field; Enter from Return Rental ID executes expected confirmation and successful return, while a repeated Enter warns and does not re-return. The full persisted add/rent/restart/archive/delete checks and quote/contrast safeguards remain intact. Offscreen focus setup needed explicit active-window assignment, including after modal dialogs; initial failed runs at `49db913` and `bfe8848` are preserved as failures.
+
+**PASS:** [Ubuntu 24.04 Qt6/GCC visual 40935419732](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419732) and [Windows Server 2022 MSVC2022/Qt6.8.3 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768), tested `525099b`, CMake Release/Ctest **2/2**, real Qt screenshot and offscreen DPI checks. Updated visual workflow now triggers on test-only changes via `bfe8848`.
+
+**Not approved:** user hands-on Qt Creator keyboard navigation/focus visibility, genuine monitor scaling, stronger automotive image quality and overall design sign-off. PR #4 remains draft.
+
 ## Accessibility regression for rental ledger | 29 October 2026
 
 A status-text legibility defect was corrected within the existing Qt visual acceptance milestone: [`c5c1e78`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91) changes available/returned, rented and archived table status colours to AA-conformant darker tokens, with new GUI lifecycle assertions enforcing at least 4.5:1 against both real Qt table background colours. All normal rental safety checks remain in place. **Verified:** [Ubuntu Qt6 40932934420](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934420) and [Windows MSVC Qt6.8.3 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337) both compiled and passed CTest 2/2, including real Qt lifecycle persistence; 10 Linux real-Qt captures / 12 Windows offscreen DPI/screenshot checks also passed. No full interactive Windows/manual acceptance yet.

@@ -1,3 +1,9 @@
+## Latest hosted keyboard CI results | 29 October 2026
+
+**PASS** [Windows Server 2022 / MSVC2022 / Qt6.8.3 run 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768), exact source `525099b09114748159a06220d2565990d72ee50b`. Release CMake build and **CTest 2/2** including Qt keyboard-event Tab navigation in New Rental and Enter-triggered Return Processing with repeat-return safeguard, operating exclusively on `QTemporaryDir` fictional records. Twelve compiled Qt offscreen screenshots (5 pages at 1500x860, 5 at 1280x720, 2 synthetic DPI) passed integrity checks; original demo fixtures remained byte-identical.
+
+The Qt keyboard test must explicitly activate its offscreen application window, including after modal QMessageBoxes. This does **not** establish native Windows mouse/keyboard focus visual acceptance. In a new disposable Windows Qt Creator checkout still verify actual Tab and Shift+Tab focus order, focused lime/graphite/danger buttons against page backgrounds, Enter behaviour, confirmations/cancellation, visible focus rings at 100/125/150% Windows display scale, and normal/wide resizing. **All these manual gates remain pending**, as does owner visual approval.
+
 ## Latest source Windows verification | 29 October 2026
 
 **PASS:** [Windows Server 2022 / MSVC2022 / Qt 6.8.3 CI run 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337) tested code commit `c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91`. CMake Release compile, CTest **2/2** (domain and disposable real Qt GUI lifecycle with new 4.5:1 table-status contrast assertions), 5 UI screens at 1500x860, the same 5 at 1280x720, synthetic Fleet 125% and New Rental 150%, PNG integrity/dimensions and unchanged demo source-file SHA-256 all succeeded.

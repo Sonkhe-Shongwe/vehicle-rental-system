@@ -1,3 +1,9 @@
+## Keyboard-focus visibility increment | 29 October 2026
+
+Source `49db913` adds intentional Qt focus borders for sidebar navigation, action/secondary/danger buttons, type toggles and Exit, while retaining graphite, mineral-white and lime palette. Qt GUI lifecycle keyboard Tab and Enter regressions passed at corrected test source `525099b` on [Linux 40935419732](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419732) and [Windows 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768), CTest **2/2**, plus existing compiled Qt screenshot gates. Test-only source updates now trigger Linux visual CI. No new photographs or art direction were introduced.
+
+**Visual boundary:** The automated tests prove Qt focus traversal and submit-key handling in offscreen mode, not the actual visibility of focused controls under native Windows rendering. Physical Windows 100/125/150% scaling, keyboard visual inspection, appropriate licensed replacements for weak Ford/Corolla photography and missing motorcycle assets, and owner aesthetic approval remain required before merge.
+
 ## Final-current evidence and visual audit | 29 October 2026
 
 **Real Qt, not HTML:** Inspected compiled Qt Dashboard, Fleet, New Rental, Rental History and Process Return repository captures at 1280x720 and 1500x860. Primary controls, headers and strips are visibly present without obvious static-frame collisions. This does not establish behaviour while dragging windows, keyboard focus, real screen DPI or dynamic content.

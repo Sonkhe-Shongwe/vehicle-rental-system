@@ -1,3 +1,9 @@
+## Active milestone checkpoint | keyboard acceptance on compiled Qt, 29 October 2026
+
+Existing visual redesign and real Qt lifecycle tests now also have repeatable **keyboard-event regression** (rental ID Tab-to-customer, return ID Enter), visible keyboard-focus button styling and a corrected Linux visual CI trigger for test-only source changes. [Linux 40935419732](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419732) and [Windows 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768) **PASS CTest 2/2 and compiled Qt screenshot gates** at source `525099b`. This completes an automated keyboard coverage increment, **not** the Qt redesign acceptance milestone. No storage, SQLite, REST/API, React, cloud or architecture phase transition.
+
+**Remaining exit blockers:** physical Windows Qt Creator manual input/real DPI, polished correctly licensed photographic assets, owner visual approval and explicit decision to merge. Keep PR #4 draft and stable `main` unchanged.
+
 ## Active Qt visual acceptance milestone | 29 October 2026 evidence update
 
 Two focused review-branch increments are now fully verified in Linux and hosted Windows, without changing rental business rules: [`aaf2cee`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/aaf2ceee22dbe4fd782c142c1a0999e54d59d816) disposable Qt GUI end-to-end lifecycle CTest, and [`c5c1e78`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91) table-status AA contrast correction/regression. Latest source check: [Linux 40932934420](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934420) and [Windows 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337), both 2/2 CTest; screenshot checks passed. Do **not** advance to unrelated architecture phases.
