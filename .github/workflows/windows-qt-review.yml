@@ -59,46 +59,62 @@ jobs:
           ctest --test-dir build-windows -C Release --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Verify non-destructive Qt UI smoke on Windows
+      - name: Verify Windows Qt UI at desktop and 1280x720
         shell: pwsh
         run: |
-          # The hosted checkout is temporary. Only fictional demo fixtures
-          # are placed in the source directory used by the legacy loader.
+          # This hosted source checkout uses fictional demo data only.
           Copy-Item demo/vehicles.txt vehicles.txt -Force
           Copy-Item demo/rentals.txt rentals.txt -Force
           $beforeVehicles = (Get-FileHash vehicles.txt -Algorithm SHA256).Hash
           $beforeRentals = (Get-FileHash rentals.txt -Algorithm SHA256).Hash
           $exe = Join-Path $PWD 'build-windows/Release/VehicleRentalSystem_A3.exe'
           if (-not (Test-Path $exe)) { throw "Qt executable missing: $exe" }
-          $modes = @(
-            '--portfolio-screenshot',
-            '--portfolio-fleet-screenshot',
-            '--portfolio-rent-screenshot',
-            '--portfolio-history-screenshot',
-            '--portfolio-return-screenshot'
+          New-Item -ItemType Directory -Force -Path 'windows-qt-evidence' | Out-Null
+          $scenarios = @(
+            @{ Name='dashboard-1500'; Arg='--portfolio-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='fleet-1500'; Arg='--portfolio-fleet-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='rent-1500'; Arg='--portfolio-rent-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='history-1500'; Arg='--portfolio-history-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='return-1500'; Arg='--portfolio-return-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='dashboard-1280'; Arg='--portfolio-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='fleet-1280'; Arg='--portfolio-fleet-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='rent-1280'; Arg='--portfolio-rent-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='history-1280'; Arg='--portfolio-history-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' }
           )
-          foreach ($mode in $modes) {
+          foreach ($case in $scenarios) {
             Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
-            Write-Host "Windows offscreen test $mode"
-            # WIN32_EXECUTABLE uses the Windows GUI subsystem. PowerShell's
-            # native '&' invocation does not reliably wait for this executable;
-            # Start-Process -Wait exposes its actual exit code and completion.
-            $process = Start-Process -FilePath $exe -ArgumentList $mode -WorkingDirectory $PWD.Path -Wait -PassThru
+            $env:QT_SCALE_FACTOR = $case.Scale
+            Write-Host "Windows Qt smoke: $($case.Name) scale=$env:QT_SCALE_FACTOR"
+            # WIN32_EXECUTABLE is a GUI-subsystem executable: wait for its
+            # actual exit code instead of using PowerShell's & invocation.
+            $process = Start-Process -FilePath $exe -ArgumentList $case.Arg -WorkingDirectory $PWD.Path -Wait -PassThru
             if ($process.ExitCode -ne 0) {
-              throw "$mode failed: exit code $($process.ExitCode)"
+              throw "$($case.Name) application smoke failed: exit code $($process.ExitCode)"
             }
-            if (-not (Test-Path portfolio-qt-review.png)) { throw "$mode did not create screenshot" }
-            # A correctly rendered image can compress below a fixed byte limit.
-            # Instead, validate PNG chunks/CRCs, exact dimensions and content.
-            & python tests/verify_qt_png.py portfolio-qt-review.png 1500 860
+            if (-not (Test-Path portfolio-qt-review.png)) {
+              throw "$($case.Name) screenshot missing"
+            }
+            & python tests/verify_qt_png.py portfolio-qt-review.png $case.Width $case.Height
             if ($LASTEXITCODE -ne 0) {
-              throw "$mode produced an invalid or visually empty PNG"
+              throw "$($case.Name) screenshot failed integrity or dimensional checks"
             }
+            Copy-Item portfolio-qt-review.png "windows-qt-evidence/$($case.Name).png"
           }
+          Remove-Item Env:\QT_SCALE_FACTOR -ErrorAction SilentlyContinue
           if ((Get-FileHash vehicles.txt -Algorithm SHA256).Hash -ne $beforeVehicles) {
             throw 'Fleet fixture was unexpectedly modified'
           }
           if ((Get-FileHash rentals.txt -Algorithm SHA256).Hash -ne $beforeRentals) {
             throw 'Rental fixture was unexpectedly modified'
           }
-          Write-Host "PASS: five Windows Qt offscreen UI checks; fixture files unchanged."
+          Write-Host "PASS: ten Windows Qt UI checks at two window sizes; demo fixtures unchanged."
+
+      - name: Retain Windows review screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-qt-review-${{ github.run_id }}
+          path: windows-qt-evidence/*.png
+          if-no-files-found: warn
+          retention-days: 14
