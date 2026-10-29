@@ -725,6 +725,7 @@ QWidget* MainWindow::createRentPage()
     rentPhoneEdit = new QLineEdit();
     rentStartDateEdit = new QDateEdit(QDate::currentDate());
     rentDaysSpinBox = new QSpinBox();
+    rentDaysSpinBox->setObjectName("RentalDays");
     rentVehicleIdEdit->setPlaceholderText("e.g. C001");
     rentCustomerNameEdit->setPlaceholderText("Customer full name");
     rentPhoneEdit->setPlaceholderText("e.g. 082 123 4567");
