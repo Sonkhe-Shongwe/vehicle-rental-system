@@ -1,195 +1,101 @@
-# Rental Manager — Operator Console
+# Rental Studio — Light-First Product Experience Specification (Decision Draft)
 
-**Phase 1 visual and interaction design | Draft v0.1 | 29 October 2026**  
-**Project:** [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Shongwe/vehicle-rental-system)  
-**Target:** Retipuj Zoft Software Engineer (Full-Stack) Graduate application (30 October 2026)  
-**Implementation status:** **CONCEPT ONLY.** The HTML prototype and screenshots are design references, not compiled Qt screens, live application output, a database/API feature or evidence of GUI acceptance. The existing C++/Qt source remains unchanged by this phase.
+**Date:** 29 October 2026 · **Status:** DIRECTION AGREED; HIGH-FIDELITY DESIGNS AND TOOLKIT STILL NEED PROOF  
+**Authoritative product audit:** [Master Rebuild Audit](../docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md)  
+**Historical drafts (rejected/superseded):** [V1 prototype](prototype.html), [V2 comparison](v2/COMPARISON.md), [old Qt screenshots](qt-spike/VISUAL_REVIEW.md).
 
-## 1. Product direction and design objective
+## 1. Design intent and feeling
 
-Turn the university-style collection of CRUD pages into a coherent **local rental operations console**. Make it faster to answer these questions:
+Build a product that feels **alive, refined, welcoming, airy and unmistakably automotive**, not an academic CRUD manager, dark trading terminal or generic SaaS dashboard. The most important task should always be clear. Remove needless decoration and show rich detail only where it helps.
 
-1. Which vehicles are available and which are being rented?
-2. Which rental needs attention, and when is it due?
-3. How do I create a rental or complete a return without navigating through unrelated screens?
-4. What can I safely change, and has the system actually saved it?
+**Approved:** light-dominant; Overview, Fleet, Rentals; Gallery + Table hybrid Fleet (gallery default); linked selected-vehicle context; coherent system; willingness to replace old GUI completely.
 
-The design should look professional without imitating a specific commercial rental product. Keep the C++17/Qt Widgets desktop application and its existing domain behaviour. Avoid introducing future reservations, payments, user accounts or API-dependent displays until they exist in tested code.
+**Proposed palette to compare visually (not final approval):**
+- Light warm canvas #F7F7F2; elevated white #FFFFFF; subtle border #DEE5E0.
+- Primary muted deep sage #397D72 (buttons, focused selection); soft sage #E4EEE9 (surfaces).
+- Warm copper #C78A66 (minor warmth only); legible dark ink #273640.
+- Semantic success/warning/danger must meet text/colour-contrast checks. Avoid green-only status indicators.
 
-**Design system working title:** Rental Manager / Operator Console. **Proposed direction**, not final approval.
+**Typography:** friendly modern sans-serif with strong hierarchy; one licensed family wherever possible. Limit deliberate font weights and oversized editorial headings to page context. Avoid tiny all-caps metadata. Use sensible 8/12/16/24/32 spacing, readable dense tables and comfortably sized inputs.
 
-## 2. Actual-source baseline and design delta
+## 2. Information architecture and navigation
 
-The source file `mainwindow.cpp` currently has a fixed 235 px sidebar, a window minimum of 1280×720, nine primary action destinations, eight dashboard statistic cards, and a shared data table beneath the page stack. The historical screenshots demonstrate existing navy navigation and a light workspace, but they do not prove that the recent hardened build has passed Windows GUI tests.
+Three primary navigation positions, always visible:
+1. **Overview** — current operations and attention.
+2. **Fleet** — browsable vehicles, inventory table, selected vehicle, contextual management tools.
+3. **Rentals** — active, history, new rental, return and archival states.
 
-| Existing baseline | Problem for real operators | Design decision to evaluate | Scope guard |
-| --- | --- | --- | --- |
-| Dashboard, Add Vehicle, Remove Vehicle, Search Vehicle, All Vehicles, Available Vehicles, Rent Vehicle, Rental History, Return Vehicle in permanent navigation | Operators must mentally translate separate CRUD operations into tasks | Three prototype destinations: Overview, Fleet management, Rentals; history and returns become contextual rental views/actions | Existing Qt slots stay until replacement passes parity tests |
-| Eight equally prominent KPI cards | Duplicates fleet status and buries actionable information | Four primary KPIs: available vehicles, active rentals, due within 7 days, booked rental value | Rename old `Rental Revenue`; do not equate booked values with collected payments |
-| Large shared table with empty lower area | Weak information density and unclear purpose | Bounded recent activity, a focused attention queue and availability comparison | Use real filtered records, never decorative charts or fabricated alerts |
-| Separate search/add/rent/return pages | Excess page switching | Fleet search + filters + detail inspector; rental ledger + same-day new-rental form | Keep existing business validation and save semantics |
-| `setMinimumSize(1280,720)`, fixed wide form cards | Poor fit on scaled/narrow desktop windows | Layouts reflow at narrower widths and scrolling contains dense tables | Test on Qt 1366×768 at 100% and 125%; HTML reflow is not Qt proof |
-| Many inline QSS declarations | Styling drift as features grow | Central tokens + component class/style roles | Do not recreate the entire Qt widget hierarchy at once |
+Secondary actions belong to the relevant workspace; navigation should not expose separate primary pages for Add, Remove, Search and Available. Keep back/close, breadcrumbs or section title as required. Where possible preserve search, filter, view and selected ID on workspace re-entry. The product name "Rental Studio" is a **working name**; identity/logotype approval remains open.
 
-## 3. Prototype and evidence files
+## 3. Overview: structure and states
 
-- [Interactive HTML concept](prototype.html). **Standalone self-contained design only:** navigate among three screens; search/filter the 5 vehicle records; inspect a selected vehicle; preview rental duration/price; switch Active/History tabs. No live Qt app, local files or server are modified.
-- [Dashboard concept](dashboard.png)
-- [Fleet management concept](fleet.png)
-- [Rental management concept](rentals.png)
-- [1280 px dashboard layout check](dashboard-1280.png)
+Header: meaningful title and current local date, clear New rental action (with keyboard shortcut only if discoverable).
+First layer: **available out of fleet**, **active rentals**, and **booked rental value**. Do not imply payments received or future reservation inventory.
+Main content: bounded recent transactions and **upcoming/overdue returns** calculated from persisted rental due dates and the current clock.
+Supporting: small fleet status summary and link to Fleet. Do not display a mostly empty full-height table or manufacture trends from five records.
 
-The fictional demo data comes from the repository's `demo/vehicles.txt` and `demo/rentals.txt`. At the design snapshot (29 October 2026) it has **five vehicles, four available, one currently rented**, and **two rental records**: one active, one returned. The booked rental values are R1,400 and R900 (R2,300 combined). A rental is due on 30 October 2026, giving the prototype one due-within-7-days item. These are **illustrative demo records**, never live-business evidence or proof of revenue received.
+States to design: empty/no-fleet, no-active-rentals, one due soon, overdue, recent returned, damaged/missing photo, long record text, loading/reload failure, keyboard focus and success feedback.
+All pages must represent real application models, **not hardcoded demo copy**. Historical R001 due 30 Oct 2026 is no longer "tomorrow" after 29 Oct.
 
-## 4. Visual language (proposed tokens)
+## 4. Fleet gallery and table (equal functional quality)
 
-| Role | Value | Usage |
-| --- | --- | --- |
-| `nav` | `#172538` | Primary navigation rail |
-| `nav-hover` | `#203148` | Nonselected hovered navigation |
-| `ink` | `#15263E` | Headings and important values |
-| `ink-soft` | `#405573` | Table data and secondary labels |
-| `muted` | `#6C7B90` | Supporting instructions and metadata |
-| `blue` | `#245DEB` | Primary CTA, selected navigation, focus |
-| `blue-tint` | `#EAF0FF` | Informational backgrounds and rented state |
-| `surface` | `#FFFFFF` | Content panels |
-| `background` | `#F6F8FC` | Workspace canvas |
-| `border` | `#E5EAF1` | Panel and table separators |
-| `success` | `#16815C` | Available, returned |
-| `warning` | `#B26A13` | Due soon (time-qualified) |
-| `danger` | `#B13B44` | Errors, destructive actions |
+### Gallery (default)
+At roomy desktop: 3 columns if content area supports it, compact desktop: 2 columns; at actual DPI adjust columns/scrolling naturally. Card contains a coherent photo or silhouette, vehicle name, true internal ID, rate/day, textual available/rented status. Optional additional specs only when meaningful.
+No unresolved image should render as a giant generic grey block with unhelpful placeholder text. Use a consistent branded car/motorcycle outline or intentional empty state.
 
-Typography: Segoe UI / Inter / system sans fallback; headings about 29 px in the HTML reference and equivalent scalable Qt point sizes. Use a spacing rhythm of 4, 8, 12, 16, 20, 24 and 32 px. Borders should be subtle; 9–13 px radii. Prefer icon + text labels, particularly in the primary navigation. Reserve blue for primary and selected states, orange for genuinely due items, and green for reliably completed/available states.
+### Table (alternate)
+Professional readable compact inventory, keyboard row selection, columns for model, ID, type, availability, rate, and context action; sortable/filterable where appropriate. Do not force every column to equal width.
+**Invariants:** gallery/table switch preserves search text, availability filter, sort and selected vehicle when the item remains visible. Search count updates with the same exact query across both. Escape or close dismisses the drawer without changing a record.
 
-**Not yet verified:** WCAG AA colour contrast for each font size and state; high-DPI Windows rendering; keyboard focus in native Qt; system font metrics at 125% scaling. These are acceptance gates before finalising tokens.
+### Selected vehicle
+Context drawer (right on wide; overlay or separate responsive panel at compact), with larger real vehicle image, licence/model disclosure, name/ID, car/motorcycle detail, true availability, price/day and relevant next action. Available → "Start rental"; Rented → open associated active rental or inspect history. No "Rent now" button for a currently rented vehicle.
 
-## 5. Screen A: Overview dashboard
+### Management
+Add a validated car/motorcycle; remove only if domain rules permit; searchable and available filters. Confirmation, error and success states should appear in context and be screen-reader/keyboard compatible. Do not hide destructive operations behind non-discoverable interactions.
 
-### Structure
-- Persistent title bar: `Operations / Overview`, current context and explicit concept label (prototype only).
-- Heading `Fleet overview`; primary `New rental` and secondary `Add vehicle` actions.
-- Four KPIs with *accurate definitions*: available/total fleet, active rental count, due within 7 days, **booked rental value (all recorded rentals)**. Display a time scope where appropriate.
-- Main left: recent rental activity, limited to 5–8 results where data exist; rental ID, vehicle, fictional customer, booked value, status.
-- Main right: `Needs attention` with contextual `Open rental` action and a compact fleet-availability proportion.
-- No meaningless “real-time” badges or invented financial trends; if zero records, show helpful empty-state text.
+## 5. Rentals: guided, stateful transaction experience
 
-### Required Qt states
-- **Empty fleet:** zero KPIs (with honest denominators), ``Add a vehicle`` CTA; no empty analytics containers.
-- **Fleet but no rentals:** empty recent-activity message; `Create first rental` CTA.
-- **Approaching due date:** due label calculated against the local date using the documented clock rule.
-- **Overdue:** differentiated from due soon, never hidden in an active-rentals total.
-- **Read/save failure:** visible recovery path; never display “Saved” if `QSaveFile` reported failure.
+New rental is a visible subview inside Rentals, with **Vehicle → Customer → Review** (progressive sections may share one desktop page; avoid unnecessary full-screen routing).
+- Select from actually available fleet items or enter a validated identifier; selection pre-fills vehicle ID.
+- Customer name/contact with sensible masked display where needed; maintain actual input validation.
+- Same-day start only unless booking engine deliberately changed and thoroughly tested; 1–365 days; quote derives from the real daily rate and duration.
+- Show customer, vehicle, expected return, daily rate, days and computed **estimate** in review; explicit confirm and cancellation.
+- After successful save, update Overview, Fleet status and Rentals active ledger; show transaction ID, success and useful next action. Never say payment collected.
+- Deny duplicate bookings even when reached from the gallery; ensure cancel/No/Escape do not mutate persistent data.
 
-### Acceptance
-No more than four equally prominent KPI cards. Recent activity contains only actual rental records; selecting one navigates to its details. A reviewer can find an available vehicle or an active rental within two actions from the dashboard. Financial label does not claim payment collection.
+Active Rentals: scannable due dates, status, return process from row/detail; unexpected overdue status clearly explained. Return Processing: selected rental context, confirm, update occupancy and history only after durable save. History: filter active/returned/archived, and archive/delete only when valid.
 
-## 6. Screen B: Fleet management
+## 6. Shared components and motion specification
 
-### Structure
-- Search by ID, brand, model; filter `All`, `Available`, `Rented`.
-- Table fields: vehicle, ID, class, rate/day, availability.
-- Optional right details inspector: selected vehicle, current status, subtype details (doors/engine cc), appropriate action.
-- `Add vehicle` is a primary contextual action; editing and removing (after confirmation) belong to vehicle details instead of main navigation.
-- Use a selected-row state and keyboard row activation. Search and status filters must compose predictably.
+- ApplicationShell: light nav and crisp top utility row.
+- PageHeading, MetricCard, AttentionCard, VehicleCard, VehicleTable, VehicleDetailDrawer, StatusPill.
+- RentalStepper, CustomerForm, QuoteSummary, ErrorField, ConfirmationDialog, SuccessFeedback.
+- EmptyState, SearchBar, FilterChips/Combo, FocusRing, LoadingFeedback and ScrollContainer.
 
-### Required Qt states
-- No vehicles; filter with no match; unavailable vehicle; selected vehicle removed; malformed imported record; save failure; rate validation failure.
-- Never offer a working `Rent` action on an already rented vehicle. Its primary action should open the active rental.
+State handling: hover and press for clickable controls, focus ring clearly visible, selected status always explicit, disabled state meaningful, invalid inputs explained near field; process buttons never submit twice. A few subtle 100–250 ms transitions are a **proposal**, not an enforced animation budget. Respect reduced-motion configuration if implementation permits.
 
-### Acceptance
-Searching `M002` or `Yamaha` finds the motorcycle in the demo data. Filtering `Rented` shows `C002` only. The detail view never displays stale vehicle attributes after the selected record changes. No deletion occurs without preview, confirmation and successful persistence.
+Do not use uncontrolled looping animations, heavy blur, simulated payment effects or photo backgrounds that obscure labels.
 
-## 7. Screen C: Rental management
+## 7. Screen sizes, behaviour and QA
 
-### Structure
-- Active and history tabs above the ledger, with statuses grounded in data: **Active, Returned, Archived** in current release scope.
-- Active rental card/table includes vehicle, customer, start, expected return, booked total and contextual `Return` action.
-- Same-day `Create rental` flow selects *only currently available* vehicles, customer identity/contact, rental duration, verified daily rate, computed expected return and computed total.
-- `Create rental` is a deliberate confirm action; avoid blocking success popups for repeated normal work, while preserving strong errors and destructive confirmations.
+Targets: 1500×860 / 1280×720 Windows desktop and **physical OS scale 100%, 125%, 150%**. Layout must handle vertical scrolling gracefully. Dense content must not clip CTA, label, quote or drawer; keyboard Tab/Shift+Tab, Enter, Escape and confirmation focus order must be correct.
 
-### Required Qt states
-- Empty active list; completed rental; past due; duplicate active rental attempt; invalid customer input; unavailable vehicle; write failure; return date validation; restart consistency.
-- Important distinction: **advance reservations** are *not implemented*. Do not label this flow “Reserve” or claim date-range availability until overlap logic exists and is tested.
-- Rental prices are business calculations, not authoritative values typed by the UI; service must validate the totals and report errors clearly.
+Test state matrices across **Overview, Fleet Gallery, Fleet Table, Vehicle Detail, New Rental, Active, History, Return**. Check empty/one/many, very long text, invalid input, unavailable vehicle, duplicate booking, no-return, archived state, missing image, and failed persistence. Use screenshots AND interaction tests, not PNG-integrity alone.
 
-### Acceptance
-A user can start the rental process from Overview, choose an available vehicle and see the total update as the number of days changes. Confirming the real Qt workflow must either save a valid rental exactly once or return a visible error with state preserved. Return and archive actions must not destroy history.
+## 8. Presentation technology decision
 
-## 8. Concrete Qt mapping, implementation order
+**Preferred hypothesis:** Qt Quick/QML front end with typed C++ interface and existing/updated C++ rental model. See https://doc.qt.io/qt-6/qtquick-index.html . Test native Windows Qt kit and deployment first, with a real QML Overview + gallery/table/drawer proof. Qt Widgets or custom painting remain valid fallbacks if QML toolkit or performance requirements are not met.
 
-**Milestone D0 — design review (this document):** HTML prototype, three screenshots, comparison and acceptance scenarios. **No Qt source changes.**
+Do not build a production-size QML UI before the owner approves cross-screen designs and a Windows technical spike. Do not introduce an unrelated web frontend solely to make the interface visually easier.
 
-**Milestone D1 — safe shell and navigation:** Add a central style token file; group sidebar into Overview, Fleet and Rentals, using existing pages/slots as adapters. Keep all legacy user journeys callable until replaced. Validate keyboard selection and target resolution.
+## 9. Required design review deliverables
 
-**Milestone D2 — dashboard hierarchy:** Replace the eight-card layout with the specified four KPIs and meaningful activity/attention panels, driven by `RentalSystem`, never static demo numbers. Verify current totals and empty states.
+High-fidelity, cohesive presentation at two desktop sizes with real fictional data:
+- Overview with upcoming due dates and empty/active states.
+- Fleet gallery, Fleet table, selected vehicle drawer and unavailable state.
+- New rental vehicle/customer/review states and interactive quote.
+- Active/History/Return flows and destructive confirmations.
+- Consistent components, readable typography, accessible status and imagery.
+- A small interaction prototype to demonstrate transitions and task flow, not just screenshots.
 
-**Milestone D3 — fleet workspace:** Introduce FleetPage and a data-bound Qt table, reuse existing CRUD service logic; search+status filter, selection inspector and add form; consider `QAbstractTableModel` with `QSortFilterProxyModel` for maintainability.
-
-**Milestone D4 — rental workspace:** Unify current rent, return and history pages in a task-oriented RentalsPage. Same-day limitation clearly displayed. Preserve and test rental price, duplicate prevention, return and archive transitions.
-
-**Milestone D5 — Windows quality gate:** 1366×768 at 100% and 125% scaling, keyboard-only completion, Qt Creator Windows build, domain + UI smoke tests, import/restart with disposable files, safe screenshots. Only then replace the historical README screenshots with verified current GUI captures.
-
-**After validated UI:** safe AppData migration, modular repository/service boundaries, SQLite transactions and (optional) API. These remain separate, individually testable engineering milestones.
-
-### Suggested Qt component responsibility map
-
-```text
-MainWindow / AppShell       navigation, active workspace, visible global errors
-  ├── DashboardPage         four KPIs, due-state view, recent rentals
-  ├── FleetPage             filters, table, selected vehicle, add/edit workflow
-  ├── RentalsPage           active/history, new rental, return flow
-  └── Shared UI             status chip, form row, feedback, empty/error widget
-           ↓
-     RentalSystem (legacy service, preserve existing rules)
-           ↓
-     Vehicle / Car / Motorcycle / Rental
-           ↓
-     current text-file persistence (SQLite only after migration proof)
-```
-
-Do not refactor storage and UI simultaneously without a regression baseline.
-
-## 9. Design prototype interaction checks
-
-Completed on the self-contained HTML prototype using local headless Chromium, **not** Qt:
-
-- Navigation displays the correct three page headings.
-- Fleet search `yamaha` returns one row; rented filter returns one row, `C002`.
-- Clicking a fleet record changes the details inspector.
-- Fleet rented-vehicle action navigates to rentals; no disabled rental action is promised.
-- Changing rental duration from 3 to 5 days updates the demo total from R1,350 to R2,250 for C001 at R450/day.
-- Missing name/phone blocks the prototype submit; entering fictional values displays `not saved`, with no data writes.
-- History tab shows exactly two fictional records.
-- Prototype renders at 1440×900 and a 1280×720 dashboard capture. **No Qt/Windows UI test was run by these checks.**
-
-## 10. Alternatives and rejected directions
-
-- **Pure dark dashboard:** visually striking but becomes less readable for long tables and forms. Retain the existing navy rail, keep primary workspace light.
-- **Dense enterprise ERP layout:** efficient for trained power users but intimidating for a graduate portfolio demonstration. Use progressive details.
-- **Large full-bleed vehicle photography:** attractive for a customer marketing site, distracting in an operator console. Use compact consistent icons instead.
-- **Calendar booking app:** potentially useful later but cannot be represented as working before date-overlap and availability rules are implemented.
-- **React/Qt Quick rewrite, payments, sign-in or AI now:** unnecessary and risky for the deadline; defer until there is a verified user requirement.
-
-## 11. Product decision register
-
-| Decision | Current state | Next decision / proof |
-| --- | --- | --- |
-| Keep C++17 / Qt Widgets | **Confirmed project constraint** | Maintain existing build/test compatibility |
-| Operator-focused navigation / light-first visual language | **Proposed** | Owner review of prototype and screenshots |
-| Four dashboard KPIs | **Proposed** | Validate business definitions against rental model |
-| Task-first Fleet and Rentals workspaces | **Proposed** | Owner approves structure; test current workflow parity |
-| No future reservations in current UI | **Confirmed existing limitation** | Implement only with tested date-range overlap rules |
-| Windows GUI release readiness | **Unverified** | Qt Creator, responsive layout and end-to-end acceptance |
-| SQLite / service API | **Future only** | Data migration / transaction / service contract tests |
-
-## 12. Research and source-of-truth references
-
-- [Comparative research (29 Oct 2026)](../docs/PORTFOLIO_RESEARCH_2026-10-29.md)
-- [Current project source audit](../docs/AUDIT.md)
-- [Current engineering roadmap](../docs/ROADMAP.md)
-- [Qt model/view](https://doc.qt.io/qt-6/model-view-programming.html)
-- [Qt Style Sheets](https://doc.qt.io/qt-6/stylesheet.html)
-- [Qt standard paths](https://doc.qt.io/qt-6/qstandardpaths.html)
-- [Qt Test](https://doc.qt.io/qt-6/qtest-overview.html)
-
-**Governance:** This directory is a design proposal and visual handoff. It is not production Qt source. Approve the design explicitly before replacing functional GUI code. Every implemented step must carry a named test/visual acceptance result and update `docs/CONTINUITY.md`.
+**Explicit owner approval** of this set precedes main UI rebuild. Any new artwork must have its own usage rights; historic asset licences alone do not approve its visual suitability.
