@@ -1,3 +1,12 @@
+## Verified Dashboard-to-rental Qt navigation | 29 October 2026
+
+**Tested code:** `a3a671ade356790f1e4b5032a0b88feb0cd00c81`. A new genuine Qt Widgets Dashboard hero button **Start rental** directly invokes the existing rental screen. `vehicle_rental_gui_lifecycle` now clicks that button after two-size geometry checks, asserts **Rent Vehicle** and `RentalFormPanel` visibility, and confirms neither vehicles nor rentals file existence/bytes change. The test uses a dedicated temporary directory and continues to execute full add/rent/restart/return/archive/delete, negative No confirmations, keyboard navigation, 4.5:1 table status contrast, and selected responsive-layout checks.
+
+- [Ubuntu 24.04 Qt6 GCC visual 40940724889](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724889): **PASS** CMake build, CTest **2/2**, 5 published screenshot PNG checks, ten genuine compiled Qt captures at 1500×860 / 1280×720. Bot screenshot commit `9c47620`.
+- [Windows Server 2022 MSVC2022 Qt6.8.3 40940724910](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724910): **PASS** CMake Release build, CTest **2/2**, 10 actual compiled Qt offscreen captures + 2 synthetic DPI, and unchanged source demo-file SHA-256.
+- Earlier [Linux failure 40940520009](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940520009) at `9d7b69f` was caused by incorrect expected page title "New Rental". It was corrected to the actual "Rent Vehicle" without suppressing the test; earlier Windows run for that SHA failed too.
+- **Visual inspection only:** the updated real Dashboard PNGs at both sizes show readable CTA and no obvious panel collision. **Not checked:** physical Windows input/focus, genuine OS 100/125/150% monitor DPI, wider data/content combinations, final photograph or user visual approval.
+
 ## Verified negative GUI confirmation paths | 29 October 2026
 
 **Source:** `74139274a35380c380fd5ce68c31631f0422f3f5`. Existing `vehicle_rental_gui_lifecycle` compiled-Qt test now drives explicit **No** selections for Rental Creation, Return Processing, Archive and Permanent Deletion, checking both file **existence** and **byte-for-byte contents** unchanged, as well as separately reloaded rental/vehicle state. It also tests approved actions afterward and retains prior keyboard events, layout geometry at 1280x720/1500x860, status AA contrast, restart, duplicate booking and repeat-return assertions. All test data stays fictional in a `QTemporaryDir`.

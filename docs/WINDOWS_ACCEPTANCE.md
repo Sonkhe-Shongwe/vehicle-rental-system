@@ -1,3 +1,9 @@
+## Latest hosted Windows Qt Dashboard shortcut check | 29 October 2026
+
+**PASS** [Windows Server 2022, MSVC2022, Qt6.8.3 40940724910](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724910) at exact corrected code `a3a671ade356790f1e4b5032a0b88feb0cd00c81`: Release compilation, CTest **2/2** with new Dashboard `Start rental` navigation and unchanged file snapshot checks, ten 1500×860 / 1280×720 real Qt offscreen screenshots plus two simulated DPI captures; demo files unchanged.
+
+Still run in a **separate disposable Qt Creator checkout on actual Windows desktop**: focus/tab to Start rental, click and keyboard activation, confirm `Rent Vehicle` opens, resize live at 1280×720 and wider, verify no clipping at physical 100/125/150% scaling, inspect licensing/illustrative photo credits and final owner visual preference. No real-world customer files. Hosted offscreen checks do not count as these manual gates.
+
 ## New cancellation-safety CI evidence | 29 October 2026
 
 Hosted [Windows Server 2022, MSVC2022, Qt 6.8.3 run 40939283757](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283757) **PASSED** for exact source `74139274a35380c380fd5ce68c31631f0422f3f5`: Release Qt build, CTest **2/2**, test-only fictional data. Real Qt Widgets regression now checks modal **No** on Create Rental, Complete Return, Archive and Delete, confirming persisted file existence/bytes and reloaded fleet/rental status do not change. Ten offscreen compiled Qt screen renders and two synthetic DPI captures passed, plus unchanged demo fixture SHA-256.
