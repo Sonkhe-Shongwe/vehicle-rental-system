@@ -38,7 +38,7 @@ jobs:
           p=pathlib.Path('portfolio-qt-review.png')
           assert p.exists() and p.stat().st_size>25000, 'Qt screenshot missing or unexpectedly small'
           b=p.read_bytes()
-          assert b[:8]==bytes.fromhex('89504e470d0a1a'), 'Not PNG'
+          assert b[:8]==bytes.fromhex('89504e470d0a1a0a'), 'Not PNG'
           w,h=struct.unpack('>II',b[16:24])
           assert w>=1280 and h>=700, (w,h)
           print('Actual Qt UI screenshot', w, h, p.stat().st_size)
