@@ -212,7 +212,7 @@ void MainWindow::setupMainContent()
     actionStack = new QStackedWidget();
     // Preserve the dashboard hero and two metric rows above the shared table.
     // Without a minimum, the table's stretch factor compresses these cards.
-    actionStack->setMinimumHeight(405);
+    actionStack->setMinimumHeight(425);
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
