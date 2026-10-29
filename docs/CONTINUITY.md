@@ -42,6 +42,12 @@ The [full comparative portfolio / UX research report](PORTFOLIO_RESEARCH_2026-10
 
 **Next decision:** review the three prototype screens with the owner and resolve any visual/functional changes. Only then implement a bounded Qt UI milestone, run Linux CI, and test the actual Qt app on Windows with disposable files. Do not replace verified application screenshots with prototype renders.
 
+## Aesthetic-only V2 research checkpoint — 29 October 2026
+
+The owner reviewed the Operator Console V1 visual prototype and found it well organized but too bland/generic, without enough visual identity or wow factor. The full [aesthetic research report](VISUAL_AESTHETICS_RESEARCH_V2_2026-10-29.md) critically evaluates the current Dashboard, Fleet and Rentals screenshots and studies current Linear, Attio, Raycast, Polestar, Fluent 2, Carbon, Fleetio and Booqable visual conventions. This phase is **visual research only**: no additional features, new Qt screens, altered persistence, UI screenshot generation, or source-code changes.
+
+Three art directions are proposed for side-by-side visual review: **A Precision Atelier** (graphite/mineral white/signal lime, recommended starting direction), **B Nocturne Instrument** (dark high-tech), **C Editorial Grand Touring** (warm luxury editorial). None is approved. Their proposed colours, hierarchy, typography, selected-vehicle rendering, table treatment, visual risk analysis, contrast checks and desktop acceptance tests are documented. Keep V1 prototype files as the baseline; future visual iterations must be separately labelled and reviewed. Once a direction is chosen, compare designs using the same fictional data before any Qt implementation.
+
 ## Immediate next actions
 
 1. **COMPLETE:** Prepared C++/Qt source, tests, docs, fictional demo data and sanitized screenshots are committed directly in the public GitHub repository. Do not publish real customer data.
