@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
                     "Dashboard's rental CTA is visible and available");
             heroAction->click();
             QApplication::processEvents();
-            require(widget<QLabel>(layoutWindow, "PageTitle")->text() == "New Rental" &&
+            require(widget<QLabel>(layoutWindow, "PageTitle")->text() == "Rent Vehicle" &&
                     widget<QWidget>(layoutWindow, "RentalFormPanel")->isVisible(),
                     "Dashboard CTA opens the existing New Rental workspace");
             require(fileSnapshot(vehiclesPath) == vehicleBefore &&
