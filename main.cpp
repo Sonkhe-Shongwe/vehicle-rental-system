@@ -43,12 +43,48 @@ int main(int argc, char *argv[])
             if (fleetPreview) {
                 QLabel* identity = window.findChild<QLabel*>("FleetAssetName");
                 QWidget* inspector = window.findChild<QWidget*>("FleetInspector");
-                if (!identity || !inspector || identity->text().isEmpty() ||
+                QLineEdit* search = window.findChild<QLineEdit*>("FleetSearch");
+                QComboBox* status = window.findChild<QComboBox*>("FleetStatusFilter");
+                QTableWidget* table = window.findChild<QTableWidget*>();
+                if (!identity || !inspector || !search || !status || !table ||
+                    table->rowCount() != 5 || identity->text().isEmpty() ||
                     identity->text() == "No vehicle selected") {
-                    qWarning() << "Qt visual test: fleet inspector has no selection";
+                    qWarning() << "Fleet smoke test: missing control or incorrect fixture";
                     app.exit(5);
                     return;
                 }
+                const auto visible = [table]() {
+                    int count = 0;
+                    for (int row = 0; row < table->rowCount(); ++row)
+                        count += !table->isRowHidden(row);
+                    return count;
+                };
+                search->setText("ranger");
+                if (visible() != 1 || identity->text() != "Ford Ranger") {
+                    qWarning() << "Fleet smoke test: vehicle search or selection failed";
+                    app.exit(6);
+                    return;
+                }
+                search->clear();
+                status->setCurrentIndex(2); // Rented
+                if (visible() != 1 || identity->text() != "Ford Ranger") {
+                    qWarning() << "Fleet smoke test: rented filter failed";
+                    app.exit(7);
+                    return;
+                }
+                status->setCurrentIndex(1); // Available
+                if (visible() != 4) {
+                    qWarning() << "Fleet smoke test: available filter failed";
+                    app.exit(8);
+                    return;
+                }
+                status->setCurrentIndex(0);
+                if (visible() != 5) {
+                    qWarning() << "Fleet smoke test: filter reset failed";
+                    app.exit(9);
+                    return;
+                }
+                table->selectRow(0); // Restore consistent screenshot fixture
             }
             const bool saved = window.grab().save("portfolio-qt-review.png", "PNG");
             app.exit(saved ? 0 : 2);
