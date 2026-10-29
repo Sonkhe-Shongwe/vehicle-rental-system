@@ -1,5 +1,8 @@
 # Test Plan and Evidence Register
 
+> **LATEST QA checkpoint (29 October 2026):** [Windows Qt6/MSVC run 40923616007](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40923616007) **PASSED**: CMake, CTest, all **ten** real Qt screen captures at 1500×860 and 1280×720, and two simulated DPI checks (Fleet at 125%, New Rental at 150%). Exact tested code SHA: `630b8a53fdce2ab5413e7f0988505f3c04d3f307`; visual artifact contains **12 Windows PNGs**. The expanded domain lifecycle safety assertions passed on Windows [run 40923443793](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40923443793) and Linux [run 40923451003](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40923451003). [Windows evidence](<https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/docs/WINDOWS_SCREENSHOT_DPI_REPORT_2026-10-29.md>). **The redesign is not merged. Manual Windows Qt Creator, real monitor DPI, full GUI lifecycle and owner visual sign-off still PENDING.** The current branch HEAD may advance due to documentation; verify it live.
+
+
 ## Latest cross-platform automation checkpoint — 29 October 2026
 
 - **Windows-hosted Qt6 MSVC:** **PASSED**, [Windows Qt/MSVC CI run 40921642782](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40921642782). `windows-2022`, Qt 6.8.3, VS 2022 x64, CMake configure/build and CTest (1/1). Five offscreen real Qt GUI smoke modes passed; screenshot checks validate PNG CRC, 1500×860 dimensions and content diversity. Fictional vehicles/rentals fixture SHA-256 hashes remained unchanged.
