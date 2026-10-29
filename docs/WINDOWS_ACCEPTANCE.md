@@ -11,6 +11,12 @@ The original `RentalSystem` stores `vehicles.txt` and `rentals.txt` **beside the
 
 Use a **new, disposable clone** of the review branch in a clearly named test folder. Keep your normal source checkout, local binaries, records and screenshots elsewhere and untouched. The repository's `demo/` fixtures are fictional.
 
+## Latest automated Windows evidence (29 October 2026)
+
+**PASSED:** [12-screen Windows screenshot and simulated DPI test run 40923616007](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40923616007) at source commit `630b8a53fdce2ab5413e7f0988505f3c04d3f307`: CMake/MSVC/Qt 6.8.3, CTest 1/1, 5 screens at 1500×860, the same 5 screens at 1280×720, Fleet simulated 125%, Rental simulated 150%; PNG integrity/dimensions checked and original fictional fixture hashes unchanged. The evidence artifact contains 12 PNG screenshots and can be downloaded from the run page. [Detailed recorded results](WINDOWS_SCREENSHOT_DPI_REPORT_2026-10-29.md).
+
+**Still PENDING:** Windows Qt Creator interactive use on an actual monitor, physical scaling at 100/125/150%, full rent/return/restart/archive/delete through UI, owner visual approval. Automated capture success is not release sign-off.
+
 ## Automated Windows verification
 
 Workflow: [`.github/workflows/windows-qt-review.yml`](../../.github/workflows/windows-qt-review.yml).
