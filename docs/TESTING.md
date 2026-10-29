@@ -1,3 +1,13 @@
+## New regression evidence | 29 October 2026
+
+**Source commit:** `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`. **Platform:** GitHub-hosted Ubuntu 24.04, Qt 6 (system qt6-base-dev), GCC, CMake/Ninja, Release. **Run:** [40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760).
+
+**PASS: CMake compile and CTest 2/2:** `vehicle_rental_domain` and new `vehicle_rental_gui_lifecycle`. The new test renders the compiled Qt Widgets `MainWindow` offscreen and uses only `QTemporaryDir` for persistent data. It clicks the existing vehicle/rental buttons and exercises expected confirmation/warning dialogs; verifies customer gating, quote, no double booking, disk reload and byte-preserving GUI restart, rejected premature archive/delete, return and repeated-return rejection, archive, delete and final disk-state checks. It does not use the repository's source-adjacent operational storage. It is **not** a manual mouse/keyboard test or a physical Windows high-DPI sign-off.
+
+**Known failed precursor:** [commit `fdecb35`, Linux 40931501438](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931501438) failed compilation on a `QAbstractButton*` / `QPushButton*` mismatch in the new test; fixed in `aaf2cee`, then the complete suite passed. Earlier failed workflows remain failed in the audit trail.
+
+**Windows status for `aaf2cee`:** [Windows review run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521) was running when this checkpoint was authored. Do not claim a Windows pass without checking its final conclusion and logs. Earlier verified Windows automated checks are documented in `WINDOWS_SCREENSHOT_DPI_REPORT_2026-10-29.md`. **Manual Qt Creator flow, real monitor scaling, keyboard and owner aesthetic approval: PENDING.**
+
 # Test Plan and Evidence Register
 
 ## Current execution status - 29 October 2026

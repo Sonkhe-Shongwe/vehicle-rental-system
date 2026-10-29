@@ -1,3 +1,9 @@
+## 29 October 2026: real Qt lifecycle regression improvement
+
+The initial Rental Management screenshot proof did not click through persistent transactions. A subsequent increment added a **new real Qt Widgets GUI integration test**, with explicit test data directory injection in `MainWindow` for safety, unique control object names and guarded handling of expected confirmation dialogs. It checks Add Vehicle, customer gating, live quote, Rent, duplicate-rental blocking, closing/reopening the Qt GUI without rewriting original files, Return and repeated-return rejection, premature archive/delete refusal, archive, and deletion persistence.
+
+**Verified Ubuntu 24.04 Qt6:** `aaf2cee`, [run 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760), CMake build and CTest **2/2 passed**. The earlier `fdecb35` run failed compilation and is preserved as failed evidence, then corrected without suppressing tests. **Windows result for same new test remains unverified pending run 40931645521.** This is offscreen UI automation, not manual Windows or approved visual quality.
+
 # Rental Management V2 | Real Qt Verification
 
 **Checkpoint:** 29 October 2026. **Branch:** `feature/qt-hybrid-visual-spike-20261029`. **Review:** [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4). **Not merged into main.**

@@ -1,3 +1,9 @@
+## Additional automated GUI lifecycle regression | 29 October 2026
+
+A new `vehicle_rental_gui_lifecycle` CTest now uses a deliberately isolated `QTemporaryDir`, not source-adjacent runtime data, and exercises buttons and dialogs for Add Vehicle, Rent, application restart, Return, Archive and Delete with fictional records. [Linux compile + both CTests passed at code `aaf2cee` in run 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760). [Windows CI for this source commit: run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), **result pending when authored**. The older Windows 12-screen automated report remains relevant to its exact earlier source commit.
+
+This test adds repeatable interface-level functional evidence, but it uses Qt offscreen and automatically answers specifically expected modal titles. It cannot certify keyboard accessibility, visible focus, actual mouse use, physical monitor DPI, or owner design sign-off. For those, complete the manual procedure below on a new Windows clone with synthetic customer records only.
+
 # Windows Acceptance Procedure | Qt Visual Review
 
 **Checkpoint:** 29 October 2026  

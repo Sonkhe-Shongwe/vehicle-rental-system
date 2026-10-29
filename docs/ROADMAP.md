@@ -1,3 +1,11 @@
+## Current priority override | Qt visual-acceptance milestone, 29 October 2026
+
+The historical research/design-only notes below describe earlier checkpoints. **Current implementation:** Dashboard, Fleet, New Rental, Rental History and Return Processing have been redesigned in actual Qt Widgets on Draft PR #4. The existing one-phase-at-a-time requirement now takes precedence over the old forward-looking P1/P2 list.
+
+**Acceptance evidence so far:** Linux [run 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760), code `aaf2cee`, 2/2 tests passed including a new disposable GUI lifecycle with restart. Previous Windows MSVC/Qt screenshot, smoke and synthetic DPI evidence is recorded in the Windows reports. **Do not interpret offscreen checks as real Windows interaction.**
+
+**Still blocking milestone exit:** actual Windows Qt Creator 1280x720 and wide display interaction; physical 100/125/150% monitor scaling; keyboard navigation and modal confirmation review; full GUI lifecycle against a disposable Windows clone; critical clipping/spacing and photo-crop review; valid model image provenance and owner visual approval. If significant defects are found, fix and retest before advancing. **No merge or portfolio-ready declaration.**
+
 # Development Roadmap - Deadline: 30 October 2026
 
 Goal: credible, demonstrable graduate software engineering project. Preserve existing Qt workflow. Prioritize evidence and correctness rather than speculative features.

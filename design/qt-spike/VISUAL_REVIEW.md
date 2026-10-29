@@ -1,3 +1,9 @@
+## Current acceptance distinction | 29 October 2026
+
+Several older open-gate bullets below were written before Fleet and Rentals were actually rebuilt. **Current review branch does implement all five major Qt Widgets pages:** Dashboard, Fleet, New Rental, Rental History and Return Processing. The compiled-Qt images linked in `RENTALS_REVIEW.md` and the Windows screenshot/DPI report are the real application; HTML prototypes remain separate historical design artifacts.
+
+New Qt GUI lifecycle test `aaf2cee`, [Linux 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760), passes 2/2 CTest and exercises real persisted UI transactions on fictional temporary data. This does not by itself improve or approve photographic composition. **Outstanding:** real Windows Qt Creator interaction at 100/125/150% physical scaling, keyboard/focus and modal review, 1280x720 and wide-window usability, improved duly licensed premium automotive photos (especially Ford and missing motorcycle images), visual accessibility, and owner aesthetic sign-off. Do not merge Draft PR #4.
+
 # Qt Photographic Dashboard | Visual Acceptance Checkpoint
 
 **Date:** 29 October 2026  

@@ -1,3 +1,13 @@
+## Current Qt lifecycle integration checkpoint | 29 October 2026
+
+**Supersedes historical "no Qt redesign" and "no Windows CI" status statements below.** Draft PR #4 now contains the redesigned real Qt Dashboard, Fleet, New Rental, Rental History and Return Processing workspaces. The code remains C++17/Qt Widgets with flat-file storage. Stable `main` is unchanged.
+
+Source commit [`aaf2cee`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/aaf2ceee22dbe4fd782c142c1a0999e54d59d816) introduces an opt-in isolated data directory for `MainWindow` integration testing, stable form control identifiers and a real Qt GUI lifecycle CTest using only generated fictional records. Its first version [`fdecb35`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/fdecb35cc2e6612afa43a8df728dcdd7ecd66ff6) failed C++ compilation because `QMessageBox::button()` returns `QAbstractButton*`; `aaf2cee` corrected the type without weakening any assertion. [Linux CI 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760) configured, built and passed **2/2 CTest**: domain and real Qt offscreen add/rent/restart/return/archive/delete integration. Windows CI for this exact source commit is tracked independently and must not be marked passed until complete.
+
+Existing hosted Windows evidence: MSVC2022/Qt 6.8.3 [build/screenshot run 40923616007](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40923616007), 12 compiled-Qt review captures across two sizes and synthetic DPI settings, and domain regression scenarios. These checks do **not** replace physical monitor 100/125/150% scaling, keyboard/modal usability, a live Qt Creator walkthrough, or final visual approval.
+
+See [current authoritative handoff](AI_HANDOFF_CURRENT.md). Keep Draft PR #4 open and unmerged. Do not progress into SQLite, APIs, cloud or refactoring before the Qt acceptance gate.
+
 ## Photographic V3 design-branch checkpoint — 29 October 2026
 
 The real `demo/vehicles.txt` has **Toyota Corolla, Ford Ranger, Hyundai i20, Honda CB500F and Yamaha MT-07**. Earlier proposed car-only lists mentioning Nissan X-Trail and VW Polo were not the five demo items; do not carry that mistake into later work.
