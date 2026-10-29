@@ -1,3 +1,11 @@
+## Photographic V3 design-branch checkpoint — 29 October 2026
+
+The real `demo/vehicles.txt` has **Toyota Corolla, Ford Ranger, Hyundai i20, Honda CB500F and Yamaha MT-07**. Earlier proposed car-only lists mentioning Nissan X-Trail and VW Polo were not the five demo items; do not carry that mistake into later work.
+
+Draft [PR #3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/3) contains the **review-only hybrid Dashboard/Fleet/Rentals HTML concept**, documentary model-to-image mapping, source licences and a hosted image-fetch workflow. The second image-fetch workflow [succeeded](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40901513297) and recorded **3/5 photo derivatives** (Corolla/Ranger/i20, resized, EXIF stripped and hashed) on the design branch; **Honda rate-limited (429)**, and **Yamaha unattempted afterward**. The screenshot workflow produced [Dashboard](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/design/authentic-photo-hybrid-20261029/design/v3/screens/dashboard.png), [Fleet](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/design/authentic-photo-hybrid-20261029/design/v3/screens/fleet.png) and [Rentals](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/design/authentic-photo-hybrid-20261029/design/v3/screens/rentals.png) browser preview captures. This is not a signed-off design or implemented Qt UI.
+
+Do not merge before photo-content inspection, model/trim honesty, accessible contrast, layout review and user visual approval. The C++/Qt source and stable `main` remain unchanged. Attribution conditions for Honda CC BY-SA apply if its photo is acquired. [Main-branch credits/status](../design/ASSET_CREDITS.md).
+
 ## Hybrid visual direction and authentic photography — 29 October 2026
 
 The owner prefers a **hybrid of Precision Atelier and Editorial Grand Touring**, and explicitly authorises **authentic vehicle photography** rather than restricting visuals to silhouettes. The project is intended as a **non-commercial software engineering portfolio project**. This preference changes the visual direction, but **not** the need for permission to use specific photos. See [authentic vehicle asset strategy](../design/ASSET_STRATEGY.md).
