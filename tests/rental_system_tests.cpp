@@ -45,6 +45,8 @@ void testFullLifecycle()
         check(system.createRental(rental), "rental created");
         check(car->getIsRented(), "vehicle rented in memory");
         check(!system.removeVehicle("C001"), "active rented vehicle cannot be removed");
+        check(!system.archiveRental("R001"), "active rental cannot be archived");
+        check(!system.deleteArchivedRental("R001"), "active rental cannot be deleted");
         auto* doubleBooking = new Rental("R002", "Other Customer", "0000000000", "C001",
                                          today, today.addDays(1), 1, 125.00, 125.00);
         check(!system.createRental(doubleBooking), "double booking rejected");
@@ -57,8 +59,11 @@ void testFullLifecycle()
         check(reloaded.getActiveRentals().size() == 1, "active rental survives restart");
         check(reloaded.findVehicleById("C001")->getIsRented(), "occupancy reconstructed");
         check(reloaded.completeRental("C001", QDate::currentDate()), "return by vehicle ID");
+        check(!reloaded.completeRental("R001", QDate::currentDate()), "second return rejected");
+        check(!reloaded.deleteArchivedRental("R001"), "unarchived returned rental cannot be deleted");
         check(reloaded.getActiveRentals().isEmpty(), "return clears active list");
         check(reloaded.archiveRental("R001"), "returned rental archived");
+        check(!reloaded.archiveRental("R001"), "duplicate archive rejected");
     }
     {
         RentalSystem reloaded(temp.path());
@@ -66,6 +71,12 @@ void testFullLifecycle()
         check(reloaded.findRentalById("R001")->getIsArchived(), "archived state persists");
         check(reloaded.removeVehicle("C001"), "returned vehicle removable");
         check(reloaded.deleteArchivedRental("R001"), "archived rental deletable");
+        check(reloaded.findRentalById("R001") == nullptr, "deleted record removed from memory");
+    }
+    {
+        RentalSystem reloaded(temp.path());
+        check(reloaded.getVehicles().isEmpty(), "vehicle deletion persists after restart");
+        check(reloaded.getRentals().isEmpty(), "archived rental deletion persists after restart");
     }
 }
 
@@ -104,15 +115,21 @@ void testReadDoesNotRewrite()
     check(temp.isValid(), "temporary storage available");
     const QString filePath = temp.filePath("vehicles.txt");
     QFile file(filePath);
-    check(file.open(QIODevice::WriteOnly | QIODevice::Text), "fixture writable");
+    // Write the exact fixture bytes. QIODevice::Text translates LF to CRLF
+    // on Windows, which would make the later raw-byte comparison fail before
+    // the application even loads the file.
+    check(file.open(QIODevice::WriteOnly), "fixture writable");
     const QByteArray original("Car|C001|Demo|Car|125.00|0|4\n");
     check(file.write(original) == original.size(), "fixture saved");
+    file.close();
+    check(file.open(QIODevice::ReadOnly), "fixture readable before startup");
+    check(file.readAll() == original, "exact fixture bytes before startup");
     file.close();
     {
         RentalSystem loaded(temp.path());
         check(loaded.getVehicles().size() == 1, "fixture loaded");
     }
-    check(file.open(QIODevice::ReadOnly), "fixture readable");
+    check(file.open(QIODevice::ReadOnly), "fixture readable after startup");
     check(file.readAll() == original, "opening application never rewrites source file");
 }
 }

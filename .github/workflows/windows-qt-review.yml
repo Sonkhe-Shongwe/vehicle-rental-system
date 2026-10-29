@@ -1,0 +1,124 @@
+name: Windows Qt6 build, domain and UI smoke (review)
+
+on:
+  push:
+    branches:
+      - feature/qt-hybrid-visual-spike-20261029
+    paths:
+      - .github/workflows/windows-qt-review.yml
+      - CMakeLists.txt
+      - '**/*.cpp'
+      - '**/*.h'
+      - 'resources/**'
+      - 'assets/**'
+      - 'tests/**'
+      - 'demo/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-msvc-review:
+    name: Windows 2022 / MSVC2022 / Qt 6.8.3
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6 desktop for MSVC 2022
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: Record toolchain and configure
+        shell: pwsh
+        run: |
+          Write-Host "Commit: $env:GITHUB_SHA"
+          Write-Host "Qt root: $env:QT_ROOT_DIR"
+          cmake --version
+          cmake -S . -B build-windows -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build application and domain tests
+        shell: pwsh
+        run: |
+          cmake --build build-windows --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run isolated domain tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build-windows -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify Windows Qt UI at desktop and 1280x720
+        shell: pwsh
+        run: |
+          # This hosted source checkout uses fictional demo data only.
+          Copy-Item demo/vehicles.txt vehicles.txt -Force
+          Copy-Item demo/rentals.txt rentals.txt -Force
+          $beforeVehicles = (Get-FileHash vehicles.txt -Algorithm SHA256).Hash
+          $beforeRentals = (Get-FileHash rentals.txt -Algorithm SHA256).Hash
+          $exe = Join-Path $PWD 'build-windows/Release/VehicleRentalSystem_A3.exe'
+          if (-not (Test-Path $exe)) { throw "Qt executable missing: $exe" }
+          New-Item -ItemType Directory -Force -Path 'windows-qt-evidence' | Out-Null
+          $scenarios = @(
+            @{ Name='dashboard-1500'; Arg='--portfolio-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='fleet-1500'; Arg='--portfolio-fleet-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='rent-1500'; Arg='--portfolio-rent-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='history-1500'; Arg='--portfolio-history-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='return-1500'; Arg='--portfolio-return-screenshot'; Width=1500; Height=860; Scale='1' },
+            @{ Name='dashboard-1280'; Arg='--portfolio-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='fleet-1280'; Arg='--portfolio-fleet-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='rent-1280'; Arg='--portfolio-rent-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='history-1280'; Arg='--portfolio-history-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            # Qt's synthetic scale factor gives us a DPI-sensitive rendering
+            # regression check; it does not replace a real Windows display.
+            @{ Name='fleet-scale125'; Arg='--portfolio-fleet-screenshot-small'; Width=1600; Height=900; Scale='1.25' },
+            @{ Name='rent-scale150'; Arg='--portfolio-rent-screenshot-small'; Width=1920; Height=1080; Scale='1.5' }
+          )
+          foreach ($case in $scenarios) {
+            Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
+            $env:QT_SCALE_FACTOR = $case.Scale
+            Write-Host "Windows Qt smoke: $($case.Name) scale=$env:QT_SCALE_FACTOR"
+            # WIN32_EXECUTABLE is a GUI-subsystem executable: wait for its
+            # actual exit code instead of using PowerShell's & invocation.
+            $process = Start-Process -FilePath $exe -ArgumentList $case.Arg -WorkingDirectory $PWD.Path -Wait -PassThru
+            if ($process.ExitCode -ne 0) {
+              throw "$($case.Name) application smoke failed: exit code $($process.ExitCode)"
+            }
+            if (-not (Test-Path portfolio-qt-review.png)) {
+              throw "$($case.Name) screenshot missing"
+            }
+            & python tests/verify_qt_png.py portfolio-qt-review.png $case.Width $case.Height
+            if ($LASTEXITCODE -ne 0) {
+              throw "$($case.Name) screenshot failed integrity or dimensional checks"
+            }
+            Copy-Item portfolio-qt-review.png "windows-qt-evidence/$($case.Name).png"
+          }
+          Remove-Item Env:\QT_SCALE_FACTOR -ErrorAction SilentlyContinue
+          if ((Get-FileHash vehicles.txt -Algorithm SHA256).Hash -ne $beforeVehicles) {
+            throw 'Fleet fixture was unexpectedly modified'
+          }
+          if ((Get-FileHash rentals.txt -Algorithm SHA256).Hash -ne $beforeRentals) {
+            throw 'Rental fixture was unexpectedly modified'
+          }
+          Write-Host "PASS: ten Windows Qt UI checks plus two synthetic DPI scale captures; demo fixtures unchanged."
+
+      - name: Retain Windows review screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-qt-review-${{ github.run_id }}
+          path: windows-qt-evidence/*.png
+          if-no-files-found: warn
+          retention-days: 14

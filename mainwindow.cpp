@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QIntValidator>
 #include <QMessageBox>
+#include <QPixmap>
 #include <QScreen>
 #include <QSizePolicy>
 #include <QSpacerItem>
@@ -46,7 +47,12 @@ QLabel* makeFieldLabel(const QString& text)
 }
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent)
+    : MainWindow(QString(), parent)
+{
+}
+
+MainWindow::MainWindow(const QString& dataDirectory, QWidget* parent)
+    : QMainWindow(parent), rentalSystem(dataDirectory)
 {
     setupUi();
     showDashboardPage();
@@ -82,36 +88,79 @@ void MainWindow::setupUi()
 
 void MainWindow::applyStyles()
 {
+    // Portfolio visual experiment: surface styles only; rental workflows are untouched.
     setStyleSheet(
-        "QMainWindow { background-color: #f4f6f9; }"
-        "QWidget#Sidebar { background-color: #1f2937; }"
-        "QLabel#SidebarTitle { color: white; font-size: 20px; font-weight: bold; padding: 20px 14px; }"
-        "QPushButton#SidebarButton { color: #d1d5db; background: transparent; border: none; text-align: left; padding: 11px 18px; font-size: 14px; }"
-        "QPushButton#SidebarButton:hover { background-color: #374151; color: white; }"
-        "QPushButton#SidebarButton:checked { background-color: #2563eb; color: white; font-weight: bold; }"
-        "QPushButton#ExitButton { background-color: #7f1d1d; color: white; border: none; border-radius: 6px; padding: 9px 12px; font-weight: bold; margin: 0 12px; }"
-        "QPushButton#ExitButton:hover { background-color: #b91c1c; }"
-        "QWidget#MainContent { background-color: #f4f6f9; }"
-        "QLabel#PageTitle { font-size: 25px; font-weight: bold; color: #111827; }"
-        "QLabel#PageSubtitle { font-size: 13px; color: #6b7280; }"
-        "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #374151; padding-top: 4px; }"
-        "QFrame#Card, QFrame#FormCard { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; }"
-        "QLabel#CardTitle { font-size: 12px; color: #6b7280; }"
-        "QLabel#CardValue { font-size: 24px; font-weight: bold; color: #111827; }"
-        "QLineEdit, QDateEdit, QSpinBox, QComboBox { background-color: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 8px; font-size: 13px; min-height: 20px; }"
-        "QLineEdit:focus, QDateEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid #2563eb; }"
-        "QPushButton#ActionButton { background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#ActionButton:hover { background-color: #1d4ed8; }"
-        "QPushButton#ActionButton:disabled { background-color: #9ca3af; color: #f3f4f6; }"
-        "QPushButton#SecondaryButton { background-color: #e5e7eb; color: #111827; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#SecondaryButton:hover { background-color: #d1d5db; }"
-        "QPushButton#DangerButton { background-color: #dc2626; color: white; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#DangerButton:hover { background-color: #b91c1c; }"
-        "QPushButton#TypeButton { background-color: #f9fafb; color: #111827; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 22px; font-weight: bold; }"
-        "QPushButton#TypeButton:checked { background-color: #2563eb; color: white; border-color: #2563eb; }"
-        "QHeaderView::section { background-color: #111827; color: white; padding: 6px 8px; border: none; font-weight: bold; }"
-        "QTableWidget { background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; alternate-background-color: #f9fafb; }"
-        );
+        "QMainWindow { background-color: #f5f4ef; }"
+        "QWidget#Sidebar { background-color: #16252b; }"
+
+        "QFrame#BrandPanel { background: transparent; }"
+        "QLabel#BrandMark { color: #16252b; background: #cff375; border-radius: 9px; font-size: 17px; font-weight: 900; }"
+        "QLabel#BrandName { color: #ffffff; font-size: 13px; font-weight: 800; }"
+        "QLabel#BrandDescriptor { color: #a5c2b5; font-size: 9px; }"
+        "QLabel#SidebarGroup { color: #7fa299; font-size: 10px; font-weight: bold; padding: 7px 18px 5px; }"
+        "QPushButton#SidebarButton { color: #b9c9c5; background: transparent; border: none; text-align: left; padding: 12px 18px; font-size: 13px; border-radius: 7px; }"
+        "QPushButton#SidebarButton:hover { background-color: #293c40; color: #ffffff; }"
+        "QPushButton#SidebarButton:checked { background-color: #cff375; color: #16252b; font-weight: bold; }"
+        "QPushButton#ExitButton { background-color: #334448; color: #f7faf7; border: 1px solid #42565b; border-radius: 8px; padding: 10px 12px; font-weight: bold; margin: 0 12px; }"
+        "QPushButton#ExitButton:hover { background-color: #5c3333; }"
+        "QWidget#MainContent { background-color: #f5f4ef; }"
+        "QLabel#PageTitle { font-size: 27px; font-weight: 750; color: #172830; }"
+        "QLabel#PageSubtitle { font-size: 13px; color: #657774; }"
+        "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #25393b; padding-top: 6px; }"
+        "QFrame#RentalActionPanel { background: #fffefa; border: 1px solid #e1e5dd; border-radius: 12px; }"
+        "QLabel#ActionPanelKicker { color: #3d7565; font-size: 11px; font-weight: bold; }"
+        "QLabel#ActionPanelNote { color: #73857c; font-size: 11px; }"
+        "QFrame#RentalFormPanel { background: #fffefa; border: 1px solid #e1e5dd; border-radius: 13px; }"
+        "QLabel#RentalKicker { color: #3d7565; font-size: 10px; font-weight: bold; }"
+        "QLabel#RentalPanelTitle { color: #172830; font-size: 22px; font-weight: bold; }"
+        "QLabel#SameDayNote { background: #edf3e7; color: #2e584a; border-radius: 6px; padding: 8px; font-size: 12px; }"
+        "QLabel#RentalLookupHint { color: #657774; font-size: 12px; }"
+        "QFrame#RentalQuotePanel { background: #172a30; border: 1px solid #2c4244; border-radius: 13px; }"
+        "QLabel#QuoteKicker { color: #cff375; font-size: 11px; font-weight: bold; }"
+        "QLabel#QuoteFieldCaption { color: #adc3bc; font-size: 11px; }"
+        "QLabel#QuoteFieldValue { color: #ffffff; font-size: 12px; font-weight: 600; }"
+        "QLabel#QuoteTotal { color: #ffffff; font-size: 34px; font-weight: bold; }"
+        "QLabel#QuoteDisclaimer { color: #a9c2b8; font-size: 10px; }"
+        "QFrame#QuoteRule { background: #40575a; border: none; }"
+        "QFrame#FleetInspector { background: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
+        "QLabel#FleetAssetPhoto { background: #263a3d; color: #bbd3cb; border-radius: 8px; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetCredit { color: #a7bbb6; font-size: 9px; }"
+        "QLabel#FleetAssetKicker { color: #cff375; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetName { color: #ffffff; font-size: 27px; font-weight: bold; }"
+        "QLabel#FleetAssetMeta { color: #ceded8; font-size: 12px; }"
+        "QLabel#FleetAssetPriceLabel { color: #a8c1b5; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetRate { color: #ffffff; font-size: 27px; font-weight: bold; }"
+        "QFrame#FleetSummary { background: #f9faf5; border: 1px solid #e4e8df; border-radius: 9px; }"
+        "QLabel#FleetSummaryLabel { color: #687e75; font-size: 10px; }"
+        "QLabel#FleetSummaryValue { color: #1b302f; font-size: 17px; font-weight: bold; }"
+        "QFrame#FleetHero { background-color: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
+        "QLabel#FleetHeroKicker { color: #cff375; font-size: 11px; font-weight: bold; }"
+        "QLabel#FleetHeroValue { color: #ffffff; font-size: 44px; font-weight: bold; }"
+        "QLabel#FleetHeroHint { color: #d1f69a; font-size: 12px; font-weight: bold; }"
+        "QLabel#FleetHeroDescription { color: #d4dfd9; font-size: 12px; }"
+        "QLabel#FleetPhotoCredit { color: #e0eae2; font-size: 10px; }"
+        "QFrame#Card, QFrame#FormCard { background-color: #fffefa; border: 1px solid #e1e5dd; border-radius: 11px; }"
+        "QFrame#SecondaryCard { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
+        "QFrame#MetricsStrip { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
+        "QLabel#CompactTitle { font-size: 11px; color: #647671; }"
+        "QLabel#CompactValue { font-size: 18px; font-weight: 700; color: #172830; }"
+        "QLabel#CardTitle { font-size: 12px; color: #60746f; }"
+        "QLabel#CardValue { font-size: 24px; font-weight: bold; color: #1b2d31; }"
+        "QFrame#SecondaryCard QLabel#CardValue { font-size: 20px; }"
+        "QLineEdit, QDateEdit, QSpinBox, QComboBox { background-color: #fffefa; border: 1px solid #cbd6ce; border-radius: 7px; padding: 5px 8px; font-size: 13px; min-height: 20px; color: #1b2d31; }"
+        "QLineEdit:focus, QDateEdit:focus, QSpinBox:focus, QComboBox:focus { border: 2px solid #357668; }"
+        "QPushButton#ActionButton { background-color: #cff375; color: #172830; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#ActionButton:hover { background-color: #b6e358; }"
+        "QPushButton#ActionButton:disabled { background-color: #c5cbc0; color: #6d756c; }"
+        "QPushButton#SecondaryButton { background-color: #e9ede5; color: #172830; border: 1px solid #dbe3d9; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#SecondaryButton:hover { background-color: #dfe8dc; }"
+        "QPushButton#DangerButton { background-color: #ad4141; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#DangerButton:hover { background-color: #963636; }"
+        "QPushButton#TypeButton { background-color: #f7f8f3; color: #172830; border: 1px solid #d5ded4; border-radius: 8px; padding: 9px 22px; font-weight: bold; }"
+        "QPushButton#TypeButton:checked { background-color: #c3ec74; color: #172830; border-color: #87b941; }"
+        "QHeaderView::section { background-color: #25393b; color: #f5f8f1; padding: 7px 8px; border: none; font-weight: bold; }"
+        "QTableWidget { background-color: #fffefa; color: #243436; border: 1px solid #e1e5dd; border-radius: 8px; alternate-background-color: #f5f7f0; selection-background-color: #e0f3bd; selection-color: #19312a; }"
+    );
 }
 
 void MainWindow::setupSidebar()
@@ -120,49 +169,69 @@ void MainWindow::setupSidebar()
     sidebarWidget->setObjectName("Sidebar");
     sidebarWidget->setFixedWidth(235);
 
-    QLabel* title = new QLabel("Rental Manager");
-    title->setObjectName("SidebarTitle");
 
-    dashboardButton = new QPushButton("Dashboard");
+    QFrame* brand = new QFrame();
+    brand->setObjectName("BrandPanel");
+    QHBoxLayout* brandLayout = new QHBoxLayout(brand);
+    brandLayout->setContentsMargins(16, 19, 10, 18);
+    brandLayout->setSpacing(11);
+    QLabel* mark = new QLabel("RM");
+    mark->setObjectName("BrandMark");
+    mark->setAlignment(Qt::AlignCenter);
+    mark->setFixedSize(41, 41);
+    brandLayout->addWidget(mark);
+    QVBoxLayout* brandWords = new QVBoxLayout();
+    brandWords->setSpacing(2);
+    QLabel* name = new QLabel("RENTAL MANAGER");
+    name->setObjectName("BrandName");
+    QLabel* subname = new QLabel("OPERATIONS CONSOLE");
+    subname->setObjectName("BrandDescriptor");
+    brandWords->addWidget(name);
+    brandWords->addWidget(subname);
+    brandLayout->addLayout(brandWords, 1);
+
+    dashboardButton = new QPushButton("Overview");
     addPageButton = new QPushButton("Add Vehicle");
     removePageButton = new QPushButton("Remove Vehicle");
     searchPageButton = new QPushButton("Search Vehicle");
-    allVehiclesButton = new QPushButton("All Vehicles");
+    allVehiclesButton = new QPushButton("Fleet Inventory");
     availableVehiclesButton = new QPushButton("Available Vehicles");
-    rentPageButton = new QPushButton("Rent Vehicle");
+    rentPageButton = new QPushButton("New Rental");
     rentalRecordsButton = new QPushButton("Rental History");
-    returnPageButton = new QPushButton("Return Vehicle");
+    returnPageButton = new QPushButton("Process Return");
     exitButton = new QPushButton("Exit");
 
     const QList<QPushButton*> navigationButtons = {
-        dashboardButton,
-        addPageButton,
-        removePageButton,
-        searchPageButton,
-        allVehiclesButton,
-        availableVehiclesButton,
-        rentPageButton,
-        rentalRecordsButton,
-        returnPageButton
+        dashboardButton, allVehiclesButton, availableVehiclesButton,
+        addPageButton, searchPageButton, removePageButton,
+        rentPageButton, rentalRecordsButton, returnPageButton
     };
-
     for (QPushButton* button : navigationButtons) {
         button->setObjectName("SidebarButton");
         button->setCheckable(true);
     }
-
     exitButton->setObjectName("ExitButton");
 
+    auto sectionTitle = [](const QString& title) {
+        QLabel* group = new QLabel(title);
+        group->setObjectName("SidebarGroup");
+        return group;
+    };
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 12);
-    layout->setSpacing(3);
-    layout->addWidget(title);
+    layout->setSpacing(1);
+    layout->addWidget(brand);
+    layout->addWidget(sectionTitle("WORKSPACE"));
     layout->addWidget(dashboardButton);
-    layout->addWidget(addPageButton);
-    layout->addWidget(removePageButton);
-    layout->addWidget(searchPageButton);
+    layout->addSpacing(11);
+    layout->addWidget(sectionTitle("FLEET"));
     layout->addWidget(allVehiclesButton);
     layout->addWidget(availableVehiclesButton);
+    layout->addWidget(addPageButton);
+    layout->addWidget(searchPageButton);
+    layout->addWidget(removePageButton);
+    layout->addSpacing(11);
+    layout->addWidget(sectionTitle("RENTALS"));
     layout->addWidget(rentPageButton);
     layout->addWidget(rentalRecordsButton);
     layout->addWidget(returnPageButton);
@@ -197,6 +266,8 @@ void MainWindow::setupMainContent()
     tableSectionTitleLabel->setObjectName("TableSectionTitle");
 
     actionStack = new QStackedWidget();
+    // Dashboard height is set on its page, not globally. Other rental forms
+    // must retain their established compact presentation.
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
@@ -222,6 +293,8 @@ void MainWindow::setupMainContent()
     emptyTableLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
     emptyTableLabel->setStyleSheet("color: #6b7280; background: transparent;");
     emptyTableLabel->hide();
+    connect(dataTable, &QTableWidget::itemSelectionChanged,
+            this, &MainWindow::updateFleetInspector);
 
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(28, 22, 28, 24);
@@ -259,26 +332,98 @@ QFrame* MainWindow::createStatCard(const QString& title, QLabel*& valueLabel)
 QWidget* MainWindow::createDashboardPage()
 {
     QWidget* page = new QWidget();
+    QVBoxLayout* pageLayout = new QVBoxLayout();
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->setSpacing(11);
+
+    // A photographic hero is a review-only enhancement; availability is still
+    // calculated from real runtime vehicles, never hard-coded demo statistics.
+    QFrame* hero = new QFrame();
+    hero->setObjectName("FleetHero");
+    hero->setFixedHeight(166);
+    QHBoxLayout* heroLayout = new QHBoxLayout(hero);
+    heroLayout->setContentsMargins(26, 14, 18, 14);
+    heroLayout->setSpacing(18);
+    QVBoxLayout* heroCopy = new QVBoxLayout();
+    heroCopy->setSpacing(1);
+    QLabel* heroKicker = new QLabel("RENTAL OPERATIONS  /  FLEET READINESS");
+    heroKicker->setObjectName("FleetHeroKicker");
+    fleetHeroValue = new QLabel("0 / 0");
+    fleetHeroValue->setObjectName("FleetHeroValue");
+    fleetHeroHint = new QLabel("NO VEHICLES LOADED");
+    fleetHeroHint->setObjectName("FleetHeroHint");
+    QLabel* description = new QLabel("Available vehicles across your rental fleet");
+    description->setObjectName("FleetHeroDescription");
+    heroCopy->addWidget(heroKicker);
+    heroCopy->addWidget(fleetHeroValue);
+    heroCopy->addWidget(fleetHeroHint);
+    heroCopy->addWidget(description);
+    heroCopy->addStretch();
+    heroLayout->addLayout(heroCopy, 3);
+
+    QVBoxLayout* photograph = new QVBoxLayout();
+    photograph->setSpacing(3);
+    QLabel* photo = new QLabel();
+    photo->setAccessibleName("Representative Ford Ranger vehicle photograph");
+    photo->setToolTip("Illustrative model photograph; not a photograph of an actual rental fleet vehicle");
+    photo->setAlignment(Qt::AlignCenter);
+    photo->setFixedSize(280, 124);
+    const QPixmap source(":/portfolio/ford_ranger.jpg");
+    if (!source.isNull()) {
+        QPixmap scaled = source.scaled(photo->size(), Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+        const int x = (scaled.width() - photo->width()) / 2;
+        const int y = (scaled.height() - photo->height()) / 2;
+        photo->setPixmap(scaled.copy(x, y, photo->width(), photo->height()));
+    } else {
+        photo->setText("Representative vehicle photo unavailable");
+    }
+    QLabel* photoCredit = new QLabel("Ford Ranger · crash71100 / CC0 · illustrative");
+    photoCredit->setObjectName("FleetPhotoCredit");
+    photoCredit->setAlignment(Qt::AlignRight);
+    photograph->addWidget(photo);
+    photograph->addWidget(photoCredit);
+    heroLayout->addLayout(photograph);
+    pageLayout->addWidget(hero);
 
     QGridLayout* cards = new QGridLayout();
     cards->setContentsMargins(0, 0, 0, 0);
     cards->setHorizontalSpacing(11);
     cards->setVerticalSpacing(11);
-
     cards->addWidget(createStatCard("Total Vehicles", totalVehiclesValue), 0, 0);
     cards->addWidget(createStatCard("Available Vehicles", availableVehiclesValue), 0, 1);
-    cards->addWidget(createStatCard("Rented Vehicles", rentedVehiclesValue), 0, 2);
-    cards->addWidget(createStatCard("Active Rentals", activeRentalsValue), 0, 3);
+    cards->addWidget(createStatCard("Active Rentals", activeRentalsValue), 0, 2);
+    cards->addWidget(createStatCard("Fleet Utilisation", utilisationValue), 0, 3);
 
-    cards->addWidget(createStatCard("Cars", carsValue), 1, 0);
-    cards->addWidget(createStatCard("Motorcycles", motorcyclesValue), 1, 1);
-    cards->addWidget(createStatCard("Fleet Utilisation", utilisationValue), 1, 2);
-    cards->addWidget(createStatCard("Rental Revenue", revenueValue), 1, 3);
-
-    page->setLayout(cards);
+    // Four secondary indicators are grouped in one compact strip so the hero,
+    // four primary KPIs and recent-rental table remain visible at desktop sizes.
+    pageLayout->addLayout(cards);
+    QFrame* metricStrip = new QFrame();
+    metricStrip->setObjectName("MetricsStrip");
+    metricStrip->setFixedHeight(58);
+    QHBoxLayout* stripLayout = new QHBoxLayout(metricStrip);
+    stripLayout->setContentsMargins(20, 7, 20, 7);
+    stripLayout->setSpacing(18);
+    auto appendCompactMetric = [stripLayout](const QString& title, QLabel*& value) {
+        QVBoxLayout* group = new QVBoxLayout();
+        group->setSpacing(1);
+        QLabel* label = new QLabel(title);
+        label->setObjectName("CompactTitle");
+        value = new QLabel("0");
+        value->setObjectName("CompactValue");
+        group->addWidget(label);
+        group->addWidget(value);
+        stripLayout->addLayout(group, 1);
+    };
+    appendCompactMetric("Rented", rentedVehiclesValue);
+    appendCompactMetric("Cars", carsValue);
+    appendCompactMetric("Motorcycles", motorcyclesValue);
+    appendCompactMetric("Booked Rental Value", revenueValue);
+    pageLayout->addWidget(metricStrip);
+    pageLayout->addStretch(1); // consume surplus space below the complete metric group
+    page->setLayout(pageLayout);
     return page;
 }
-
 
 QWidget* MainWindow::createAddPage()
 {
@@ -301,6 +446,11 @@ QWidget* MainWindow::createAddPage()
     addModelEdit = new QLineEdit();
     addPriceEdit = new QLineEdit();
     addExtraEdit = new QLineEdit();
+    addIdEdit->setObjectName("AddVehicleID");
+    addBrandEdit->setObjectName("AddVehicleBrand");
+    addModelEdit->setObjectName("AddVehicleModel");
+    addPriceEdit->setObjectName("AddVehiclePrice");
+    addExtraEdit->setObjectName("AddVehicleExtra");
     addExtraLabel = makeFieldLabel("Number of Doors");
 
     // The system still creates the ID automatically. The shorter label keeps
@@ -392,21 +542,113 @@ QWidget* MainWindow::createAddPage()
 
 QWidget* MainWindow::createAllVehiclesSummaryPage()
 {
+    // Existing shared fleet table remains authoritative. The inspector adds
+    // visual context without modifying any rental business operations.
     QWidget* page = new QWidget();
+    QVBoxLayout* content = new QVBoxLayout(page);
+    content->setContentsMargins(0, 0, 0, 0);
+    content->setSpacing(9);
 
-    QGridLayout* cards = new QGridLayout();
-    cards->setContentsMargins(0, 0, 0, 0);
-    cards->setHorizontalSpacing(11);
-    cards->setVerticalSpacing(11);
+    QFrame* inspector = new QFrame();
+    inspector->setObjectName("FleetInspector");
+    inspector->setFixedHeight(156);
+    QHBoxLayout* row = new QHBoxLayout(inspector);
+    row->setContentsMargins(18, 12, 20, 12);
+    row->setSpacing(18);
 
-    cards->addWidget(createStatCard("Total Vehicles", allTotalVehiclesValue), 0, 0);
-    cards->addWidget(createStatCard("Available Vehicles", allAvailableVehiclesValue), 0, 1);
-    cards->addWidget(createStatCard("Rented Vehicles", allRentedVehiclesValue), 0, 2);
-    cards->addWidget(createStatCard("Active Rentals", allActiveRentalsValue), 1, 0);
-    cards->addWidget(createStatCard("Cars", allCarsValue), 1, 1);
-    cards->addWidget(createStatCard("Motorcycles", allMotorcyclesValue), 1, 2);
+    QVBoxLayout* media = new QVBoxLayout();
+    media->setSpacing(3);
+    fleetAssetPhoto = new QLabel("Select a vehicle");
+    fleetAssetPhoto->setObjectName("FleetAssetPhoto");
+    fleetAssetPhoto->setAlignment(Qt::AlignCenter);
+    fleetAssetPhoto->setFixedSize(238, 110);
+    fleetAssetPhoto->setAccessibleName("Illustrative vehicle photo or class placeholder");
+    fleetAssetCredit = new QLabel("Model photographs are illustrative");
+    fleetAssetCredit->setObjectName("FleetAssetCredit");
+    fleetAssetCredit->setFixedWidth(238);
+    fleetAssetCredit->setAlignment(Qt::AlignRight);
+    media->addWidget(fleetAssetPhoto);
+    media->addWidget(fleetAssetCredit);
+    row->addLayout(media);
 
-    page->setLayout(cards);
+    QVBoxLayout* assetInfo = new QVBoxLayout();
+    assetInfo->setSpacing(4);
+    QLabel* kicker = new QLabel("SELECTED FLEET ASSET  /  VEHICLE PROFILE");
+    kicker->setObjectName("FleetAssetKicker");
+    fleetAssetName = new QLabel("Select a vehicle");
+    fleetAssetName->setObjectName("FleetAssetName");
+    fleetAssetMeta = new QLabel("Choose a row below to inspect a vehicle");
+    fleetAssetMeta->setObjectName("FleetAssetMeta");
+    fleetAssetStatus = new QLabel("NO SELECTION");
+    fleetAssetStatus->setObjectName("FleetAssetStatus");
+    assetInfo->addWidget(kicker);
+    assetInfo->addWidget(fleetAssetName);
+    assetInfo->addWidget(fleetAssetMeta);
+    assetInfo->addSpacing(2);
+    assetInfo->addWidget(fleetAssetStatus, 0, Qt::AlignLeft);
+    assetInfo->addStretch();
+    row->addLayout(assetInfo, 1);
+
+    QVBoxLayout* pricing = new QVBoxLayout();
+    pricing->setAlignment(Qt::AlignRight);
+    QLabel* priceLabel = new QLabel("DAILY RENTAL RATE");
+    priceLabel->setObjectName("FleetAssetPriceLabel");
+    fleetAssetRate = new QLabel("R0.00");
+    fleetAssetRate->setObjectName("FleetAssetRate");
+    pricing->addWidget(priceLabel, 0, Qt::AlignRight);
+    pricing->addWidget(fleetAssetRate, 0, Qt::AlignRight);
+    pricing->addStretch();
+    row->addLayout(pricing);
+    content->addWidget(inspector);
+
+    QFrame* summary = new QFrame();
+    summary->setObjectName("FleetSummary");
+    summary->setFixedHeight(52);
+    QHBoxLayout* summaryRow = new QHBoxLayout(summary);
+    summaryRow->setContentsMargins(18, 7, 18, 7);
+    summaryRow->setSpacing(8);
+    auto indicator = [summaryRow](const QString& text, QLabel*& value) {
+        QVBoxLayout* group = new QVBoxLayout();
+        group->setSpacing(1);
+        QLabel* caption = new QLabel(text);
+        caption->setObjectName("FleetSummaryLabel");
+        value = new QLabel("0");
+        value->setObjectName("FleetSummaryValue");
+        group->addWidget(caption);
+        group->addWidget(value);
+        summaryRow->addLayout(group, 1);
+    };
+    indicator("All vehicles", allTotalVehiclesValue);
+    indicator("Ready", allAvailableVehiclesValue);
+    indicator("Rented", allRentedVehiclesValue);
+    indicator("Active contracts", allActiveRentalsValue);
+    indicator("Cars", allCarsValue);
+    indicator("Motorcycles", allMotorcyclesValue);
+    content->addWidget(summary);
+
+    QHBoxLayout* filters = new QHBoxLayout();
+    filters->setSpacing(10);
+    fleetSearchEdit = new QLineEdit();
+    fleetSearchEdit->setObjectName("FleetSearch");
+    fleetSearchEdit->setPlaceholderText("Search vehicle ID, brand or model...");
+    fleetSearchEdit->setAccessibleName("Filter fleet vehicles");
+    fleetSearchEdit->setClearButtonEnabled(true);
+    fleetStatusCombo = new QComboBox();
+    fleetStatusCombo->setObjectName("FleetStatusFilter");
+    fleetStatusCombo->addItems({"All statuses", "Available", "Rented"});
+    fleetStatusCombo->setAccessibleName("Filter by rental status");
+    fleetStatusCombo->setMinimumWidth(155);
+    QPushButton* registerButton = new QPushButton("+ Add vehicle");
+    registerButton->setObjectName("ActionButton");
+    connect(registerButton, &QPushButton::clicked, this, &MainWindow::showAddPage);
+    connect(fleetSearchEdit, &QLineEdit::textChanged, this,
+            [this](const QString&) { filterFleetTable(); });
+    connect(fleetStatusCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int) { filterFleetTable(); });
+    filters->addWidget(fleetSearchEdit, 1);
+    filters->addWidget(fleetStatusCombo);
+    filters->addWidget(registerButton);
+    content->addLayout(filters);
     return page;
 }
 
@@ -469,30 +711,36 @@ QWidget* MainWindow::createSearchPage()
 QWidget* MainWindow::createRentPage()
 {
     QWidget* page = new QWidget();
-    QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    page->setObjectName("RentalWorkspace");
+    QHBoxLayout* shell = new QHBoxLayout(page);
+    shell->setContentsMargins(0, 0, 0, 0);
+    shell->setSpacing(13);
+
+    // Left side: the existing same-day rental workflow, now grouped by task.
+    QFrame* formPanel = new QFrame();
+    formPanel->setObjectName("RentalFormPanel");
+    QVBoxLayout* left = new QVBoxLayout(formPanel);
+    left->setContentsMargins(22, 14, 22, 13);
+    left->setSpacing(7);
+    QLabel* kicker = new QLabel("01  /  CUSTOMER & VEHICLE");
+    kicker->setObjectName("RentalKicker");
+    QLabel* heading = new QLabel("New rental");
+    heading->setObjectName("RentalPanelTitle");
+    left->addWidget(kicker);
+    left->addWidget(heading);
 
     rentVehicleIdEdit = new QLineEdit();
+    rentVehicleIdEdit->setObjectName("RentalVehicleID");
     rentCustomerNameEdit = new QLineEdit();
     rentPhoneEdit = new QLineEdit();
     rentStartDateEdit = new QDateEdit(QDate::currentDate());
     rentDaysSpinBox = new QSpinBox();
-
-    rentLookupMessageLabel = new QLabel(
-        "Enter an available vehicle ID to view its details and calculate the rental cost.");
-    rentLookupMessageLabel->setWordWrap(true);
-
-    rentVehicleValue = new QLabel("-");
-    rentAvailabilityValue = new QLabel("Waiting for vehicle ID");
-    rentPriceValue = new QLabel("R0.00");
-    rentExpectedReturnValue = new QLabel("-");
-    rentTotalValue = new QLabel("R0.00");
-
+    rentDaysSpinBox->setObjectName("RentalDays");
     rentVehicleIdEdit->setPlaceholderText("e.g. C001");
     rentCustomerNameEdit->setPlaceholderText("Customer full name");
     rentPhoneEdit->setPlaceholderText("e.g. 082 123 4567");
 
-    // Rentals are processed immediately, so the start date is always today.
+    // Preserve the existing business rule: immediate, same-day checkout only.
     rentStartDateEdit->setCalendarPopup(false);
     rentStartDateEdit->setDisplayFormat("dd MMM yyyy");
     rentStartDateEdit->setMinimumDate(QDate::currentDate());
@@ -500,85 +748,110 @@ QWidget* MainWindow::createRentPage()
     rentStartDateEdit->setDate(QDate::currentDate());
     rentStartDateEdit->setReadOnly(true);
     rentStartDateEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
-
-    // The arrows are removed so the user can simply type the rental days.
-    // QSpinBox still protects the field from letters, negatives and zero.
     rentDaysSpinBox->setRange(1, 365);
     rentDaysSpinBox->setValue(1);
     rentDaysSpinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
     rentDaysSpinBox->setAlignment(Qt::AlignLeft);
 
-    const QString summaryStyle =
-        "font-size: 15px; font-weight: bold; color: #111827; "
-        "background-color: #f9fafb; border: 1px solid #e5e7eb; "
-        "border-radius: 6px; padding: 8px 10px; min-height: 22px;";
-
-    rentVehicleValue->setStyleSheet(summaryStyle);
-    rentAvailabilityValue->setStyleSheet(summaryStyle);
-    rentPriceValue->setStyleSheet(summaryStyle);
-    rentExpectedReturnValue->setStyleSheet(summaryStyle);
-    rentTotalValue->setStyleSheet(summaryStyle);
-
-    QPushButton* clearButton = new QPushButton("Clear Fields");
-    rentConfirmButton = new QPushButton("Confirm Rental");
-    clearButton->setObjectName("SecondaryButton");
-    rentConfirmButton->setObjectName("ActionButton");
-    rentConfirmButton->setEnabled(false);
-
     QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(24, 16, 24, 16);
-    form->setHorizontalSpacing(18);
-    form->setVerticalSpacing(7);
+    form->setContentsMargins(0, 2, 0, 0);
+    form->setHorizontalSpacing(13);
+    form->setVerticalSpacing(5);
     form->setColumnStretch(0, 1);
     form->setColumnStretch(1, 1);
-    form->setColumnStretch(2, 1);
-
-    // Three compact columns keep the rental controls visible without hiding
-    // most of the available-vehicles table below the form.
     form->addWidget(makeFieldLabel("Available Vehicle ID"), 0, 0);
     form->addWidget(makeFieldLabel("Customer Full Name"), 0, 1);
-    form->addWidget(makeFieldLabel("Phone Number"), 0, 2);
     form->addWidget(rentVehicleIdEdit, 1, 0);
     form->addWidget(rentCustomerNameEdit, 1, 1);
-    form->addWidget(rentPhoneEdit, 1, 2);
-    form->addWidget(rentLookupMessageLabel, 2, 0, 1, 3);
+    form->addWidget(makeFieldLabel("Phone Number"), 2, 0);
+    form->addWidget(makeFieldLabel("Rental Start Date"), 2, 1);
+    form->addWidget(rentPhoneEdit, 3, 0);
+    form->addWidget(rentStartDateEdit, 3, 1);
+    form->addWidget(makeFieldLabel("Rental Days"), 4, 0);
+    form->addWidget(makeFieldLabel("Processing"), 4, 1);
+    form->addWidget(rentDaysSpinBox, 5, 0);
+    QLabel* sameDayNote = new QLabel("Immediate checkout  /  Today");
+    sameDayNote->setObjectName("SameDayNote");
+    form->addWidget(sameDayNote, 5, 1);
+    left->addLayout(form);
 
-    form->addWidget(makeFieldLabel("Rental Start Date"), 3, 0);
-    form->addWidget(makeFieldLabel("Number of Rental Days"), 3, 1);
-    form->addWidget(makeFieldLabel("Expected Return Date"), 3, 2);
-    form->addWidget(rentStartDateEdit, 4, 0);
-    form->addWidget(rentDaysSpinBox, 4, 1);
-    form->addWidget(rentExpectedReturnValue, 4, 2);
+    rentLookupMessageLabel = new QLabel(
+        "Enter an available vehicle ID to view the estimate.");
+    rentLookupMessageLabel->setObjectName("RentalLookupHint");
+    rentLookupMessageLabel->setWordWrap(true);
+    left->addWidget(rentLookupMessageLabel);
 
-    form->addWidget(makeFieldLabel("Vehicle"), 5, 0);
-    form->addWidget(makeFieldLabel("Availability"), 5, 1);
-    form->addWidget(makeFieldLabel("Price Per Day"), 5, 2);
-    form->addWidget(rentVehicleValue, 6, 0);
-    form->addWidget(rentAvailabilityValue, 6, 1);
-    form->addWidget(rentPriceValue, 6, 2);
-
-    form->addWidget(makeFieldLabel("Calculated Total Cost"), 7, 0);
-    form->addWidget(rentTotalValue, 8, 0);
-
+    QPushButton* clearButton = new QPushButton("Clear fields");
+    clearButton->setObjectName("SecondaryButton");
+    rentConfirmButton = new QPushButton("Confirm rental");
+    rentConfirmButton->setObjectName("ActionButton");
+    rentConfirmButton->setProperty("portfolioAction", "confirm-rental");
+    rentConfirmButton->setEnabled(false);
     QHBoxLayout* actions = new QHBoxLayout();
-    actions->setSpacing(10);
+    actions->setSpacing(9);
     actions->addWidget(rentConfirmButton);
     actions->addWidget(clearButton);
     actions->addStretch();
-    form->addLayout(actions, 8, 1, 1, 2);
+    left->addLayout(actions);
+    shell->addWidget(formPanel, 3);
 
-    card->setLayout(form);
-    card->setMinimumWidth(940);
-    card->setMaximumWidth(1120);
-    card->setMinimumHeight(300);
+    // Right side: the price is derived from the existing RentalSystem values.
+    // No payment, discount or checkout capability is implied.
+    QFrame* quote = new QFrame();
+    quote->setObjectName("RentalQuotePanel");
+    quote->setMinimumWidth(310);
+    QVBoxLayout* right = new QVBoxLayout(quote);
+    right->setContentsMargins(23, 18, 23, 18);
+    right->setSpacing(8);
+    QLabel* quoteKicker = new QLabel("02  /  LIVE RENTAL ESTIMATE");
+    quoteKicker->setObjectName("QuoteKicker");
+    right->addWidget(quoteKicker);
 
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QLabel* priceCaption = new QLabel("ESTIMATED RENTAL TOTAL");
+    priceCaption->setObjectName("QuoteFieldCaption");
+    right->addWidget(priceCaption);
+
+    rentTotalValue = new QLabel("R0.00");
+    rentTotalValue->setObjectName("QuoteTotal");
+    right->addWidget(rentTotalValue);
+
+    QFrame* rule = new QFrame();
+    rule->setObjectName("QuoteRule");
+    rule->setFixedHeight(1);
+    right->addWidget(rule);
+
+    auto addLine = [right](const QString& label, QLabel*& value) {
+        QHBoxLayout* line = new QHBoxLayout();
+        line->setSpacing(8);
+        QLabel* description = new QLabel(label);
+        description->setObjectName("QuoteFieldCaption");
+        value = new QLabel("-");
+        value->setObjectName("QuoteFieldValue");
+        value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        value->setMinimumWidth(100);
+        line->addWidget(description);
+        line->addWidget(value, 1);
+        right->addLayout(line);
+    };
+
+    addLine("Vehicle", rentVehicleValue);
+    addLine("Daily rate", rentPriceValue);
+    addLine("Return due", rentExpectedReturnValue);
+    addLine("Availability", rentAvailabilityValue);
+    rentAvailabilityValue->setText("Waiting for vehicle ID");
+    right->addStretch();
+    QLabel* disclaimer = new QLabel(
+        "Estimate only. No payment is collected by this application.");
+    disclaimer->setObjectName("QuoteDisclaimer");
+    disclaimer->setWordWrap(true);
+    right->addWidget(disclaimer);
+    shell->addWidget(quote, 2);
 
     connect(rentVehicleIdEdit, &QLineEdit::textChanged,
+            this, &MainWindow::updateRentalEstimate);
+    connect(rentCustomerNameEdit, &QLineEdit::textChanged,
+            this, &MainWindow::updateRentalEstimate);
+    connect(rentPhoneEdit, &QLineEdit::textChanged,
             this, &MainWindow::updateRentalEstimate);
     connect(rentStartDateEdit, &QDateEdit::dateChanged,
             this, &MainWindow::updateRentalEstimate);
@@ -587,7 +860,6 @@ QWidget* MainWindow::createRentPage()
     connect(clearButton, &QPushButton::clicked, this, &MainWindow::clearRentalForm);
     connect(rentConfirmButton, &QPushButton::clicked, this, &MainWindow::rentVehicle);
     connect(rentPhoneEdit, &QLineEdit::returnPressed, this, &MainWindow::rentVehicle);
-
     updateRentalEstimate();
     return page;
 }
@@ -597,43 +869,53 @@ QWidget* MainWindow::createRentalRecordsPage()
 {
     QWidget* page = new QWidget();
     QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    card->setObjectName("RentalActionPanel");
+    QVBoxLayout* inner = new QVBoxLayout(card);
+    inner->setContentsMargins(20, 12, 20, 13);
+    inner->setSpacing(9);
+
+    QHBoxLayout* heading = new QHBoxLayout();
+    QLabel* kicker = new QLabel("RENTAL LEDGER  /  TRANSACTION HISTORY");
+    kicker->setObjectName("ActionPanelKicker");
+    QLabel* note = new QLabel("Current, returned and archived records");
+    note->setObjectName("ActionPanelNote");
+    heading->addWidget(kicker);
+    heading->addStretch();
+    heading->addWidget(note);
+    inner->addLayout(heading);
 
     rentalFilterCombo = new QComboBox();
+    rentalFilterCombo->setObjectName("RentalHistoryFilter");
     rentalFilterCombo->addItems({
-        "All Current Records",
-        "Active Rentals",
-        "Returned Rentals",
-        "Archived Records"
+        "All Current Records", "Active Rentals",
+        "Returned Rentals", "Archived Records"
     });
-
     rentalRecordIdEdit = new QLineEdit();
+    rentalRecordIdEdit->setObjectName("RentalRecordID");
     rentalRecordIdEdit->setPlaceholderText("Rental ID, e.g. R001");
-    rentalRecordIdEdit->setFixedWidth(260);
-
-    QPushButton* archiveButton = new QPushButton("Archive Returned Record");
-    QPushButton* deleteButton = new QPushButton("Delete Archived Record");
+    rentalRecordIdEdit->setMinimumWidth(190);
+    QPushButton* archiveButton = new QPushButton("Archive returned");
+    QPushButton* deleteButton = new QPushButton("Delete archived");
     archiveButton->setObjectName("SecondaryButton");
     deleteButton->setObjectName("DangerButton");
 
-    QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(22, 16, 22, 16);
-    form->setHorizontalSpacing(14);
-    form->setVerticalSpacing(7);
-    form->addWidget(makeFieldLabel("Record Filter"), 0, 0);
-    form->addWidget(makeFieldLabel("Rental Record Action"), 0, 1, 1, 3);
-    form->addWidget(rentalFilterCombo, 1, 0);
-    form->addWidget(rentalRecordIdEdit, 1, 1);
-    form->addWidget(archiveButton, 1, 2);
-    form->addWidget(deleteButton, 1, 3);
-    card->setLayout(form);
-    card->setMaximumWidth(1000);
+    QGridLayout* controls = new QGridLayout();
+    controls->setContentsMargins(0, 0, 0, 0);
+    controls->setHorizontalSpacing(11);
+    controls->setVerticalSpacing(4);
+    controls->setColumnStretch(0, 2);
+    controls->setColumnStretch(1, 2);
+    controls->addWidget(makeFieldLabel("Transaction status"), 0, 0);
+    controls->addWidget(makeFieldLabel("Record ID for archive or deletion"), 0, 1);
+    controls->addWidget(rentalFilterCombo, 1, 0);
+    controls->addWidget(rentalRecordIdEdit, 1, 1);
+    controls->addWidget(archiveButton, 1, 2);
+    controls->addWidget(deleteButton, 1, 3);
+    inner->addLayout(controls);
 
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QVBoxLayout* layout = new QVBoxLayout(page);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(card);
 
     connect(rentalFilterCombo, qOverload<int>(&QComboBox::currentIndexChanged),
             this, &MainWindow::refreshRentalRecordsFilter);
@@ -641,22 +923,35 @@ QWidget* MainWindow::createRentalRecordsPage()
             this, &MainWindow::archiveRentalRecord);
     connect(deleteButton, &QPushButton::clicked,
             this, &MainWindow::deleteArchivedRentalRecord);
-
     return page;
 }
+
 
 QWidget* MainWindow::createReturnPage()
 {
     QWidget* page = new QWidget();
     QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    card->setObjectName("RentalActionPanel");
+    QVBoxLayout* inner = new QVBoxLayout(card);
+    inner->setContentsMargins(20, 12, 20, 13);
+    inner->setSpacing(9);
+
+    QHBoxLayout* heading = new QHBoxLayout();
+    QLabel* kicker = new QLabel("RENTAL OPERATIONS  /  VEHICLE RETURN");
+    kicker->setObjectName("ActionPanelKicker");
+    QLabel* note = new QLabel("Complete an active contract to release its vehicle");
+    note->setObjectName("ActionPanelNote");
+    heading->addWidget(kicker);
+    heading->addStretch();
+    heading->addWidget(note);
+    inner->addLayout(heading);
 
     returnRentalIdEdit = new QLineEdit();
-    returnRentalIdEdit->setPlaceholderText("Enter rental ID or vehicle ID, e.g. R001 or C002");
-    returnRentalIdEdit->setFixedWidth(430);
+    returnRentalIdEdit->setObjectName("ReturnRentalID");
+    returnRentalIdEdit->setPlaceholderText("R001 or C002");
+    returnRentalIdEdit->setMinimumWidth(250);
 
     actualReturnDateEdit = new QDateEdit(QDate::currentDate());
-    // Returns are recorded on the day they are processed.
     actualReturnDateEdit->setCalendarPopup(false);
     actualReturnDateEdit->setDisplayFormat("dd MMM yyyy");
     actualReturnDateEdit->setMinimumDate(QDate::currentDate());
@@ -665,32 +960,28 @@ QWidget* MainWindow::createReturnPage()
     actualReturnDateEdit->setReadOnly(true);
     actualReturnDateEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
     actualReturnDateEdit->setMinimumWidth(180);
-    actualReturnDateEdit->setFixedHeight(36);
-    actualReturnDateEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QPushButton* clearButton = new QPushButton("Clear");
-    QPushButton* returnButton = new QPushButton("Complete Return");
+    QPushButton* returnButton = new QPushButton("Complete return");
     clearButton->setObjectName("SecondaryButton");
     returnButton->setObjectName("ActionButton");
 
-    QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(22, 16, 22, 16);
-    form->setHorizontalSpacing(14);
-    form->setVerticalSpacing(7);
-    form->addWidget(makeFieldLabel("Active Rental ID or Vehicle ID"), 0, 0);
-    form->addWidget(makeFieldLabel("Actual Return Date"), 0, 1);
-    form->addWidget(returnRentalIdEdit, 1, 0);
-    form->addWidget(actualReturnDateEdit, 1, 1);
-    form->addWidget(clearButton, 1, 2);
-    form->addWidget(returnButton, 1, 3);
-    card->setLayout(form);
-    card->setMaximumWidth(980);
-
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QGridLayout* controls = new QGridLayout();
+    controls->setContentsMargins(0, 0, 0, 0);
+    controls->setHorizontalSpacing(12);
+    controls->setVerticalSpacing(4);
+    controls->setColumnStretch(0, 2);
+    controls->setColumnStretch(1, 1);
+    controls->addWidget(makeFieldLabel("Active Rental ID or Vehicle ID"), 0, 0);
+    controls->addWidget(makeFieldLabel("Actual return date"), 0, 1);
+    controls->addWidget(returnRentalIdEdit, 1, 0);
+    controls->addWidget(actualReturnDateEdit, 1, 1);
+    controls->addWidget(clearButton, 1, 2);
+    controls->addWidget(returnButton, 1, 3);
+    inner->addLayout(controls);
+    QVBoxLayout* layout = new QVBoxLayout(page);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(card);
 
     connect(clearButton, &QPushButton::clicked, this, [this]() {
         returnRentalIdEdit->clear();
@@ -699,7 +990,6 @@ QWidget* MainWindow::createReturnPage()
     });
     connect(returnButton, &QPushButton::clicked, this, &MainWindow::returnVehicle);
     connect(returnRentalIdEdit, &QLineEdit::returnPressed, this, &MainWindow::returnVehicle);
-
     return page;
 }
 
@@ -832,7 +1122,7 @@ void MainWindow::resizeRentalTableColumns()
     // Percentages sum to 100. The final column receives any rounding remainder.
     const QList<int> percentages = returnPageVisible
                                        ? QList<int>({8, 8, 22, 14, 12, 12, 8, 16})
-                                       : QList<int>({7, 17, 11, 7, 10, 10, 9, 6, 10, 13});
+                                       : QList<int>({9, 16, 10, 7, 10, 10, 9, 6, 10, 13});
 
     const int usableWidth = qMax(1, dataTable->viewport()->width() - 2);
     int assignedWidth = 0;
@@ -915,10 +1205,94 @@ void MainWindow::refreshVehicleTable(const QList<Vehicle*>& vehicles)
 
     dataTable->setSortingEnabled(true);
     updateDashboardCards();
+    if (actionStack->currentIndex() == 7 && fleetSearchEdit != nullptr)
+        filterFleetTable();
 
     if (vehicles.isEmpty()) {
         showEmptyTableMessage("No vehicles to display",
                               "No vehicles match the current page or filter.");
+    }
+}
+
+void MainWindow::filterFleetTable()
+{
+    if (actionStack->currentIndex() != 7 || !fleetSearchEdit || !fleetStatusCombo)
+        return;
+    const QString needle = fleetSearchEdit->text().trimmed();
+    const int filter = fleetStatusCombo->currentIndex();
+    int firstVisible = -1;
+    for (int row = 0; row < dataTable->rowCount(); ++row) {
+        QString terms;
+        for (int column = 0; column < qMin(4, dataTable->columnCount()); ++column) {
+            if (const QTableWidgetItem* item = dataTable->item(row, column))
+                terms += " " + item->text();
+        }
+        const QTableWidgetItem* state = dataTable->item(row, 5);
+        const bool rented = state && state->text() == "Rented";
+        const bool matches = terms.contains(needle, Qt::CaseInsensitive) &&
+            (filter == 0 || (filter == 1 && !rented) || (filter == 2 && rented));
+        dataTable->setRowHidden(row, !matches);
+        if (matches && firstVisible < 0)
+            firstVisible = row;
+    }
+    if (firstVisible >= 0 &&
+        (dataTable->currentRow() < 0 ||
+         dataTable->isRowHidden(dataTable->currentRow())))
+        dataTable->selectRow(firstVisible);
+    updateFleetInspector();
+}
+
+void MainWindow::updateFleetInspector()
+{
+    if (actionStack->currentIndex() != 7 || !fleetAssetName)
+        return;
+    const int row = dataTable->currentRow();
+    const QTableWidgetItem* idItem =
+        row >= 0 && !dataTable->isRowHidden(row) ? dataTable->item(row, 0) : nullptr;
+    Vehicle* vehicle = idItem ? rentalSystem.findVehicleById(idItem->text()) : nullptr;
+    if (!vehicle) {
+        fleetAssetName->setText("No vehicle selected");
+        fleetAssetMeta->setText("Choose a matching vehicle from the table");
+        fleetAssetRate->setText("R0.00");
+        fleetAssetStatus->setText("NO MATCH");
+        fleetAssetStatus->setStyleSheet(
+            "background: #e2e8df; color: #354a45; padding: 5px 9px; border-radius: 6px;");
+        fleetAssetPhoto->clear();
+        fleetAssetPhoto->setText("No vehicle selected");
+        fleetAssetCredit->setText("Illustrative photography");
+        return;
+    }
+    fleetAssetName->setText(vehicle->getBrand() + " " + vehicle->getModel());
+    fleetAssetMeta->setText(vehicle->getId() + "  /  " + vehicle->typeName() +
+                           "  /  " + vehicle->extraDetails());
+    fleetAssetRate->setText(currency(vehicle->getPricePerDay()));
+    const bool rented = vehicle->getIsRented();
+    fleetAssetStatus->setText(rented ? "CURRENTLY RENTED" : "READY TO RENT");
+    fleetAssetStatus->setStyleSheet(rented
+        ? "background: #f9e6db; color: #84401e; padding: 5px 9px; border-radius: 6px;"
+        : "background: #cff375; color: #1a342d; padding: 5px 9px; border-radius: 6px;");
+
+    const QString id = vehicle->getId();
+    const QString source = id == "C001" ? ":/portfolio/toyota_corolla.jpg"
+                         : id == "C002" ? ":/portfolio/ford_ranger.jpg"
+                         : id == "C003" ? ":/portfolio/hyundai_i20.jpg" : QString();
+    const QPixmap photo(source);
+    if (!source.isEmpty() && !photo.isNull()) {
+        const QSize box = fleetAssetPhoto->size();
+        const QPixmap scaled = photo.scaled(box, Qt::KeepAspectRatioByExpanding,
+                                           Qt::SmoothTransformation);
+        fleetAssetPhoto->setPixmap(scaled.copy((scaled.width() - box.width()) / 2,
+                                               (scaled.height() - box.height()) / 2,
+                                               box.width(), box.height()));
+        fleetAssetCredit->setText(id == "C001" ? "Corolla / 01x07x2022000 · CC0"
+                                  : id == "C002" ? "Ranger / crash71100 · CC0"
+                                  : "i20 / Trop86 · CC0");
+    } else {
+        fleetAssetPhoto->setPixmap(QPixmap());
+        fleetAssetPhoto->setText(vehicle->typeName() == "Motorcycle"
+                                    ? "MOTORCYCLE  /  IMAGE PENDING"
+                                    : "CAR  /  IMAGE PENDING");
+        fleetAssetCredit->setText("No approved photo for this vehicle");
     }
 }
 
@@ -1096,6 +1470,12 @@ void MainWindow::updateDashboardCards()
                                    ? 0.0
                                    : (static_cast<double>(rented) / vehicles.size()) * 100.0;
 
+    // Dashboard hero uses actual loaded fleet counts. No demo data is fabricated.
+    fleetHeroValue->setText(QString("%1 / %2").arg(available).arg(vehicles.size()));
+    fleetHeroHint->setText(vehicles.isEmpty()
+        ? "NO VEHICLES LOADED"
+        : QString("%1% AVAILABLE").arg(QString::number(100.0 * available / vehicles.size(), 'f', 0)));
+
     // Dashboard.
     totalVehiclesValue->setText(QString::number(vehicles.size()));
     availableVehiclesValue->setText(QString::number(available));
@@ -1245,9 +1625,9 @@ void MainWindow::showDashboardPage()
 {
     pageTitleLabel->setText("Dashboard");
     pageSubtitleLabel->setText(
-        "Live fleet totals, utilisation, revenue and the five most recent rental transactions.");
+        "Live fleet availability, booked rental value, and recent transactions.");
     actionStack->setCurrentIndex(0);
-    actionStack->setMaximumHeight(215);
+    actionStack->setMaximumHeight(385); // hero + KPI cards + metrics strip + spacing
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Recent Rental Activity");
     refreshDashboardRecentRentals();
@@ -1285,13 +1665,17 @@ void MainWindow::showSearchPage()
 
 void MainWindow::showAllVehicles()
 {
-    pageTitleLabel->setText("All Vehicles");
+    pageTitleLabel->setText("Fleet Inventory");
     pageSubtitleLabel->setText(
-        "Complete fleet list with vehicle-type, availability and active-rental totals.");
+        "Explore vehicles, inspect availability and manage your rental fleet.");
     actionStack->setCurrentIndex(7);
-    actionStack->setMaximumHeight(215);
-    tableSectionTitleLabel->setVisible(false);
+    actionStack->setMaximumHeight(308);
+    tableSectionTitleLabel->setVisible(true);
+    tableSectionTitleLabel->setText("Vehicle inventory  /  Select a row to inspect");
     refreshVehicleTable(rentalSystem.getVehicles());
+    if (dataTable->rowCount() > 0)
+        dataTable->selectRow(0);
+    filterFleetTable();
     setActiveButton(allVehiclesButton);
 }
 
@@ -1314,8 +1698,9 @@ void MainWindow::showRentPage()
     pageSubtitleLabel->setText(
         "Capture the customer, type the rental days and review the calculated rental details.");
     actionStack->setCurrentIndex(3);
-    actionStack->setMaximumHeight(330);
-    tableSectionTitleLabel->setVisible(false);
+    actionStack->setMaximumHeight(359);
+    tableSectionTitleLabel->setVisible(true);
+    tableSectionTitleLabel->setText("Vehicles ready for checkout");
     rentStartDateEdit->setMinimumDate(QDate::currentDate());
     rentStartDateEdit->setMaximumDate(QDate::currentDate());
     rentStartDateEdit->setDate(QDate::currentDate());
@@ -1330,7 +1715,7 @@ void MainWindow::showRentalRecordsPage()
     pageTitleLabel->setText("Rental History");
     pageSubtitleLabel->setText("Review active, returned and archived customer rental transactions.");
     actionStack->setCurrentIndex(4);
-    actionStack->setMaximumHeight(120);
+    actionStack->setMaximumHeight(138);
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Rental Transactions");
     refreshRentalTable(filteredRentals());
@@ -1343,7 +1728,7 @@ void MainWindow::showReturnPage()
     pageTitleLabel->setText("Return Vehicle");
     pageSubtitleLabel->setText("Complete an active rental using its rental ID or vehicle ID.");
     actionStack->setCurrentIndex(5);
-    actionStack->setMaximumHeight(120);
+    actionStack->setMaximumHeight(138);
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Active Rentals");
     actualReturnDateEdit->setMinimumDate(QDate::currentDate());
@@ -1536,10 +1921,17 @@ void MainWindow::updateRentalEstimate()
     rentAvailabilityValue->setStyleSheet(
         "font-size:15px; font-weight:bold; color:#15803d; background:#f0fdf4; "
         "border:1px solid #bbf7d0; border-radius:6px; padding:8px 10px;");
-    rentLookupMessageLabel->setText(
-        "Vehicle found and available. Complete the customer details to confirm the rental.");
+    // Explain the current checkout step without implying a booking is
+    // completed before the operator confirms the rental.
+    const bool customerComplete =
+        !rentCustomerNameEdit->text().trimmed().isEmpty() &&
+        !rentPhoneEdit->text().trimmed().isEmpty();
+    rentLookupMessageLabel->setText(customerComplete
+        ? "Details entered. Review the estimate and confirm the rental."
+        : "Vehicle found and available. Complete customer details to continue.");
     rentLookupMessageLabel->setStyleSheet("color:#15803d; font-size:12px;");
-    rentConfirmButton->setEnabled(true);
+    // Detailed customer/phone validation remains in rentVehicle(), unchanged.
+    rentConfirmButton->setEnabled(customerComplete);
 }
 
 

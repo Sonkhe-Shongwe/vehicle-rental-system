@@ -22,6 +22,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+    // Test-only storage injection; the ordinary application retains its existing path.
+    explicit MainWindow(const QString& dataDirectory, QWidget* parent = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -42,6 +44,8 @@ private:
     QLabel* tableSectionTitleLabel;
 
     // Dashboard values.
+    QLabel* fleetHeroValue;
+    QLabel* fleetHeroHint;
     QLabel* totalVehiclesValue;
     QLabel* availableVehiclesValue;
     QLabel* rentedVehiclesValue;
@@ -50,6 +54,16 @@ private:
     QLabel* motorcyclesValue;
     QLabel* utilisationValue;
     QLabel* revenueValue;
+
+    // Fleet-only inspector and search filters.
+    QLineEdit* fleetSearchEdit = nullptr;
+    QComboBox* fleetStatusCombo = nullptr;
+    QLabel* fleetAssetPhoto = nullptr;
+    QLabel* fleetAssetName = nullptr;
+    QLabel* fleetAssetMeta = nullptr;
+    QLabel* fleetAssetRate = nullptr;
+    QLabel* fleetAssetStatus = nullptr;
+    QLabel* fleetAssetCredit = nullptr;
 
     // All Vehicles summary values.
     QLabel* allTotalVehiclesValue;
@@ -140,6 +154,8 @@ private:
     void refreshRentalTable(const QList<Rental*>& rentals);
     void refreshDashboardRecentRentals();
     void updateDashboardCards();
+    void filterFleetTable();
+    void updateFleetInspector();
 
     QList<Vehicle*> availableVehicles() const;
     QList<Rental*> filteredRentals() const;

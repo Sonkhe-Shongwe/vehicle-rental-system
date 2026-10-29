@@ -16,6 +16,7 @@ set(PROJECT_SOURCES
     main.cpp
     mainwindow.cpp
     mainwindow.h
+    resources/portfolio.qrc
     vehicle.cpp
     vehicle.h
     car.cpp
@@ -61,4 +62,23 @@ if(BUILD_TESTING)
     target_include_directories(vehicle_rental_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(vehicle_rental_tests PRIVATE Qt${QT_VERSION_MAJOR}::Core)
     add_test(NAME vehicle_rental_domain COMMAND vehicle_rental_tests)
+endif()
+
+# Real Qt Widgets integration coverage with strictly disposable file storage.
+# Runs in offscreen mode on both Linux and Windows hosted CI. It does not
+# substitute for manual Qt Creator / physical monitor acceptance.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_gui_lifecycle_tests
+        tests/gui_lifecycle_tests.cpp
+        mainwindow.cpp mainwindow.h resources/portfolio.qrc
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_gui_lifecycle_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_gui_lifecycle_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+    add_test(NAME vehicle_rental_gui_lifecycle COMMAND vehicle_rental_gui_lifecycle_tests)
+    set_tests_properties(vehicle_rental_gui_lifecycle PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+        TIMEOUT 45)
 endif()

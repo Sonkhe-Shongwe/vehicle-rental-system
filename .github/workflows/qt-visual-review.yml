@@ -1,0 +1,89 @@
+name: Review Qt photographic dashboard (design branch)
+on:
+  push:
+    branches:
+      - feature/qt-hybrid-visual-spike-20261029
+    paths:
+      - CMakeLists.txt
+      - main.cpp
+      - mainwindow.cpp
+      - mainwindow.h
+      - resources/portfolio.qrc
+      - assets/ford_ranger.jpg
+      - .github/workflows/qt-visual-review.yml
+permissions:
+  contents: write
+jobs:
+  qt-screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt and offscreen desktop prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev cmake ninja-build g++ xvfb xauth
+      - name: Configure, build and CTest
+        run: |
+          cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+      - name: Render real Qt UI using fictional records
+        run: |
+          cp demo/vehicles.txt vehicles.txt
+          cp demo/rentals.txt rentals.txt
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot
+          mv portfolio-qt-review.png portfolio-qt-review-wide.png
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot-small
+          mv portfolio-qt-review.png portfolio-qt-review-small.png
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-fleet-screenshot
+          mv portfolio-qt-review.png portfolio-qt-review-fleet-wide.png
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-fleet-screenshot-small
+          mv portfolio-qt-review.png portfolio-qt-review-fleet-small.png
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-rent-screenshot
+          mv portfolio-qt-review.png portfolio-qt-review-rent.png
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-rent-screenshot-small
+          mv portfolio-qt-review.png portfolio-qt-review-rent-small.png
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-history-screenshot
+          mv portfolio-qt-review.png portfolio-qt-review-history.png
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-history-screenshot-small
+          mv portfolio-qt-review.png portfolio-qt-review-history-small.png
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-return-screenshot
+          mv portfolio-qt-review.png portfolio-qt-review-return.png
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-return-screenshot-small
+          mv portfolio-qt-review.png portfolio-qt-review-return-small.png
+          python3 - <<'PYSCREEN'
+          import pathlib,struct
+          for name,expected in (('wide',(1500,860)),('small',(1280,720)),
+                                ('fleet-wide',(1500,860)),('fleet-small',(1280,720)),
+                                ('rent',(1500,860)),('rent-small',(1280,720)),
+                                ('history',(1500,860)),('history-small',(1280,720)),
+                                ('return',(1500,860)),('return-small',(1280,720))):
+              p=pathlib.Path(f'portfolio-qt-review-{name}.png')
+              assert p.exists() and p.stat().st_size>25000, f'{name} screenshot missing or unexpectedly small'
+              b=p.read_bytes()
+              assert b[:8]==bytes.fromhex('89504e470d0a1a0a'), f'{name}: not PNG'
+              width,height=struct.unpack('>II',b[16:24])
+              assert (width,height)==expected, (name,width,height,expected)
+              print('Actual Qt UI',name, width,height,p.stat().st_size)
+          PYSCREEN
+      - name: Save screenshot on review branch only
+        run: |
+          mkdir -p design/qt-spike
+          cp portfolio-qt-review-wide.png design/qt-spike/dashboard-qt.png
+          cp portfolio-qt-review-small.png design/qt-spike/dashboard-qt-1280.png
+          cp portfolio-qt-review-fleet-wide.png design/qt-spike/fleet-qt.png
+          cp portfolio-qt-review-fleet-small.png design/qt-spike/fleet-qt-1280.png
+          cp portfolio-qt-review-rent.png design/qt-spike/rent-qt.png
+          cp portfolio-qt-review-rent-small.png design/qt-spike/rent-small-qt.png
+          cp portfolio-qt-review-history.png design/qt-spike/history-qt.png
+          cp portfolio-qt-review-history-small.png design/qt-spike/history-small-qt.png
+          cp portfolio-qt-review-return.png design/qt-spike/return-qt.png
+          cp portfolio-qt-review-return-small.png design/qt-spike/return-small-qt.png
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add design/qt-spike/dashboard-qt.png design/qt-spike/dashboard-qt-1280.png design/qt-spike/fleet-qt.png design/qt-spike/fleet-qt-1280.png design/qt-spike/rent-qt.png design/qt-spike/rent-small-qt.png design/qt-spike/history-qt.png design/qt-spike/history-small-qt.png design/qt-spike/return-qt.png design/qt-spike/return-small-qt.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(qt-ui): capture actual Qt dashboard with fictional data'
+            git push origin HEAD:feature/qt-hybrid-visual-spike-20261029
+          fi
