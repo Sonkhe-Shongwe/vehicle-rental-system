@@ -1,3 +1,11 @@
+## Real Qt photographic dashboard spike — 29 October 2026
+
+Draft [PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) on `feature/qt-hybrid-visual-spike-20261029` now contains a **real Qt Widgets** dashboard visual proof of concept: graphite/navy sidebar, warm mineral-white canvas, lime selection, dynamic fleet-readiness hero, licensed illustrative Ford Ranger photo in Qt resources, four primary KPIs, compact secondary metric strip, and truthful `Booked Rental Value` label. Rental domain logic and storage remain unchanged. The original nine navigation destinations remain as before. This is a proof of concept, not full approved redesign.
+
+Hosted [workflow 40907466823](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40907466823) passed Qt6 CMake compile, CTest and **distinct** real Qt screenshot captures at 1500×860 and 1280×720. Both screenshots were inspected; a widget-geometry check ensures recent activity heading does not overlap the metrics strip. The initial screenshots had card collisions due to an original 215px action-stack maximum and a global minimum-height workaround; root cause corrected. Initial small captures were erroneously identical because maximised geometry overrode Xvfb; explicit normal window sizing and per-size assertions resolved this. See [review checklist](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/design/qt-spike/VISUAL_REVIEW.md).
+
+**Unresolved:** Current genuine Ford photo is aesthetically weak (rear view, ordinary street setting, visible licence plate), despite verified CC0 source. Fleet and Rentals Qt page design, consolidated navigation, Windows manual functionality tests, high-DPI and production approval remain. Keep PR #4 draft and unmerged. The image-sourcing PR #3 continues to lack Honda and Yamaha derivatives after Wikimedia rate limiting. Stable `main` does not include the visual UI spike.
+
 ## Photographic V3 design-branch checkpoint — 29 October 2026
 
 The real `demo/vehicles.txt` has **Toyota Corolla, Ford Ranger, Hyundai i20, Honda CB500F and Yamaha MT-07**. Earlier proposed car-only lists mentioning Nissan X-Trail and VW Polo were not the five demo items; do not carry that mistake into later work.
