@@ -53,6 +53,16 @@ private:
     QLabel* utilisationValue;
     QLabel* revenueValue;
 
+    // Fleet-only inspector and search filters.
+    QLineEdit* fleetSearchEdit = nullptr;
+    QComboBox* fleetStatusCombo = nullptr;
+    QLabel* fleetAssetPhoto = nullptr;
+    QLabel* fleetAssetName = nullptr;
+    QLabel* fleetAssetMeta = nullptr;
+    QLabel* fleetAssetRate = nullptr;
+    QLabel* fleetAssetStatus = nullptr;
+    QLabel* fleetAssetCredit = nullptr;
+
     // All Vehicles summary values.
     QLabel* allTotalVehiclesValue;
     QLabel* allAvailableVehiclesValue;
@@ -142,6 +152,8 @@ private:
     void refreshRentalTable(const QList<Rental*>& rentals);
     void refreshDashboardRecentRentals();
     void updateDashboardCards();
+    void filterFleetTable();
+    void updateFleetInspector();
 
     QList<Vehicle*> availableVehicles() const;
     QList<Rental*> filteredRentals() const;

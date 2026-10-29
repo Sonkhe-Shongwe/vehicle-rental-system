@@ -102,6 +102,17 @@ void MainWindow::applyStyles()
         "QLabel#PageTitle { font-size: 27px; font-weight: 750; color: #172830; }"
         "QLabel#PageSubtitle { font-size: 13px; color: #657774; }"
         "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #25393b; padding-top: 6px; }"
+        "QFrame#FleetInspector { background: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
+        "QLabel#FleetAssetPhoto { background: #263a3d; color: #bbd3cb; border-radius: 8px; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetCredit { color: #a7bbb6; font-size: 9px; }"
+        "QLabel#FleetAssetKicker { color: #cff375; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetName { color: #ffffff; font-size: 27px; font-weight: bold; }"
+        "QLabel#FleetAssetMeta { color: #ceded8; font-size: 12px; }"
+        "QLabel#FleetAssetPriceLabel { color: #a8c1b5; font-size: 10px; font-weight: bold; }"
+        "QLabel#FleetAssetRate { color: #ffffff; font-size: 27px; font-weight: bold; }"
+        "QFrame#FleetSummary { background: #f9faf5; border: 1px solid #e4e8df; border-radius: 9px; }"
+        "QLabel#FleetSummaryLabel { color: #687e75; font-size: 10px; }"
+        "QLabel#FleetSummaryValue { color: #1b302f; font-size: 17px; font-weight: bold; }"
         "QFrame#FleetHero { background-color: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
         "QLabel#FleetHeroKicker { color: #cff375; font-size: 11px; font-weight: bold; }"
         "QLabel#FleetHeroValue { color: #ffffff; font-size: 44px; font-weight: bold; }"
@@ -262,6 +273,8 @@ void MainWindow::setupMainContent()
     emptyTableLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
     emptyTableLabel->setStyleSheet("color: #6b7280; background: transparent;");
     emptyTableLabel->hide();
+    connect(dataTable, &QTableWidget::itemSelectionChanged,
+            this, &MainWindow::updateFleetInspector);
 
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(28, 22, 28, 24);
@@ -504,21 +517,113 @@ QWidget* MainWindow::createAddPage()
 
 QWidget* MainWindow::createAllVehiclesSummaryPage()
 {
+    // Existing shared fleet table remains authoritative. The inspector adds
+    // visual context without modifying any rental business operations.
     QWidget* page = new QWidget();
+    QVBoxLayout* content = new QVBoxLayout(page);
+    content->setContentsMargins(0, 0, 0, 0);
+    content->setSpacing(9);
 
-    QGridLayout* cards = new QGridLayout();
-    cards->setContentsMargins(0, 0, 0, 0);
-    cards->setHorizontalSpacing(11);
-    cards->setVerticalSpacing(11);
+    QFrame* inspector = new QFrame();
+    inspector->setObjectName("FleetInspector");
+    inspector->setFixedHeight(156);
+    QHBoxLayout* row = new QHBoxLayout(inspector);
+    row->setContentsMargins(18, 12, 20, 12);
+    row->setSpacing(18);
 
-    cards->addWidget(createStatCard("Total Vehicles", allTotalVehiclesValue), 0, 0);
-    cards->addWidget(createStatCard("Available Vehicles", allAvailableVehiclesValue), 0, 1);
-    cards->addWidget(createStatCard("Rented Vehicles", allRentedVehiclesValue), 0, 2);
-    cards->addWidget(createStatCard("Active Rentals", allActiveRentalsValue), 1, 0);
-    cards->addWidget(createStatCard("Cars", allCarsValue), 1, 1);
-    cards->addWidget(createStatCard("Motorcycles", allMotorcyclesValue), 1, 2);
+    QVBoxLayout* media = new QVBoxLayout();
+    media->setSpacing(3);
+    fleetAssetPhoto = new QLabel("Select a vehicle");
+    fleetAssetPhoto->setObjectName("FleetAssetPhoto");
+    fleetAssetPhoto->setAlignment(Qt::AlignCenter);
+    fleetAssetPhoto->setFixedSize(238, 110);
+    fleetAssetPhoto->setAccessibleName("Illustrative vehicle photo or class placeholder");
+    fleetAssetCredit = new QLabel("Model photographs are illustrative");
+    fleetAssetCredit->setObjectName("FleetAssetCredit");
+    fleetAssetCredit->setFixedWidth(238);
+    fleetAssetCredit->setAlignment(Qt::AlignRight);
+    media->addWidget(fleetAssetPhoto);
+    media->addWidget(fleetAssetCredit);
+    row->addLayout(media);
 
-    page->setLayout(cards);
+    QVBoxLayout* assetInfo = new QVBoxLayout();
+    assetInfo->setSpacing(4);
+    QLabel* kicker = new QLabel("SELECTED FLEET ASSET  /  VEHICLE PROFILE");
+    kicker->setObjectName("FleetAssetKicker");
+    fleetAssetName = new QLabel("Select a vehicle");
+    fleetAssetName->setObjectName("FleetAssetName");
+    fleetAssetMeta = new QLabel("Choose a row below to inspect a vehicle");
+    fleetAssetMeta->setObjectName("FleetAssetMeta");
+    fleetAssetStatus = new QLabel("NO SELECTION");
+    fleetAssetStatus->setObjectName("FleetAssetStatus");
+    assetInfo->addWidget(kicker);
+    assetInfo->addWidget(fleetAssetName);
+    assetInfo->addWidget(fleetAssetMeta);
+    assetInfo->addSpacing(2);
+    assetInfo->addWidget(fleetAssetStatus, 0, Qt::AlignLeft);
+    assetInfo->addStretch();
+    row->addLayout(assetInfo, 1);
+
+    QVBoxLayout* pricing = new QVBoxLayout();
+    pricing->setAlignment(Qt::AlignRight);
+    QLabel* priceLabel = new QLabel("DAILY RENTAL RATE");
+    priceLabel->setObjectName("FleetAssetPriceLabel");
+    fleetAssetRate = new QLabel("R0.00");
+    fleetAssetRate->setObjectName("FleetAssetRate");
+    pricing->addWidget(priceLabel, 0, Qt::AlignRight);
+    pricing->addWidget(fleetAssetRate, 0, Qt::AlignRight);
+    pricing->addStretch();
+    row->addLayout(pricing);
+    content->addWidget(inspector);
+
+    QFrame* summary = new QFrame();
+    summary->setObjectName("FleetSummary");
+    summary->setFixedHeight(52);
+    QHBoxLayout* summaryRow = new QHBoxLayout(summary);
+    summaryRow->setContentsMargins(18, 7, 18, 7);
+    summaryRow->setSpacing(8);
+    auto indicator = [summaryRow](const QString& text, QLabel*& value) {
+        QVBoxLayout* group = new QVBoxLayout();
+        group->setSpacing(1);
+        QLabel* caption = new QLabel(text);
+        caption->setObjectName("FleetSummaryLabel");
+        value = new QLabel("0");
+        value->setObjectName("FleetSummaryValue");
+        group->addWidget(caption);
+        group->addWidget(value);
+        summaryRow->addLayout(group, 1);
+    };
+    indicator("All vehicles", allTotalVehiclesValue);
+    indicator("Ready", allAvailableVehiclesValue);
+    indicator("Rented", allRentedVehiclesValue);
+    indicator("Active contracts", allActiveRentalsValue);
+    indicator("Cars", allCarsValue);
+    indicator("Motorcycles", allMotorcyclesValue);
+    content->addWidget(summary);
+
+    QHBoxLayout* filters = new QHBoxLayout();
+    filters->setSpacing(10);
+    fleetSearchEdit = new QLineEdit();
+    fleetSearchEdit->setObjectName("FleetSearch");
+    fleetSearchEdit->setPlaceholderText("Search vehicle ID, brand or model...");
+    fleetSearchEdit->setAccessibleName("Filter fleet vehicles");
+    fleetSearchEdit->setClearButtonEnabled(true);
+    fleetStatusCombo = new QComboBox();
+    fleetStatusCombo->setObjectName("FleetStatusFilter");
+    fleetStatusCombo->addItems({"All statuses", "Available", "Rented"});
+    fleetStatusCombo->setAccessibleName("Filter by rental status");
+    fleetStatusCombo->setMinimumWidth(155);
+    QPushButton* registerButton = new QPushButton("+ Add vehicle");
+    registerButton->setObjectName("ActionButton");
+    connect(registerButton, &QPushButton::clicked, this, &MainWindow::showAddPage);
+    connect(fleetSearchEdit, &QLineEdit::textChanged, this,
+            [this](const QString&) { filterFleetTable(); });
+    connect(fleetStatusCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int) { filterFleetTable(); });
+    filters->addWidget(fleetSearchEdit, 1);
+    filters->addWidget(fleetStatusCombo);
+    filters->addWidget(registerButton);
+    content->addLayout(filters);
     return page;
 }
 
@@ -1027,10 +1132,94 @@ void MainWindow::refreshVehicleTable(const QList<Vehicle*>& vehicles)
 
     dataTable->setSortingEnabled(true);
     updateDashboardCards();
+    if (actionStack->currentIndex() == 7 && fleetSearchEdit != nullptr)
+        filterFleetTable();
 
     if (vehicles.isEmpty()) {
         showEmptyTableMessage("No vehicles to display",
                               "No vehicles match the current page or filter.");
+    }
+}
+
+void MainWindow::filterFleetTable()
+{
+    if (actionStack->currentIndex() != 7 || !fleetSearchEdit || !fleetStatusCombo)
+        return;
+    const QString needle = fleetSearchEdit->text().trimmed();
+    const int filter = fleetStatusCombo->currentIndex();
+    int firstVisible = -1;
+    for (int row = 0; row < dataTable->rowCount(); ++row) {
+        QString terms;
+        for (int column = 0; column < qMin(4, dataTable->columnCount()); ++column) {
+            if (const QTableWidgetItem* item = dataTable->item(row, column))
+                terms += " " + item->text();
+        }
+        const QTableWidgetItem* state = dataTable->item(row, 5);
+        const bool rented = state && state->text() == "Rented";
+        const bool matches = terms.contains(needle, Qt::CaseInsensitive) &&
+            (filter == 0 || (filter == 1 && !rented) || (filter == 2 && rented));
+        dataTable->setRowHidden(row, !matches);
+        if (matches && firstVisible < 0)
+            firstVisible = row;
+    }
+    if (firstVisible >= 0 &&
+        (dataTable->currentRow() < 0 ||
+         dataTable->isRowHidden(dataTable->currentRow())))
+        dataTable->selectRow(firstVisible);
+    updateFleetInspector();
+}
+
+void MainWindow::updateFleetInspector()
+{
+    if (actionStack->currentIndex() != 7 || !fleetAssetName)
+        return;
+    const int row = dataTable->currentRow();
+    const QTableWidgetItem* idItem =
+        row >= 0 && !dataTable->isRowHidden(row) ? dataTable->item(row, 0) : nullptr;
+    Vehicle* vehicle = idItem ? rentalSystem.findVehicleById(idItem->text()) : nullptr;
+    if (!vehicle) {
+        fleetAssetName->setText("No vehicle selected");
+        fleetAssetMeta->setText("Choose a matching vehicle from the table");
+        fleetAssetRate->setText("R0.00");
+        fleetAssetStatus->setText("NO MATCH");
+        fleetAssetStatus->setStyleSheet(
+            "background: #e2e8df; color: #354a45; padding: 5px 9px; border-radius: 6px;");
+        fleetAssetPhoto->clear();
+        fleetAssetPhoto->setText("No vehicle selected");
+        fleetAssetCredit->setText("Illustrative photography");
+        return;
+    }
+    fleetAssetName->setText(vehicle->getBrand() + " " + vehicle->getModel());
+    fleetAssetMeta->setText(vehicle->getId() + "  /  " + vehicle->typeName() +
+                           "  /  " + vehicle->extraDetails());
+    fleetAssetRate->setText(currency(vehicle->getPricePerDay()));
+    const bool rented = vehicle->getIsRented();
+    fleetAssetStatus->setText(rented ? "CURRENTLY RENTED" : "READY TO RENT");
+    fleetAssetStatus->setStyleSheet(rented
+        ? "background: #f9e6db; color: #84401e; padding: 5px 9px; border-radius: 6px;"
+        : "background: #cff375; color: #1a342d; padding: 5px 9px; border-radius: 6px;");
+
+    const QString id = vehicle->getId();
+    const QString source = id == "C001" ? ":/portfolio/toyota_corolla.jpg"
+                         : id == "C002" ? ":/portfolio/ford_ranger.jpg"
+                         : id == "C003" ? ":/portfolio/hyundai_i20.jpg" : QString();
+    const QPixmap photo(source);
+    if (!source.isEmpty() && !photo.isNull()) {
+        const QSize box = fleetAssetPhoto->size();
+        const QPixmap scaled = photo.scaled(box, Qt::KeepAspectRatioByExpanding,
+                                           Qt::SmoothTransformation);
+        fleetAssetPhoto->setPixmap(scaled.copy((scaled.width() - box.width()) / 2,
+                                               (scaled.height() - box.height()) / 2,
+                                               box.width(), box.height()));
+        fleetAssetCredit->setText(id == "C001" ? "Corolla / 01x07x2022000 · CC0"
+                                  : id == "C002" ? "Ranger / crash71100 · CC0"
+                                  : "i20 / Trop86 · CC0");
+    } else {
+        fleetAssetPhoto->setPixmap(QPixmap());
+        fleetAssetPhoto->setText(vehicle->typeName() == "Motorcycle"
+                                    ? "MOTORCYCLE  /  IMAGE PENDING"
+                                    : "CAR  /  IMAGE PENDING");
+        fleetAssetCredit->setText("No approved photo for this vehicle");
     }
 }
 
@@ -1403,13 +1592,17 @@ void MainWindow::showSearchPage()
 
 void MainWindow::showAllVehicles()
 {
-    pageTitleLabel->setText("All Vehicles");
+    pageTitleLabel->setText("Fleet Inventory");
     pageSubtitleLabel->setText(
-        "Complete fleet list with vehicle-type, availability and active-rental totals.");
+        "Explore vehicles, inspect availability and manage your rental fleet.");
     actionStack->setCurrentIndex(7);
-    actionStack->setMaximumHeight(215);
-    tableSectionTitleLabel->setVisible(false);
+    actionStack->setMaximumHeight(308);
+    tableSectionTitleLabel->setVisible(true);
+    tableSectionTitleLabel->setText("Vehicle inventory  /  Select a row to inspect");
     refreshVehicleTable(rentalSystem.getVehicles());
+    if (dataTable->rowCount() > 0)
+        dataTable->selectRow(0);
+    filterFleetTable();
     setActiveButton(allVehiclesButton);
 }
 
