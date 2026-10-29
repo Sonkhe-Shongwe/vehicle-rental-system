@@ -11,9 +11,15 @@ on:
       - '**/*.h'
       - 'resources/**'
       - 'assets/**'
+      - '!assets/**/*.md'
       - 'tests/**'
       - 'demo/**'
   workflow_dispatch:
+
+# Older push reviews are cancelled; manually requested acceptance runs are isolated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'push' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
   contents: read

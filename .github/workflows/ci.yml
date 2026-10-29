@@ -5,20 +5,46 @@ on:
     branches: [main]
   pull_request:
 
+# Cancel stale PR CI, never cancel protected main pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+permissions:
+  contents: read
+
+# Preserve the existing required check: build-test always runs.
 jobs:
   build-test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Classify documentation-only PR changes (fail safe to Qt)
+        id: scope
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CI_HEAD_SHA: ${{ github.sha }}
+        run: python3 tools/ci_change_scope.py
+      - name: Check public fixtures
+        run: python3 tests/test_repo_hygiene.py
+      - name: Check published screenshot integrity
+        run: python3 tests/verify_readme_screenshots.py
       - name: Install Qt and build prerequisites
+        if: steps.scope.outputs.needs_build == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev cmake ninja-build g++
-      - name: Check public fixtures
-        run: python3 tests/test_repo_hygiene.py
       - name: Configure
+        if: steps.scope.outputs.needs_build == 'true'
         run: cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
       - name: Build
+        if: steps.scope.outputs.needs_build == 'true'
         run: cmake --build build --parallel 2
       - name: CTest
+        if: steps.scope.outputs.needs_build == 'true'
         run: ctest --test-dir build --output-on-failure
+      - name: Record verification scope
+        run: echo "Qt build required = ${{ steps.scope.outputs.needs_build }}; required build-test job always reports a status"

@@ -5,7 +5,6 @@ on:
       - feature/qt-hybrid-visual-spike-20261029
     paths:
       - CMakeLists.txt
-      - README.md
       - main.cpp
       - mainwindow.cpp
       - mainwindow.h
@@ -13,6 +12,10 @@ on:
       - resources/portfolio.qrc
       - assets/ford_ranger.jpg
       - .github/workflows/qt-visual-review.yml
+# Cancel obsolete push-triggered visual reviews for the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
