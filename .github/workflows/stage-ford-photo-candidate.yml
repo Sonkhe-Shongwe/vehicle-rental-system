@@ -1,0 +1,31 @@
+name: Review CC0 Ford Ranger image candidate (review branch only)
+on:
+  push:
+    branches:
+      - feature/qt-hybrid-visual-spike-20261029
+    paths:
+      - tools/stage_ford_candidate.py
+      - .github/workflows/stage-ford-photo-candidate.yml
+permissions:
+  contents: write
+jobs:
+  stage-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install photo processing dependency
+        run: python3 -m pip install --disable-pip-version-check --break-system-packages 'Pillow>=10,<13'
+      - name: Retrieve photo and verify Commons CC0 metadata
+        run: python3 tools/stage_ford_candidate.py
+      - name: Commit isolated visual candidate only, not production Qt photos
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add design/qt-spike/photo-candidates/ford_ranger_hyins_review.jpg design/qt-spike/photo-candidates/ford_ranger_hyins_review.json
+          if git diff --cached --quiet; then
+            echo 'No photo candidate changes'
+          else
+            git commit -m 'design(photo): stage CC0 Ford Ranger source for visual review only'
+            git push origin HEAD:feature/qt-hybrid-visual-spike-20261029
+          fi
