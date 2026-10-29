@@ -21,7 +21,7 @@ import sys
 import zipfile
 
 
-DEFAULT_REF = "feature/qt-hybrid-visual-spike-20261029"
+DEFAULT_REF = "origin/feature/qt-hybrid-visual-spike-20261029"
 PAGES = {
     "dashboard": ("--portfolio-screenshot", "--portfolio-screenshot-small"),
     "fleet": ("--portfolio-fleet-screenshot", "--portfolio-fleet-screenshot-small"),

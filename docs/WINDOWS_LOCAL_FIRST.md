@@ -29,7 +29,7 @@ py -3 tools/local_windows_acceptance.py --qt-prefix "C:\Qt\6.8.3\msvc2022_64" --
 
 Adjust the Qt prefix to your installed version and compiler kit. With Ninja/MinGW or a compatible alternative, use `--generator Ninja` and launch from that kit's configured terminal. Do not mix MSVC and MinGW Qt libraries.
 
-**Important:** the script itself is staged on the optimisation branch. To execute it from a local clone that only has the main Qt feature branch, retrieve the script from the staging branch or check out the staging branch **only for this helper**, while specifying `--ref feature/qt-hybrid-visual-spike-20261029`. The helper always exports the **specified source ref**, not necessarily the branch holding the script. Source revision is recorded before running tests.
+**Important:** the script itself is staged on the optimisation branch. To execute it from a local clone that only has the main Qt feature branch, retrieve the script from the staging branch or check out the staging branch **only for this helper**, while specifying `--ref feature/qt-hybrid-visual-spike-20261029`. The helper defaults to the normal remote-tracking ref **`origin/feature/qt-hybrid-visual-spike-20261029`** and always exports the **specified source ref**, not necessarily the branch holding the script. Verify it with `git rev-parse origin/feature/qt-hybrid-visual-spike-20261029` first. If you already have a local feature branch checked out, you may instead supply `--ref feature/qt-hybrid-visual-spike-20261029`. Source revision is recorded before running tests.
 
 ## Evidence and completion
 
