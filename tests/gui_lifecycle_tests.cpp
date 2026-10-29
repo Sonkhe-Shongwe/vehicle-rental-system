@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QAbstractButton>
 #include <QFile>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -49,6 +50,16 @@ void navigate(MainWindow& window, const char* slot)
 {
     require(QMetaObject::invokeMethod(&window, slot, Qt::DirectConnection),
             QString("Qt navigation slot failed: %1").arg(slot));
+    QApplication::processEvents();
+}
+
+// Send actual Qt key events to a visible control rather than invoking a slot.
+void pressKey(QWidget* target, int key, Qt::KeyboardModifiers modifiers = Qt::NoModifier)
+{
+    QKeyEvent down(QEvent::KeyPress, key, modifiers);
+    QApplication::sendEvent(target, &down);
+    QKeyEvent up(QEvent::KeyRelease, key, modifiers);
+    QApplication::sendEvent(target, &up);
     QApplication::processEvents();
 }
 
@@ -141,6 +152,19 @@ int main(int argc, char* argv[])
                     .arg(label, expectedDialogs.join(", "), observedDialogs.join(", ")));
     };
 
+    auto performEnter = [&](QLineEdit* field, const QStringList& dialogs) {
+        expectedDialogs = dialogs;
+        observedDialogs.clear();
+        unexpectedDialog = false;
+        field->setFocus(Qt::TabFocusReason);
+        QApplication::processEvents();
+        require(field->hasFocus(), "Keyboard target must receive focus");
+        pressKey(field, Qt::Key_Return);
+        require(!unexpectedDialog && observedDialogs == expectedDialogs,
+                QString("Unexpected Enter dialogs: expected [%1], observed [%2]")
+                    .arg(expectedDialogs.join(", "), observedDialogs.join(", ")));
+    };
+
     try {
         const QString vehiclesPath = isolated.filePath("vehicles.txt");
         const QString rentalsPath = isolated.filePath("rentals.txt");
@@ -188,6 +212,12 @@ int main(int argc, char* argv[])
                 if (entry->placeholderText() == "e.g. 082 123 4567") phone = entry;
             }
             require(customer && phone, "Customer input fields exist");
+            // Tab from Vehicle ID must reach Customer Name in the visual form.
+            rentalVehicle->setFocus(Qt::TabFocusReason);
+            QApplication::processEvents();
+            require(rentalVehicle->hasFocus(), "Rental vehicle ID receives keyboard focus");
+            pressKey(rentalVehicle, Qt::Key_Tab);
+            require(customer->hasFocus(), "Tab from Vehicle ID reaches Customer Name");
             customer->setText("Fictional Test Customer");
             phone->setText("0000000000");
             require(confirm->isEnabled(), "Completed rental details enable confirmation");
@@ -231,10 +261,11 @@ int main(int argc, char* argv[])
             perform(*window, "Delete archived", {"Delete Error"});
 
             navigate(*window, "showReturnPage");
-            widget<QLineEdit>(*window, "ReturnRentalID")->setText("R001");
-            perform(*window, "Complete return", {"Confirm Return", "Return Completed"});
-            widget<QLineEdit>(*window, "ReturnRentalID")->setText("R001");
-            perform(*window, "Complete return", {"Return Error"});
+            auto* returnId = widget<QLineEdit>(*window, "ReturnRentalID");
+            returnId->setText("R001");
+            performEnter(returnId, {"Confirm Return", "Return Completed"});
+            returnId->setText("R001");
+            performEnter(returnId, {"Return Error"});
 
             navigate(*window, "showRentalRecordsPage");
             verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 9), "Returned");

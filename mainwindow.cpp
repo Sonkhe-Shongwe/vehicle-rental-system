@@ -158,6 +158,11 @@ void MainWindow::applyStyles()
         "QPushButton#DangerButton:hover { background-color: #963636; }"
         "QPushButton#TypeButton { background-color: #f7f8f3; color: #172830; border: 1px solid #d5ded4; border-radius: 8px; padding: 9px 22px; font-weight: bold; }"
         "QPushButton#TypeButton:checked { background-color: #c3ec74; color: #172830; border-color: #87b941; }"
+        // Real keyboard focus must be distinct from hover and checked states.
+        "QPushButton#SidebarButton:focus { border: 2px solid #fffefa; padding: 10px 16px; }"
+        "QPushButton#ActionButton:focus, QPushButton#SecondaryButton:focus, QPushButton#DangerButton:focus { border: 2px solid #274a45; padding: 8px 14px; }"
+        "QPushButton#TypeButton:focus { border: 2px solid #274a45; padding: 7px 20px; }"
+        "QPushButton#ExitButton:focus { border: 2px solid #fffefa; padding: 8px 10px; }"
         "QHeaderView::section { background-color: #25393b; color: #f5f8f1; padding: 7px 8px; border: none; font-weight: bold; }"
         "QTableWidget { background-color: #fffefa; color: #243436; border: 1px solid #e1e5dd; border-radius: 8px; alternate-background-color: #f5f7f0; selection-background-color: #e0f3bd; selection-color: #19312a; }"
     );
