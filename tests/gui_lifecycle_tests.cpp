@@ -117,8 +117,15 @@ void verifyLayoutAtSize(MainWindow& window, int width, int height)
             "Could not apply expected responsive window size");
 
     const auto named = [&](const char* objectName) {
-        return boundsInWindow(window, widget<QWidget>(window, objectName),
-                              QString::fromLatin1(objectName));
+        // Rental History and Return have intentionally shared visual object
+        // names; choose the active page rather than a hidden stacked sibling.
+        const QString name = QString::fromLatin1(objectName);
+        for (QWidget* candidate : window.findChildren<QWidget*>(name)) {
+            if (candidate->isVisible())
+                return boundsInWindow(window, candidate, name);
+        }
+        require(false, "No visible Qt layout control: " + name);
+        return QRect();
     };
     const auto visibleButton = [&](const char* caption) {
         const QString text = QString::fromLatin1(caption);
