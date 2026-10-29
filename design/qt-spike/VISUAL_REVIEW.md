@@ -44,3 +44,17 @@
 - [ ] Only merge after evidence, updated credits and documented limitations are accepted.
 
 **Keep Draft PR #4 open.** Stable `main` has not been modified by this implementation.
+
+## Real Qt Fleet workspace checkpoint — 29 October 2026
+
+The existing Qt review branch now implements a **branded, task-oriented Fleet Inventory page**, not just an HTML concept:
+
+- Grouped sidebar with RM wordmark treatment and Workspace/Fleet/Rentals sections. The original nine navigation actions and associated slots still work; they have **not** been collapsed into three functional pages.
+- Selected-vehicle inspector with an authentic representative photograph (where available), source credit, live vehicle ID/type/details/status and daily rate.
+- Live fleet counts, in-page brand/ID/model search, available/rented dropdown filter and Add Vehicle shortcut.
+- Toyota Corolla, Ford Ranger and Hyundai i20 CC0 images embedded using Qt resources and fully listed in [review branch photo credits](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/assets/README.md). Both demo motorcycles show an explicit placeholder until source images can be obtained.
+- Actual Qt screenshots: [1500×860 Fleet](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/design/qt-spike/fleet-qt.png) and [1280×720 Fleet](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/design/qt-spike/fleet-qt-1280.png).
+- [Latest passing workflow 40911451582](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40911451582) on Ubuntu 24.04: Qt6 CMake build, CTest, both Dashboard and Fleet screenshot captures at distinct sizes, heading-to-metric geometry non-overlap, and in-process Fleet search/status smoke checks using the five fictional demo records. Verifies search for Ranger selects the Ford, rented filter finds 1, available filter finds 4, reset reveals all 5. No Windows manual runtime claim.
+
+**Still outstanding:** The three legitimate car photos have non-premium backgrounds. Licence compliance does not equal an acceptable aesthetic. Honda and Yamaha photos remain pending. Fleet search filtering has only automated synthetic acceptance, not exploratory Windows GUI testing. Rental Management UI redesign, keyboard/high-DPI review, real Windows persistence journey and owner visual approval remain outstanding. Draft [PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) stays unmerged.
+
