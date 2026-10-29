@@ -1,79 +1,62 @@
-# Vehicle Rental Management System
+# Rental Studio — Vehicle Rental Management System (Rebuild in Planning)
 
-**C++17 · Qt Widgets · CMake · CTest**
+**Windows-first C++/Qt desktop application · Existing implementation: Qt Widgets · Candidate rebuild: Qt Quick/QML**
 
-A desktop rental operations application built from a university C++/Qt project and being developed into a reliable, distinctive graduate software engineering portfolio demonstration. It manages a fictional small car and motorcycle fleet, rental checkout, returns and history using the existing C++ domain model.
+> **Product reset — 29 October 2026:** The owner has rejected the existing Qt Widgets UI's **aesthetic direction**. A new **light-first, warm, sophisticated and genuinely interactive** experience is being designed. The existing executable and functional tests remain valuable reference software, **not an approved visual baseline or released product**. No replacement QML UI has been built or validated. The [master product audit](docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) records the decisions, risks and future acceptance gates.
 
-> **Review status · 29 October 2026:** The Dashboard, Fleet Inventory, New Rental, Rental History and Return Processing have been redesigned in **real Qt Widgets** on [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4). The Qt application source [`a3a671a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/a3a671ade356790f1e4b5032a0b88feb0cd00c81) passed hosted Linux and Windows compilation and both CTests. Windows review workflow [`b36e9f9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b36e9f96302acb1cd48be24b4ebc18a8efd702c1) additionally passed **20 real Qt offscreen screenshot and simulated-DPI checks**. **Manual Windows Qt Creator interaction, physical display scaling, final photography, and owner visual approval are still pending.** PR #4 is not merged into stable `main`. This is **not** a production-certified rental service.
+## The intended product
 
-## Real Qt Widgets interface
+A beautiful, approachable local rental-operations desktop experience for a small automotive fleet. The new information architecture has three workspaces: **Overview**, **Fleet**, and **Rentals**.
 
-These screenshots were captured from the compiled Qt executable with **fictional demo records** on the review branch, not from an HTML prototype. The vehicle photography is illustrative and does **not** depict actual owned rental fleet vehicles. The screenshots show visual-review candidates, not completed Windows physical-monitor acceptance.
+- **Overview:** real availability, active rentals, upcoming/overdue attention and meaningful activity, rather than a giant generic table.
+- **Fleet:** an inviting **gallery-first / table-alternative hybrid**, shared search/filter/selection, model imagery or coherent fallback, contextual vehicle detail drawer and management operations.
+- **Rentals:** guided vehicle → customer → quote/review, active contracts, returns, history and archive management; clear validation and durable state changes.
 
-![Dashboard, actual Qt Widgets application](design/qt-spike/dashboard-qt.png)
+No dark software shell. Proposed visual language: warm ivory and white surfaces, muted sage accents, tasteful editorial hierarchy, meaningful photography and restrained motion. **Final palettes and high-fidelity screens are not yet owner-approved.**
 
-| Fleet Inventory | New Rental |
-| --- | --- |
-| ![Fleet Inventory](design/qt-spike/fleet-qt.png) | ![New Rental](design/qt-spike/rent-qt.png) |
-| Rental History | Return Processing |
-| ![Rental History](design/qt-spike/history-qt.png) | ![Return Processing](design/qt-spike/return-qt.png) |
+[Full rebuild audit](docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) · [Current experience spec](design/DESIGN_SPEC.md) · [Roadmap](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md).
 
-[1280×720 screenshots and visual audit](design/qt-spike/VISUAL_REVIEW.md) · [Photography source/licence register](assets/README.md) · [Windows manual acceptance checklist](docs/WINDOWS_ACCEPTANCE.md)
+## What the existing application actually does today
 
-**New Ford photo in this draft:** The Dashboard and Fleet Ranger inspector use an actually downloaded, provenance-hashed **Hyins / CC0 1.0** front three-quarter Ford Ranger derivative. [View source and image credits](assets/README.md). The photographed truck is a **China-market 2025 XLT in a showroom**, not an actual fleet vehicle; its exact trim/plate must not be inferred from the fictional demo data. The image and its visual suitability remain **unapproved for release**; Toyota and motorcycle artwork still need review.
+The unmerged legacy implementation is a functioning **C++17 Qt Widgets desktop app**, not yet the approved new product. It currently provides:
 
-**Design direction:** Precision Atelier × Editorial Grand Touring. Graphite navigation, warm mineral surfaces, restrained lime actions, semantic status colours and representative automotive photography. Final image quality and aesthetic sign-off remain open.
+- Register, search, filter and remove cars/motorcycles, with generated IDs and validation.
+- Immediate same-day rentals for 1–365 days, calculated quote and duplicate-booking rejection.
+- Return, repeat-return rejection, archive of returned rentals and deletion of archived records.
+- Fleet/rental views and historical transaction records.
+- Single-file atomic saves through QSaveFile and vehicle occupancy derived from the rental ledger during restart.
 
-## Working functionality
+**Limitations:** source-adjacent text storage, no database transactions, no production packaging, incomplete parsing diagnostics, ID reuse risk, floating-point pricing, no multi-user/auth/payment/API/cloud. "Booked rental value" is **not** cash received.
 
-- Register, search, filter and remove cars or motorcycles with validation and generated identifiers.
-- Check current availability and prevent double-booking.
-- Create an immediate same-day rental for 1–365 days, with a live calculated total and expected return date. **A booking is not a collected payment.**
-- Return vehicles with confirmation, reject repeated returns, archive only returned rentals and delete only archived records.
-- Display live fleet metrics, active contracts and rental history.
-- Reload persistent vehicles and rentals from the existing human-readable text format; an active rental determines occupancy after restart.
+## Existing implementation evidence (historical / visually rejected)
 
-## Verification evidence
+This project already has **passing automated evidence for the old Qt Widgets code**:
+- [Linux run 40944222722](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40944222722): CMake/CTest 2/2 and ten real Qt screen captures at exact photographed code be184b6.
+- [Windows run 40944222486](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40944222486): MSVC2022 / Qt 6.8.3 CTest 2/2 and twenty offscreen/synthetic-DPI captures at the same source revision.
 
-| Test environment | What was executed | Result |
-| --- | --- | --- |
-| [Ubuntu 24.04 / Qt6 / GCC](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724889) | CMake build, CTest domain and Qt GUI lifecycle, ten compiled-Qt screenshots, README screenshot integrity | **2/2 tests passed; 10/10 captures passed** |
-| [Windows Server 2022 / MSVC2022 / Qt 6.8.3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40942583255) | CMake Release, both CTests, ten standard Qt screenshots and all five screens at simulated 125% and 150% scaling, demo-file hashes | **2/2 tests passed; 20/20 captures passed** |
+These facts demonstrate the **old implementation's automated checks**, *not* aesthetic acceptance, QML readiness, manual Windows mouse/keyboard, physical 100/125/150% scaling, a successful rebuild, or production release.
 
-Linux verification used application source `a3a671a`. Windows workflow source `b36e9f9` changed only test configuration; the application source was unchanged. GUI integration tests use isolated `QTemporaryDir` records and cover add, rent, double-book rejection, restart, return, archive, delete, keyboard events, status contrast and selected layout geometry at 1280×720 and 1500×860. **Offscreen CI is not real-screen or mouse/keyboard sign-off.**
+[Rejected legacy Qt screenshots and critique](design/qt-spike/VISUAL_REVIEW.md) · [Historical evidence archive](docs/archive/README.md) · [Photo licensing](assets/README.md).
 
-## Build and test locally
+## Build and test the existing reference locally
 
-Use a **Qt 6 desktop kit**, CMake 3.16+ and a C++17 compiler. Open `CMakeLists.txt` in Qt Creator, select a compatible desktop kit and build target `VehicleRentalSystem_A3`. The same build can be run from a terminal after configuring Qt for CMake:
+Use an installed compatible Qt desktop kit, CMake 3.16+ and C++17 compiler. Open **CMakeLists.txt** in Qt Creator and select a matching kit. From a correctly configured terminal:
 
-```bash
-cmake -S . -B build -DBUILD_TESTING=ON
-cmake --build build --config Release
-ctest --test-dir build -C Release --output-on-failure
-```
+    cmake -S . -B build -DBUILD_TESTING=ON
+    cmake --build build --config Release
+    ctest --test-dir build -C Release --output-on-failure
 
-On Windows, use the same kit/compiler/Qt environment for the CMake commands. The `CMAKE_PREFIX_PATH` option may be required outside Qt Creator to locate Qt. Qt 5 compatibility is not covered by the documented latest CI.
+Tests use disposable QTemporaryDir data. To inspect the normal GUI, use a **separate source checkout** seeded only with demo/vehicles.txt and demo/rentals.txt, and configure the run working directory carefully. The legacy default data location is **source-adjacent**, so never launch it from a folder containing real customer records. On Windows, consult [safe acceptance guidance](docs/WINDOWS_ACCEPTANCE.md). Do not mistake QT_SCALE_FACTOR screenshots for physical Windows OS DPI.
 
-## Disposable demo data and privacy
+## Roadmap and development policy
 
-`demo/vehicles.txt` and `demo/rentals.txt` contain **fictional records only**. The normal application still uses its legacy **source-adjacent** `vehicles.txt` / `rentals.txt` paths. For manual tests, first create a **new disposable clone**, confirm it has no real customer files and copy the demo fixtures into that clone's source directory. **Never overwrite actual operational files.**
+- **Now:** plan and explicitly approve one coherent high-fidelity multi-screen design, including Overview, Fleet Gallery/Table, Drawer, New Rental, Active, History, Return, errors and responsive states.
+- **Next:** independently prove a small Qt Quick/QML plus C++ binding UI on the actual Windows Qt Creator kit, with an alternative if the proof fails.
+- **Then:** implement design system, three workspaces and functional parity, followed by separate persistence/packaging decisions and final native Windows plus cross-platform verification.
+- The working reference stays recoverable. No automatic PR merge or silent domain regression.
 
-The GUI regression tests inject a private temporary directory, so they do not modify normal application data. Runtime records are git-ignored. Photographs are locally bundled Qt resources and their credited licences are in [`assets/README.md`](assets/README.md).
+We develop **local-first**. The owner reported GitHub Actions usage-limit concerns with expected 1 November 2026 reset; specific account restriction is not confirmed. A separate [engineering optimisation branch](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/tree/docs/ci-budget-development-strategy-20261029) contains **unintegrated, unverified** CI cost reductions and a local Windows testing helper. This documentation branch deliberately does **not** deploy those workflow changes.
 
-## Engineering boundaries
+[Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) remains **draft/unmerged**; stable main has not been altered by the rebuild documentation.
 
-C++17, Qt Widgets/Qt Core, inheritance and polymorphism, CMake, CTest, Qt containers and `QSaveFile` atomic per-file saving. On startup the rental ledger reconstructs vehicle occupancy, and opening the application does not rewrite files.
-
-Known deferred engineering risks include source-adjacent writable storage, skipped malformed rows without clear diagnostics, ID reuse after deletion, non-integer currency storage, and lack of multi-file database transactions. SQLite, an API, a browser client, a standalone installer and cloud features are **not implemented**. None are being introduced before the Qt acceptance milestone is approved.
-
-## Development and review
-
-- [Authoritative current AI handoff](docs/AI_HANDOFF_CURRENT.md)
-- [Reproducible tests and exact run evidence](docs/TESTING.md)
-- [Current milestone and future roadmap](docs/ROADMAP.md)
-- [Real Qt visual review](design/qt-spike/VISUAL_REVIEW.md) and [rental-screen review](design/qt-spike/RENTALS_REVIEW.md)
-- [Windows Qt Creator acceptance procedure](docs/WINDOWS_ACCEPTANCE.md)
-- [Architecture](docs/ARCHITECTURE.md), [security limitations](SECURITY.md), [development continuity](docs/CONTINUITY.md)
-- [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) and [Issue #2](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/2)
-
-**Release gate:** passing automated tests alone does not make this project approved or portfolio-ready. Manual Windows interaction, native 100/125/150% display scaling, final rights-compliant photo quality and explicit owner approval must still be documented before any merge.
+**Do not represent this as an already completed modern rental platform, validated QML app, professional release or approved portfolio showcase.**
