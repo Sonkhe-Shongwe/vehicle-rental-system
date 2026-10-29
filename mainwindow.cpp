@@ -210,9 +210,8 @@ void MainWindow::setupMainContent()
     tableSectionTitleLabel->setObjectName("TableSectionTitle");
 
     actionStack = new QStackedWidget();
-    // Preserve the dashboard hero and two metric rows above the shared table.
-    // Without a minimum, the table's stretch factor compresses these cards.
-    actionStack->setMinimumHeight(425);
+    // Dashboard height is set on its page, not globally. Other rental forms
+    // must retain their established compact presentation.
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
@@ -1341,7 +1340,7 @@ void MainWindow::showDashboardPage()
     pageSubtitleLabel->setText(
         "Live fleet availability, booked rental value, and recent transactions.");
     actionStack->setCurrentIndex(0);
-    actionStack->setMaximumHeight(215);
+    actionStack->setMaximumHeight(385); // hero + KPI cards + metrics strip + spacing
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Recent Rental Activity");
     refreshDashboardRecentRentals();

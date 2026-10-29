@@ -34,17 +34,17 @@ jobs:
           cp demo/rentals.txt rentals.txt
           xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot
           mv portfolio-qt-review.png portfolio-qt-review-wide.png
-          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot
+          xvfb-run -a -s '-screen 0 1280x720x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot-small
           mv portfolio-qt-review.png portfolio-qt-review-small.png
           python3 - <<'PYSCREEN'
           import pathlib,struct
-          for name in ('wide','small'):
+          for name,expected in (('wide',(1500,860)),('small',(1280,720))):
               p=pathlib.Path(f'portfolio-qt-review-{name}.png')
               assert p.exists() and p.stat().st_size>25000, f'{name} screenshot missing or unexpectedly small'
               b=p.read_bytes()
               assert b[:8]==bytes.fromhex('89504e470d0a1a0a'), f'{name}: not PNG'
               width,height=struct.unpack('>II',b[16:24])
-              assert width>=1280 and height>=700, (name,width,height)
+              assert (width,height)==expected, (name,width,height,expected)
               print('Actual Qt UI',name, width,height,p.stat().st_size)
           PYSCREEN
       - name: Save screenshot on review branch only
