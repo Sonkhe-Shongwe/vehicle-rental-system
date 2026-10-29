@@ -1,3 +1,9 @@
+## Rental UI geometry acceptance | 29 October 2026
+
+The real Qt CTest now explicitly checks **New Rental**, **Rental History** and **Return Processing** at 1280×720 and 1500×860, confirming the quote/form panels do not overlap, critical inputs and action buttons fit their active panels, and action cards remain above table headings. It selects the *visible* RentalActionPanel to distinguish History from Return without changing shared style names. Corrected source [`9f6dd7c`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50) passed [Linux Qt6 40936435098](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435098) and [Windows MSVC2022/Qt6.8.3 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292), CTest 2/2, compiled Qt screenshots and fictional fixture integrity. A first test-helper selection failure is preserved in [40936385120](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936385120).
+
+**Not a final Windows acceptance:** physical screen scaling, mouse-driven window resizing, keyboard and modal visual confirmation, right-cleared final imagery and owner sign-off still pending.
+
 ## Rental form and return keyboard regression | 29 October 2026
 
 **Implemented:** visible-focus styling for existing Qt action buttons, and actual Qt-key-event tests in the disposable GUI lifecycle regression: Tab from New Rental vehicle ID reaches customer-name field; Enter from Return Rental ID executes expected confirmation and successful return, while a repeated Enter warns and does not re-return. The full persisted add/rent/restart/archive/delete checks and quote/contrast safeguards remain intact. Offscreen focus setup needed explicit active-window assignment, including after modal dialogs; initial failed runs at `49db913` and `bfe8848` are preserved as failures.

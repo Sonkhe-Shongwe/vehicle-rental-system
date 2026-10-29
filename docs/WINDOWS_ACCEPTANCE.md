@@ -1,3 +1,9 @@
+## Current two-size layout acceptance evidence | 29 October 2026
+
+**PASS on exact source `9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50`:** [Hosted Windows 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292), Windows Server 2022 / MSVC2022 / Qt6.8.3 / Release. Both CTests passed, including the real Qt GUI test that now walks all five redesigned workspaces at **1280×720 and 1500×860** and verifies selected visible panel geometry, containment and non-overlap; all ten compiled-Qt page screenshot captures and two synthetic DPI captures passed integrity and dimension checks. Demo source hashes unchanged. Earlier hidden-panel-selection test failure was fixed by choosing the currently visible Qt stacked page.
+
+**Still explicitly pending:** Windows Qt Creator real keyboard/mouse, interactive window resize and operating-system-level physical screen scaling at 100/125/150%, visible focus state and modal handling, safe live rental flow using an isolated clone, aesthetically approved licence-cleared photos. These must be recorded separately; the hosted runner does not provide physical Windows sign-off.
+
 ## Latest hosted keyboard CI results | 29 October 2026
 
 **PASS** [Windows Server 2022 / MSVC2022 / Qt6.8.3 run 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768), exact source `525099b09114748159a06220d2565990d72ee50b`. Release CMake build and **CTest 2/2** including Qt keyboard-event Tab navigation in New Rental and Enter-triggered Return Processing with repeat-return safeguard, operating exclusively on `QTemporaryDir` fictional records. Twelve compiled Qt offscreen screenshots (5 pages at 1500x860, 5 at 1280x720, 2 synthetic DPI) passed integrity checks; original demo fixtures remained byte-identical.

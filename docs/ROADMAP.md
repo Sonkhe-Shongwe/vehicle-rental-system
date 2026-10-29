@@ -1,3 +1,9 @@
+## Qt acceptance checkpoint: responsive panels | 29 October 2026
+
+The active Qt visual-redesign milestone gains repeatable real Qt geometry verification at **1280×720 and 1500×860** across all five finished screens. [Code `9f6dd7c`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50) passes [Linux 40936435098](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435098) and [Windows 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292), CTest 2/2 plus real Qt offscreen screenshot smoke. It supplements prior lifecycle, keyboard and status-contrast automated acceptance gates; it is not a merge approval or a physical-monitor test.
+
+**Next remaining priority:** actual Windows Qt Creator interaction, live resize with real 100/125/150% DPI, final lawful and visually fitting automotive photography, owner aesthetic approval. Keep Draft PR #4 unmerged; do not begin the separate SQLite, REST, AI, cloud or redesign phase.
+
 ## Active milestone checkpoint | keyboard acceptance on compiled Qt, 29 October 2026
 
 Existing visual redesign and real Qt lifecycle tests now also have repeatable **keyboard-event regression** (rental ID Tab-to-customer, return ID Enter), visible keyboard-focus button styling and a corrected Linux visual CI trigger for test-only source changes. [Linux 40935419732](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419732) and [Windows 40935419768](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40935419768) **PASS CTest 2/2 and compiled Qt screenshot gates** at source `525099b`. This completes an automated keyboard coverage increment, **not** the Qt redesign acceptance milestone. No storage, SQLite, REST/API, React, cloud or architecture phase transition.

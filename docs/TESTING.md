@@ -1,3 +1,13 @@
+## Verified two-size Qt layout geometry gate | 29 October 2026
+
+**Source tested:** `9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50`. The same compiled Qt Widgets GUI lifecycle test now resizes a separate disposable `MainWindow` to **1280×720 and 1500×860**, visits Dashboard, Fleet Inventory, New Rental, Rental History and Return Processing, and asserts: major visible widgets within window bounds, primary horizontal/vertical sections do not overlap, essential form fields and buttons remain contained within their panels, and stacked panels precede the table heading. The test selects only the **visible** RentalActionPanel because both History and Return deliberately share a stylesheet object name. Prior saved-data lifecycle/keyboard/AA contrast checks all remain executed.
+
+- [Linux visual 40936435098](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435098): **PASS**, GitHub Ubuntu 24.04 Qt6/GCC CMake Release, CTest **2/2**, five compiled Qt pages at each target size.
+- [Windows 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292): **PASS**, Windows Server 2022 / MSVC2022 / Qt6.8.3 CMake Release, CTest **2/2**, twelve compiled Qt offscreen screenshot/DPI smoke cases and unchanged SHA-256 of fictional demonstration fixtures.
+- Failed predecessor [Linux 40936385120](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936385120) at `2ea9e10`: the new test incorrectly inspected a hidden panel with repeated style identifier. Fixed in `9f6dd7c` without skipping or weakening checks; previous failure remains part of audit.
+
+**Coverage boundary:** no physical Windows Qt Creator resizing, no actual display-scale setting at 100/125/150%, no long text/dynamic localisation stress test, no user visual approval. The CI test verifies the explicitly checked rectangles, not general accessibility or every possible widget overlap.
+
 ## New Qt keyboard regression verified | 29 October 2026
 
 **Source revision:** `525099b09114748159a06220d2565990d72ee50b` (test harness correction; implementation `49db913`). The compiled real Qt Widgets lifecycle test sends `QKeyEvent` to the visible New Rental vehicle field to assert Tab advances to customer name, then Enter on Return Rental ID to submit a real disposable rental return and reject repeated return. Full add/rent/restart/archive/delete, 4.5:1 table-status contrast and temporary-file isolation assertions are retained, not skipped. Production UI has new explicit visible button focus styles.
