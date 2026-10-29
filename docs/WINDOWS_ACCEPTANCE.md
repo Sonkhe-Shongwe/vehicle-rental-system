@@ -1,3 +1,9 @@
+## Full five-screen synthetic DPI Windows checkpoint | 29 October 2026
+
+[Windows hosted CI run 40942583255](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40942583255) **PASS** for workflow code `b36e9f96302acb1cd48be24b4ebc18a8efd702c1`: Windows Server 2022 / MSVC2022 / Qt 6.8.3 Release build, CTest **2/2**, ten real compiled Qt offscreen screens across 1500×860 / 1280×720 plus all five screens at simulated 125% (`1600×900`) and 150% (`1920×1080`), **20/20 verified PNG files** and no changes to fictional files. Workflow artifacts retain all 20 screenshots for **14 days**. The visual screen set is Dashboard, Fleet, New Rental, Rental History and Return.
+
+**Not physical monitor signoff:** On a genuine Windows PC running Qt Creator with a disposable checkout, still verify mouse-driven drag-resize, keyboard Tab/Shift+Tab/Enter/Escape and focused button appearance, confirmations, actual 100%, 125% and 150% Windows Display scale, and overall visual composition with owner approval. These are not checked by `QT_SCALE_FACTOR` in the hosted offscreen session. No source-adjacent real customer data.
+
 ## Latest hosted Windows Qt Dashboard shortcut check | 29 October 2026
 
 **PASS** [Windows Server 2022, MSVC2022, Qt6.8.3 40940724910](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724910) at exact corrected code `a3a671ade356790f1e4b5032a0b88feb0cd00c81`: Release compilation, CTest **2/2** with new Dashboard `Start rental` navigation and unchanged file snapshot checks, ten 1500×860 / 1280×720 real Qt offscreen screenshots plus two simulated DPI captures; demo files unchanged.

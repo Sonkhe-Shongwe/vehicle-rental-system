@@ -4,7 +4,7 @@
 
 A desktop rental operations application built from a university C++/Qt project and being developed into a reliable, distinctive graduate software engineering portfolio demonstration. It manages a fictional small car and motorcycle fleet, rental checkout, returns and history using the existing C++ domain model.
 
-> **Review status · 29 October 2026:** The Dashboard, Fleet Inventory, New Rental, Rental History and Return Processing have been redesigned in **real Qt Widgets** on [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4). The latest acceptance code [`9f6dd7c`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50) passed hosted Linux and Windows compilation and both CTests, plus offscreen GUI screenshot checks. **Manual Windows Qt Creator interaction, physical display scaling, final photography, and owner visual approval are still pending.** PR #4 is not merged into stable `main`. This is **not** a production-certified rental service.
+> **Review status · 29 October 2026:** The Dashboard, Fleet Inventory, New Rental, Rental History and Return Processing have been redesigned in **real Qt Widgets** on [Draft PR #4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4). The Qt application source [`a3a671a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/a3a671ade356790f1e4b5032a0b88feb0cd00c81) passed hosted Linux and Windows compilation and both CTests. Windows review workflow [`b36e9f9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b36e9f96302acb1cd48be24b4ebc18a8efd702c1) additionally passed **20 real Qt offscreen screenshot and simulated-DPI checks**. **Manual Windows Qt Creator interaction, physical display scaling, final photography, and owner visual approval are still pending.** PR #4 is not merged into stable `main`. This is **not** a production-certified rental service.
 
 ## Real Qt Widgets interface
 
@@ -35,10 +35,10 @@ These screenshots were captured from the compiled Qt executable with **fictional
 
 | Test environment | What was executed | Result |
 | --- | --- | --- |
-| [Ubuntu 24.04 / Qt6 / GCC](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435098) | CMake build, CTest domain and Qt GUI lifecycle, ten compiled-Qt screenshots | **2/2 tests passed; screenshots passed** |
-| [Windows Server 2022 / MSVC2022 / Qt 6.8.3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292) | CMake Release, both CTests, 12 Qt offscreen and simulated-DPI captures, fixture integrity | **2/2 tests passed; screenshots passed** |
+| [Ubuntu 24.04 / Qt6 / GCC](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40940724889) | CMake build, CTest domain and Qt GUI lifecycle, ten compiled-Qt screenshots, README screenshot integrity | **2/2 tests passed; 10/10 captures passed** |
+| [Windows Server 2022 / MSVC2022 / Qt 6.8.3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40942583255) | CMake Release, both CTests, ten standard Qt screenshots and all five screens at simulated 125% and 150% scaling, demo-file hashes | **2/2 tests passed; 20/20 captures passed** |
 
-Both runs tested code revision `9f6dd7c`. GUI integration tests use isolated `QTemporaryDir` records and cover add, rent, double-book rejection, restart, return, archive, delete, keyboard events, status contrast and selected layout geometry at 1280×720 and 1500×860. **Offscreen CI is not real-screen or mouse/keyboard sign-off.**
+Linux verification used application source `a3a671a`. Windows workflow source `b36e9f9` changed only test configuration; the application source was unchanged. GUI integration tests use isolated `QTemporaryDir` records and cover add, rent, double-book rejection, restart, return, archive, delete, keyboard events, status contrast and selected layout geometry at 1280×720 and 1500×860. **Offscreen CI is not real-screen or mouse/keyboard sign-off.**
 
 ## Build and test locally
 
