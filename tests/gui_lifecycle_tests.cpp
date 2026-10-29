@@ -95,6 +95,95 @@ void verifyTableStatusContrast(QTableWidgetItem* status, const QString& state)
     }
 }
 
+QRect boundsInWindow(MainWindow& window, QWidget* control, const QString& label)
+{
+    require(control != nullptr, "Missing layout control: " + label);
+    require(control->isVisible(), "Layout control is hidden: " + label);
+    require(control->width() > 0 && control->height() > 0,
+            "Layout control is empty: " + label);
+    const QRect bounds(control->mapTo(&window, QPoint(0, 0)), control->size());
+    require(window.rect().contains(bounds),
+            QString("%1 extends beyond window: %2,%3 %4x%5")
+                .arg(label).arg(bounds.x()).arg(bounds.y())
+                .arg(bounds.width()).arg(bounds.height()));
+    return bounds;
+}
+
+void verifyLayoutAtSize(MainWindow& window, int width, int height)
+{
+    window.resize(width, height);
+    QApplication::processEvents();
+    require(window.size() == QSize(width, height),
+            "Could not apply expected responsive window size");
+
+    const auto named = [&](const char* objectName) {
+        return boundsInWindow(window, widget<QWidget>(window, objectName),
+                              QString::fromLatin1(objectName));
+    };
+    const auto visibleButton = [&](const char* caption) {
+        const QString text = QString::fromLatin1(caption);
+        return boundsInWindow(window, button(window, text), text);
+    };
+    const auto stackedAboveTable = [&](const QRect& panel, const char* screen) {
+        const QRect heading = named("TableSectionTitle");
+        require(panel.bottom() + 1 < heading.top(),
+                QString("%1 panel overlaps table heading at %2x%3")
+                    .arg(QString::fromLatin1(screen)).arg(width).arg(height));
+        const QRect table = boundsInWindow(window,
+                                           window.findChild<QTableWidget*>(), "DataTable");
+        require(heading.bottom() < table.top(),
+                QString("%1 heading overlaps table").arg(QString::fromLatin1(screen)));
+    };
+    const auto contained = [&](const QRect& child, const QRect& panel,
+                               const char* label) {
+        require(panel.contains(child),
+                QString("%1 exceeds its panel at %2x%3")
+                    .arg(QString::fromLatin1(label)).arg(width).arg(height));
+    };
+
+    navigate(window, "showDashboardPage");
+    const QRect hero = named("FleetHero");
+    const QRect metrics = named("MetricsStrip");
+    require(hero.bottom() < metrics.top(),
+            "Dashboard hero overlaps metric strip");
+    stackedAboveTable(metrics, "Dashboard");
+
+    navigate(window, "showAllVehicles");
+    const QRect inspector = named("FleetInspector");
+    const QRect summary = named("FleetSummary");
+    const QRect search = named("FleetSearch");
+    const QRect filter = named("FleetStatusFilter");
+    require(inspector.bottom() < summary.top() && summary.bottom() < search.top(),
+            "Fleet inspector, summary or filters overlap");
+    require(search.right() < filter.left(), "Fleet search/filter controls overlap");
+    stackedAboveTable(filter, "Fleet");
+
+    navigate(window, "showRentPage");
+    const QRect form = named("RentalFormPanel");
+    const QRect quote = named("RentalQuotePanel");
+    require(form.right() < quote.left(), "Rental form and estimate overlap");
+    for (const char* field : {"RentalVehicleID", "RentalDays"}) {
+        contained(named(field), form, field);
+    }
+    contained(named("QuoteTotal"), quote, "QuoteTotal");
+    contained(visibleButton("Confirm rental"), form, "Confirm rental");
+    stackedAboveTable(form, "New Rental");
+
+    navigate(window, "showRentalRecordsPage");
+    const QRect history = named("RentalActionPanel");
+    contained(named("RentalHistoryFilter"), history, "History filter");
+    contained(named("RentalRecordID"), history, "History record ID");
+    contained(visibleButton("Archive returned"), history, "Archive returned");
+    contained(visibleButton("Delete archived"), history, "Delete archived");
+    stackedAboveTable(history, "Rental History");
+
+    navigate(window, "showReturnPage");
+    const QRect returns = named("RentalActionPanel");
+    contained(named("ReturnRentalID"), returns, "Return ID");
+    contained(visibleButton("Complete return"), returns, "Complete return");
+    stackedAboveTable(returns, "Return Processing");
+}
+
 QByteArray contents(const QString& path)
 {
     QFile file(path);
@@ -178,6 +267,16 @@ int main(int argc, char* argv[])
     try {
         const QString vehiclesPath = isolated.filePath("vehicles.txt");
         const QString rentalsPath = isolated.filePath("rentals.txt");
+        // Exercise the same five real Qt workspaces at both required sizes
+        // before any transaction can alter the disposable test data.
+        {
+            MainWindow layoutWindow(isolated.path());
+            layoutWindow.showNormal();
+            verifyLayoutAtSize(layoutWindow, 1280, 720);
+            verifyLayoutAtSize(layoutWindow, 1500, 860);
+            std::cout << "PASS: five Qt workspaces at 1280x720 and 1500x860 "
+                         "without primary-panel clipping/overlap\n";
+        }
         {
             auto window = std::make_unique<MainWindow>(isolated.path());
             window->showNormal();
