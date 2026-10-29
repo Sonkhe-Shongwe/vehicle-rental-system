@@ -1,36 +1,45 @@
-# Audit record | 29 October 2026
+# Source Audit - 29 October 2026
 
-**Baseline:** Uploaded `VehicleRentalSystem_A3.zip` (C++17/Qt Widgets app, CMake, local text data, 13 screenshots). The GitHub repository was empty at the start of this audit. The application source is being prepared for upload separately.
+**Baseline examined:** `VehicleRentalSystem_A3.zip` uploaded by the project owner. **Repository observation:** `Sonkhe-Shongwe/vehicle-rental-system` existed but was empty at the beginning of the audit. The original archive contained C++ sources, a CMake build, README, runtime text records and 13 screenshots.
 
-## Implemented at source level
-- Fleet CRUD and search, sequential IDs.
-- Vehicle abstract base class; Car and Motorcycle implementations.
-- Rental creation, double-booking checks, return, archiving and controlled deletion.
-- Customer and date capture, price calculations, fleet dashboard, rental history.
-- Two text-file stores with 13-field rentals and older 14-field read compatibility.
+## What works at source level (runtime verification is separate)
 
-## Prioritized findings
+| Feature | Evidence in baseline | Assessment |
+| --- | --- | --- |
+| Fleet CRUD and ID generation | `rentalsystem.cpp`, `mainwindow.cpp` | Implemented in source. |
+| Car/motorcycle polymorphism | `vehicle.h`, `car.cpp`, `motorcycle.cpp` | Clean small inheritance example. |
+| Rental create, return, archive, delete | `rental.cpp`, `rentalsystem.cpp` | Implemented with state guards. |
+| Availability and double-booking prevention | `RentalSystem::createRental` | Guards exist, test coverage previously absent. |
+| Dashboard KPIs and transaction tables | `mainwindow.cpp` | UI logic exists; metrics are historical transaction totals, not verified cash collected. |
+| Persistence with backward format support | `load*FromFile`, `save*ToFile` | Basic file persistence; failure/corruption risks existed. |
+| Build system | `CMakeLists.txt` | Qt5/Qt6 and C++17 targeting; no initial tests. |
 
-| Severity | Issue | Evidence and action |
-|---|---|---|
-| CRITICAL | Empty GitHub repository at start of audit | Initialized with project README. **Complete source still needs to be committed.** |
-| HIGH | Save failures were ignored | Original `RentalSystem::saveVehiclesToFile` and `saveRentalsToFile` returned void and ignored write errors. Revised local package uses `QSaveFile`, boolean status and rollback. |
-| HIGH | Rental create/return wrote two files independently | Partial failure could make vehicle/rental status disagree. Revised local package uses a single authoritative rental write and reconstructs fleet occupancy on reload. |
-| HIGH | Startup could rewrite both source files without consent | `loadRentalsFromFile` invoked both save functions after parsing, potentially discarding invalid lines. Revised local package makes startup read-only. |
-| HIGH | Original demo material included names/phone numbers | Raw rental fixtures and certain screenshots must be excluded. Sanitized fictional examples provided in the local package. |
-| MEDIUM | Business rules accepted caller-provided rental amount | Additional finite number, price, days, total and delimiter validation prepared. |
-| MEDIUM | Invalid, duplicate-active or malformed imported records | Revised loader rejects duplicate active booking and invalid format; diagnostic reporting is still pending. |
-| MEDIUM | `__FILE__`-based source folder used for runtime storage | AppData migration requires testing against old data; current local patch supports an isolated directory for test fixtures. |
-| MEDIUM | IDs may be reused after deleting a highest-number record | Persistent sequence allocator pending. |
-| MEDIUM | Single `mainwindow.cpp` contains a large UI+presentation layer | Incremental refactor pending; preserve working screens for deadline. |
-| MEDIUM | No pre-existing automated tests, CI or backend API | Local patch adds CTest domain tests. SQLite, API, CI green status and installer are not implemented/verified yet. |
-| LOW-MEDIUM | Currency uses `double`; revenue sums rental contract values | Integer cents and a clearer paid-vs-booked definition are future items. |
+## Audited issues, ordered by risk
 
-## Verification truth
-- Direct source and GitHub metadata inspection: completed.
-- Static checks on revised local copy: completed.
-- CMake configure in the available environment: **blocked by absent Qt5/Qt6 dev package**.
-- Compilation, CTest and Windows GUI smoke test: **not run**, cannot be reported as passed.
-- Current remote repository: documents are bootstrapped, but complete source import still required.
+| ID | Severity | Finding | Source baseline | Mitigation / status |
+| --- | --- | --- | --- | --- |
+| VR-01 | Critical | Initial GitHub repository was empty. No recruiter could inspect the code. | GitHub API contents returned `repository is empty`. | Import complete improved source from handoff ZIP before submitting application. |
+| VR-02 | High | File save errors were ignored. UI-facing operations could return success without persisted data. | `rentalsystem.cpp`: `saveVehiclesToFile`, `saveRentalsToFile` returned `void` and used `QFile`. | `QSaveFile` plus boolean result and rollback of in-memory operations prepared. Needs actual Qt build/tests. |
+| VR-03 | High | Two separate file saves on rental create/return could disagree after partial failure. | `createRental`, `completeRental` wrote both files. | New flow writes authoritative rental ledger once and reconstructs occupancy on reload. Still needs crash/restart validation. |
+| VR-04 | High | Loading rental history automatically rewrote both files, including invalid-row omission and format migration without backup. | `loadRentalsFromFile` called both `save...` functions. | Read operation changed to read-only. Migration deferred until explicitly backed up. |
+| VR-05 | High | Original ZIP included customer names and mobile numbers in `rentals.txt`, including an owner-linked record. Several screenshots also exposed customer details. | Original data fixtures and screenshots. | Original runtime text and customer screenshots excluded from public handoff. Fictional `demo/` data only. |
+| VR-06 | Medium | New transaction domain methods accepted caller-supplied prices/totals without independently checking against vehicle price or expected total. | `createRental` checked only positivity. | Added numeric finiteness, rental-length, price equivalence and total checks. Needs runtime tests. |
+| VR-07 | Medium | Raw delimited storage was vulnerable to record-format corruption from unvalidated separators and newlines in direct domain calls. | `toFileString`, basic UI checks. | Added model-level guards for record delimiter and line breaks on new records. Existing malformed historical rows still require reporting. |
+| VR-08 | Medium | Duplicate active rental entries could load from externally modified data and no error was surfaced. | `loadRentalsFromFile` record loop. | Reject second active booking on import; missing diagnostics still open. |
+| VR-09 | Medium | Runtime files are stored beside the source path resolved using `__FILE__`; install and permissions are fragile. | `RentalSystem` default constructor. | Path isolation constructor for tests; AppData migration remains open for compatibility. |
+| VR-10 | Medium | Deleted maximum IDs may be reissued. | `generateNextVehicleId`, `generateNextRentalId`. | Persistent sequence allocator or UUID/DB identity needed in next milestone. |
+| VR-11 | Medium | No automated regression, CI, warning policy or static analysis in baseline. | Original CMake file and archive inventory. | Domain tests, CTest and example CI workflow prepared; not yet executed here. |
+| VR-12 | Medium | `mainwindow.cpp` had ~1,900+ lines spanning UI construction, validation, business presentation and rendering. | `mainwindow.cpp` inventory. | Refactor incrementally after release gate, not under imminent deadline. |
+| VR-13 | Low-Medium | `double` stores South African rand and the dashboard sums all rental contract totals as revenue. | `Rental` price fields and dashboard `revenue` loop. | Document revenue definition; use integer cents or fixed decimal and payment events before financial claims. |
+| VR-14 | Medium | No built-in database, REST API, authentication, deployment pipeline or installer. | Source inventory. | Be transparent; these are future full-stack extensions, not current capabilities. |
 
-No live customer data may be posted to public issues or GitHub history.
+## Verification boundaries
+
+- **Observed:** Source contents and code paths were directly inspected; privacy exposure was verified in supplied data and screenshots.
+- **Prepared:** Safer write implementation, validations, test suite, ignore rules and sanitized demo records.
+- **Not yet verified:** Runtime behaviour on Qt, GUI acceptance, migration compatibility with real old files, Linux/Windows build, crash/disk-full fault injection, screenshot correctness after the patch.
+- **Toolchain limitation here:** CMake configuration fails because neither `Qt5Config.cmake` nor `Qt6Config.cmake` is installed in this workspace. This is a missing dependency, not evidence of a code defect or a passed build.
+
+## Safe release gate
+
+No merge/portfolio-complete claim until CMake configuration, compilation, CTest, and manual rent/return/restart with disposable fixtures pass. Preserve backup copies of user data and do not replace the student's original working installation.

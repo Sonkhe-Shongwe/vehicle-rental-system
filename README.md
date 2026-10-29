@@ -1,37 +1,73 @@
 # Vehicle Rental Management System
 
-C++17 and Qt Widgets desktop application for car and motorcycle rentals, based on an original university project and being upgraded for graduate software engineering applications.
+A C++17 / Qt Widgets desktop application for managing a small car and motorcycle rental fleet. Originally developed as a university project and now undergoing a focused reliability, testing, and documentation upgrade for graduate software engineering applications.
 
-**Engineering status (29 October 2026):** A source audit and revised local code package have been prepared. Qt compilation, CTest execution, and Windows GUI checks are pending. **This repository is being populated; do not assume the complete code is online until source files appear here.**
+> **Status (29 October 2026):** Source-level hardening and a domain regression suite have been prepared. Compilation, automated test execution and an interactive Windows walkthrough are **pending** on a machine with Qt 5/6. Do not interpret this repository as a tested production rental service.
 
-## Existing features
-- Fleet management: add, search, remove, and auto-generate vehicle IDs.
-- Car and Motorcycle derived classes with a polymorphic Vehicle base class.
-- Rental creation, availability checks, return processing, and archived records.
-- Date and price calculations, dashboard KPIs and rental history.
-- CMake/C++17 build with Qt5/Qt6 Widgets compatibility.
-- Human-readable local persistence (planned SQLite migration).
+## Core features
 
-## Portfolio upgrade plan
-1. Commit the sanitized application sources, CMake test target, sample data and safe screenshots from the prepared development ZIP.
-2. Compile using Qt Creator on Windows and execute the CTest domain regression suite.
-3. Check the rent/return/archive/restart workflow with disposable data and record the result.
-4. Preserve the familiar desktop UI; continue with data integrity and architectural changes only after verification.
+- Add, search and remove cars or motorcycles, with sequential IDs and input validation.
+- Create rental transactions, check availability and prevent double bookings.
+- Calculate the rental amount, rental duration and expected return date.
+- Process returns by rental or vehicle ID; archive and delete completed records.
+- Display fleet totals, active rentals, utilisation, recent transactions and historical totals.
+- Persist fleet records and rental transactions using a human-readable legacy text format.
 
-## Build
-Requires Qt 6 (or supported Qt 5), CMake 3.16+, and a C++17 compiler.
+## Screenshots
+
+These are historical screenshots from the original Qt student build, **not evidence that the current hardened build has passed runtime testing**. Only vehicle-only screens without customer records are included.
+
+![Historical dashboard with customer names replaced by fictional labels](screenshots/dashboard-redacted.png)
+![Car registration UI](screenshots/add-car.png)
+![Motorcycle registration UI](screenshots/add-motorcycle.png)
+
+## Technology
+
+C++17, Qt Widgets / Qt Core, CMake, Qt containers, object-oriented domain models, file I/O and CTest.
+
+## Build and test
+
+Requires a Qt 6 (recommended) or compatible Qt 5 installation with a CMake-discoverable desktop kit, CMake 3.16+, and a C++17 compiler.
 
 ```bash
-cmake -S . -B build -DBUILD_TESTING=ON
+cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/Qt" -DBUILD_TESTING=ON
 cmake --build build --config Release
-ctest --test-dir build -C Release --output-on-failure
+ctest --test-dir build --output-on-failure -C Release
 ```
 
-For Qt Creator, open CMakeLists.txt, select a desktop kit, configure and build.
+When using Qt Creator, open `CMakeLists.txt`, choose the Qt Desktop kit, configure, build and run the `VehicleRentalSystem_A3` target. To run tests, select `vehicle_rental_tests` or invoke CTest in the build directory.
+
+**For Windows:** use a Qt kit configured in Qt Creator; Qt Creator normally sets the CMake prefix automatically. The application opens maximised for the wide rental tables.
+
+## Safe demo data
+
+The files under [`demo/`](demo/) contain fictional customer labels and placeholder phone numbers. The live `vehicles.txt` and `rentals.txt` files are ignored by Git because rental records contain personal information.
+
+For a clean disposable demonstration, copy `demo/vehicles.txt` and `demo/rentals.txt` into the **project source directory**, then run the app from Qt Creator. **Do not overwrite existing real customer data.** The current legacy default stores runtime files beside source code; the planned application-data migration is tracked in the roadmap.
+
+```text
+Vehicle: Type|ID|Brand|Model|PricePerDay|IsRented|ExtraValue
+Rental:  Rental|RentalID|Customer|Phone|VehicleID|StartDate|ExpectedReturnDate|ActualReturnDate|Days|PricePerDay|TotalCost|Returned|Archived
+```
 
 ## Engineering notes
-The original source stores runtime personal information in text records. Do not publish the original rentals.txt, vehicles.txt, or screenshots with customer information. Only synthetic demo records belong in the public repository. The revised source uses QSaveFile and an authoritative rental ledger, but Qt execution has not yet been verified.
 
-See [Audit](docs/AUDIT.md), [Roadmap](docs/ROADMAP.md), and [Continuity](docs/CONTINUITY.md).
+- Rental history is the authoritative occupancy ledger; on startup vehicle rented flags are reconstructed from active rentals.
+- Individual file writes use `QSaveFile` and return failure rather than silently reporting success. This is **not** a full multi-file transactional database.
+- Startup no longer rewrites files as a side effect of loading.
+- Domain checks reject invalid pricing, totals and record separators in new transactions.
+- Domain regression tests use isolated temporary storage and do not modify a developer's source fixtures.
+- Known risks remain: source-adjacent writable files, skipped malformed rows without user warnings, ID reuse after deletion, no database migration, no customer authentication, and no completed runtime verification.
 
-**Scope:** Qt desktop software, not a deployed REST API or web full-stack application. Future API/database work is documented as a roadmap, not a completed feature.
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Source audit](docs/AUDIT.md)
+- [Deadline-focused engineering roadmap](docs/ROADMAP.md)
+- [Reproducible testing checklist](docs/TESTING.md)
+- [Next-session continuity handoff](docs/CONTINUITY.md)
+- [Security and privacy limitations](SECURITY.md)
+
+## Scope and honesty
+
+This is a Qt desktop application, **not** a React web application, REST API or full-stack cloud product. The next natural extension after reliable core functionality is a transaction-backed SQLite data layer and optional service/API boundary. The emphasis for this portfolio milestone is clean domain logic, careful defect handling, automated tests, reproducibility and documentation.

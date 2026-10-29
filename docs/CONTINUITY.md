@@ -1,15 +1,35 @@
-# Development continuity | 29 October 2026
+# Project Continuity - 29 October 2026
 
-**Goal:** Portfolio-ready C++/Qt Vehicle Rental System for a remote Software Engineer (Full-Stack) Graduate application due **30 October 2026**.
+## Objective
 
-**Actual repository at audit start:** Public but empty. First documentation commit bootstrapped on `main`. Original code is in an uploaded local ZIP, **not yet the GitHub source tree**.
+Make `Sonkhe-Shongwe/vehicle-rental-system` a credible, honest software engineering portfolio artifact for a Retipuj Zoft Full-Stack Software Engineer Graduate application due **30 October 2026**.
 
-**Prepared local upgrade ZIP:** Complete original C++/Qt application with isolated test-directory constructor, `QSaveFile` saves and error propagation, rental-ledger authoritative status, non-mutating loading, tighter domain validation, CTest tests, fictional data, .gitignore, GitHub Actions definition and source documentation. Raw customer records and customer screenshots removed. Original input ZIP remains untouched.
+## Source truth
 
-**Verification boundary:** Qt dev libraries are absent from audit environment; CMake configuration blocked before compile. Actual Qt Creator build, CTest and GUI walkthrough must occur before claiming success.
+Uploaded initial source archive: `VehicleRentalSystem_A3.zip` (July 2026 Qt assessment). At audit start, the public GitHub repo existed but had no commits. The source ZIP contained a working-project design, not externally verified runtime execution. Its `rentals.txt` and some screenshots contained customer information and are deliberately not distributed in the hardened handoff.
 
-**Next:** Upload the *revised* local package into the initialized repo, run Qt build and CTest, complete manual smoke test, publish sanitized results and use the project in the application. Maintain `docs/AUDIT.md`, `docs/ROADMAP.md` and this file after substantial changes.
+## Current patch work
 
-**Preservation:** Do not overwrite user data. Default storage still uses legacy `__FILE__` source directory for compatibility. Source was originally authored in July 2026. Avoid rewriting the GUI for deadline. Current project is desktop Qt, **not a finished full-stack web/API product**.
+- Added constructor option for isolated test data directories.
+- Converted fleet/rental writes to atomic `QSaveFile` results with in-memory rollback for failed operations.
+- Made rental ledger authoritative so creating/returning rental needs one file write; fleet occupancy is reconstructed on reload.
+- Removed automatic rewriting of source data during startup.
+- Added numeric and text validation for newly created domain records; rejected duplicate active rentals from imported history.
+- Added CTest regression source, sanitized `demo/`, `.gitignore`, README and documentation.
+- No Qt toolchain here; no runtime pass has been claimed. Test with Qt on Windows before treating as stable.
 
-**Known open risks:** Missing Qt execution evidence; silent invalid historical row skipping; path/install migration; IDs reused after deletion; floating-point money; incomplete storage-level durability; monolithic MainWindow; no SQLite/REST API.
+## Important preservation constraints
+
+The default legacy data folder remains next to the C++ source (using `__FILE__`) for compatibility. The new constructor can isolate testing. Do not overwrite real `vehicles.txt` / `rentals.txt` with demo files. Back up originals. Existing data may include records in the old 14-field rental format, which the reader still supports. Do not silently migrate or delete unrecognized lines.
+
+## Immediate next actions
+
+1. Extract the prepared hardened ZIP and import its contents into the existing GitHub repository; do not upload the original source's customer data or unredacted screenshots.
+2. Run Qt Creator/CMake build and CTest. If they fail, record exact compiler output and correct before claiming the patch works.
+3. Complete the disposable-data GUI smoke test and save a short dated result.
+4. Make a concise application submission featuring the repo link and confirmed C++/Qt functionality.
+5. Defer SQLite/REST/full-stack extensions until the tested release candidate is stable.
+
+## Review risks after this checkpoint
+
+The project is still a Qt desktop app with flat-file storage and no service API. SQLite transactions, secure customer data lifecycle, source-independent AppData paths, deterministic IDs and a clean deployment story are not yet implemented. `mainwindow.cpp` remains large. Revenue is calculated as sum of rental values, not receipts. All code must be compiled and tested on the target kit.
