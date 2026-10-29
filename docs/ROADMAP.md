@@ -1,3 +1,9 @@
+## Qt redesign acceptance: declined-action safety gate | 29 October 2026
+
+The current Qt GUI acceptance phase gained explicit non-mutating confirmation cancellation coverage in compiled Qt Widgets at code [`7413927`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/74139274a35380c380fd5ce68c31631f0422f3f5), including byte-for-byte persistence preservation for declined Rent, Return, Archive and Delete. [Linux 40939283826](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283826) and [Windows 40939283757](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283757) both PASS Release build and CTest **2/2**; compiled-Qt screenshot checks remain passing. This closes another automated acceptance gap, not the overall milestone.
+
+Next outstanding actual acceptance work remains physical Windows Qt Creator UI/real monitor DPI, premium verified-license vehicle photo replacements and explicit owner visual approval. Do not automatically merge Draft PR #4 or advance to SQLite, REST, React, cloud or AI.
+
 ## Current milestone update | real Qt public evidence | 29 October 2026
 
 README now presents five real compiled-Qt review screenshots with test/provenance boundaries rather than legacy student UI, and screenshot references/files are automatically checked for exact 1500×860 valid PNGs in Linux CI. [`5faa553`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/5faa5536bbd798c30d9d3022bfec25395d94340c) passes [Linux 40937998505](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998505) and [Windows 40937998171](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998171), each CTest **2/2** and actual Qt UI offscreen checks. This closes a **documentation/evidence presentation gap** inside the current visual-acceptance milestone, not the visual-approval gate.

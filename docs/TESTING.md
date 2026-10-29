@@ -1,3 +1,11 @@
+## Verified negative GUI confirmation paths | 29 October 2026
+
+**Source:** `74139274a35380c380fd5ce68c31631f0422f3f5`. Existing `vehicle_rental_gui_lifecycle` compiled-Qt test now drives explicit **No** selections for Rental Creation, Return Processing, Archive and Permanent Deletion, checking both file **existence** and **byte-for-byte contents** unchanged, as well as separately reloaded rental/vehicle state. It also tests approved actions afterward and retains prior keyboard events, layout geometry at 1280x720/1500x860, status AA contrast, restart, duplicate booking and repeat-return assertions. All test data stays fictional in a `QTemporaryDir`.
+
+- **Linux Ubuntu 24.04/GCC/Qt6:** [run 40939283826](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283826) **PASS**, configure/build, CTest **2/2**, published README screenshot validation **5/5**, real Qt screenshot capture **10/10**.
+- **Windows Server 2022/MSVC2022/Qt6.8.3:** [run 40939283757](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283757) **PASS**, Release configure/build, CTest **2/2**, Qt compiled offscreen screenshots **10/10** at two sizes plus **2/2** simulated DPI, demo fixture hashes unchanged.
+- **Not tested:** physical Windows Qt Creator / native modal keyboard/mouse flow, actual 100%/125%/150% display scaling, owner's visual/photo signoff. These hosted offscreen regression passes must not be recorded as manual desktop signoff.
+
 ## Five-screen README screenshot provenance verification | 29 October 2026
 
 **Exact tested source:** `5faa5536bbd798c30d9d3022bfec25395d94340c`. New standard-library script `tests/verify_readme_screenshots.py` verifies each of the README's five `design/qt-spike/*.png` links exists and each **1500×860** image passes `tests/verify_qt_png.py` PNG signature, CRC/stream integrity, dimensions and basic content diversity checks. A README edit now triggers the Linux Qt visual CI; the validation executes **before** new captures are generated. This tests already published evidence without assuming subjective aesthetic quality or freshness relative to all source commits.

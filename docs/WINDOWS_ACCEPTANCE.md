@@ -1,3 +1,9 @@
+## New cancellation-safety CI evidence | 29 October 2026
+
+Hosted [Windows Server 2022, MSVC2022, Qt 6.8.3 run 40939283757](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40939283757) **PASSED** for exact source `74139274a35380c380fd5ce68c31631f0422f3f5`: Release Qt build, CTest **2/2**, test-only fictional data. Real Qt Widgets regression now checks modal **No** on Create Rental, Complete Return, Archive and Delete, confirming persisted file existence/bytes and reloaded fleet/rental status do not change. Ten offscreen compiled Qt screen renders and two synthetic DPI captures passed, plus unchanged demo fixture SHA-256.
+
+**Still required in a disposable Windows Qt Creator clone:** click No, press Escape where appropriate, verify status/forms, keyboard focus and navigation, resize live, check physical 100%/125%/150% monitor scaling and compare screenshots. Hosted modal driver is not a user mouse/keyboard test. No owner visual approval or merge.
+
 ## Current two-size layout acceptance evidence | 29 October 2026
 
 **PASS on exact source `9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50`:** [Hosted Windows 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292), Windows Server 2022 / MSVC2022 / Qt6.8.3 / Release. Both CTests passed, including the real Qt GUI test that now walks all five redesigned workspaces at **1280×720 and 1500×860** and verifies selected visible panel geometry, containment and non-overlap; all ten compiled-Qt page screenshot captures and two synthetic DPI captures passed integrity and dimension checks. Demo source hashes unchanged. Earlier hidden-panel-selection test failure was fixed by choosing the currently visible Qt stacked page.
