@@ -7,6 +7,7 @@
 #include <QAbstractButton>
 #include <QFile>
 #include <QKeyEvent>
+#include <QPair>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -197,6 +198,14 @@ QByteArray contents(const QString& path)
     require(file.open(QIODevice::ReadOnly), "Unable to read temporary persisted fixture: " + path);
     return file.readAll();
 }
+
+// Snapshot both existence and bytes: cancelled actions must neither create a
+// new file nor rewrite an existing one (even with equivalent contents).
+QPair<bool, QByteArray> fileSnapshot(const QString& path)
+{
+    const bool exists = QFile::exists(path);
+    return {exists, exists ? contents(path) : QByteArray()};
+}
 }
 
 int main(int argc, char* argv[])
@@ -212,6 +221,7 @@ int main(int argc, char* argv[])
     QStringList expectedDialogs;
     QStringList observedDialogs;
     bool unexpectedDialog = false;
+    bool approveConfirmations = true;
     // Modal confirmation and information boxes have nested event loops.
     // Drive exactly the expected dialog titles, not arbitrary "Yes" prompts.
     QTimer dialogDriver;
@@ -227,7 +237,7 @@ int main(int argc, char* argv[])
         if (!expected)
             unexpectedDialog = true;
         const auto choice = expected && (dialog->standardButtons() & QMessageBox::Yes)
-                                ? QMessageBox::Yes
+                                ? (approveConfirmations ? QMessageBox::Yes : QMessageBox::No)
                                 : (dialog->standardButtons() & QMessageBox::Ok)
                                       ? QMessageBox::Ok : QMessageBox::No;
         if (QAbstractButton* press = dialog->button(choice))
@@ -348,6 +358,25 @@ int main(int argc, char* argv[])
             customer->setText("Fictional Test Customer");
             phone->setText("0000000000");
             require(confirm->isEnabled(), "Completed rental details enable confirmation");
+
+            // A customer pressing No must leave inventory and rental files
+            // exactly untouched, including whether rentals.txt even exists.
+            const auto cancelledRentVehicles = fileSnapshot(vehiclesPath);
+            const auto cancelledRentRentals = fileSnapshot(rentalsPath);
+            approveConfirmations = false;
+            perform(*window, "Confirm rental", {"Confirm Rental"});
+            approveConfirmations = true;
+            require(fileSnapshot(vehiclesPath) == cancelledRentVehicles &&
+                    fileSnapshot(rentalsPath) == cancelledRentRentals,
+                    "Declined rental must not create/rewrite persistent records");
+            {
+                RentalSystem disk(isolated.path());
+                require(disk.getActiveRentals().isEmpty() &&
+                        !disk.findVehicleById("C001")->getIsRented(),
+                        "Declined rental must not reserve the vehicle");
+            }
+            require(confirm->isEnabled(),
+                    "Declined rental keeps the complete form available");
             perform(*window, "Confirm rental", {"Confirm Rental", "Rental Created"});
 
             // Rental cannot be booked a second time through the UI.
@@ -390,6 +419,22 @@ int main(int argc, char* argv[])
             navigate(*window, "showReturnPage");
             auto* returnId = widget<QLineEdit>(*window, "ReturnRentalID");
             returnId->setText("R001");
+            const auto cancelledReturnVehicles = fileSnapshot(vehiclesPath);
+            const auto cancelledReturnRentals = fileSnapshot(rentalsPath);
+            approveConfirmations = false;
+            performEnter(returnId, {"Confirm Return"});
+            approveConfirmations = true;
+            require(fileSnapshot(vehiclesPath) == cancelledReturnVehicles &&
+                    fileSnapshot(rentalsPath) == cancelledReturnRentals,
+                    "Declined return must preserve fleet and contract bytes");
+            {
+                RentalSystem disk(isolated.path());
+                require(disk.getActiveRentals().size() == 1 &&
+                        disk.findVehicleById("C001")->getIsRented(),
+                        "Declined return must leave the contract active");
+            }
+            require(returnId->text() == "R001",
+                    "Declined return retains the entered rental ID");
             performEnter(returnId, {"Confirm Return", "Return Completed"});
             returnId->setText("R001");
             performEnter(returnId, {"Return Error"});
@@ -397,10 +442,33 @@ int main(int argc, char* argv[])
             navigate(*window, "showRentalRecordsPage");
             verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 9), "Returned");
             widget<QLineEdit>(*window, "RentalRecordID")->setText("R001");
+            const auto cancelledArchive = fileSnapshot(rentalsPath);
+            approveConfirmations = false;
+            perform(*window, "Archive returned", {"Confirm Archive"});
+            approveConfirmations = true;
+            require(fileSnapshot(rentalsPath) == cancelledArchive,
+                    "Declined archive cannot rewrite rental ledger");
+            {
+                RentalSystem disk(isolated.path());
+                require(!disk.findRentalById("R001")->getIsArchived(),
+                        "Declined archive leaves returned record unarchived");
+            }
             perform(*window, "Archive returned", {"Confirm Archive", "Record Archived"});
             widget<QComboBox>(*window, "RentalHistoryFilter")->setCurrentIndex(3);
             verifyTableStatusContrast(window->findChild<QTableWidget*>()->item(0, 9), "Archived");
             widget<QLineEdit>(*window, "RentalRecordID")->setText("R001");
+            const auto cancelledDeletion = fileSnapshot(rentalsPath);
+            approveConfirmations = false;
+            perform(*window, "Delete archived", {"Confirm Permanent Deletion"});
+            approveConfirmations = true;
+            require(fileSnapshot(rentalsPath) == cancelledDeletion,
+                    "Declined permanent deletion must preserve exact ledger bytes");
+            {
+                RentalSystem disk(isolated.path());
+                require(disk.findRentalById("R001") != nullptr &&
+                        disk.findRentalById("R001")->getIsArchived(),
+                        "Declined deletion retains the archived record");
+            }
             perform(*window, "Delete archived", {"Confirm Permanent Deletion", "Record Deleted"});
         }
         {
