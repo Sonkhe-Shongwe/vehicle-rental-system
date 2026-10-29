@@ -1,0 +1,20 @@
+{
+  "review_status": "UNAPPROVED_CANDIDATE_NOT_BUNDLED",
+  "commons_file_page": "https://commons.wikimedia.org/wiki/File:2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg",
+  "declared_license": "CC0",
+  "artist": "Hyins",
+  "source_media_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg/1280px-2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "source_download_sha256": "379f484969937b1418c9c1e1cf0d7e8e117e4fea857c30336d06e03c3ad145a2",
+  "review_derivative_sha256": "747c5afbe5a3f2b6369b1df5d1228ae8762452ff2f065cdcdde26bd757b8cdc3",
+  "review_dimensions": [
+    1280,
+    720
+  ],
+  "original_metadata": {
+    "width": 4032,
+    "height": 2268,
+    "size": 3287750,
+    "mime": "image/jpeg"
+  },
+  "disclosure": "Representative Ford Ranger, NOT an actual rental-fleet vehicle. Do not use in Qt until a separate visual review and licence acceptance."
+}
