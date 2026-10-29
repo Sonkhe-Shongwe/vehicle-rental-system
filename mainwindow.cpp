@@ -87,7 +87,12 @@ void MainWindow::applyStyles()
     setStyleSheet(
         "QMainWindow { background-color: #f5f4ef; }"
         "QWidget#Sidebar { background-color: #16252b; }"
-        "QLabel#SidebarTitle { color: #fbfdfa; font-size: 21px; font-weight: 700; padding: 20px 16px; }"
+
+        "QFrame#BrandPanel { background: transparent; }"
+        "QLabel#BrandMark { color: #16252b; background: #cff375; border-radius: 9px; font-size: 17px; font-weight: 900; }"
+        "QLabel#BrandName { color: #ffffff; font-size: 13px; font-weight: 800; }"
+        "QLabel#BrandDescriptor { color: #a5c2b5; font-size: 9px; }"
+        "QLabel#SidebarGroup { color: #7fa299; font-size: 10px; font-weight: bold; padding: 7px 18px 5px; }"
         "QPushButton#SidebarButton { color: #b9c9c5; background: transparent; border: none; text-align: left; padding: 12px 18px; font-size: 13px; border-radius: 7px; }"
         "QPushButton#SidebarButton:hover { background-color: #293c40; color: #ffffff; }"
         "QPushButton#SidebarButton:checked { background-color: #cff375; color: #16252b; font-weight: bold; }"
@@ -133,49 +138,69 @@ void MainWindow::setupSidebar()
     sidebarWidget->setObjectName("Sidebar");
     sidebarWidget->setFixedWidth(235);
 
-    QLabel* title = new QLabel("Rental Manager");
-    title->setObjectName("SidebarTitle");
 
-    dashboardButton = new QPushButton("Dashboard");
+    QFrame* brand = new QFrame();
+    brand->setObjectName("BrandPanel");
+    QHBoxLayout* brandLayout = new QHBoxLayout(brand);
+    brandLayout->setContentsMargins(16, 19, 10, 18);
+    brandLayout->setSpacing(11);
+    QLabel* mark = new QLabel("RM");
+    mark->setObjectName("BrandMark");
+    mark->setAlignment(Qt::AlignCenter);
+    mark->setFixedSize(41, 41);
+    brandLayout->addWidget(mark);
+    QVBoxLayout* brandWords = new QVBoxLayout();
+    brandWords->setSpacing(2);
+    QLabel* name = new QLabel("RENTAL MANAGER");
+    name->setObjectName("BrandName");
+    QLabel* subname = new QLabel("OPERATIONS CONSOLE");
+    subname->setObjectName("BrandDescriptor");
+    brandWords->addWidget(name);
+    brandWords->addWidget(subname);
+    brandLayout->addLayout(brandWords, 1);
+
+    dashboardButton = new QPushButton("Overview");
     addPageButton = new QPushButton("Add Vehicle");
     removePageButton = new QPushButton("Remove Vehicle");
     searchPageButton = new QPushButton("Search Vehicle");
-    allVehiclesButton = new QPushButton("All Vehicles");
+    allVehiclesButton = new QPushButton("Fleet Inventory");
     availableVehiclesButton = new QPushButton("Available Vehicles");
-    rentPageButton = new QPushButton("Rent Vehicle");
+    rentPageButton = new QPushButton("New Rental");
     rentalRecordsButton = new QPushButton("Rental History");
-    returnPageButton = new QPushButton("Return Vehicle");
+    returnPageButton = new QPushButton("Process Return");
     exitButton = new QPushButton("Exit");
 
     const QList<QPushButton*> navigationButtons = {
-        dashboardButton,
-        addPageButton,
-        removePageButton,
-        searchPageButton,
-        allVehiclesButton,
-        availableVehiclesButton,
-        rentPageButton,
-        rentalRecordsButton,
-        returnPageButton
+        dashboardButton, allVehiclesButton, availableVehiclesButton,
+        addPageButton, searchPageButton, removePageButton,
+        rentPageButton, rentalRecordsButton, returnPageButton
     };
-
     for (QPushButton* button : navigationButtons) {
         button->setObjectName("SidebarButton");
         button->setCheckable(true);
     }
-
     exitButton->setObjectName("ExitButton");
 
+    auto sectionTitle = [](const QString& title) {
+        QLabel* group = new QLabel(title);
+        group->setObjectName("SidebarGroup");
+        return group;
+    };
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 12);
-    layout->setSpacing(3);
-    layout->addWidget(title);
+    layout->setSpacing(1);
+    layout->addWidget(brand);
+    layout->addWidget(sectionTitle("WORKSPACE"));
     layout->addWidget(dashboardButton);
-    layout->addWidget(addPageButton);
-    layout->addWidget(removePageButton);
-    layout->addWidget(searchPageButton);
+    layout->addSpacing(11);
+    layout->addWidget(sectionTitle("FLEET"));
     layout->addWidget(allVehiclesButton);
     layout->addWidget(availableVehiclesButton);
+    layout->addWidget(addPageButton);
+    layout->addWidget(searchPageButton);
+    layout->addWidget(removePageButton);
+    layout->addSpacing(11);
+    layout->addWidget(sectionTitle("RENTALS"));
     layout->addWidget(rentPageButton);
     layout->addWidget(rentalRecordsButton);
     layout->addWidget(returnPageButton);
