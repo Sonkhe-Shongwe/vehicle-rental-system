@@ -1,3 +1,9 @@
+## Active Qt visual acceptance milestone | 29 October 2026 evidence update
+
+Two focused review-branch increments are now fully verified in Linux and hosted Windows, without changing rental business rules: [`aaf2cee`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/aaf2ceee22dbe4fd782c142c1a0999e54d59d816) disposable Qt GUI end-to-end lifecycle CTest, and [`c5c1e78`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91) table-status AA contrast correction/regression. Latest source check: [Linux 40932934420](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934420) and [Windows 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337), both 2/2 CTest; screenshot checks passed. Do **not** advance to unrelated architecture phases.
+
+**Still open:** dedicated hands-on Windows Qt Creator GUI, physical-display 100/125/150% scaling, keyboard focus and modal accessibility, operator aesthetic review and better licensed authentic representative photos. Require owner approval before PR #4 can leave draft or merge to main.
+
 ## Qt acceptance evidence update | 29 October 2026
 
 The live review branch has passing automated Qt functional validation on both platforms for source `aaf2cee`: [Linux 40931662760](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931662760) and [Windows 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), each **CTest 2/2** including new GUI add/rent/restart/return/archive/delete; Windows also passes 12 synthetic screenshot/DPI cases. This does not complete the visual acceptance phase. Remaining: actual Windows physical scaling and keyboard UX, detailed aesthetic review and licensing, owner sign-off, and review of any defects found. Do not start a separate architectural milestone yet.

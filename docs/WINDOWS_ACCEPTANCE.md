@@ -1,3 +1,9 @@
+## Latest source Windows verification | 29 October 2026
+
+**PASS:** [Windows Server 2022 / MSVC2022 / Qt 6.8.3 CI run 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337) tested code commit `c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91`. CMake Release compile, CTest **2/2** (domain and disposable real Qt GUI lifecycle with new 4.5:1 table-status contrast assertions), 5 UI screens at 1500x860, the same 5 at 1280x720, synthetic Fleet 125% and New Rental 150%, PNG integrity/dimensions and unchanged demo source-file SHA-256 all succeeded.
+
+This is the newest **automated** Windows verification, superseding earlier "Windows run pending" dated lines below. **Manual** Qt Creator physical Windows focus/keyboard/modal interaction, OS-native 100/125/150% scaling, owner aesthetic approval remain unexecuted. Follow the disposable-clone checklist below, not a real operational folder.
+
 ## Windows hosted CTest + GUI lifecycle check completed | 29 October 2026
 
 **PASS** [Actions run 40931645521](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40931645521), code `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`. Hosted Windows Server 2022 / Visual Studio 2022 x64 / Qt 6.8.3. CMake Release build, **CTest 2/2**, now including `vehicle_rental_gui_lifecycle` with temporary fictional records and persistence/restart. Five compiled Qt screens at 1500x860, five at 1280x720, Fleet synthetic 125% and Rent synthetic 150%; all twelve PNG integrity and dimensions verified. Existing demo files passed pre/post SHA-256 integrity comparisons. The previous "Windows pending" entry below is a timestamped interim note, now superseded.

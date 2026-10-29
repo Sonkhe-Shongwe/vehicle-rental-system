@@ -1,3 +1,12 @@
+## Verified contrast regression and screenshot acceptance | 29 October 2026
+
+**Exact tested source:** `c5c1e7885c80c3b7f88c0b40adf891fb2d9a2c91`. New Qt GUI lifecycle CTest checks actual table widget item status foreground colours for **Available, Rented, Returned and Archived**, against the table backgrounds `#FFFEFA` and `#F5F7F0`, asserting normal-text contrast ratio at least **4.5:1**. It also retains all real Qt lifecycle, modal, restart and persistence checks in isolated `QTemporaryDir`.
+
+- [Linux Ubuntu 24.04 Qt6 GCC visual workflow 40932934420](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934420): **PASS** configure/build, CTest **2/2**, ten compiled Qt renders at 1500x860 and 1280x720, real screenshot commit [`48c4c87`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/48c4c873b7485f55a2d718f1807383ac996a6a43).
+- [Windows Server 2022 MSVC2022 Qt6.8.3 workflow 40932934337](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40932934337): **PASS** configure/Release build, CTest **2/2**, ten compiled Qt captures at 1500x860 and 1280x720, two simulated DPI cases (Fleet 125%, Rent 150%), PNG checks and SHA-256 unchanged demo fixtures.
+
+**Test boundary:** A programmable Qt contrast assertion is not an automated full visual-accessibility or keyboard audit. Real Windows Qt Creator at 100/125/150% native screen scaling, interaction/focus and owner aesthetic approval are still **NOT RUN/NOT APPROVED**. Previous compile failure at `fdecb35` remains recorded as a failed precursor, not overwritten.
+
 ## Windows + Linux exact-source verification update | 29 October 2026
 
 **Source SHA `aaf2ceee22dbe4fd782c142c1a0999e54d59d816`:**
