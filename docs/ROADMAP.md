@@ -2,6 +2,8 @@
 
 Goal: credible, demonstrable graduate software engineering project. Preserve existing Qt workflow. Prioritize evidence and correctness rather than speculative features.
 
+**29 October Windows checkpoint:** Hosted Windows Qt 6.8.3 + MSVC 2022 Release compilation, CTest and five non-destructive offscreen GUI smoke checks **PASSED** ([Windows Qt/MSVC CI run 40921642782](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40921642782)). This strengthens the technical acceptance record but **does not satisfy manual Windows Qt Creator, end-to-end persistence or final visual sign-off**. Draft PR #4 is still unmerged. [Windows CI evidence report](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/docs/WINDOWS_CI_REPORT_2026-10-29.md).
+
 **29 October update:** P0A source and sanitized screenshots have been published; GitHub Actions Qt 6 Linux build, hygiene check and CTest **passed** ([run 40872123623](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623)). Windows Qt Creator GUI verification remains outstanding.
 
 | Priority | Work package | Why now | Acceptance gate |

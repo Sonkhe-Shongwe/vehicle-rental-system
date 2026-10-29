@@ -1,5 +1,12 @@
 # Test Plan and Evidence Register
 
+## Latest cross-platform automation checkpoint — 29 October 2026
+
+- **Windows-hosted Qt6 MSVC:** **PASSED**, [Windows Qt/MSVC CI run 40921642782](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40921642782). `windows-2022`, Qt 6.8.3, VS 2022 x64, CMake configure/build and CTest (1/1). Five offscreen real Qt GUI smoke modes passed; screenshot checks validate PNG CRC, 1500×860 dimensions and content diversity. Fictional vehicles/rentals fixture SHA-256 hashes remained unchanged.
+- **Qt test portability fix:** Windows exposed a test-only false failure: creating a text fixture with `QIODevice::Text` translated LF to CRLF, while the later raw-byte comparison expected LF. The fixture is now created in binary mode and verified both before and after startup. No production persistence change.
+- **Linux UI visual checkpoint:** [Qt Xvfb run 40914456325](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40914456325) passed ten genuine Qt screenshots across two sizes and non-destructive UI scenarios.
+- **Windows interactive GUI:** **NOT RUN** in an actual Qt Creator session. High-DPI 100/125/150%, keyboard/modal interaction, and persisted create/rent/restart/return/archive/delete still **PENDING**. See [Windows CI evidence report](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/feature/qt-hybrid-visual-spike-20261029/docs/WINDOWS_CI_REPORT_2026-10-29.md) and the branch's `docs/WINDOWS_ACCEPTANCE.md`.
+
 ## Current execution status - 29 October 2026
 
 - Source review: **complete** for central domain, persistence and UI event paths.
