@@ -102,6 +102,9 @@ void MainWindow::applyStyles()
         "QLabel#PageTitle { font-size: 27px; font-weight: 750; color: #172830; }"
         "QLabel#PageSubtitle { font-size: 13px; color: #657774; }"
         "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #25393b; padding-top: 6px; }"
+        "QFrame#RentalActionPanel { background: #fffefa; border: 1px solid #e1e5dd; border-radius: 12px; }"
+        "QLabel#ActionPanelKicker { color: #3d7565; font-size: 11px; font-weight: bold; }"
+        "QLabel#ActionPanelNote { color: #73857c; font-size: 11px; }"
         "QFrame#RentalFormPanel { background: #fffefa; border: 1px solid #e1e5dd; border-radius: 13px; }"
         "QLabel#RentalKicker { color: #3d7565; font-size: 10px; font-weight: bold; }"
         "QLabel#RentalPanelTitle { color: #172830; font-size: 22px; font-weight: bold; }"
@@ -850,43 +853,52 @@ QWidget* MainWindow::createRentalRecordsPage()
 {
     QWidget* page = new QWidget();
     QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    card->setObjectName("RentalActionPanel");
+    QVBoxLayout* inner = new QVBoxLayout(card);
+    inner->setContentsMargins(20, 12, 20, 13);
+    inner->setSpacing(9);
+
+    QHBoxLayout* heading = new QHBoxLayout();
+    QLabel* kicker = new QLabel("RENTAL LEDGER  /  TRANSACTION HISTORY");
+    kicker->setObjectName("ActionPanelKicker");
+    QLabel* note = new QLabel("Current, returned and archived records");
+    note->setObjectName("ActionPanelNote");
+    heading->addWidget(kicker);
+    heading->addStretch();
+    heading->addWidget(note);
+    inner->addLayout(heading);
 
     rentalFilterCombo = new QComboBox();
+    rentalFilterCombo->setObjectName("RentalHistoryFilter");
     rentalFilterCombo->addItems({
-        "All Current Records",
-        "Active Rentals",
-        "Returned Rentals",
-        "Archived Records"
+        "All Current Records", "Active Rentals",
+        "Returned Rentals", "Archived Records"
     });
-
     rentalRecordIdEdit = new QLineEdit();
     rentalRecordIdEdit->setPlaceholderText("Rental ID, e.g. R001");
-    rentalRecordIdEdit->setFixedWidth(260);
-
-    QPushButton* archiveButton = new QPushButton("Archive Returned Record");
-    QPushButton* deleteButton = new QPushButton("Delete Archived Record");
+    rentalRecordIdEdit->setMinimumWidth(190);
+    QPushButton* archiveButton = new QPushButton("Archive returned");
+    QPushButton* deleteButton = new QPushButton("Delete archived");
     archiveButton->setObjectName("SecondaryButton");
     deleteButton->setObjectName("DangerButton");
 
-    QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(22, 16, 22, 16);
-    form->setHorizontalSpacing(14);
-    form->setVerticalSpacing(7);
-    form->addWidget(makeFieldLabel("Record Filter"), 0, 0);
-    form->addWidget(makeFieldLabel("Rental Record Action"), 0, 1, 1, 3);
-    form->addWidget(rentalFilterCombo, 1, 0);
-    form->addWidget(rentalRecordIdEdit, 1, 1);
-    form->addWidget(archiveButton, 1, 2);
-    form->addWidget(deleteButton, 1, 3);
-    card->setLayout(form);
-    card->setMaximumWidth(1000);
+    QGridLayout* controls = new QGridLayout();
+    controls->setContentsMargins(0, 0, 0, 0);
+    controls->setHorizontalSpacing(11);
+    controls->setVerticalSpacing(4);
+    controls->setColumnStretch(0, 2);
+    controls->setColumnStretch(1, 2);
+    controls->addWidget(makeFieldLabel("Transaction status"), 0, 0);
+    controls->addWidget(makeFieldLabel("Record ID for archive or deletion"), 0, 1);
+    controls->addWidget(rentalFilterCombo, 1, 0);
+    controls->addWidget(rentalRecordIdEdit, 1, 1);
+    controls->addWidget(archiveButton, 1, 2);
+    controls->addWidget(deleteButton, 1, 3);
+    inner->addLayout(controls);
 
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QVBoxLayout* layout = new QVBoxLayout(page);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(card);
 
     connect(rentalFilterCombo, qOverload<int>(&QComboBox::currentIndexChanged),
             this, &MainWindow::refreshRentalRecordsFilter);
@@ -894,22 +906,35 @@ QWidget* MainWindow::createRentalRecordsPage()
             this, &MainWindow::archiveRentalRecord);
     connect(deleteButton, &QPushButton::clicked,
             this, &MainWindow::deleteArchivedRentalRecord);
-
     return page;
 }
+
 
 QWidget* MainWindow::createReturnPage()
 {
     QWidget* page = new QWidget();
     QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    card->setObjectName("RentalActionPanel");
+    QVBoxLayout* inner = new QVBoxLayout(card);
+    inner->setContentsMargins(20, 12, 20, 13);
+    inner->setSpacing(9);
+
+    QHBoxLayout* heading = new QHBoxLayout();
+    QLabel* kicker = new QLabel("RENTAL OPERATIONS  /  VEHICLE RETURN");
+    kicker->setObjectName("ActionPanelKicker");
+    QLabel* note = new QLabel("Complete an active contract to release its vehicle");
+    note->setObjectName("ActionPanelNote");
+    heading->addWidget(kicker);
+    heading->addStretch();
+    heading->addWidget(note);
+    inner->addLayout(heading);
 
     returnRentalIdEdit = new QLineEdit();
-    returnRentalIdEdit->setPlaceholderText("Enter rental ID or vehicle ID, e.g. R001 or C002");
-    returnRentalIdEdit->setFixedWidth(430);
+    returnRentalIdEdit->setObjectName("ReturnRentalID");
+    returnRentalIdEdit->setPlaceholderText("R001 or C002");
+    returnRentalIdEdit->setMinimumWidth(250);
 
     actualReturnDateEdit = new QDateEdit(QDate::currentDate());
-    // Returns are recorded on the day they are processed.
     actualReturnDateEdit->setCalendarPopup(false);
     actualReturnDateEdit->setDisplayFormat("dd MMM yyyy");
     actualReturnDateEdit->setMinimumDate(QDate::currentDate());
@@ -918,32 +943,28 @@ QWidget* MainWindow::createReturnPage()
     actualReturnDateEdit->setReadOnly(true);
     actualReturnDateEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
     actualReturnDateEdit->setMinimumWidth(180);
-    actualReturnDateEdit->setFixedHeight(36);
-    actualReturnDateEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QPushButton* clearButton = new QPushButton("Clear");
-    QPushButton* returnButton = new QPushButton("Complete Return");
+    QPushButton* returnButton = new QPushButton("Complete return");
     clearButton->setObjectName("SecondaryButton");
     returnButton->setObjectName("ActionButton");
 
-    QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(22, 16, 22, 16);
-    form->setHorizontalSpacing(14);
-    form->setVerticalSpacing(7);
-    form->addWidget(makeFieldLabel("Active Rental ID or Vehicle ID"), 0, 0);
-    form->addWidget(makeFieldLabel("Actual Return Date"), 0, 1);
-    form->addWidget(returnRentalIdEdit, 1, 0);
-    form->addWidget(actualReturnDateEdit, 1, 1);
-    form->addWidget(clearButton, 1, 2);
-    form->addWidget(returnButton, 1, 3);
-    card->setLayout(form);
-    card->setMaximumWidth(980);
-
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QGridLayout* controls = new QGridLayout();
+    controls->setContentsMargins(0, 0, 0, 0);
+    controls->setHorizontalSpacing(12);
+    controls->setVerticalSpacing(4);
+    controls->setColumnStretch(0, 2);
+    controls->setColumnStretch(1, 1);
+    controls->addWidget(makeFieldLabel("Active Rental ID or Vehicle ID"), 0, 0);
+    controls->addWidget(makeFieldLabel("Actual return date"), 0, 1);
+    controls->addWidget(returnRentalIdEdit, 1, 0);
+    controls->addWidget(actualReturnDateEdit, 1, 1);
+    controls->addWidget(clearButton, 1, 2);
+    controls->addWidget(returnButton, 1, 3);
+    inner->addLayout(controls);
+    QVBoxLayout* layout = new QVBoxLayout(page);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(card);
 
     connect(clearButton, &QPushButton::clicked, this, [this]() {
         returnRentalIdEdit->clear();
@@ -952,7 +973,6 @@ QWidget* MainWindow::createReturnPage()
     });
     connect(returnButton, &QPushButton::clicked, this, &MainWindow::returnVehicle);
     connect(returnRentalIdEdit, &QLineEdit::returnPressed, this, &MainWindow::returnVehicle);
-
     return page;
 }
 
@@ -1678,7 +1698,7 @@ void MainWindow::showRentalRecordsPage()
     pageTitleLabel->setText("Rental History");
     pageSubtitleLabel->setText("Review active, returned and archived customer rental transactions.");
     actionStack->setCurrentIndex(4);
-    actionStack->setMaximumHeight(120);
+    actionStack->setMaximumHeight(138);
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Rental Transactions");
     refreshRentalTable(filteredRentals());
@@ -1691,7 +1711,7 @@ void MainWindow::showReturnPage()
     pageTitleLabel->setText("Return Vehicle");
     pageSubtitleLabel->setText("Complete an active rental using its rental ID or vehicle ID.");
     actionStack->setCurrentIndex(5);
-    actionStack->setMaximumHeight(120);
+    actionStack->setMaximumHeight(138);
     tableSectionTitleLabel->setVisible(true);
     tableSectionTitleLabel->setText("Active Rentals");
     actualReturnDateEdit->setMinimumDate(QDate::currentDate());
