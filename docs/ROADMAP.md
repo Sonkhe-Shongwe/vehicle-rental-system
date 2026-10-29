@@ -19,6 +19,12 @@ Goal: credible, demonstrable graduate software engineering project. Preserve exi
 | P3 | Optional REST API, API contract and a small browser UI. | Full-stack relevance to Retipuj Zoft, **only after** reliable core. | Independent API tests, access validation and working integration demo. |
 | P3 | Packaging and signed release considerations. | Distribution and deployment. | Clean Windows installation and startup tested. |
 
+## Product design and comparative research — 29 October checkpoint
+
+The full analysis is tracked in [PORTFOLIO_RESEARCH_2026-10-29.md](PORTFOLIO_RESEARCH_2026-10-29.md). Its recommendation is to preserve C++/Qt, treat aesthetic quality as operational usability, and evolve toward an operator-focused rental application: clearer dashboard hierarchy, consolidated navigation, task-first rental/return flows, consistent feedback, and small-window accessibility. Three open-source analogues and commercial workflow references are compared critically. The current UI is a baseline, not the final approved visual design.
+
+**Status:** Research completed and documented; design decisions are still proposals. No code changes were made during research. The P0 application deadline and Windows manual test gate are unchanged. After the application, validate UX concepts before implementing P1 visual redesign, P2 transactional SQLite / architecture, P3 operational completeness, and optional P4 API.
+
 ## What not to attempt before the application deadline
 
 Do not rewrite the project in React, add cloud AI, or claim a REST API without a verified implementation. A polished smaller project with passing tests has stronger interview credibility than a wide feature list with failing builds.

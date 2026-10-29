@@ -22,6 +22,18 @@ Uploaded initial source archive: `VehicleRentalSystem_A3.zip` (July 2026 Qt asse
 
 The default legacy data folder remains next to the C++ source (using `__FILE__`) for compatibility. The new constructor can isolate testing. Do not overwrite real `vehicles.txt` / `rentals.txt` with demo files. Back up originals. Existing data may include records in the old 14-field rental format, which the reader still supports. Do not silently migrate or delete unrecognized lines.
 
+## Research and design checkpoint — 29 October 2026
+
+The [full comparative portfolio / UX research report](PORTFOLIO_RESEARCH_2026-10-29.md) has been added to the repository. It reviews the current Qt source and screenshots, three comparable open-source rental systems, commercial rental workflows, Qt engineering guidance, visual hierarchy, UX, persistence, security, testing, and the Retipuj Zoft graduate role. The PDF and DOCX presentation copies were delivered separately in ChatGPT; the complete Markdown report is the tracked GitHub source.
+
+**Confirmed completed:** current public C++17/Qt source and sanitized screenshots; source audit; regression tests; Linux Qt6 CI compile and CTest passes (latest known documentation checkpoint); the report and roadmap. No code was modified as a result of this research.
+
+**Recommended, NOT approved or implemented:** light-first operator-focused visual refresh; grouping nine sidebar destinations into fewer user-oriented workspaces; prioritising four operational metrics; improving rental/return workflows, responsive layout and feedback; then safely introducing modular widgets, SQLite and optional REST API. Visual tokens and UI structure are proposals, not an agreed design or a working screen.
+
+**Pending verification:** interactive Windows Qt Creator compile and user-journey acceptance, screenshots of the updated running executable, accessibility/resizing checks, data migration and recovery, and all future features proposed by the research. Never infer these from CI alone.
+
+**Next development decision:** agree on a bounded visual/UX specification and acceptance scenarios; improve the current application incrementally, preserve domain behaviour, and test each user journey. Prioritise a truthful portfolio demonstration for the **30 October 2026 application deadline**, not a speculative framework rewrite. The full design roadmap remains in the research report; do not label later milestones complete.
+
 ## Immediate next actions
 
 1. **COMPLETE:** Prepared C++/Qt source, tests, docs, fictional demo data and sanitized screenshots are committed directly in the public GitHub repository. Do not publish real customer data.

@@ -61,6 +61,7 @@ Rental:  Rental|RentalID|Customer|Phone|VehicleID|StartDate|ExpectedReturnDate|A
 
 ## Documentation
 
+- [Full comparative portfolio and UX research (29 October 2026)](docs/PORTFOLIO_RESEARCH_2026-10-29.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Source audit](docs/AUDIT.md)
 - [Deadline-focused engineering roadmap](docs/ROADMAP.md)
