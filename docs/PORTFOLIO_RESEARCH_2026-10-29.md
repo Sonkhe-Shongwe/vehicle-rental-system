@@ -1,3 +1,5 @@
+> **HISTORICAL RESEARCH — superseded 29 October 2026.** This original career/portfolio research uses earlier UI-preservation and deadline assumptions. The owner now explicitly authorises a full product rebuild with a **light-first** design. Treat this document as source material and comparative research, **not as the current roadmap or architecture rule**. Current authority: [Master Product Audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md).
+
 # Vehicle Rental System: From University Assignment to Graduate Engineering Portfolio
 
 **Independent comparative research and product-development report**  

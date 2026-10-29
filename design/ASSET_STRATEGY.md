@@ -1,79 +1,40 @@
-# Authentic Vehicle Photography | V2 Asset Direction
+# Automotive Photography and Visual Asset Strategy — Rebuild
 
-**Project:** Vehicle Rental System portfolio | **Decision recorded:** 29 October 2026  
-**Owner direction:** Hybrid of Precision Atelier and Editorial Grand Touring, using authentic vehicle photography. The application is intended to remain **non-commercial** as a graduate software engineering portfolio project. **Status:** Design and sourcing policy approved; specific images are **not yet selected, downloaded, cleared or integrated**. Current C++/Qt application source is unchanged.
+**Decision date:** 29 October 2026  
+**Status:** art direction **not approved**; three previously bundled model photos have licences recorded but are **not necessarily suitable for the new design**.
 
-## Aesthetic decision
+## Approved principles
 
-Use genuine, high-quality vehicle photographs in a distinctive, restrained layout. Keep the technical graphite / warm-mineral canvas, precise typography, selective lime brand accent, and editorial automotive imagery.
+1. Fleet cards and vehicle detail drawers should feel genuinely automotive and inviting. Imagery must reinforce the actual make/model without implying an owned physical vehicle, exact year/trim or manufacturer endorsement.
+2. Prefer a coherent photography set with comparable camera angle, crop, visual noise, natural light and background. For an unapproved/missing model image, use a designed car or motorcycle silhouette; never substitute an unrelated car photo.
+3. No enormous photo banner simply to fill dashboard whitespace; meaningful operational content comes first. The gallery and detail drawer are the primary image experiences.
+4. Every asset must have **documented usage rights and a verifiable source URL**, creator/licence terms, hash, date, derivative processing and display use, before it is bundled. No web-only URLs in the offline production GUI.
+5. Check faces/plates/signage; use respectful non-deceptive cropping. No manufacturer logo, advertising or fake real-world rental fleet ownership claims.
 
-- **Dashboard:** one carefully cropped authentic vehicle hero image, possibly a contextual vehicle detail or highlighted return card. Actual data figures retain priority.
-- **Fleet:** authentic thumbnail for each vehicle when a suitable rights-cleared photograph exists; selected-vehicle inspector gets a larger, higher-quality image. Keep a clean table-based interface, not a photo catalogue.
-- **Rentals:** a small corresponding photo for the selected vehicle if useful; the rental amount and dates remain visually dominant.
-- **Fallback:** consistent illustrated vehicle class silhouette whenever a suitable licensed photo is unavailable. Never substitute an unrelated model without disclosing it.
-- **Avoid:** mismatched image styles, noisy backgrounds behind table text, large watermarks, arbitrary manufacturer advertising, and car photographs on every dashboard card.
+## Five fictional demo vehicles
 
-### Demo fleet and image matching
+| Vehicle | Current status | New visual task |
+|---|---|---|
+| C001 Toyota Corolla | CC0 illustrative derivative already bundled | Review crop/background and year/variant disclosure; keep only if matches new card direction |
+| C002 Ford Ranger | Hyins CC0 China-market XLT derivative already bundled | Image is from busy showroom with visible China-market plate; consider replacing with calmer source after inspection |
+| C003 Hyundai i20 | CC0 illustrative derivative already bundled | Check quality and crop consistency with other models |
+| M001 Honda CB500F | No approved model photograph | Licence/quality research or coherent motorcycle silhouette |
+| M002 Yamaha MT-07 | No approved model photograph | Licence/quality research or coherent motorcycle silhouette |
 
-| Demo vehicle | Desired photograph | Acceptable fallback |
-| --- | --- | --- |
-| Ford Ranger | Actual Ford Ranger pickup, correct generation/variant if verified | Neutral pickup class image, labelled representative |
-| Nissan X-Trail | Actual Nissan X-Trail SUV | Generic SUV illustration |
-| Toyota Corolla | Actual Toyota Corolla sedan | Generic sedan illustration |
-| Volkswagen Polo | Actual VW Polo hatchback | Generic hatchback illustration |
-| Hyundai i20 | Actual Hyundai i20 hatchback | Generic hatchback illustration |
+**Existing source register:** [assets/README.md](../assets/README.md). The previous licensed files remain in the old Qt resource bundle for historical/source compatibility. **Copyright permission is not aesthetic approval.**
 
-The demo data does not independently establish vehicle production year, exact trim, colour or photographic match. Never represent a stock photograph as an actual vehicle from a real rental fleet; the demo fleet and photos are illustrative.
+## Asset acceptance record per image
 
-## Rights and sourcing
+- ID/model and filename; verified original file page; author, declaration and licence URI.
+- Technical: raw/derivative SHA-256, EXIF removal, dimensions/format, Qt resource registration.
+- Artistic: card crop at compact and wide, content focus, direction/light and background quality.
+- Ethical: illustrative disclaimer, no real-car identity/registration misrepresentation.
+- Approval: specifically **accepted into the new visual baseline** (not implied by existing use).
 
-Non-commercial intent is **not** permission to reuse an arbitrary photograph. A public GitHub repository and any packaged application still reproduce and redistribute visual assets, and an image may contain additional trademark or publicity rights.
+## Motion, icons and fonts
 
-**Preferred sources, in order:**
-1. Owner's own photographs, with permission from any other rights holders and appropriate removal of personal details (e.g., registration plates or people).
-2. Wikimedia Commons files with a clear per-file compatible license (CC0, CC BY, CC BY-SA where compatible), creator attribution, license link and adaptation notes. Review each source file's license.
-3. Pexels / Unsplash individually sourced standard-license photographs with permissible integration; record photographer, page and license at time of acquisition, and avoid implying brand endorsement.
-4. Manufacturer press photography **only** after checking the exact photographer/content rights and distribution terms or obtaining permission. Editorial-only media library terms do not automatically permit application-bundled demo assets.
+A consistent line icon family, a verified licensed font (system font acceptable), colour and accessible fallbacks. New design components should not depend on remote APIs, font CDNs or stock image URLs for offline operation.
 
-The terms of a photo may not include third-party logos, vehicle trademarks or recognizable people. Factual model names are not an assertion of brand partnership. Add a portfolio disclaimer: *Independent demonstration project. Not affiliated with or endorsed by any vehicle manufacturer.*
+## Gate
 
-**Official source references checked 29 October 2026:**
-- Pexels license: https://www.pexels.com/license/
-- Unsplash license: https://unsplash.com/license
-- Unsplash logos and third-party rights: https://help.unsplash.com/en/articles/14224409-what-if-there-is-a-brand-logo-in-an-image-on-unsplash
-- Wikimedia Commons per-file obligations: https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/licenses
-- Creative Commons reuse/attribution: https://creativecommons.org/reusing-cc-licensed-content/
-- Ford Media Center editorial-only terms: https://media.ford.com/content/fordmedia/fap/en/multimedia.html
-
-## Asset provenance register (required before adding images)
-
-For **every** photograph, maintain a line in `design/ASSET_CREDITS.md` with:
-- Local asset path and filename, vehicle represented, source page URL, photographer/rightsholder.
-- Explicit license/permission and link, access date, whether attribution is mandatory, attribution text.
-- Transformations (crop, colour adjustment, background removal), model/year/trim accuracy status.
-- Image dimensions and compressed file size, whether redistributed inside the app or used only in screenshots.
-- Restrictions, brand/trademark notices where relevant and license reassessment if the project use changes.
-
-No unverified download, watermark removal, or pasted image-search URL is an asset clearance procedure. Store rights-cleared images locally in the repository or Qt resource bundle; **do not hotlink to arbitrary third-party sites in a desktop release**.
-
-## Image quality and Qt integration criteria
-
-- Keep consistent composition (3/4 exterior angles, deliberate lighting, limited distracting backgrounds).
-- Use one visual temperature and consistent image treatment; do not fake manufacturer identity.
-- Create optimised separate thumbnail and large-preview versions (candidate: ~480–720 px thumbnail, ~1280–1600 px large, adjust after measurement); avoid megabyte-heavy assets across many vehicles.
-- Preserve aspect ratio/crops through fixed image containers, never stretch the car.
-- Confirm Qt deployment can load assets offline using Qt resources or app-managed paths, with graceful fallback when absent.
-- Keep source credits and license manifest alongside any packaged version.
-- Test Windows high-DPI (100%, 125%, 150%), display quality, window resize, rendering cost, and colour/text contrast over any photographic overlays.
-
-## Scope boundary and next steps
-
-**Confirmed:** Non-commercial portfolio intent and permission to pursue authentic vehicle photography as a design direction. **Not confirmed:** rights to any specific manufacturer or photographer image; final asset choices; final hybrid design; actual Qt implementation; commercial redistribution rights.
-
-1. Shortlist candidate **rights-cleared** photographs for the five demo vehicles with a source/license record, preferably consistent angle and visual atmosphere.
-2. Create a final hybrid Dashboard, Fleet and Rentals concept set with the selected assets and factual demo data.
-3. Review consistency and quality in side-by-side design captures before integrating into C++/Qt.
-4. Include images in the Qt resource system only after license checks, optimisation, visual review and Windows runtime verification.
-5. If the project becomes monetised or redistributed under a different purpose, reassess all licenses before release.
-
-**Do not commit unlicensed photos or replace real Qt screenshots with design-only concepts.**
+Research candidate assets together, review a cohesive gallery set, and select final images **only after** the owner approves their appearance. None of the old files are obligatory. Archive/correct previous registration as needed; keep licences and source history.

@@ -1,3 +1,5 @@
+> **REJECTED AESTHETIC / HISTORICAL ENGINEERING SPIKE — 29 October 2026.** The Qt Widgets implementation had passing hosted tests but its entire look was rejected. This file is not the current development specification; see [master reset](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md). The replacement UI has not been built yet.
+
 # Qt Widgets visual proof of concept (unapproved)
 
 29 October 2026. A conservative exploration of the user's approved hybrid aesthetic in the actual Qt UI. The stable main branch remains unchanged.

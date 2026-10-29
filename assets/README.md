@@ -1,3 +1,5 @@
+> **CURRENTLY BUNDLED LICENCE REGISTER; NOT FINAL ART SELECTION — 29 October 2026.** The old Qt design was rejected and its illustrative model photographs, while licensed as recorded below, are **not owner-approved for the new light-first product**. Preserve original credits/provenance and review each image for quality, model accuracy and consistent composition before the new gallery. [New asset strategy](../design/ASSET_STRATEGY.md).
+
 # Authentic vehicle photographs in the Qt visual branch
 
 The images below depict representative vehicle models. They are **not** photographs of actual rental assets. The source demo data does not establish year, trim or paint colour.

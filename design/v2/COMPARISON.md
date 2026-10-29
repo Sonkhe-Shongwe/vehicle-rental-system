@@ -1,3 +1,5 @@
+> **ARCHIVED DESIGN COMPARISON — superseded 29 October 2026.** None of the previous A/B/C directions represents final visual approval. The owner chose a **light-first, inviting, neat product** with a hybrid Fleet gallery/table. These images are historical comparisons, not a target to port as-is. [Current spec](../DESIGN_SPEC.md).
+
 # V2 Visual Direction Comparison — Review Package
 
 **Project:** [Vehicle Rental System](https://github.com/Sonkhe-Shongwe/vehicle-rental-system)  

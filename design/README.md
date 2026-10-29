@@ -1,32 +1,39 @@
-# Operator Console — visual design proposal v0.1
+# Design Workspace — New Light-First Rental Studio
 
-**Status:** Design prototype only. These are **not** screenshots of the compiled C++/Qt application and are **not** evidence of a completed GUI redesign.
+**Owner direction updated:** 29 October 2026  
+**Status:** **Conceptual product direction agreed, exact visuals/technical toolkit not yet approved**  
+**Master decisions:** [Product Rebuild Audit](../docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md)  
+**Current design brief:** [Light-First Experience Specification](DESIGN_SPEC.md).
 
-This package proposes an operator-focused navigation and visual language for the existing `vehicle-rental-system` Qt Widgets desktop application. It preserves the rental domain and is based on the repository's fictional demo data as of 29 October 2026.
+## Approved design direction
 
-- [Complete design and interaction specification](DESIGN_SPEC.md)
-- [Interactive, self-contained HTML concept](prototype.html) (open locally to navigate; no file writes or backend)
-- [Dashboard screen concept](dashboard.png)
-- [Fleet management concept](fleet.png)
-- [Rental management concept](rentals.png)
-- [Dashboard layout at 1280 px](dashboard-1280.png)
+- Bright, inviting, neatly structured software; **no dark application shell**.
+- Three primary workspaces: Overview, Fleet, Rentals.
+- **Fleet gallery-first with table alternative**; common search/filter/selection and contextual vehicle drawer.
+- Meaningful dynamic Dashboard: actual availability, due/overdue attention, bounded activity and no invented revenue.
+- Guided rentals and returns; obvious validation, clear confirmations, subtle purposeful transitions.
+- Owner can approve total code/UI replacement, but not silent loss of safeguards, privacy or tests.
 
-![Dashboard concept showing four KPI cards, recent rental activity and due returns](dashboard.png)
+**Not approved yet:** final brand name, exact sage/copper palette and typography, photography set, detailed screens, animations, Qt Quick/QML migration, source/persistence rewrite or final visual signoff.
 
-![Fleet management concept showing filtered vehicles and a detail inspector](fleet.png)
+## Required design set before code migration
 
-![Rental management concept with active rental lifecycle and same-day checkout](rentals.png)
+| Experience | Review states |
+|---|---|
+| Overview | normal, empty, due/overdue, activity and CTA |
+| Fleet Gallery | available/rented, missing images, selection and filters |
+| Fleet Table | same exact query/selection/sort, compact operational density |
+| Vehicle Drawer | available vs rented actions, correct specifications, close/Escape |
+| New Rental | Vehicle → Customer → Review, live quote, validation, No/Cancel |
+| Active / History / Return | status changes, return confirmation, archival guard |
 
-## What this means for implementation
+Review wide **1500×860**, compact **1280×720**, keyboard accessibility and actual native Windows DPI possibilities. Designs must be coherent across all workspaces—not a beautiful Dashboard followed by unrelated forms.
 
-Approved current constraints: **C++17 / Qt Widgets**, preserve working rental/return and data-loading behaviour, keep personal records private. Proposed (not yet approved): reduce permanent navigation, redesign dashboard hierarchy, introduce Fleet and Rentals workspaces, centralise styling. API, SQLite and advance-booking features remain future milestones.
+## Previous research / rejected baselines (retain for learning, not implementation guidance)
 
-**Next:** Review the three layouts for desirability and operational correctness, agree any changes, then implement a bounded Qt milestone with CI/domain and Windows GUI acceptance tests.
+- [Original blue/white V1 prototype](prototype.html), [V1 gallery](dashboard.png), [V1 Fleet](fleet.png), [V1 rental form](rentals.png).
+- [V2 comparisons](v2/COMPARISON.md) and their **unapproved** A/B/C screenshots: [Atelier](v2/atelier.png), [Nocturne](v2/nocturne.png), [Editorial](v2/editorial.png).
+- [Actual Qt Widgets screenshots](qt-spike/VISUAL_REVIEW.md): compiled and tested, **aesthetically rejected by owner**.
+- [Archived old spec](archive/DESIGN_SPEC_PRE_RESET_2026-10-29.md) and [old asset strategy](archive/ASSET_STRATEGY_PRE_RESET_2026-10-29.md).
 
-## V2 aesthetic comparison (29 October 2026)
-
-The user requested a more visually distinctive visual identity after reviewing V1. Three **unapproved** browser-rendered aesthetic directions are available in [design/v2](v2/COMPARISON.md): **A Precision Atelier**, **B Nocturne Instrument**, and **C Editorial Grand Touring**. [Visual comparison HTML](v2/visual_comparison.html), full-resolution renders, and same-data review notes are preserved. These are design-only artifacts, **not C++/Qt implementation**.
-
-## Authentic vehicle photography (hybrid V2)
-
-The owner intends this as a non-commercial portfolio project and has chosen to use authentic rights-cleared vehicle photography. The [asset strategy and licensing requirements](ASSET_STRATEGY.md) describe image placement, source/credit checks, model accuracy, visual treatment and offline Qt integration. No vehicle photos have been approved or integrated yet.
+The new work should draw lessons from these earlier explorations, **not inherit their graphite/sidebar, lime hero or table-based shell**.

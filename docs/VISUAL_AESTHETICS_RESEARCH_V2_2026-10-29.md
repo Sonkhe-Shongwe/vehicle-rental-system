@@ -1,3 +1,5 @@
+> **HISTORICAL VISUAL RESEARCH — superseded 29 October 2026.** Old Precision Atelier/Nocturne/Grand Touring explorations were not owner-approved final product designs. The owner rejected the implemented graphite/lime aesthetic and explicitly chose a **welcoming light-first** direction. Use as comparative evidence only. See [new design spec](../design/DESIGN_SPEC.md) and [master reset](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md).
+
 # Vehicle Rental System — Visual Aesthetics Research (V2)
 **29 October 2026 | Design research, not implementation**
 **Scope:** Visual styling and art direction only. Colour, typography, spatial composition, visual hierarchy, brand signature, iconography, depth, data density, visual feedback and native-desktop feasibility. This report **does not propose changing the domain model, reservation rules, persistence, database, API, or working Qt interactions**.

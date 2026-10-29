@@ -1,3 +1,5 @@
+> **HISTORICAL ASSET CREDITS — design reset 29 October 2026.** Preserve creator/licence/source references for original concepts; this is not approval to reuse artwork in the replacement. Verify provenance and visual suitability under [new asset strategy](ASSET_STRATEGY.md).
+
 # Authentic vehicle photograph candidate register — 29 October 2026
 
 **Main branch status:** No photographic image binary is integrated into the compiled Qt app or merged into `main`. Three verified image derivatives have been uploaded **only to a design review branch** ([Draft PR #3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/3)). Image-content, model/trim accuracy, photography consistency and Qt runtime use are not yet signed off. Photo licences were checked on individual source pages.
