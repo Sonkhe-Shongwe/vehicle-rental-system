@@ -213,9 +213,20 @@ int main(int argc, char* argv[])
             }
             require(customer && phone, "Customer input fields exist");
             // Tab from Vehicle ID must reach Customer Name in the visual form.
+            // The offscreen Qt platform has no physical window manager. Give
+            // the visible test window an explicit Qt application focus owner.
+            // This is *not* evidence of physical Windows focus behaviour.
+            QApplication::setActiveWindow(window.get());
             rentalVehicle->setFocus(Qt::TabFocusReason);
             QApplication::processEvents();
-            require(rentalVehicle->hasFocus(), "Rental vehicle ID receives keyboard focus");
+            require(rentalVehicle->hasFocus(),
+                    QString("Rental ID must receive focus (visible=%1, "
+                            "windowActive=%2, focusedWidget=%3)")
+                        .arg(rentalVehicle->isVisible())
+                        .arg(QApplication::activeWindow() == window.get())
+                        .arg(QApplication::focusWidget()
+                                 ? QApplication::focusWidget()->objectName()
+                                 : QStringLiteral("<none>")));
             pressKey(rentalVehicle, Qt::Key_Tab);
             require(customer->hasFocus(), "Tab from Vehicle ID reaches Customer Name");
             customer->setText("Fictional Test Customer");
