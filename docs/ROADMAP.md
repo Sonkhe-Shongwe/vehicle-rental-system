@@ -1,3 +1,9 @@
+## Current milestone update | real Qt public evidence | 29 October 2026
+
+README now presents five real compiled-Qt review screenshots with test/provenance boundaries rather than legacy student UI, and screenshot references/files are automatically checked for exact 1500×860 valid PNGs in Linux CI. [`5faa553`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/5faa5536bbd798c30d9d3022bfec25395d94340c) passes [Linux 40937998505](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998505) and [Windows 40937998171](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998171), each CTest **2/2** and actual Qt UI offscreen checks. This closes a **documentation/evidence presentation gap** inside the current visual-acceptance milestone, not the visual-approval gate.
+
+**Still first:** real Windows Qt Creator interaction with physical 100/125/150% scale and mouse/keyboard/modal usability, final automotive photographic quality and licence review, explicit owner acceptance. Do not merge PR #4, modify stable `main` or start unrelated architecture phases yet.
+
 ## Qt acceptance checkpoint: responsive panels | 29 October 2026
 
 The active Qt visual-redesign milestone gains repeatable real Qt geometry verification at **1280×720 and 1500×860** across all five finished screens. [Code `9f6dd7c`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50) passes [Linux 40936435098](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435098) and [Windows 40936435292](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40936435292), CTest 2/2 plus real Qt offscreen screenshot smoke. It supplements prior lifecycle, keyboard and status-contrast automated acceptance gates; it is not a merge approval or a physical-monitor test.

@@ -1,3 +1,11 @@
+## Five-screen README screenshot provenance verification | 29 October 2026
+
+**Exact tested source:** `5faa5536bbd798c30d9d3022bfec25395d94340c`. New standard-library script `tests/verify_readme_screenshots.py` verifies each of the README's five `design/qt-spike/*.png` links exists and each **1500×860** image passes `tests/verify_qt_png.py` PNG signature, CRC/stream integrity, dimensions and basic content diversity checks. A README edit now triggers the Linux Qt visual CI; the validation executes **before** new captures are generated. This tests already published evidence without assuming subjective aesthetic quality or freshness relative to all source commits.
+
+- [Linux 40937998505](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998505): **PASS**, Ubuntu 24.04/GCC/Qt6 CMake build and CTest **2/2**, added image-reference verification **5/5**, generated ten real compiled-Qt screenshots at 1500×860 and 1280×720.
+- [Windows 40937998171](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40937998171): **PASS**, Windows Server 2022/MSVC2022/Qt 6.8.3 Release compile and CTest **2/2**, twelve compiled Qt offscreen/synthetic-DPI scenarios and preserved demo-file SHA-256.
+- **Not performed:** real Windows Qt Creator desktop use, physically adjusted 100/125/150% monitor scale, aesthetics/photography signoff. Published screenshots are real compiled Qt, not browser prototypes; source-revision-of-capture is not cryptographically tied to every image, so do not claim screenshot recency beyond the recorded workflows.
+
 ## Verified two-size Qt layout geometry gate | 29 October 2026
 
 **Source tested:** `9f6dd7c32b2f3feb14aa85a1f3c4c5329de19e50`. The same compiled Qt Widgets GUI lifecycle test now resizes a separate disposable `MainWindow` to **1280×720 and 1500×860**, visits Dashboard, Fleet Inventory, New Rental, Rental History and Return Processing, and asserts: major visible widgets within window bounds, primary horizontal/vertical sections do not overlap, essential form fields and buttons remain contained within their panels, and stacked panels precede the table heading. The test selects only the **visible** RentalActionPanel because both History and Return deliberately share a stylesheet object name. Prior saved-data lifecycle/keyboard/AA contrast checks all remain executed.
