@@ -7,6 +7,8 @@
 **Draft PR:** [#4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/4) · **Tracking issue:** [#2](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/2)  
 **Protected boundary:** `main` stays untouched; do not merge the draft before actual acceptance.
 
+> **Implementation staging update | 29 October 2026:** The first screenshot-workflow optimisation is now **PREPARED ON THIS NON-PR DOCUMENTATION BRANCH ONLY**. Its `.github/workflows/qt-visual-review.yml` retains Qt CMake/CTest, publication-link validation and all ten compiled-Qt renders; replaces the branch-writing screenshot bot with a ten-PNG, 14-day Actions artifact; restricts repository token permission to `contents: read`; and disables persisted checkout credentials. Source-level checks confirmed exactly ten generated/captured filenames and no remaining `git push` or `git commit` commands. **NOT HOSTED-CI-VERIFIED, NOT IN PR #4, NOT MERGED.** The existing checked-in screenshot gallery stays unchanged until a deliberate curation action. Promotion and Linux Qt verification must wait for confirmed Actions availability after the reported 1 November renewal. This staging does **not** change the always-on `ci.yml` pull-request trigger, Windows workflow, or branch-protection requirements.
+
 ## 1. Why we are changing the process
 
 We want faster, repeatable software delivery **without reducing safety, functionality, security, portability, data protection or product quality**. Our previous approach proves the value of tests but repeats remote builds, auto-commits screenshot files, and copies the same progress report across many documents.

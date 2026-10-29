@@ -14,13 +14,15 @@ on:
       - assets/ford_ranger.jpg
       - .github/workflows/qt-visual-review.yml
 permissions:
-  contents: write
+  contents: read
 jobs:
   qt-screenshot:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install Qt and offscreen desktop prerequisites
         run: |
           sudo apt-get update
@@ -71,23 +73,23 @@ jobs:
               assert (width,height)==expected, (name,width,height,expected)
               print('Actual Qt UI',name, width,height,p.stat().st_size)
           PYSCREEN
-      - name: Save screenshot on review branch only
-        run: |
-          mkdir -p design/qt-spike
-          cp portfolio-qt-review-wide.png design/qt-spike/dashboard-qt.png
-          cp portfolio-qt-review-small.png design/qt-spike/dashboard-qt-1280.png
-          cp portfolio-qt-review-fleet-wide.png design/qt-spike/fleet-qt.png
-          cp portfolio-qt-review-fleet-small.png design/qt-spike/fleet-qt-1280.png
-          cp portfolio-qt-review-rent.png design/qt-spike/rent-qt.png
-          cp portfolio-qt-review-rent-small.png design/qt-spike/rent-small-qt.png
-          cp portfolio-qt-review-history.png design/qt-spike/history-qt.png
-          cp portfolio-qt-review-history-small.png design/qt-spike/history-small-qt.png
-          cp portfolio-qt-review-return.png design/qt-spike/return-qt.png
-          cp portfolio-qt-review-return-small.png design/qt-spike/return-small-qt.png
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add design/qt-spike/dashboard-qt.png design/qt-spike/dashboard-qt-1280.png design/qt-spike/fleet-qt.png design/qt-spike/fleet-qt-1280.png design/qt-spike/rent-qt.png design/qt-spike/rent-small-qt.png design/qt-spike/history-qt.png design/qt-spike/history-small-qt.png design/qt-spike/return-qt.png design/qt-spike/return-small-qt.png
-          if ! git diff --cached --quiet; then
-            git commit -m 'test(qt-ui): capture actual Qt dashboard with fictional data'
-            git push origin HEAD:feature/qt-hybrid-visual-spike-20261029
-          fi
+      # Preserve all generated review captures as time-limited job evidence.
+      # The checked-in gallery is curated only after owner approval.
+      - name: Upload real Qt screenshots as review artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-linux-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            portfolio-qt-review-wide.png
+            portfolio-qt-review-small.png
+            portfolio-qt-review-fleet-wide.png
+            portfolio-qt-review-fleet-small.png
+            portfolio-qt-review-rent.png
+            portfolio-qt-review-rent-small.png
+            portfolio-qt-review-history.png
+            portfolio-qt-review-history-small.png
+            portfolio-qt-review-return.png
+            portfolio-qt-review-return-small.png
+          if-no-files-found: warn
+          retention-days: 14
