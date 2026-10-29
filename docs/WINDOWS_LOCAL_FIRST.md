@@ -12,12 +12,16 @@ It can then configure and build using the selected Windows Qt desktop kit, run C
 
 Use **Python 3.10+ and Git**. For the automated CMake/CTest path, install **Qt 6 desktop**, CMake and Visual Studio 2022 C++ tools, with a matching Qt MSVC2022_64 kit. Open a terminal with the appropriate compiler environment. A separate Qt Creator local-build path is available if terminal CMake cannot locate Qt.
 
-From a **local clone containing the latest review branch**:
+Start in a **local clone** of the repository. Run the following from its root. `git fetch` and `git switch` do **not** use GitHub Actions minutes. The switch uses a **detached read-only review position**; it will refuse to replace incompatible local working-tree modifications, so save any personal work first:
 
 ```powershell
-git fetch origin feature/qt-hybrid-visual-spike-20261029
+git fetch origin
+git switch --detach origin/docs/ci-budget-development-strategy-20261029
+git rev-parse origin/feature/qt-hybrid-visual-spike-20261029
 py -3 tools/local_windows_acceptance.py --prepare-only
 ```
+
+If you do not have the repository locally yet, first clone `https://github.com/Sonkhe-Shongwe/vehicle-rental-system.git` and open the cloned folder in your terminal. The helper itself runs from the staging branch but exports the **separate Qt review branch**, not the workflow-staging branch.
 
 The command prints a newly created workspace, usually `%USERPROFILE%\VehicleRentalReviews\acceptance-<timestamp>`. Open its `source/CMakeLists.txt` in Qt Creator and build using your compatible Qt 6 desktop kit. Ensure the application's **working directory is the disposable `source` folder** (Qt Creator → Projects → Run settings). The app's source-adjacent data paths then reference only fake records. Do not open or modify the original checkout's `vehicles.txt`/`rentals.txt`.
 
@@ -29,7 +33,7 @@ py -3 tools/local_windows_acceptance.py --qt-prefix "C:\Qt\6.8.3\msvc2022_64" --
 
 Adjust the Qt prefix to your installed version and compiler kit. With Ninja/MinGW or a compatible alternative, use `--generator Ninja` and launch from that kit's configured terminal. Do not mix MSVC and MinGW Qt libraries.
 
-**Important:** the script itself is staged on the optimisation branch. To execute it from a local clone that only has the main Qt feature branch, retrieve the script from the staging branch or check out the staging branch **only for this helper**, while specifying `--ref feature/qt-hybrid-visual-spike-20261029`. The helper defaults to the normal remote-tracking ref **`origin/feature/qt-hybrid-visual-spike-20261029`** and always exports the **specified source ref**, not necessarily the branch holding the script. Verify it with `git rev-parse origin/feature/qt-hybrid-visual-spike-20261029` first. If you already have a local feature branch checked out, you may instead supply `--ref feature/qt-hybrid-visual-spike-20261029`. Source revision is recorded before running tests.
+**Important:** this helper is still on the isolated optimisation branch, and its default `--ref` is the remote-tracking **`origin/feature/qt-hybrid-visual-spike-20261029`**. Use `git fetch origin` to update that ref before preparing your disposable acceptance workspace. The script records the exact source SHA. It does not merge anything, run GitHub Actions or modify the original checkout. A locally created feature branch can instead be selected with `--ref feature/qt-hybrid-visual-spike-20261029`.
 
 ## Evidence and completion
 
