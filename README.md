@@ -20,6 +20,8 @@ These screenshots were captured from the compiled Qt executable with **fictional
 
 [1280×720 screenshots and visual audit](design/qt-spike/VISUAL_REVIEW.md) · [Photography source/licence register](assets/README.md) · [Windows manual acceptance checklist](docs/WINDOWS_ACCEPTANCE.md)
 
+**New Ford photo in this draft:** The Dashboard and Fleet Ranger inspector use an actually downloaded, provenance-hashed **Hyins / CC0 1.0** front three-quarter Ford Ranger derivative. [View source and image credits](assets/README.md). The photographed truck is a **China-market 2025 XLT in a showroom**, not an actual fleet vehicle; its exact trim/plate must not be inferred from the fictional demo data. The image and its visual suitability remain **unapproved for release**; Toyota and motorcycle artwork still need review.
+
 **Design direction:** Precision Atelier × Editorial Grand Touring. Graphite navigation, warm mineral surfaces, restrained lime actions, semantic status colours and representative automotive photography. Final image quality and aesthetic sign-off remain open.
 
 ## Working functionality
