@@ -797,7 +797,7 @@ QWidget* MainWindow::createRentPage()
     quoteKicker->setObjectName("QuoteKicker");
     right->addWidget(quoteKicker);
 
-    QLabel* priceCaption = new QLabel("BOOKED RENTAL VALUE");
+    QLabel* priceCaption = new QLabel("ESTIMATED RENTAL TOTAL");
     priceCaption->setObjectName("QuoteFieldCaption");
     right->addWidget(priceCaption);
 
@@ -1910,14 +1910,17 @@ void MainWindow::updateRentalEstimate()
     rentAvailabilityValue->setStyleSheet(
         "font-size:15px; font-weight:bold; color:#15803d; background:#f0fdf4; "
         "border:1px solid #bbf7d0; border-radius:6px; padding:8px 10px;");
-    rentLookupMessageLabel->setText(
-        "Vehicle found and available. Complete the customer details to confirm the rental.");
-    rentLookupMessageLabel->setStyleSheet("color:#15803d; font-size:12px;");
-    // Required-field completeness also affects the enabled state. Detailed
-    // customer/phone validation remains in rentVehicle(), unchanged.
-    rentConfirmButton->setEnabled(
+    // Explain the current checkout step without implying a booking is
+    // completed before the operator confirms the rental.
+    const bool customerComplete =
         !rentCustomerNameEdit->text().trimmed().isEmpty() &&
-        !rentPhoneEdit->text().trimmed().isEmpty());
+        !rentPhoneEdit->text().trimmed().isEmpty();
+    rentLookupMessageLabel->setText(customerComplete
+        ? "Details entered. Review the estimate and confirm the rental."
+        : "Vehicle found and available. Complete customer details to continue.");
+    rentLookupMessageLabel->setStyleSheet("color:#15803d; font-size:12px;");
+    // Detailed customer/phone validation remains in rentVehicle(), unchanged.
+    rentConfirmButton->setEnabled(customerComplete);
 }
 
 
