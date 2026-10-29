@@ -156,9 +156,19 @@ int main(int argc, char* argv[])
         expectedDialogs = dialogs;
         observedDialogs.clear();
         unexpectedDialog = false;
+        // QMessageBox nested event loops can leave the Qt offscreen platform
+        // without an active top-level window. Restore the visible owner first.
+        QApplication::setActiveWindow(field->window());
         field->setFocus(Qt::TabFocusReason);
         QApplication::processEvents();
-        require(field->hasFocus(), "Keyboard target must receive focus");
+        require(field->hasFocus(),
+                QString("Keyboard target must receive focus (visible=%1, "
+                        "activeWindow=%2, focusedWidget=%3)")
+                    .arg(field->isVisible())
+                    .arg(QApplication::activeWindow() == field->window())
+                    .arg(QApplication::focusWidget()
+                             ? QApplication::focusWidget()->objectName()
+                             : QStringLiteral("<none>")));
         pressKey(field, Qt::Key_Return);
         require(!unexpectedDialog && observedDialogs == expectedDialogs,
                 QString("Unexpected Enter dialogs: expected [%1], observed [%2]")
