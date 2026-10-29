@@ -80,8 +80,13 @@ jobs:
           foreach ($mode in $modes) {
             Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
             Write-Host "Windows offscreen test $mode"
-            & $exe $mode
-            if ($LASTEXITCODE -ne 0) { throw "$mode failed: exit code $LASTEXITCODE" }
+            # WIN32_EXECUTABLE uses the Windows GUI subsystem. PowerShell's
+            # native '&' invocation does not reliably wait for this executable;
+            # Start-Process -Wait exposes its actual exit code and completion.
+            $process = Start-Process -FilePath $exe -ArgumentList $mode -WorkingDirectory $PWD.Path -Wait -PassThru
+            if ($process.ExitCode -ne 0) {
+              throw "$mode failed: exit code $($process.ExitCode)"
+            }
             if (-not (Test-Path portfolio-qt-review.png)) { throw "$mode did not create screenshot" }
             if ((Get-Item portfolio-qt-review.png).Length -lt 25000) {
               throw "$mode produced an unexpectedly small screenshot"
