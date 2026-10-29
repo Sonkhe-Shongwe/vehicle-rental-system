@@ -2,6 +2,7 @@
 #include "rentalsystem.h"
 
 #include <QApplication>
+#include <QAbstractButton>
 #include <QFile>
 #include <QLabel>
 #include <QLineEdit>
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
                                 ? QMessageBox::Yes
                                 : (dialog->standardButtons() & QMessageBox::Ok)
                                       ? QMessageBox::Ok : QMessageBox::No;
-        if (QPushButton* press = dialog->button(choice))
+        if (QAbstractButton* press = dialog->button(choice))
             press->click();
         else
             dialog->reject();
