@@ -104,15 +104,21 @@ void testReadDoesNotRewrite()
     check(temp.isValid(), "temporary storage available");
     const QString filePath = temp.filePath("vehicles.txt");
     QFile file(filePath);
-    check(file.open(QIODevice::WriteOnly | QIODevice::Text), "fixture writable");
+    // Write the exact fixture bytes. QIODevice::Text translates LF to CRLF
+    // on Windows, which would make the later raw-byte comparison fail before
+    // the application even loads the file.
+    check(file.open(QIODevice::WriteOnly), "fixture writable");
     const QByteArray original("Car|C001|Demo|Car|125.00|0|4\n");
     check(file.write(original) == original.size(), "fixture saved");
+    file.close();
+    check(file.open(QIODevice::ReadOnly), "fixture readable before startup");
+    check(file.readAll() == original, "exact fixture bytes before startup");
     file.close();
     {
         RentalSystem loaded(temp.path());
         check(loaded.getVehicles().size() == 1, "fixture loaded");
     }
-    check(file.open(QIODevice::ReadOnly), "fixture readable");
+    check(file.open(QIODevice::ReadOnly), "fixture readable after startup");
     check(file.readAll() == original, "opening application never rewrites source file");
 }
 }
