@@ -1,0 +1,56 @@
+name: Review Qt photographic dashboard (design branch)
+on:
+  push:
+    branches:
+      - feature/qt-hybrid-visual-spike-20261029
+    paths:
+      - CMakeLists.txt
+      - main.cpp
+      - mainwindow.cpp
+      - mainwindow.h
+      - resources/portfolio.qrc
+      - assets/ford_ranger.jpg
+      - .github/workflows/qt-visual-review.yml
+permissions:
+  contents: write
+jobs:
+  qt-screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt and offscreen desktop prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev cmake ninja-build g++ xvfb xauth
+      - name: Configure, build and CTest
+        run: |
+          cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+      - name: Render real Qt UI using fictional records
+        run: |
+          cp demo/vehicles.txt vehicles.txt
+          cp demo/rentals.txt rentals.txt
+          xvfb-run -a -s '-screen 0 1600x900x24' ./build/VehicleRentalSystem_A3 --portfolio-screenshot
+          python3 - <<'PYSCREEN'
+          import pathlib,struct
+          p=pathlib.Path('portfolio-qt-review.png')
+          assert p.exists() and p.stat().st_size>25000, 'Qt screenshot missing or unexpectedly small'
+          b=p.read_bytes()
+          assert b[:8]==bytes.fromhex('89504e470d0a1a'), 'Not PNG'
+          w,h=struct.unpack('>II',b[16:24])
+          assert w>=1280 and h>=700, (w,h)
+          print('Actual Qt UI screenshot', w, h, p.stat().st_size)
+          PYSCREEN
+      - name: Save screenshot on review branch only
+        run: |
+          mkdir -p design/qt-spike
+          cp portfolio-qt-review.png design/qt-spike/dashboard-qt.png
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add design/qt-spike/dashboard-qt.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(qt-ui): capture actual Qt dashboard with fictional data'
+            git push origin HEAD:feature/qt-hybrid-visual-spike-20261029
+          fi

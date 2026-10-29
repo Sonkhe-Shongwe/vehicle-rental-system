@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QIntValidator>
 #include <QMessageBox>
+#include <QPixmap>
 #include <QScreen>
 #include <QSizePolicy>
 #include <QSpacerItem>
@@ -82,36 +83,45 @@ void MainWindow::setupUi()
 
 void MainWindow::applyStyles()
 {
+    // Portfolio visual experiment: surface styles only; rental workflows are untouched.
     setStyleSheet(
-        "QMainWindow { background-color: #f4f6f9; }"
-        "QWidget#Sidebar { background-color: #1f2937; }"
-        "QLabel#SidebarTitle { color: white; font-size: 20px; font-weight: bold; padding: 20px 14px; }"
-        "QPushButton#SidebarButton { color: #d1d5db; background: transparent; border: none; text-align: left; padding: 11px 18px; font-size: 14px; }"
-        "QPushButton#SidebarButton:hover { background-color: #374151; color: white; }"
-        "QPushButton#SidebarButton:checked { background-color: #2563eb; color: white; font-weight: bold; }"
-        "QPushButton#ExitButton { background-color: #7f1d1d; color: white; border: none; border-radius: 6px; padding: 9px 12px; font-weight: bold; margin: 0 12px; }"
-        "QPushButton#ExitButton:hover { background-color: #b91c1c; }"
-        "QWidget#MainContent { background-color: #f4f6f9; }"
-        "QLabel#PageTitle { font-size: 25px; font-weight: bold; color: #111827; }"
-        "QLabel#PageSubtitle { font-size: 13px; color: #6b7280; }"
-        "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #374151; padding-top: 4px; }"
-        "QFrame#Card, QFrame#FormCard { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; }"
-        "QLabel#CardTitle { font-size: 12px; color: #6b7280; }"
-        "QLabel#CardValue { font-size: 24px; font-weight: bold; color: #111827; }"
-        "QLineEdit, QDateEdit, QSpinBox, QComboBox { background-color: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 8px; font-size: 13px; min-height: 20px; }"
-        "QLineEdit:focus, QDateEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid #2563eb; }"
-        "QPushButton#ActionButton { background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#ActionButton:hover { background-color: #1d4ed8; }"
-        "QPushButton#ActionButton:disabled { background-color: #9ca3af; color: #f3f4f6; }"
-        "QPushButton#SecondaryButton { background-color: #e5e7eb; color: #111827; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#SecondaryButton:hover { background-color: #d1d5db; }"
-        "QPushButton#DangerButton { background-color: #dc2626; color: white; border: none; border-radius: 6px; padding: 9px 16px; font-weight: bold; }"
-        "QPushButton#DangerButton:hover { background-color: #b91c1c; }"
-        "QPushButton#TypeButton { background-color: #f9fafb; color: #111827; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 22px; font-weight: bold; }"
-        "QPushButton#TypeButton:checked { background-color: #2563eb; color: white; border-color: #2563eb; }"
-        "QHeaderView::section { background-color: #111827; color: white; padding: 6px 8px; border: none; font-weight: bold; }"
-        "QTableWidget { background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; alternate-background-color: #f9fafb; }"
-        );
+        "QMainWindow { background-color: #f5f4ef; }"
+        "QWidget#Sidebar { background-color: #16252b; }"
+        "QLabel#SidebarTitle { color: #fbfdfa; font-size: 21px; font-weight: 700; padding: 20px 16px; }"
+        "QPushButton#SidebarButton { color: #b9c9c5; background: transparent; border: none; text-align: left; padding: 12px 18px; font-size: 13px; border-radius: 7px; }"
+        "QPushButton#SidebarButton:hover { background-color: #293c40; color: #ffffff; }"
+        "QPushButton#SidebarButton:checked { background-color: #cff375; color: #16252b; font-weight: bold; }"
+        "QPushButton#ExitButton { background-color: #334448; color: #f7faf7; border: 1px solid #42565b; border-radius: 8px; padding: 10px 12px; font-weight: bold; margin: 0 12px; }"
+        "QPushButton#ExitButton:hover { background-color: #5c3333; }"
+        "QWidget#MainContent { background-color: #f5f4ef; }"
+        "QLabel#PageTitle { font-size: 27px; font-weight: 750; color: #172830; }"
+        "QLabel#PageSubtitle { font-size: 13px; color: #657774; }"
+        "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #25393b; padding-top: 6px; }"
+        "QFrame#FleetHero { background-color: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
+        "QLabel#FleetHeroKicker { color: #cff375; font-size: 11px; font-weight: bold; }"
+        "QLabel#FleetHeroValue { color: #ffffff; font-size: 44px; font-weight: bold; }"
+        "QLabel#FleetHeroHint { color: #d1f69a; font-size: 12px; font-weight: bold; }"
+        "QLabel#FleetHeroDescription { color: #d4dfd9; font-size: 12px; }"
+        "QLabel#FleetPhotoCredit { color: #e0eae2; font-size: 10px; }"
+        "QFrame#Card, QFrame#FormCard { background-color: #fffefa; border: 1px solid #e1e5dd; border-radius: 11px; }"
+        "QFrame#SecondaryCard { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
+        "QLabel#CardTitle { font-size: 12px; color: #60746f; }"
+        "QLabel#CardValue { font-size: 24px; font-weight: bold; color: #1b2d31; }"
+        "QFrame#SecondaryCard QLabel#CardValue { font-size: 20px; }"
+        "QLineEdit, QDateEdit, QSpinBox, QComboBox { background-color: #fffefa; border: 1px solid #cbd6ce; border-radius: 7px; padding: 5px 8px; font-size: 13px; min-height: 20px; color: #1b2d31; }"
+        "QLineEdit:focus, QDateEdit:focus, QSpinBox:focus, QComboBox:focus { border: 2px solid #357668; }"
+        "QPushButton#ActionButton { background-color: #cff375; color: #172830; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#ActionButton:hover { background-color: #b6e358; }"
+        "QPushButton#ActionButton:disabled { background-color: #c5cbc0; color: #6d756c; }"
+        "QPushButton#SecondaryButton { background-color: #e9ede5; color: #172830; border: 1px solid #dbe3d9; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#SecondaryButton:hover { background-color: #dfe8dc; }"
+        "QPushButton#DangerButton { background-color: #ad4141; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: bold; }"
+        "QPushButton#DangerButton:hover { background-color: #963636; }"
+        "QPushButton#TypeButton { background-color: #f7f8f3; color: #172830; border: 1px solid #d5ded4; border-radius: 8px; padding: 9px 22px; font-weight: bold; }"
+        "QPushButton#TypeButton:checked { background-color: #c3ec74; color: #172830; border-color: #87b941; }"
+        "QHeaderView::section { background-color: #25393b; color: #f5f8f1; padding: 7px 8px; border: none; font-weight: bold; }"
+        "QTableWidget { background-color: #fffefa; color: #243436; border: 1px solid #e1e5dd; border-radius: 8px; alternate-background-color: #f5f7f0; selection-background-color: #e0f3bd; selection-color: #19312a; }"
+    );
 }
 
 void MainWindow::setupSidebar()
@@ -259,26 +269,85 @@ QFrame* MainWindow::createStatCard(const QString& title, QLabel*& valueLabel)
 QWidget* MainWindow::createDashboardPage()
 {
     QWidget* page = new QWidget();
+    QVBoxLayout* pageLayout = new QVBoxLayout();
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->setSpacing(11);
+
+    // A photographic hero is a review-only enhancement; availability is still
+    // calculated from real runtime vehicles, never hard-coded demo statistics.
+    QFrame* hero = new QFrame();
+    hero->setObjectName("FleetHero");
+    hero->setMinimumHeight(157);
+    QHBoxLayout* heroLayout = new QHBoxLayout(hero);
+    heroLayout->setContentsMargins(26, 14, 18, 14);
+    heroLayout->setSpacing(18);
+    QVBoxLayout* heroCopy = new QVBoxLayout();
+    heroCopy->setSpacing(1);
+    QLabel* heroKicker = new QLabel("RENTAL OPERATIONS  /  FLEET READINESS");
+    heroKicker->setObjectName("FleetHeroKicker");
+    fleetHeroValue = new QLabel("0 / 0");
+    fleetHeroValue->setObjectName("FleetHeroValue");
+    fleetHeroHint = new QLabel("NO VEHICLES LOADED");
+    fleetHeroHint->setObjectName("FleetHeroHint");
+    QLabel* description = new QLabel("Available vehicles across your rental fleet");
+    description->setObjectName("FleetHeroDescription");
+    heroCopy->addWidget(heroKicker);
+    heroCopy->addWidget(fleetHeroValue);
+    heroCopy->addWidget(fleetHeroHint);
+    heroCopy->addWidget(description);
+    heroCopy->addStretch();
+    heroLayout->addLayout(heroCopy, 3);
+
+    QVBoxLayout* photograph = new QVBoxLayout();
+    photograph->setSpacing(3);
+    QLabel* photo = new QLabel();
+    photo->setAccessibleName("Representative Ford Ranger vehicle photograph");
+    photo->setToolTip("Illustrative model photograph; not a photograph of an actual rental fleet vehicle");
+    photo->setAlignment(Qt::AlignCenter);
+    photo->setFixedSize(280, 124);
+    const QPixmap source(":/portfolio/ford_ranger.jpg");
+    if (!source.isNull()) {
+        QPixmap scaled = source.scaled(photo->size(), Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+        const int x = (scaled.width() - photo->width()) / 2;
+        const int y = (scaled.height() - photo->height()) / 2;
+        photo->setPixmap(scaled.copy(x, y, photo->width(), photo->height()));
+    } else {
+        photo->setText("Representative vehicle photo unavailable");
+    }
+    QLabel* photoCredit = new QLabel("Ford Ranger · crash71100 / CC0 · illustrative");
+    photoCredit->setObjectName("FleetPhotoCredit");
+    photoCredit->setAlignment(Qt::AlignRight);
+    photograph->addWidget(photo);
+    photograph->addWidget(photoCredit);
+    heroLayout->addLayout(photograph);
+    pageLayout->addWidget(hero);
 
     QGridLayout* cards = new QGridLayout();
     cards->setContentsMargins(0, 0, 0, 0);
     cards->setHorizontalSpacing(11);
     cards->setVerticalSpacing(11);
-
     cards->addWidget(createStatCard("Total Vehicles", totalVehiclesValue), 0, 0);
     cards->addWidget(createStatCard("Available Vehicles", availableVehiclesValue), 0, 1);
-    cards->addWidget(createStatCard("Rented Vehicles", rentedVehiclesValue), 0, 2);
-    cards->addWidget(createStatCard("Active Rentals", activeRentalsValue), 0, 3);
+    cards->addWidget(createStatCard("Active Rentals", activeRentalsValue), 0, 2);
+    cards->addWidget(createStatCard("Fleet Utilisation", utilisationValue), 0, 3);
 
-    cards->addWidget(createStatCard("Cars", carsValue), 1, 0);
-    cards->addWidget(createStatCard("Motorcycles", motorcyclesValue), 1, 1);
-    cards->addWidget(createStatCard("Fleet Utilisation", utilisationValue), 1, 2);
-    cards->addWidget(createStatCard("Rental Revenue", revenueValue), 1, 3);
-
-    page->setLayout(cards);
+    QFrame* rentedCard = createStatCard("Rented Vehicles", rentedVehiclesValue);
+    QFrame* carsCard = createStatCard("Cars", carsValue);
+    QFrame* motorcycleCard = createStatCard("Motorcycles", motorcyclesValue);
+    QFrame* bookedValueCard = createStatCard("Booked Rental Value", revenueValue);
+    for (QFrame* card : {rentedCard, carsCard, motorcycleCard, bookedValueCard}) {
+        card->setObjectName("SecondaryCard");
+        card->setMinimumHeight(74);
+    }
+    cards->addWidget(rentedCard, 1, 0);
+    cards->addWidget(carsCard, 1, 1);
+    cards->addWidget(motorcycleCard, 1, 2);
+    cards->addWidget(bookedValueCard, 1, 3);
+    pageLayout->addLayout(cards);
+    page->setLayout(pageLayout);
     return page;
 }
-
 
 QWidget* MainWindow::createAddPage()
 {
@@ -1095,6 +1164,12 @@ void MainWindow::updateDashboardCards()
     const double utilisation = vehicles.isEmpty()
                                    ? 0.0
                                    : (static_cast<double>(rented) / vehicles.size()) * 100.0;
+
+    // Dashboard hero uses actual loaded fleet counts. No demo data is fabricated.
+    fleetHeroValue->setText(QString("%1 / %2").arg(available).arg(vehicles.size()));
+    fleetHeroHint->setText(vehicles.isEmpty()
+        ? "NO VEHICLES LOADED"
+        : QString("%1% AVAILABLE").arg(QString::number(100.0 * available / vehicles.size(), 'f', 0)));
 
     // Dashboard.
     totalVehiclesValue->setText(QString::number(vehicles.size()));

@@ -42,6 +42,8 @@ private:
     QLabel* tableSectionTitleLabel;
 
     // Dashboard values.
+    QLabel* fleetHeroValue;
+    QLabel* fleetHeroHint;
     QLabel* totalVehiclesValue;
     QLabel* availableVehiclesValue;
     QLabel* rentedVehiclesValue;

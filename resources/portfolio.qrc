@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/portfolio">
+    <file alias="ford_ranger.jpg">../assets/ford_ranger.jpg</file>
+  </qresource>
+</RCC>
