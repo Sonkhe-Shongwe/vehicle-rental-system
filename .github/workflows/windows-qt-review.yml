@@ -80,12 +80,34 @@ jobs:
             @{ Name='fleet-1280'; Arg='--portfolio-fleet-screenshot-small'; Width=1280; Height=720; Scale='1' },
             @{ Name='rent-1280'; Arg='--portfolio-rent-screenshot-small'; Width=1280; Height=720; Scale='1' },
             @{ Name='history-1280'; Arg='--portfolio-history-screenshot-small'; Width=1280; Height=720; Scale='1' },
-            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' },
-            # Qt's synthetic scale factor gives us a DPI-sensitive rendering
-            # regression check; it does not replace a real Windows display.
-            @{ Name='fleet-scale125'; Arg='--portfolio-fleet-screenshot-small'; Width=1600; Height=900; Scale='1.25' },
-            @{ Name='rent-scale150'; Arg='--portfolio-rent-screenshot-small'; Width=1920; Height=1080; Scale='1.5' }
+            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' }
           )
+          # Test every redesigned real Qt workspace at both synthetic scales,
+          # not only Fleet at 125% and Rent at 150%. Qt scaling is a rendered
+          # pixel-density regression; native monitor DPI still needs a human.
+          $pages = @(
+            @{ Name='dashboard'; Arg='--portfolio-screenshot-small' },
+            @{ Name='fleet'; Arg='--portfolio-fleet-screenshot-small' },
+            @{ Name='rent'; Arg='--portfolio-rent-screenshot-small' },
+            @{ Name='history'; Arg='--portfolio-history-screenshot-small' },
+            @{ Name='return'; Arg='--portfolio-return-screenshot-small' }
+          )
+          $scales = @(
+            @{ Name='125'; Factor='1.25'; Width=1600; Height=900 },
+            @{ Name='150'; Factor='1.5'; Width=1920; Height=1080 }
+          )
+          foreach ($scale in $scales) {
+            foreach ($page in $pages) {
+              $scenarios += @{
+                Name="$($page.Name)-scale$($scale.Name)"
+                Arg=$page.Arg
+                Width=$scale.Width
+                Height=$scale.Height
+                Scale=$scale.Factor
+              }
+            }
+          }
+          if ($scenarios.Count -ne 20) { throw "Expected 20 Qt screenshots, got $($scenarios.Count)" }
           foreach ($case in $scenarios) {
             Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
             $env:QT_SCALE_FACTOR = $case.Scale
@@ -112,7 +134,11 @@ jobs:
           if ((Get-FileHash rentals.txt -Algorithm SHA256).Hash -ne $beforeRentals) {
             throw 'Rental fixture was unexpectedly modified'
           }
-          Write-Host "PASS: ten Windows Qt UI checks plus two synthetic DPI scale captures; demo fixtures unchanged."
+          $evidence = @(Get-ChildItem -Path 'windows-qt-evidence' -Filter '*.png' -File)
+          if ($evidence.Count -ne 20) {
+            throw "Expected 20 unique Qt evidence PNGs, got $($evidence.Count)"
+          }
+          Write-Host "PASS: ten standard Windows Qt UI captures plus ten synthetic DPI captures (5 workspaces at both 125% and 150%); demo fixtures unchanged. Native Windows display DPI remains pending."
 
       - name: Retain Windows review screenshot evidence
         if: always()
