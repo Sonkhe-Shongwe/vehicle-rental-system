@@ -1,0 +1,96 @@
+name: Windows Qt6 build, domain and UI smoke (review)
+
+on:
+  push:
+    branches:
+      - feature/qt-hybrid-visual-spike-20261029
+    paths:
+      - .github/workflows/windows-qt-review.yml
+      - CMakeLists.txt
+      - '**/*.cpp'
+      - '**/*.h'
+      - 'resources/**'
+      - 'assets/**'
+      - 'tests/**'
+      - 'demo/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-msvc-review:
+    name: Windows 2022 / MSVC2022 / Qt 6.8.3
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6 desktop for MSVC 2022
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: Record toolchain and configure
+        shell: pwsh
+        run: |
+          Write-Host "Commit: $env:GITHUB_SHA"
+          Write-Host "Qt root: $env:QT_ROOT_DIR"
+          cmake --version
+          cmake -S . -B build-windows -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build application and domain tests
+        shell: pwsh
+        run: |
+          cmake --build build-windows --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run isolated domain tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build-windows -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify non-destructive Qt UI smoke on Windows
+        shell: pwsh
+        run: |
+          # The hosted checkout is temporary. Only fictional demo fixtures
+          # are placed in the source directory used by the legacy loader.
+          Copy-Item demo/vehicles.txt vehicles.txt -Force
+          Copy-Item demo/rentals.txt rentals.txt -Force
+          $beforeVehicles = (Get-FileHash vehicles.txt -Algorithm SHA256).Hash
+          $beforeRentals = (Get-FileHash rentals.txt -Algorithm SHA256).Hash
+          $exe = Join-Path $PWD 'build-windows/Release/VehicleRentalSystem_A3.exe'
+          if (-not (Test-Path $exe)) { throw "Qt executable missing: $exe" }
+          $modes = @(
+            '--portfolio-screenshot',
+            '--portfolio-fleet-screenshot',
+            '--portfolio-rent-screenshot',
+            '--portfolio-history-screenshot',
+            '--portfolio-return-screenshot'
+          )
+          foreach ($mode in $modes) {
+            Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
+            Write-Host "Windows offscreen test $mode"
+            & $exe $mode
+            if ($LASTEXITCODE -ne 0) { throw "$mode failed: exit code $LASTEXITCODE" }
+            if (-not (Test-Path portfolio-qt-review.png)) { throw "$mode did not create screenshot" }
+            if ((Get-Item portfolio-qt-review.png).Length -lt 25000) {
+              throw "$mode produced an unexpectedly small screenshot"
+            }
+          }
+          if ((Get-FileHash vehicles.txt -Algorithm SHA256).Hash -ne $beforeVehicles) {
+            throw 'Fleet fixture was unexpectedly modified'
+          }
+          if ((Get-FileHash rentals.txt -Algorithm SHA256).Hash -ne $beforeRentals) {
+            throw 'Rental fixture was unexpectedly modified'
+          }
+          Write-Host "PASS: five Windows Qt offscreen UI checks; fixture files unchanged."
