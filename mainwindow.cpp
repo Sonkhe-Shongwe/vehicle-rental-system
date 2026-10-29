@@ -102,6 +102,18 @@ void MainWindow::applyStyles()
         "QLabel#PageTitle { font-size: 27px; font-weight: 750; color: #172830; }"
         "QLabel#PageSubtitle { font-size: 13px; color: #657774; }"
         "QLabel#TableSectionTitle { font-size: 15px; font-weight: bold; color: #25393b; padding-top: 6px; }"
+        "QFrame#RentalFormPanel { background: #fffefa; border: 1px solid #e1e5dd; border-radius: 13px; }"
+        "QLabel#RentalKicker { color: #3d7565; font-size: 10px; font-weight: bold; }"
+        "QLabel#RentalPanelTitle { color: #172830; font-size: 22px; font-weight: bold; }"
+        "QLabel#SameDayNote { background: #edf3e7; color: #2e584a; border-radius: 6px; padding: 8px; font-size: 12px; }"
+        "QLabel#RentalLookupHint { color: #657774; font-size: 12px; }"
+        "QFrame#RentalQuotePanel { background: #172a30; border: 1px solid #2c4244; border-radius: 13px; }"
+        "QLabel#QuoteKicker { color: #cff375; font-size: 11px; font-weight: bold; }"
+        "QLabel#QuoteFieldCaption { color: #adc3bc; font-size: 11px; }"
+        "QLabel#QuoteFieldValue { color: #ffffff; font-size: 12px; font-weight: 600; }"
+        "QLabel#QuoteTotal { color: #ffffff; font-size: 34px; font-weight: bold; }"
+        "QLabel#QuoteDisclaimer { color: #a9c2b8; font-size: 10px; }"
+        "QFrame#QuoteRule { background: #40575a; border: none; }"
         "QFrame#FleetInspector { background: #172a30; border: 1px solid #2c4244; border-radius: 14px; }"
         "QLabel#FleetAssetPhoto { background: #263a3d; color: #bbd3cb; border-radius: 8px; font-size: 10px; font-weight: bold; }"
         "QLabel#FleetAssetCredit { color: #a7bbb6; font-size: 9px; }"
@@ -686,30 +698,35 @@ QWidget* MainWindow::createSearchPage()
 QWidget* MainWindow::createRentPage()
 {
     QWidget* page = new QWidget();
-    QFrame* card = new QFrame();
-    card->setObjectName("FormCard");
+    page->setObjectName("RentalWorkspace");
+    QHBoxLayout* shell = new QHBoxLayout(page);
+    shell->setContentsMargins(0, 0, 0, 0);
+    shell->setSpacing(13);
+
+    // Left side: the existing same-day rental workflow, now grouped by task.
+    QFrame* formPanel = new QFrame();
+    formPanel->setObjectName("RentalFormPanel");
+    QVBoxLayout* left = new QVBoxLayout(formPanel);
+    left->setContentsMargins(22, 14, 22, 13);
+    left->setSpacing(7);
+    QLabel* kicker = new QLabel("01  /  CUSTOMER & VEHICLE");
+    kicker->setObjectName("RentalKicker");
+    QLabel* heading = new QLabel("New rental");
+    heading->setObjectName("RentalPanelTitle");
+    left->addWidget(kicker);
+    left->addWidget(heading);
 
     rentVehicleIdEdit = new QLineEdit();
+    rentVehicleIdEdit->setObjectName("RentalVehicleID");
     rentCustomerNameEdit = new QLineEdit();
     rentPhoneEdit = new QLineEdit();
     rentStartDateEdit = new QDateEdit(QDate::currentDate());
     rentDaysSpinBox = new QSpinBox();
-
-    rentLookupMessageLabel = new QLabel(
-        "Enter an available vehicle ID to view its details and calculate the rental cost.");
-    rentLookupMessageLabel->setWordWrap(true);
-
-    rentVehicleValue = new QLabel("-");
-    rentAvailabilityValue = new QLabel("Waiting for vehicle ID");
-    rentPriceValue = new QLabel("R0.00");
-    rentExpectedReturnValue = new QLabel("-");
-    rentTotalValue = new QLabel("R0.00");
-
     rentVehicleIdEdit->setPlaceholderText("e.g. C001");
     rentCustomerNameEdit->setPlaceholderText("Customer full name");
     rentPhoneEdit->setPlaceholderText("e.g. 082 123 4567");
 
-    // Rentals are processed immediately, so the start date is always today.
+    // Preserve the existing business rule: immediate, same-day checkout only.
     rentStartDateEdit->setCalendarPopup(false);
     rentStartDateEdit->setDisplayFormat("dd MMM yyyy");
     rentStartDateEdit->setMinimumDate(QDate::currentDate());
@@ -717,83 +734,103 @@ QWidget* MainWindow::createRentPage()
     rentStartDateEdit->setDate(QDate::currentDate());
     rentStartDateEdit->setReadOnly(true);
     rentStartDateEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
-
-    // The arrows are removed so the user can simply type the rental days.
-    // QSpinBox still protects the field from letters, negatives and zero.
     rentDaysSpinBox->setRange(1, 365);
     rentDaysSpinBox->setValue(1);
     rentDaysSpinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
     rentDaysSpinBox->setAlignment(Qt::AlignLeft);
 
-    const QString summaryStyle =
-        "font-size: 15px; font-weight: bold; color: #111827; "
-        "background-color: #f9fafb; border: 1px solid #e5e7eb; "
-        "border-radius: 6px; padding: 8px 10px; min-height: 22px;";
-
-    rentVehicleValue->setStyleSheet(summaryStyle);
-    rentAvailabilityValue->setStyleSheet(summaryStyle);
-    rentPriceValue->setStyleSheet(summaryStyle);
-    rentExpectedReturnValue->setStyleSheet(summaryStyle);
-    rentTotalValue->setStyleSheet(summaryStyle);
-
-    QPushButton* clearButton = new QPushButton("Clear Fields");
-    rentConfirmButton = new QPushButton("Confirm Rental");
-    clearButton->setObjectName("SecondaryButton");
-    rentConfirmButton->setObjectName("ActionButton");
-    rentConfirmButton->setEnabled(false);
-
     QGridLayout* form = new QGridLayout();
-    form->setContentsMargins(24, 16, 24, 16);
-    form->setHorizontalSpacing(18);
-    form->setVerticalSpacing(7);
+    form->setContentsMargins(0, 2, 0, 0);
+    form->setHorizontalSpacing(13);
+    form->setVerticalSpacing(5);
     form->setColumnStretch(0, 1);
     form->setColumnStretch(1, 1);
-    form->setColumnStretch(2, 1);
-
-    // Three compact columns keep the rental controls visible without hiding
-    // most of the available-vehicles table below the form.
     form->addWidget(makeFieldLabel("Available Vehicle ID"), 0, 0);
     form->addWidget(makeFieldLabel("Customer Full Name"), 0, 1);
-    form->addWidget(makeFieldLabel("Phone Number"), 0, 2);
     form->addWidget(rentVehicleIdEdit, 1, 0);
     form->addWidget(rentCustomerNameEdit, 1, 1);
-    form->addWidget(rentPhoneEdit, 1, 2);
-    form->addWidget(rentLookupMessageLabel, 2, 0, 1, 3);
+    form->addWidget(makeFieldLabel("Phone Number"), 2, 0);
+    form->addWidget(makeFieldLabel("Rental Start Date"), 2, 1);
+    form->addWidget(rentPhoneEdit, 3, 0);
+    form->addWidget(rentStartDateEdit, 3, 1);
+    form->addWidget(makeFieldLabel("Rental Days"), 4, 0);
+    form->addWidget(makeFieldLabel("Processing"), 4, 1);
+    form->addWidget(rentDaysSpinBox, 5, 0);
+    QLabel* sameDayNote = new QLabel("Immediate checkout  /  Today");
+    sameDayNote->setObjectName("SameDayNote");
+    form->addWidget(sameDayNote, 5, 1);
+    left->addLayout(form);
 
-    form->addWidget(makeFieldLabel("Rental Start Date"), 3, 0);
-    form->addWidget(makeFieldLabel("Number of Rental Days"), 3, 1);
-    form->addWidget(makeFieldLabel("Expected Return Date"), 3, 2);
-    form->addWidget(rentStartDateEdit, 4, 0);
-    form->addWidget(rentDaysSpinBox, 4, 1);
-    form->addWidget(rentExpectedReturnValue, 4, 2);
+    rentLookupMessageLabel = new QLabel(
+        "Enter an available vehicle ID to view the estimate.");
+    rentLookupMessageLabel->setObjectName("RentalLookupHint");
+    rentLookupMessageLabel->setWordWrap(true);
+    left->addWidget(rentLookupMessageLabel);
 
-    form->addWidget(makeFieldLabel("Vehicle"), 5, 0);
-    form->addWidget(makeFieldLabel("Availability"), 5, 1);
-    form->addWidget(makeFieldLabel("Price Per Day"), 5, 2);
-    form->addWidget(rentVehicleValue, 6, 0);
-    form->addWidget(rentAvailabilityValue, 6, 1);
-    form->addWidget(rentPriceValue, 6, 2);
-
-    form->addWidget(makeFieldLabel("Calculated Total Cost"), 7, 0);
-    form->addWidget(rentTotalValue, 8, 0);
-
+    QPushButton* clearButton = new QPushButton("Clear fields");
+    clearButton->setObjectName("SecondaryButton");
+    rentConfirmButton = new QPushButton("Confirm rental");
+    rentConfirmButton->setObjectName("ActionButton");
+    rentConfirmButton->setEnabled(false);
     QHBoxLayout* actions = new QHBoxLayout();
-    actions->setSpacing(10);
+    actions->setSpacing(9);
     actions->addWidget(rentConfirmButton);
     actions->addWidget(clearButton);
     actions->addStretch();
-    form->addLayout(actions, 8, 1, 1, 2);
+    left->addLayout(actions);
+    shell->addWidget(formPanel, 3);
 
-    card->setLayout(form);
-    card->setMinimumWidth(940);
-    card->setMaximumWidth(1120);
-    card->setMinimumHeight(300);
+    // Right side: the price is derived from the existing RentalSystem values.
+    // No payment, discount or checkout capability is implied.
+    QFrame* quote = new QFrame();
+    quote->setObjectName("RentalQuotePanel");
+    quote->setMinimumWidth(310);
+    QVBoxLayout* right = new QVBoxLayout(quote);
+    right->setContentsMargins(23, 18, 23, 18);
+    right->setSpacing(8);
+    QLabel* quoteKicker = new QLabel("02  /  LIVE RENTAL ESTIMATE");
+    quoteKicker->setObjectName("QuoteKicker");
+    right->addWidget(quoteKicker);
 
-    QVBoxLayout* pageLayout = new QVBoxLayout();
-    pageLayout->setContentsMargins(0, 0, 0, 0);
-    pageLayout->addWidget(card, 0, Qt::AlignLeft);
-    pageLayout->addStretch();
-    page->setLayout(pageLayout);
+    QLabel* priceCaption = new QLabel("BOOKED RENTAL VALUE");
+    priceCaption->setObjectName("QuoteFieldCaption");
+    right->addWidget(priceCaption);
+
+    rentTotalValue = new QLabel("R0.00");
+    rentTotalValue->setObjectName("QuoteTotal");
+    right->addWidget(rentTotalValue);
+
+    QFrame* rule = new QFrame();
+    rule->setObjectName("QuoteRule");
+    rule->setFixedHeight(1);
+    right->addWidget(rule);
+
+    auto addLine = [right](const QString& label, QLabel*& value) {
+        QHBoxLayout* line = new QHBoxLayout();
+        line->setSpacing(8);
+        QLabel* description = new QLabel(label);
+        description->setObjectName("QuoteFieldCaption");
+        value = new QLabel("-");
+        value->setObjectName("QuoteFieldValue");
+        value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        value->setMinimumWidth(100);
+        line->addWidget(description);
+        line->addWidget(value, 1);
+        right->addLayout(line);
+    };
+
+    addLine("Vehicle", rentVehicleValue);
+    addLine("Daily rate", rentPriceValue);
+    addLine("Return due", rentExpectedReturnValue);
+    addLine("Availability", rentAvailabilityValue);
+    rentAvailabilityValue->setText("Waiting for vehicle ID");
+    right->addStretch();
+    QLabel* disclaimer = new QLabel(
+        "Estimate only. No payment is collected by this application.");
+    disclaimer->setObjectName("QuoteDisclaimer");
+    disclaimer->setWordWrap(true);
+    right->addWidget(disclaimer);
+    shell->addWidget(quote, 2);
 
     connect(rentVehicleIdEdit, &QLineEdit::textChanged,
             this, &MainWindow::updateRentalEstimate);
@@ -804,7 +841,6 @@ QWidget* MainWindow::createRentPage()
     connect(clearButton, &QPushButton::clicked, this, &MainWindow::clearRentalForm);
     connect(rentConfirmButton, &QPushButton::clicked, this, &MainWindow::rentVehicle);
     connect(rentPhoneEdit, &QLineEdit::returnPressed, this, &MainWindow::rentVehicle);
-
     updateRentalEstimate();
     return page;
 }
@@ -1625,8 +1661,9 @@ void MainWindow::showRentPage()
     pageSubtitleLabel->setText(
         "Capture the customer, type the rental days and review the calculated rental details.");
     actionStack->setCurrentIndex(3);
-    actionStack->setMaximumHeight(330);
-    tableSectionTitleLabel->setVisible(false);
+    actionStack->setMaximumHeight(359);
+    tableSectionTitleLabel->setVisible(true);
+    tableSectionTitleLabel->setText("Vehicles ready for checkout");
     rentStartDateEdit->setMinimumDate(QDate::currentDate());
     rentStartDateEdit->setMaximumDate(QDate::currentDate());
     rentStartDateEdit->setDate(QDate::currentDate());
