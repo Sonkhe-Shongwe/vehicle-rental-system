@@ -25,6 +25,10 @@ The full analysis is tracked in [PORTFOLIO_RESEARCH_2026-10-29.md](PORTFOLIO_RES
 
 **Status:** Research completed and documented; design decisions are still proposals. No code changes were made during research. The P0 application deadline and Windows manual test gate are unchanged. After the application, validate UX concepts before implementing P1 visual redesign, P2 transactional SQLite / architecture, P3 operational completeness, and optional P4 API.
 
+## Phase 1 visual design checkpoint — design only (29 October 2026)
+
+[Visual prototype and spec](../design/README.md) propose a task-first Dashboard/Fleet/Rentals structure, responsive panels and coherent light-first enterprise styling. Three 1440×900 concept screenshots plus a 1280×720 dashboard render are included. The HTML preview was interaction-tested, but **the Qt GUI has not been redesigned or Windows-tested**. Approval/iteration precedes implementation. Implementation order: shell/navigation, dashboard, fleet, rental workflow, Windows UI quality gates. Preserve existing Qt slots, pricing, persistence and regression test behaviour until functionality parity is verified. Further SQLite/API work stays independently scoped.
+
 ## What not to attempt before the application deadline
 
 Do not rewrite the project in React, add cloud AI, or claim a REST API without a verified implementation. A polished smaller project with passing tests has stronger interview credibility than a wide feature list with failing builds.

@@ -34,6 +34,14 @@ The [full comparative portfolio / UX research report](PORTFOLIO_RESEARCH_2026-10
 
 **Next development decision:** agree on a bounded visual/UX specification and acceptance scenarios; improve the current application incrementally, preserve domain behaviour, and test each user journey. Prioritise a truthful portfolio demonstration for the **30 October 2026 application deadline**, not a speculative framework rewrite. The full design roadmap remains in the research report; do not label later milestones complete.
 
+## Phase 1 design exploration — 29 October 2026
+
+**Completed as design evidence, not implemented in Qt:** An editable standalone HTML prototype of Dashboard, Fleet Management and Rental Management, plus desktop screenshots, a 1280 px layout check, full [design specification](../design/DESIGN_SPEC.md) and [design index](../design/README.md) are now tracked in GitHub. The prototype uses exactly 5 fictional demo vehicles and 2 sample rental records, and never writes application data. Interactive browser checks passed for page navigation, search, rented filter, selected vehicle, price preview, history tabs and a clearly non-persistent submit response. These are **browser prototype checks only**, not Qt tests.
+
+**Direction proposed, not approved:** light-first operator console with dark navy navigation, fewer permanent destinations, four primary KPIs, contextual rental and fleet actions, and adaptive panels. No C++/Qt code changed during this design milestone. Existing Linux Qt6 CI remains the source-code regression gate; Windows GUI acceptance is still pending.
+
+**Next decision:** review the three prototype screens with the owner and resolve any visual/functional changes. Only then implement a bounded Qt UI milestone, run Linux CI, and test the actual Qt app on Windows with disposable files. Do not replace verified application screenshots with prototype renders.
+
 ## Immediate next actions
 
 1. **COMPLETE:** Prepared C++/Qt source, tests, docs, fictional demo data and sanitized screenshots are committed directly in the public GitHub repository. Do not publish real customer data.
