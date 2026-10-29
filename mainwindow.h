@@ -22,6 +22,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+    // Test-only storage injection; the ordinary application retains its existing path.
+    explicit MainWindow(const QString& dataDirectory, QWidget* parent = nullptr);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;

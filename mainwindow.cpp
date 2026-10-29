@@ -47,7 +47,12 @@ QLabel* makeFieldLabel(const QString& text)
 }
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent)
+    : MainWindow(QString(), parent)
+{
+}
+
+MainWindow::MainWindow(const QString& dataDirectory, QWidget* parent)
+    : QMainWindow(parent), rentalSystem(dataDirectory)
 {
     setupUi();
     showDashboardPage();
@@ -441,6 +446,11 @@ QWidget* MainWindow::createAddPage()
     addModelEdit = new QLineEdit();
     addPriceEdit = new QLineEdit();
     addExtraEdit = new QLineEdit();
+    addIdEdit->setObjectName("AddVehicleID");
+    addBrandEdit->setObjectName("AddVehicleBrand");
+    addModelEdit->setObjectName("AddVehicleModel");
+    addPriceEdit->setObjectName("AddVehiclePrice");
+    addExtraEdit->setObjectName("AddVehicleExtra");
     addExtraLabel = makeFieldLabel("Number of Doors");
 
     // The system still creates the ID automatically. The shorter label keeps
@@ -881,6 +891,7 @@ QWidget* MainWindow::createRentalRecordsPage()
         "Returned Rentals", "Archived Records"
     });
     rentalRecordIdEdit = new QLineEdit();
+    rentalRecordIdEdit->setObjectName("RentalRecordID");
     rentalRecordIdEdit->setPlaceholderText("Rental ID, e.g. R001");
     rentalRecordIdEdit->setMinimumWidth(190);
     QPushButton* archiveButton = new QPushButton("Archive returned");
