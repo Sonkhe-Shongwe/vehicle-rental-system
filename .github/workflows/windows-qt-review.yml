@@ -80,7 +80,11 @@ jobs:
             @{ Name='fleet-1280'; Arg='--portfolio-fleet-screenshot-small'; Width=1280; Height=720; Scale='1' },
             @{ Name='rent-1280'; Arg='--portfolio-rent-screenshot-small'; Width=1280; Height=720; Scale='1' },
             @{ Name='history-1280'; Arg='--portfolio-history-screenshot-small'; Width=1280; Height=720; Scale='1' },
-            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' }
+            @{ Name='return-1280'; Arg='--portfolio-return-screenshot-small'; Width=1280; Height=720; Scale='1' },
+            # Qt's synthetic scale factor gives us a DPI-sensitive rendering
+            # regression check; it does not replace a real Windows display.
+            @{ Name='fleet-scale125'; Arg='--portfolio-fleet-screenshot-small'; Width=1600; Height=900; Scale='1.25' },
+            @{ Name='rent-scale150'; Arg='--portfolio-rent-screenshot-small'; Width=1920; Height=1080; Scale='1.5' }
           )
           foreach ($case in $scenarios) {
             Remove-Item portfolio-qt-review.png -ErrorAction SilentlyContinue
@@ -108,7 +112,7 @@ jobs:
           if ((Get-FileHash rentals.txt -Algorithm SHA256).Hash -ne $beforeRentals) {
             throw 'Rental fixture was unexpectedly modified'
           }
-          Write-Host "PASS: ten Windows Qt UI checks at two window sizes; demo fixtures unchanged."
+          Write-Host "PASS: ten Windows Qt UI checks plus two synthetic DPI scale captures; demo fixtures unchanged."
 
       - name: Retain Windows review screenshot evidence
         if: always()
