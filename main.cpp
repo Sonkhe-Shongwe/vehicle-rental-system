@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         if (returnPreview)
             QMetaObject::invokeMethod(&window, "showReturnPage", Qt::DirectConnection);
         QTimer::singleShot(700, &window, [&window, &app, fleetPreview,
-                                              checkoutPreview, historyPreview, returnPreview]() {
+                                              checkoutPreview, historyPreview, returnPreview, rentalPreview]() {
             QWidget* strip = window.findChild<QWidget*>(
                 checkoutPreview ? "RentalQuotePanel" :
                 (historyPreview || returnPreview) ? "RentalActionPanel" :
