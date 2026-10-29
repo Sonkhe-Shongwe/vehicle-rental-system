@@ -1,3 +1,11 @@
+## Hybrid visual direction and authentic photography — 29 October 2026
+
+The owner prefers a **hybrid of Precision Atelier and Editorial Grand Touring**, and explicitly authorises **authentic vehicle photography** rather than restricting visuals to silhouettes. The project is intended as a **non-commercial software engineering portfolio project**. This preference changes the visual direction, but **not** the need for permission to use specific photos. See [authentic vehicle asset strategy](../design/ASSET_STRATEGY.md).
+
+Use real rights-cleared vehicle images where available: one purposeful hero photo, model thumbnails and selected-vehicle photographs, with a cohesive photographic treatment. Preserve a silhouette fallback for unavailable/mismatched/licence-restricted imagery. The five demo model names do not establish exact year/trim or guarantee that a photograph depicts a real inventory unit. Keep explicit provenance and credit records for every image. Do not imply manufacturer endorsement, claim commercial clearance, or use manufacturer press imagery without verifying use terms.
+
+**Status:** Image strategy approved at a high level, **no individual photographs cleared or incorporated**. No C++/Qt code changed. Next is candidate image sourcing with exact page/license links and a final hybrid visual comparison, then actual Qt implementation after visual approval.
+
 ## V2 comparative art-direction checkpoint — 29 October 2026
 
 Aesthetic-only comparison [design/v2/COMPARISON.md](../design/v2/COMPARISON.md) now contains three high-resolution browser-rendered dashboard directions and a self-contained switchable visual preview. A = Precision Atelier (graphite, warm white, lime), B = Nocturne Instrument (dark technical blue), C = Editorial Grand Touring (ivory, burnt copper, serif and a different panoramic composition). All display the same **5 fictional vehicles, 4 available, 1 active rental, R2,300 booked value, 1 due on 30 Oct 2026** from repository demo files. The date is frozen to 29 October 2026 for fair comparisons. The concept controls other than the art-direction selector are inert. Browser screenshots were checked at 1440×900 and one 1280×720 viewport, with no horizontal overflow; the lower area scrolls at 1280×720. This is not Qt acceptance.

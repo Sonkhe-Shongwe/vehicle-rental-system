@@ -26,3 +26,7 @@ Approved current constraints: **C++17 / Qt Widgets**, preserve working rental/re
 ## V2 aesthetic comparison (29 October 2026)
 
 The user requested a more visually distinctive visual identity after reviewing V1. Three **unapproved** browser-rendered aesthetic directions are available in [design/v2](v2/COMPARISON.md): **A Precision Atelier**, **B Nocturne Instrument**, and **C Editorial Grand Touring**. [Visual comparison HTML](v2/visual_comparison.html), full-resolution renders, and same-data review notes are preserved. These are design-only artifacts, **not C++/Qt implementation**.
+
+## Authentic vehicle photography (hybrid V2)
+
+The owner intends this as a non-commercial portfolio project and has chosen to use authentic rights-cleared vehicle photography. The [asset strategy and licensing requirements](ASSET_STRATEGY.md) describe image placement, source/credit checks, model accuracy, visual treatment and offline Qt integration. No vehicle photos have been approved or integrated yet.
