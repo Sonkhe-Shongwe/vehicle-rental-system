@@ -207,6 +207,9 @@ void MainWindow::setupMainContent()
     tableSectionTitleLabel->setObjectName("TableSectionTitle");
 
     actionStack = new QStackedWidget();
+    // Preserve the dashboard hero and two metric rows above the shared table.
+    // Without a minimum, the table's stretch factor compresses these cards.
+    actionStack->setMinimumHeight(365);
     actionStack->addWidget(createDashboardPage());                  // 0
     actionStack->addWidget(createAddPage());                        // 1
     actionStack->addWidget(createSearchPage());                     // 2
@@ -1320,7 +1323,7 @@ void MainWindow::showDashboardPage()
 {
     pageTitleLabel->setText("Dashboard");
     pageSubtitleLabel->setText(
-        "Live fleet totals, utilisation, revenue and the five most recent rental transactions.");
+        "Live fleet availability, booked rental value, and recent transactions.");
     actionStack->setCurrentIndex(0);
     actionStack->setMaximumHeight(215);
     tableSectionTitleLabel->setVisible(true);
