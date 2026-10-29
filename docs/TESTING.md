@@ -4,13 +4,21 @@
 
 - Source review: **complete** for central domain, persistence and UI event paths.
 - Privacy screening of historical raw data: **complete**; removed from handoff.
-- CMake configure in this environment: **BLOCKED: Qt development packages unavailable**.
-- C++ compilation: **NOT RUN**.
-- CTest `vehicle_rental_domain`: **NOT RUN**.
+- Local audit container CMake configure: **BLOCKED: Qt development packages unavailable**; separate GitHub-hosted Ubuntu 24.04 Qt 6 configure **PASSED**.
+- Linux Qt 6 compilation: **PASSED** in GitHub Actions run [40872123623](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623), commit `253918f`.
+- Linux CTest `vehicle_rental_domain`: **PASSED** in the same GitHub Actions run.
 - Windows interactive UI run: **NOT RUN**.
 - Crash/power-loss recovery: **NOT RUN**.
 
 Do not relabel prepared tests as passed until their exact commands have been executed.
+
+## Verified hosted CI checkpoint
+
+- Date: 29 October 2026.
+- OS/toolchain: GitHub-hosted `ubuntu-24.04`, `qt6-base-dev`, CMake/Ninja, GCC.
+- Source revision: `253918f7b765e82df17bc5b25eec584fc11e9672`.
+- Run: https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623
+- Passed steps: public fixture hygiene, configure, build, CTest. These **do not** validate GUI runtime, Windows-specific behaviour or crash resilience.
 
 ## Automated checks
 

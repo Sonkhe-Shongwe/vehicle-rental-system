@@ -2,7 +2,7 @@
 
 A C++17 / Qt Widgets desktop application for managing a small car and motorcycle rental fleet. Originally developed as a university project and now undergoing a focused reliability, testing, and documentation upgrade for graduate software engineering applications.
 
-> **Status (29 October 2026):** Source-level hardening and a domain regression suite have been prepared. Compilation, automated test execution and an interactive Windows walkthrough are **pending** on a machine with Qt 5/6. Do not interpret this repository as a tested production rental service.
+> **Status (29 October 2026):** The complete sanitized C++/Qt source is committed. [GitHub Actions run 40872123623](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623) **passed** on Ubuntu 24.04 with Qt 6 (fixture hygiene, CMake configuration, compilation, CTest). An interactive **Windows Qt Creator GUI test is still pending**. This is not a production-certified rental service.
 
 ## Core features
 

@@ -2,6 +2,8 @@
 
 Goal: credible, demonstrable graduate software engineering project. Preserve existing Qt workflow. Prioritize evidence and correctness rather than speculative features.
 
+**29 October update:** P0A source and sanitized screenshots have been published; GitHub Actions Qt 6 Linux build, hygiene check and CTest **passed** ([run 40872123623](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/40872123623)). Windows Qt Creator GUI verification remains outstanding.
+
 | Priority | Work package | Why now | Acceptance gate |
 | --- | --- | --- | --- |
 | P0A - Today | Publish sanitized complete source, README, screenshots and `.gitignore` to GitHub. | Empty repository fails recruiter inspection; real rental records cannot be public. | Public tree shows CMake, sources, docs, tests and only safe fixtures. |
@@ -28,5 +30,5 @@ Do not rewrite the project in React, add cloud AI, or claim a REST API without a
 - Debugging/problem solving: explicit audit defects, regression fixtures and reproducible correction notes.
 - Testing: standalone CTest domain suite and manual GUI checklist.
 - Databases / APIs: currently **not implemented**; planned architecture evolution, not CV keywords for the current app.
-- Git and teamwork: public repository history, reviewable changes, documented decisions, CI (once actually green).
+- Git and teamwork: public repository history, reviewable changes, documented decisions, CI (green on Linux Qt 6, with Windows interactive verification pending).
 - Deployment: reproducible CMake/Qt Creator build instructions; standalone installer still planned.

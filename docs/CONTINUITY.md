@@ -6,7 +6,7 @@ Make `Sonkhe-Shongwe/vehicle-rental-system` a credible, honest software engineer
 
 ## Source truth
 
-Uploaded initial source archive: `VehicleRentalSystem_A3.zip` (July 2026 Qt assessment). At audit start, the public GitHub repo existed but had no commits. The source ZIP contained a working-project design, not externally verified runtime execution. Its `rentals.txt` and some screenshots contained customer information and are deliberately not distributed in the hardened handoff.
+Uploaded initial source archive: `VehicleRentalSystem_A3.zip` (July 2026 Qt assessment). At audit start, the public GitHub repo existed but had no commits. The complete sanitized source and screenshots were subsequently published to `main` (latest source-and-screenshot commit `253918f7b765e82df17bc5b25eec584fc11e9672`). The source ZIP contained a working-project design, not externally verified runtime execution. Its `rentals.txt` and some screenshots contained customer information and are deliberately not distributed in the hardened handoff.
 
 ## Current patch work
 
@@ -16,7 +16,7 @@ Uploaded initial source archive: `VehicleRentalSystem_A3.zip` (July 2026 Qt asse
 - Removed automatic rewriting of source data during startup.
 - Added numeric and text validation for newly created domain records; rejected duplicate active rentals from imported history.
 - Added CTest regression source, sanitized `demo/`, `.gitignore`, README and documentation.
-- No Qt toolchain here; no runtime pass has been claimed. Test with Qt on Windows before treating as stable.
+- The local container lacks Qt; GitHub Actions `40872123623` subsequently **passed** Qt 6 configuration, build, fixture hygiene and CTest on Ubuntu 24.04. Interactive Windows GUI verification is still required.
 
 ## Important preservation constraints
 
@@ -24,8 +24,8 @@ The default legacy data folder remains next to the C++ source (using `__FILE__`)
 
 ## Immediate next actions
 
-1. Extract the prepared hardened ZIP and import its contents into the existing GitHub repository; do not upload the original source's customer data or unredacted screenshots.
-2. Run Qt Creator/CMake build and CTest. If they fail, record exact compiler output and correct before claiming the patch works.
+1. **COMPLETE:** Prepared C++/Qt source, tests, docs, fictional demo data and sanitized screenshots are committed directly in the public GitHub repository. Do not publish real customer data.
+2. **Linux CI PASS:** Hosted Qt 6 compile + CTest passed on commit `253918f`; **NEXT:** Run Qt Creator on Windows and document exact compiler/test output.
 3. Complete the disposable-data GUI smoke test and save a short dated result.
 4. Make a concise application submission featuring the repo link and confirmed C++/Qt functionality.
 5. Defer SQLite/REST/full-stack extensions until the tested release candidate is stable.
