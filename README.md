@@ -61,6 +61,7 @@ Rental:  Rental|RentalID|Customer|Phone|VehicleID|StartDate|ExpectedReturnDate|A
 
 ## Documentation
 
+- [Aesthetic-only V2 research: visual identity, three art directions, and design acceptance](docs/VISUAL_AESTHETICS_RESEARCH_V2_2026-10-29.md) (**research only; no Qt changes**)
 - [Phase 1: Operator Console visual prototype and design specification](design/README.md) (proposal only, not Qt implementation)
 - [Full comparative portfolio and UX research (29 October 2026)](docs/PORTFOLIO_RESEARCH_2026-10-29.md)
 - [Architecture](docs/ARCHITECTURE.md)
