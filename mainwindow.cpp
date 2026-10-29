@@ -139,6 +139,9 @@ void MainWindow::applyStyles()
         "QLabel#FleetHeroHint { color: #d1f69a; font-size: 12px; font-weight: bold; }"
         "QLabel#FleetHeroDescription { color: #d4dfd9; font-size: 12px; }"
         "QLabel#FleetPhotoCredit { color: #e0eae2; font-size: 10px; }"
+        "QPushButton#HeroRentalAction { background: #cff375; color: #172830; border: 1px solid #b7d965; border-radius: 7px; padding: 7px 12px; font-size: 12px; font-weight: bold; }"
+        "QPushButton#HeroRentalAction:hover { background: #b6e358; }"
+        "QPushButton#HeroRentalAction:focus { border: 2px solid #fffefa; padding: 6px 11px; }"
         "QFrame#Card, QFrame#FormCard { background-color: #fffefa; border: 1px solid #e1e5dd; border-radius: 11px; }"
         "QFrame#SecondaryCard { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
         "QFrame#MetricsStrip { background-color: #f9faf5; border: 1px solid #e4e8df; border-radius: 10px; }"
@@ -362,7 +365,19 @@ QWidget* MainWindow::createDashboardPage()
     heroCopy->addWidget(heroKicker);
     heroCopy->addWidget(fleetHeroValue);
     heroCopy->addWidget(fleetHeroHint);
-    heroCopy->addWidget(description);
+    QHBoxLayout* heroBottom = new QHBoxLayout();
+    heroBottom->setContentsMargins(0, 0, 0, 0);
+    heroBottom->setSpacing(16);
+    heroBottom->addWidget(description);
+    QPushButton* newRentalAction = new QPushButton("Start rental");
+    newRentalAction->setObjectName("HeroRentalAction");
+    newRentalAction->setAccessibleName("Open New Rental");
+    newRentalAction->setToolTip("Open the existing New Rental workspace");
+    newRentalAction->setCursor(Qt::PointingHandCursor);
+    connect(newRentalAction, &QPushButton::clicked, this, &MainWindow::showRentPage);
+    heroBottom->addWidget(newRentalAction, 0, Qt::AlignVCenter);
+    heroBottom->addStretch(1);
+    heroCopy->addLayout(heroBottom);
     heroCopy->addStretch();
     heroLayout->addLayout(heroCopy, 3);
 

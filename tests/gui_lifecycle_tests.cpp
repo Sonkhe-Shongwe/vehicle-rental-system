@@ -291,6 +291,22 @@ int main(int argc, char* argv[])
             layoutWindow.showNormal();
             verifyLayoutAtSize(layoutWindow, 1280, 720);
             verifyLayoutAtSize(layoutWindow, 1500, 860);
+            // The dashboard hero is an actionable navigation surface, not
+            // a second rental path with independent business logic.
+            navigate(layoutWindow, "showDashboardPage");
+            const auto vehicleBefore = fileSnapshot(vehiclesPath);
+            const auto rentalsBefore = fileSnapshot(rentalsPath);
+            QPushButton* heroAction = widget<QPushButton>(layoutWindow, "HeroRentalAction");
+            require(heroAction->isVisible() && heroAction->isEnabled(),
+                    "Dashboard's rental CTA is visible and available");
+            heroAction->click();
+            QApplication::processEvents();
+            require(widget<QLabel>(layoutWindow, "PageTitle")->text() == "New Rental" &&
+                    widget<QWidget>(layoutWindow, "RentalFormPanel")->isVisible(),
+                    "Dashboard CTA opens the existing New Rental workspace");
+            require(fileSnapshot(vehiclesPath) == vehicleBefore &&
+                    fileSnapshot(rentalsPath) == rentalsBefore,
+                    "Dashboard navigation never creates or rewrites rental data");
             std::cout << "PASS: five Qt workspaces at 1280x720 and 1500x860 "
                          "without primary-panel clipping/overlap\n";
         }
