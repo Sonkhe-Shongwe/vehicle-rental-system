@@ -140,6 +140,62 @@ int main(int argc, char **argv) {
                 QFile::exists(blockedLedger),
                 "retry after fixing storage safely persists once");
     }
+    {
+        // Domain state may change between Preview and Confirm. Always reject
+        // stale customer-visible quotes rather than committing an old rate,
+        // old vehicle description, or a vehicle that has since been removed.
+        QTemporaryDir temp;
+        require(temp.isValid(), "stale-domain test sandbox");
+        RentalSystem system(temp.path());
+        require(system.addVehicle(new Car("C001", "Toyota", "Corolla", 450, 4)),
+                "seed mutable fictional vehicle");
+        RentalQuoteService quotes(system);
+        RentalConfirmService confirmations(system);
+        const QString fleetPath = temp.filePath("vehicles.txt");
+        const QString ledgerPath = temp.filePath("rentals.txt");
+        const auto originalQuote = quotes.preview("C001", 3);
+        require(originalQuote.ok(), "initial customer-visible quote");
+
+        Vehicle* car = system.findVehicleById("C001");
+        require(car != nullptr, "lookup of disposable vehicle");
+        car->setPricePerDay(500.0);
+        require(system.saveVehiclesToFile(), "persist changed rate in sandbox");
+        const QByteArray updatedRateBytes = bytes(fleetPath);
+        const auto changedRate = confirmations.confirm(requestFor(*originalQuote.quote));
+        require(changedRate.error == RentalConfirmationError::QuoteStale &&
+                !changedRate.receipt.has_value(),
+                "domain rate changed since preview: reject stale quote");
+        require(bytes(fleetPath) == updatedRateBytes &&
+                !QFile::exists(ledgerPath) && system.getRentals().isEmpty() &&
+                !car->getIsRented(),
+                "stale rate rejection must not write or reserve a vehicle");
+
+        const auto rateQuote = quotes.preview("C001", 3);
+        require(rateQuote.ok() && rateQuote.quote->legacyTotal == 1500.0,
+                "fresh preview reflects changed domain rate");
+        car->setModel("Corolla Updated");
+        require(system.saveVehiclesToFile(), "persist changed model in sandbox");
+        const QByteArray updatedModelBytes = bytes(fleetPath);
+        const auto changedModel = confirmations.confirm(requestFor(*rateQuote.quote));
+        require(changedModel.error == RentalConfirmationError::QuoteStale &&
+                !changedModel.receipt.has_value(),
+                "domain vehicle details changed since preview: reject stale quote");
+        require(bytes(fleetPath) == updatedModelBytes &&
+                !QFile::exists(ledgerPath) && system.getRentals().isEmpty(),
+                "stale model rejection remains strictly non-mutating");
+
+        const auto finalQuote = quotes.preview("C001", 3);
+        require(finalQuote.ok(), "preview before vehicle removal");
+        require(system.removeVehicle("C001"), "remove disposable available vehicle");
+        const QByteArray afterRemovalBytes = bytes(fleetPath);
+        const auto removed = confirmations.confirm(requestFor(*finalQuote.quote));
+        require(removed.error == RentalConfirmationError::VehicleNotFound &&
+                !removed.receipt.has_value(),
+                "vehicle removed since quote: reject confirmation without receipt");
+        require(bytes(fleetPath) == afterRemovalBytes &&
+                !QFile::exists(ledgerPath) && system.getRentals().isEmpty(),
+                "removed-vehicle rejection cannot recreate a rental");
+    }
     std::cout << "P3 typed rental confirmation and rollback PASS\n";
     return 0;
 }
