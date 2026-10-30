@@ -1,3 +1,5 @@
+> **30 October 2026 master engineering pathway research:** [Read the full staged development, risk, persistence, Qt Quick, testing, CI and Windows distribution strategy](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md). It is a **proposal pending owner review** and refines the earlier R0–R8 milestone descriptions; no application code, approved UI or infrastructure migration is implied.
+
 # Product Rebuild Roadmap — Light-First Rental Studio
 
 **Updated:** 29 October 2026  
