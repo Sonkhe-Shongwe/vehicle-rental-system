@@ -1,6 +1,7 @@
 #include "rentalsystem.h"
 
 #include <QDir>
+#include <utility>
 #include <QFile>
 #include <QSaveFile>
 #include <cmath>
@@ -9,18 +10,49 @@
 #include <QTextStream>
 #include <QtAlgorithms>
 
-RentalSystem::RentalSystem(const QString& dataDirectory)
+namespace {
+// The production default retains the pre-existing QSaveFile single-file
+// transaction. This is not a new storage format or path migration.
+class FileRentalStorage final : public RentalStorage {
+public:
+    std::optional<QByteArray> read(const QString &path) const override {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return std::nullopt;
+        return file.readAll();
+    }
+    bool writeAtomic(const QString &path, const QByteArray &bytes) override {
+        QSaveFile file(path);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return false;
+        if (file.write(bytes) != bytes.size()) {
+            file.cancelWriting();
+            return false;
+        }
+        return file.commit();
+    }
+};
+}
+
+RentalSystem::RentalSystem(const QString& dataDirectory,
+                           std::shared_ptr<RentalStorage> store, Today clock)
+    : storage(store ? std::move(store) : std::make_shared<FileRentalStorage>()),
+      m_today(clock ? std::move(clock)
+                    : [] { return QDate::currentDate(); })
 {
-    // Preserve the legacy source-directory default; tests can use an isolated folder.
-    // Production AppData storage is tracked as a separate compatibility migration.
+    // Preserve the original source-directory default and legacy filenames.
+    // Injection changes only data I/O transport and clock for deterministic tests.
     const QDir storageDir(dataDirectory.isEmpty()
                               ? QFileInfo(__FILE__).absolutePath()
                               : dataDirectory);
     vehiclesFileName = storageDir.filePath("vehicles.txt");
     rentalsFileName = storageDir.filePath("rentals.txt");
-
     loadVehiclesFromFile();
     loadRentalsFromFile();
+}
+
+QDate RentalSystem::today() const {
+    return m_today ? m_today() : QDate();
 }
 
 RentalSystem::~RentalSystem()
@@ -184,7 +216,7 @@ bool RentalSystem::createRental(Rental* rental)
         rental->getVehicleId().trimmed().isEmpty() ||
         !rental->getStartDate().isValid() ||
         !rental->getExpectedReturnDate().isValid() ||
-        rental->getStartDate() != QDate::currentDate() ||
+        rental->getStartDate() != today() ||
         rental->getRentalDays() <= 0 ||
         !std::isfinite(rental->getPricePerDay()) ||
         !std::isfinite(rental->getTotalCost()) ||
@@ -272,7 +304,7 @@ bool RentalSystem::completeRental(const QString& rentalOrVehicleId,
 
     // A return cannot be recorded before the rental began or in the future.
     if (actualReturnDate < rental->getStartDate() ||
-        actualReturnDate > QDate::currentDate()) {
+        actualReturnDate > today()) {
         return false;
     }
 
@@ -374,13 +406,11 @@ QList<Rental*> RentalSystem::getActiveRentals() const
 
 void RentalSystem::loadVehiclesFromFile()
 {
-    QFile file(vehiclesFileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    const auto bytes = storage->read(vehiclesFileName);
+    if (!bytes)
         return;
-    }
-
-    QTextStream in(&file);
+    QString input = QString::fromUtf8(*bytes);
+    QTextStream in(&input, QIODevice::ReadOnly);
 
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
@@ -435,32 +465,24 @@ void RentalSystem::loadVehiclesFromFile()
 
 bool RentalSystem::saveVehiclesToFile() const
 {
-    QSaveFile file(vehiclesFileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        return false;
-    }
-
-    QTextStream out(&file);
+    QString output;
+    QTextStream out(&output, QIODevice::WriteOnly);
     for (Vehicle* vehicle : vehicles) {
         out << vehicle->toFileString() << '\n';
     }
     out.flush();
-    if (out.status() != QTextStream::Ok) {
-        file.cancelWriting();
+    if (out.status() != QTextStream::Ok)
         return false;
-    }
-    return file.commit();
+    return storage->writeAtomic(vehiclesFileName, output.toUtf8());
 }
 
 void RentalSystem::loadRentalsFromFile()
 {
-    QFile file(rentalsFileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    const auto bytes = storage->read(rentalsFileName);
+    if (!bytes)
         return;
-    }
-
-    QTextStream in(&file);
+    QString input = QString::fromUtf8(*bytes);
+    QTextStream in(&input, QIODevice::ReadOnly);
 
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
@@ -570,8 +592,6 @@ void RentalSystem::loadRentalsFromFile()
         }
     }
 
-    file.close();
-
     // Reconcile fleet status with active rental records so the two text files
     // cannot disagree after a manual edit or interrupted previous session.
     for (Vehicle* vehicle : vehicles) {
@@ -587,19 +607,13 @@ void RentalSystem::loadRentalsFromFile()
 
 bool RentalSystem::saveRentalsToFile() const
 {
-    QSaveFile file(rentalsFileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        return false;
-    }
-
-    QTextStream out(&file);
+    QString output;
+    QTextStream out(&output, QIODevice::WriteOnly);
     for (Rental* rental : rentals) {
         out << rental->toFileString() << '\n';
     }
     out.flush();
-    if (out.status() != QTextStream::Ok) {
-        file.cancelWriting();
+    if (out.status() != QTextStream::Ok)
         return false;
-    }
-    return file.commit();
+    return storage->writeAtomic(rentalsFileName, output.toUtf8());
 }

@@ -7,7 +7,7 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio · P2 native Fleet proof (read-only)"
+    title: "Rental Studio · P3 native Fleet and Rentals read-only proof"
 
     readonly property color navy: "#17324D"
     readonly property color teal: "#0F766E"
@@ -75,6 +75,42 @@ ApplicationWindow {
         function onSortByChanged() { Qt.callLater(window.syncCurrentVehicle) }
     }
 
+    // Rental Arrow navigation follows only C++-filtered visible rows. Text
+    // input, filter buttons, Tab and Escape retain native key behaviour.
+    function navigateRentals(delta) {
+        if (rentalsModel.count === 0)
+            return
+        const current = rentalsModel.selectedRow
+        const target = current < 0 ? 0 :
+                       Math.max(0, Math.min(rentalsModel.count - 1, current + delta))
+        if (current === target)
+            return
+        if (rentalsModel.selectVisibleRow(target))
+            rentalList.positionViewAtIndex(target, ListView.Contain)
+    }
+
+    function handleRentalArrow(event) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Up)
+            navigateRentals(-1)
+        else if (event.key === Qt.Key_Down)
+            navigateRentals(1)
+        else
+            return
+        event.accepted = true
+    }
+
+    function syncCurrentRental() {
+        rentalList.currentIndex = rentalsModel.selectedRow
+    }
+
+    Connections {
+        target: rentalsModel
+        function onSelectionChanged() { Qt.callLater(window.syncCurrentRental) }
+        function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
+    }
+
     function handleVehicleArrow(event) {
         // Deliberately do NOT intercept Tab/Shift+Tab, Enter/Space, Escape,
         // text-input cursor keys or native ComboBox arrow controls.
@@ -92,7 +128,10 @@ ApplicationWindow {
     // card/table button retains focus; selection is only a view state.
     Shortcut {
         sequence: "Escape"
-        onActivated: fleet.clearSelection()
+        onActivated: {
+            if (window.workspace === 2) rentalsModel.clearSelection()
+            else fleet.clearSelection()
+        }
     }
 
     RowLayout {
@@ -137,7 +176,7 @@ ApplicationWindow {
                 }
                 Item { Layout.fillHeight: true }
                 Label {
-                    text: "P2 · Native feasibility only\nDemo fixture · No editing"
+                    text: "P3 · Verified fictional data\nC++ domain owns all writes"
                     color: ink; font.pixelSize: 11
                     wrapMode: Text.WordWrap
                 }
@@ -463,12 +502,355 @@ ApplicationWindow {
                 }
 
                 ColumnLayout {
-                    Label { text: "Rentals will be integrated in P5."; color: navy; font.pixelSize: 22 }
-                    Label {
-                        text: "This native feasibility experiment proves Fleet data binding only. No draft booking, payment or working rental buttons are represented here."
-                        color: ink; wrapMode: Text.WordWrap
+                    spacing: 14
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: "Rental records"
+                            color: navy; font.pixelSize: 21; font.bold: true
+                        }
+                        Item { Layout.fillWidth: true }
+                        Label {
+                            text: "C++ domain · Fictional rental workflow"
+                            color: ink; font.pixelSize: 12
+                        }
                     }
-                    Item { Layout.fillHeight: true }
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
+                        color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Button {
+                            id: newBookingButton
+                            objectName: "rentalNewBookingButton"
+                            text: "New rental"
+                            activeFocusOnTab: true
+                            Accessible.name: "Create a new fictional rental"
+                            onClicked: bookingDialog.open()
+                        }
+                        Label {
+                            objectName: "rentalBookingMessage"
+                            Layout.fillWidth: true
+                            color: ink
+                            wrapMode: Text.WordWrap
+                            text: bookingActions.lastMessage
+                        }
+                    }
+                    Dialog {
+                        id: bookingDialog
+                        objectName: "rentalBookingDialog"
+                        title: "New rental: review authoritative quote"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        width: Math.min(620, window.width - 80)
+                        standardButtons: Dialog.NoButton
+                        onClosed: bookingActions.discardPreview()
+                        contentItem: ColumnLayout {
+                            spacing: 10
+                            Label {
+                                text: "Demo only. No booking occurs until Confirm booking succeeds."
+                                color: ink; wrapMode: Text.WordWrap
+                            }
+                            RowLayout {
+                                Label { text: "Vehicle ID"; color: navy; Layout.preferredWidth: 92 }
+                                TextField {
+                                    id: bookingVehicleId
+                                    objectName: "bookingVehicleId"
+                                    Layout.fillWidth: true
+                                    placeholderText: "C001"
+                                    Accessible.name: "Vehicle ID for rental quote"
+                                    onTextEdited: bookingActions.discardPreview()
+                                }
+                                Label { text: "Days"; color: navy }
+                                SpinBox {
+                                    id: bookingDays
+                                    objectName: "bookingDays"
+                                    from: 1; to: 365; value: 2
+                                    editable: true
+                                    Accessible.name: "Rental days"
+                                    onValueModified: bookingActions.discardPreview()
+                                }
+                            }
+                            Button {
+                                objectName: "bookingPreviewButton"
+                                text: "Preview C++ quote"
+                                activeFocusOnTab: true
+                                onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
+                            }
+                            Label {
+                                objectName: "bookingQuoteSummary"
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                color: navy
+                                font.bold: bookingActions.canConfirm
+                                text: bookingActions.quoteSummary
+                            }
+                            Label {
+                                text: "Customer details are sent only to the C++ commit service."
+                                color: ink; wrapMode: Text.WordWrap
+                            }
+                            TextField {
+                                id: bookingCustomer
+                                objectName: "bookingCustomer"
+                                Layout.fillWidth: true
+                                placeholderText: "Customer name"
+                                Accessible.name: "Fictional customer name"
+                            }
+                            TextField {
+                                id: bookingPhone
+                                objectName: "bookingPhone"
+                                Layout.fillWidth: true
+                                placeholderText: "Contact number"
+                                Accessible.name: "Fictional contact number"
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Button {
+                                    objectName: "bookingCancelButton"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: {
+                                        bookingCustomer.clear()
+                                        bookingPhone.clear()
+                                        bookingDialog.close()
+                                    }
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    objectName: "bookingConfirmButton"
+                                    text: "Confirm booking"
+                                    enabled: bookingActions.canConfirm
+                                    activeFocusOnTab: true
+                                    onClicked: {
+                                        if (bookingActions.confirm(bookingCustomer.text, bookingPhone.text)) {
+                                            bookingCustomer.clear()
+                                            bookingPhone.clear()
+                                            bookingDialog.close()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Button {
+                            id: returnSelectedButton
+                            objectName: "rentalReturnButton"
+                            text: "Return selected rental"
+                            activeFocusOnTab: true
+                            enabled: rentalActions.canReturnSelected
+                            Accessible.name: "Return the selected active rental"
+                            onClicked: returnConfirmation.open()
+                        }
+                        Button {
+                            objectName: "rentalArchiveButton"
+                            text: "Archive returned"
+                            activeFocusOnTab: true
+                            enabled: archiveActions.canArchiveSelected
+                            Accessible.name: "Archive selected returned rental"
+                            onClicked: archiveConfirmation.open()
+                        }
+                        Label {
+                            objectName: "rentalReturnMessage"
+                            Layout.fillWidth: true
+                            color: ink
+                            wrapMode: Text.WordWrap
+                            text: rentalActions.lastReturnMessage
+                        }
+                    }
+                    Dialog {
+                        id: returnConfirmation
+                        objectName: "rentalReturnDialog"
+                        title: "Confirm rental return"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        standardButtons: Dialog.NoButton
+                        contentItem: ColumnLayout {
+                            spacing: 12
+                            Label {
+                                text: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
+                                color: navy
+                            }
+                            RowLayout {
+                                Button {
+                                    objectName: "rentalReturnCancel"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: returnConfirmation.close()
+                                }
+                                Button {
+                                    objectName: "rentalReturnConfirm"
+                                    text: "Confirm return"
+                                    activeFocusOnTab: true
+                                    enabled: rentalActions.canReturnSelected
+                                    onClicked: {
+                                        returnConfirmation.close()
+                                        rentalActions.returnSelected()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Dialog {
+                        id: archiveConfirmation
+                        objectName: "rentalArchiveDialog"
+                        title: "Archive returned rental"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        standardButtons: Dialog.NoButton
+                        contentItem: ColumnLayout {
+                            spacing: 12
+                            Label {
+                                text: "Move " + rentalsModel.selectedRentalId +
+                                      " to archived history? The record will not be deleted."
+                                color: navy; wrapMode: Text.WordWrap
+                            }
+                            RowLayout {
+                                Button {
+                                    objectName: "rentalArchiveCancel"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: archiveConfirmation.close()
+                                }
+                                Button {
+                                    objectName: "rentalArchiveConfirm"
+                                    text: "Confirm archive"
+                                    activeFocusOnTab: true
+                                    enabled: archiveActions.canArchiveSelected
+                                    onClicked: {
+                                        archiveConfirmation.close()
+                                        archiveActions.archiveSelected()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Label {
+                        text: archiveActions.lastArchiveMessage
+                        color: ink
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: ["All", "Active", "History"]
+                            delegate: Button {
+                                required property string modelData
+                                objectName: "rentalFilter" + modelData
+                                text: modelData
+                                activeFocusOnTab: true
+                                Accessible.name: "Show " + modelData.toLowerCase() + " rentals"
+                                onClicked: rentalsModel.statusFilter = modelData
+                                background: Rectangle {
+                                    radius: 8
+                                    color: rentalsModel.statusFilter === parent.modelData ? navy : ice
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: rentalsModel.statusFilter === parent.modelData ? "white" : navy
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.bold: rentalsModel.statusFilter === parent.modelData
+                                }
+                            }
+                        }
+                        Item { Layout.fillWidth: true }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "white"
+                        radius: 12
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 12
+                            Label {
+                                text: rentalsModel.count + " rental records"
+                                color: navy; font.bold: true
+                            }
+                            ListView {
+                                id: rentalList
+                                objectName: "rentalList"
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                spacing: 7
+                                activeFocusOnTab: true
+                                keyNavigationEnabled: false
+                                Keys.onPressed: (event) => window.handleRentalArrow(event)
+                                model: rentalsModel
+                                Accessible.role: Accessible.List
+                                Accessible.name: "Fictional rental records"
+                                ScrollBar.vertical: ScrollBar {}
+                                delegate: Button {
+                                    id: rentalRow
+                                    objectName: "rentalRow"
+                                    required property string rentalId
+                                    required property string vehicleId
+                                    required property string status
+                                    required property string dueState
+                                    required property real total
+                                    width: rentalList.width
+                                    height: 70
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Rental " + rentalId +
+                                                     ", " + status + ", vehicle " + vehicleId
+                                    onClicked: rentalsModel.selectById(rentalId)
+                                    background: Rectangle {
+                                        radius: 10
+                                        color: rentalRow.rentalId === rentalsModel.selectedRentalId ? mint : ice
+                                        border.width: rentalRow.activeFocus ? 2 : 1
+                                        border.color: rentalRow.activeFocus ? teal : "#D8E2E8"
+                                    }
+                                    contentItem: RowLayout {
+                                        anchors.margins: 10
+                                        spacing: 16
+                                        Label {
+                                            text: rentalRow.rentalId
+                                            color: navy; font.bold: true
+                                            Layout.preferredWidth: 74
+                                        }
+                                        Label {
+                                            text: rentalRow.vehicleId
+                                            color: ink
+                                            Layout.preferredWidth: 94
+                                        }
+                                        Label {
+                                            text: rentalRow.status
+                                            color: rentalRow.status === "Active" ? teal : navy
+                                            Layout.preferredWidth: 100
+                                        }
+                                        Label {
+                                            text: rentalRow.dueState
+                                            color: ink
+                                            Layout.fillWidth: true
+                                        }
+                                        Label {
+                                            text: "R " + Number(rentalRow.total).toFixed(2)
+                                            color: navy; font.bold: true
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                objectName: "rentalSelectionText"
+                                text: rentalsModel.selectedRentalId === "" ?
+                                      "No rental selected" :
+                                      "Selected rental: " + rentalsModel.selectedRentalId
+                                color: navy; font.pixelSize: 12
+                                Accessible.name: text
+                            }
+                        }
+                    }
                 }
             }
         }

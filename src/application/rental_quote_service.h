@@ -36,7 +36,7 @@ class RentalQuoteService final {
 public:
     using Today = std::function<QDate()>;
     explicit RentalQuoteService(const RentalSystem &system,
-                                Today today = [] { return QDate::currentDate(); });
+                                Today today = {});
     RentalQuoteResult preview(const QString &vehicleId, int rentalDays) const;
 private:
     const RentalSystem &m_system;

@@ -25,7 +25,7 @@ RentalQuoteResult RentalQuoteService::preview(const QString &vehicleId,
         !std::isfinite(total) || total <= 0)
         return {RentalQuoteError::InvalidPrice, std::nullopt};
 
-    const QDate start = m_today ? m_today() : QDate();
+    const QDate start = m_today ? m_today() : m_system.today();
     const QDate end = start.addDays(rentalDays);
     if (!start.isValid() || !end.isValid())
         return {RentalQuoteError::InvalidDate, std::nullopt};

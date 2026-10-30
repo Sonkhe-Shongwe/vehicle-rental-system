@@ -114,6 +114,177 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_quote_tests)
 endif()
 
+# P3-C: typed rental confirmation service and safe negative/rollback tests.
+# Explicit real domain commit only; Qt Core CTest with disposable fixtures.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_confirm_tests
+        tests/p3_rental_confirm_tests.cpp
+        src/application/rental_confirm_service.cpp
+        src/application/rental_quote_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_confirm_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_confirm_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_confirm COMMAND vehicle_rental_p3_confirm_tests)
+endif()
+
+# P3-D: read-only rental-history snapshots from authoritative C++ domain.
+# Qt Core-only tests use isolated, fictional persisted data.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_rental_read_tests
+        tests/p3_rental_read_tests.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_rental_read_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_rental_read_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_rental_read
+        COMMAND vehicle_rental_p3_rental_read_tests)
+endif()
+
+# P3-E: native Qt Core Rental QAbstractListModel, explicit refresh/selection.
+# No Qt Quick dependency, fake fixtures only; signal/role behavior is tested.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_rental_model_tests
+        tests/p3_rental_model_tests.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_rental_model_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_rental_model_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_rental_model
+        COMMAND vehicle_rental_p3_rental_model_tests)
+endif()
+
+# P3-H: lifecycle filtering and stable selected ID in the Qt Core read model.
+# Kept separate from P3-E characterization; uses only disposable records.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_rental_filter_tests
+        tests/p3_rental_filter_tests.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_rental_filter_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_rental_filter_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_rental_filter
+        COMMAND vehicle_rental_p3_rental_filter_tests)
+endif()
+
+# P3-I: typed domain return action and post-commit-only Qt model refresh.
+# Qt Core, disposable fictional fixtures, rollback forced-failure check.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_return_controller_tests
+        tests/p3_rental_return_controller_tests.cpp
+        src/application/rental_return_controller.h
+        src/application/rental_return_controller.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_return_controller_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_return_controller_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_return_controller
+        COMMAND vehicle_rental_p3_return_controller_tests)
+endif()
+
+# P3 closure: guided C++ booking preview + confirm, with rollback and
+# exactly-once post-commit Fleet/Rentals refresh. Disposable Qt Core tests.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_booking_controller_tests
+        tests/p3_rental_booking_controller_tests.cpp
+        src/application/rental_booking_controller.h
+        src/application/rental_booking_controller.cpp
+        src/application/rental_quote_service.cpp
+        src/application/rental_confirm_service.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_booking_controller_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_booking_controller_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_booking_controller
+        COMMAND vehicle_rental_p3_booking_controller_tests)
+endif()
+
+# P3 acceptance-closure: typed non-destructive archive command and real
+# persisted rollback semantics (no direct QML writes or permanent deletion).
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_archive_controller_tests
+        tests/p3_rental_archive_controller_tests.cpp
+        src/application/rental_archive_controller.h
+        src/application/rental_archive_controller.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_archive_controller_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_archive_controller_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_archive_controller
+        COMMAND vehicle_rental_p3_archive_controller_tests)
+endif()
+
+# P3 repository/clock injection: real in-memory storage failpoints and
+# historical fake-time booking/return/archiving, no data schema migration.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_injection_tests
+        tests/p3_storage_clock_injection_tests.cpp
+        src/application/rental_quote_service.cpp
+        src/application/rental_confirm_service.cpp
+        src/application/rental_read_service.cpp
+        src/application/rental_return_controller.h
+        src/application/rental_return_controller.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_injection_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_injection_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_injection
+        COMMAND vehicle_rental_p3_injection_tests)
+endif()
+
+# P3 typed operational fleet and guarded archive deletion. Never exposed
+# to QML; uses default atomic files in QTemporaryDir with forced failures.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_admin_command_tests
+        tests/p3_admin_command_tests.cpp
+        src/application/rental_admin_commands.h
+        src/application/rental_admin_commands.cpp
+        src/application/rental_quote_service.cpp
+        src/application/rental_confirm_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_admin_command_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_admin_command_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_admin_commands
+        COMMAND vehicle_rental_p3_admin_command_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)
