@@ -3,10 +3,10 @@ import QtQuick.Controls
 
 // Status uses explicit text, never color alone.
 Label {
-    property string state: ""
+    property string statusValue: ""
     DesignTokens { id: tokens }
-    text: state
-    color: state === "Active" || state === "Available"
+    text: statusValue
+    color: statusValue === "Active" || statusValue === "Available"
          ? tokens.teal : tokens.navy
-    Accessible.name: state + " status"
+    Accessible.name: statusValue + " status"
 }

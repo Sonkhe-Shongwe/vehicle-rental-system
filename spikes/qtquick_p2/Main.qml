@@ -426,7 +426,7 @@ ApplicationWindow {
                                             color: navy
                                         }
                                         RentalStatusLabel {
-                                            state: vehicleRow.available ? "Available" : "Rented"
+                                            statusValue: vehicleRow.available ? "Available" : "Rented"
                                         }
                                     }
                                 }
@@ -783,7 +783,7 @@ ApplicationWindow {
                                             Layout.preferredWidth: 94
                                         }
                                         RentalStatusLabel {
-                                            state: rentalRow.status
+                                            statusValue: rentalRow.status
                                             Layout.preferredWidth: 100
                                         }
                                         Label {
