@@ -19,6 +19,8 @@ on:
       - feature/p3-typed-fleet-read-20261030
       # P3-C is a stacked draft review of the approved P3-B quote boundary.
       - feature/p3-rental-quote-20261030
+      # P4 shared-shell draft PR is stacked on the accepted P3 branch.
+      - feature/p3-rental-confirm-20261030
     paths:
       - CMakeLists.txt
       - 'src/application/**'
@@ -69,6 +71,8 @@ jobs:
           path: |
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -163,5 +167,7 @@ jobs:
           path: |
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
           if-no-files-found: ignore
           retention-days: 7
