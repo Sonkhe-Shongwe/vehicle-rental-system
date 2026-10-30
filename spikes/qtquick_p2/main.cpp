@@ -35,7 +35,15 @@ public:
         DisplayName, VehicleType, DailyRate, Available, Details
     };
     explicit FleetModel(const FleetReadService &readService, QObject *parent = nullptr)
-        : QAbstractListModel(parent), m_vehicles(readService.vehicles()) {}
+        : QAbstractListModel(parent), m_readService(readService),
+          m_vehicles(readService.vehicles()) {}
+    // Explicitly re-snapshot the authoritative domain only when the caller
+    // knows its transaction has committed. No implicit polling or UI writes.
+    void refresh() {
+        beginResetModel();
+        m_vehicles = m_readService.vehicles();
+        endResetModel();
+    }
     const FleetVehicleSummary *findById(const QString &id) const {
         for (const auto &item : m_vehicles) {
             if (item.id.compare(id.trimmed(), Qt::CaseInsensitive) == 0)
@@ -71,7 +79,8 @@ public:
                 {Available,"available"},{Details,"details"}};
     }
 private:
-    const QList<FleetVehicleSummary> m_vehicles;
+    const FleetReadService &m_readService;
+    QList<FleetVehicleSummary> m_vehicles;
 };
 
 class FleetProxy final : public QSortFilterProxyModel {
@@ -138,8 +147,8 @@ class FleetController final : public QObject {
     Q_PROPERTY(QString selectedDetails READ selectedDetails NOTIFY selectionChanged)
     Q_PROPERTY(QString selectedRate READ selectedRate NOTIFY selectionChanged)
     Q_PROPERTY(bool selectedAvailable READ selectedAvailable NOTIFY selectionChanged)
-    Q_PROPERTY(int totalCount READ totalCount CONSTANT)
-    Q_PROPERTY(int availableCount READ availableCount CONSTANT)
+    Q_PROPERTY(int totalCount READ totalCount NOTIFY fleetChanged)
+    Q_PROPERTY(int availableCount READ availableCount NOTIFY fleetChanged)
 public:
     explicit FleetController(RentalSystem &system, QObject *parent = nullptr)
         : QObject(parent), m_readService(system), m_source(m_readService, this), m_proxy(this) {
@@ -195,6 +204,22 @@ public:
     }
     int totalCount() const { return m_source.rowCount(); }
     int availableCount() const { return m_source.availableCount(); }
+
+    // An application command, NOT a QML Button, should call this after a
+    // successful domain commit. Refresh both Fleet and Rentals in the same
+    // non-reentrant caller turn so Overview/Fleet cannot stay stale.
+    void refreshAfterCommit() {
+        const QString previouslySelected = m_selectedId;
+        m_source.refresh();
+        if (!m_selectedId.isEmpty() && selectedVisibleIndex() < 0)
+            m_selectedId.clear();
+        emit fleetChanged();
+        // Existing QML selected-rate/status roles depend on this signal even
+        // when the same selected ID now has different domain properties.
+        if (!previouslySelected.isEmpty())
+            emit selectionChanged();
+    }
+
     Q_INVOKABLE void selectById(const QString &id) {
         const auto *vehicle = m_source.findById(id);
         if (!vehicle) return;
@@ -226,6 +251,7 @@ signals:
     void statusChanged();
     void sortByChanged();
     void selectionChanged();
+    void fleetChanged();
 private:
     // Clearing a now-invisible ID prevents the Inspector from describing a
     // vehicle that no longer exists in the user's filtered Fleet view.
@@ -723,6 +749,13 @@ int main(int argc, char *argv[]) {
                             << rentalModel.selectedRentalId();
                 app.exit(83); return;
             }
+            // Fleet is also a snapshot; its availability must NOT change
+            // until explicit success-triggered refresh, just like Rentals.
+            fleet.selectById("C001");
+            if (fleet.availableCount() != 4 || !fleet.selectedAvailable()) {
+                qCritical() << "P3-G pre-commit Fleet snapshot inconsistent";
+                app.exit(92); return;
+            }
             const QString sizeLabel = compact ? "1280x720" : "1500x860";
             const QImage shot = window->grabWindow();
             const QSize expected(compact ? 1280 : 1500, compact ? 720 : 860);
@@ -746,21 +779,37 @@ int main(int argc, char *argv[]) {
             };
             const auto committed = RentalConfirmService(system).confirm(request);
             if (!committed.ok() || committed.receipt->rentalId != "R003" ||
-                rentalModel.count() != 2 || list->property("count").toInt() != 2) {
-                qCritical() << "P3-F commit/refresh boundary failed"
+                rentalModel.count() != 2 || list->property("count").toInt() != 2 ||
+                fleet.availableCount() != 4 || !fleet.selectedAvailable()) {
+                qCritical() << "P3-F/G commit/refresh boundary failed"
                             << committed.ok() << rentalModel.count();
                 app.exit(86); return;
             }
 
-            rentalModel.refresh();  // Only after the successful C++ commit.
+            // One explicit C++ commit-success integration point updates both
+            // read models. No QObject refresh is connected to a QML action.
+            rentalModel.refresh();
+            fleet.refreshAfterCommit();
             QTest::qWait(180);
             QCoreApplication::processEvents();
             if (rentalModel.count() != 3 || list->property("count").toInt() != 3 ||
                 rentalModel.selectedRentalId() != "R001" ||
-                !findRentalRow(findRentalRow, list, "R003")) {
-                qCritical() << "P3-F QML did not refresh after persisted confirmation";
+                !findRentalRow(findRentalRow, list, "R003") ||
+                fleet.availableCount() != 3 || fleet.selectedAvailable() ||
+                fleet.selectedId() != "C001") {
+                qCritical() << "P3-F/G QML and Fleet disagree after committed rental";
                 app.exit(87); return;
             }
+
+            // The availability filter must now hide the freshly rented
+            // vehicle, and the Fleet Inspector must not retain a hidden ID.
+            fleet.setStatus("Available");
+            if (!fleet.selectedId().isEmpty() ||
+                static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() != 3) {
+                qCritical() << "P3-G refreshed available filter/selection stale";
+                app.exit(93); return;
+            }
+            fleet.setStatus("All");
 
             if (!system.archiveRental("R002")) {
                 qCritical() << "P3-F fictional returned rental could not archive";
@@ -788,9 +837,10 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-F SHA-pinned demo fixtures were modified";
                 app.exit(91); return;
             }
-            qInfo() << "P3-F REAL QML Rentals PASS:" << sizeLabel
-                    << "keyboard selection, typed statuses, committed booking,"
-                    << "explicit refresh, archived history, source-fixture protection";
+            qInfo() << "P3-F/G REAL QML Rentals and Fleet PASS:" << sizeLabel
+                    << "keyboard selection, committed booking, both explicit"
+                    << " model refreshes, Fleet availability/filter/Inspector,"
+                    << " archived history, source-fixture protection";
             app.exit(0);
         });
     }
