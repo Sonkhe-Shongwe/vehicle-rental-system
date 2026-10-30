@@ -8,6 +8,8 @@
 
 **New real physical Windows display-settings evidence (30 October 2026):** User screenshot of **Settings → System → Display** confirms **150% (Recommended)** scale, **1920 × 1080 (Recommended)** physical resolution and Landscape orientation. The Settings screenshot contains personal account identifiers, so only its technical values are logged on [Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5#issuecomment-6523145162), never the full image. This verifies the OS **setting**, not a simultaneous Qt app rendering at that scale, physical 100/125% behavior, full keyboard support or a measured 1500×860 logical viewport. At 150% the nominal logical desktop is ~1280×720 before taskbar, so a 1500×860 logical window cannot fit fully; don't call that clipping a UI defect. **P2 still 3/6, weighted 18.4%.**
 
+**Adopted interaction direction:** [UX-CTRL-001 contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) is owner-approved, but the source's latest Fleet arrow/focus implementation still requires actual local Qt6.10.2 MinGW feel/smoothness testing. Test arrows selecting vehicles (not free-scrolling), responsive column changes, filtered/last-row boundaries, Inspector identity, Tab/Shift+Tab target sequence and visible focus, native search/dropdown editing and dismiss priority. Use real Windows 150%/1920×1080 baseline without forcing 1500×860 logical window to fit. **Do not interpret policy approval as physical test PASS.**
+
 ## Physical acceptance outstanding
 
 | Item | Status / next evidence |

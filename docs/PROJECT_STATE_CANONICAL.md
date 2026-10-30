@@ -35,6 +35,10 @@
 
 **New real physical Windows display-settings evidence (30 October 2026):** User screenshot of **Settings → System → Display** confirms **150% (Recommended)** scale, **1920 × 1080 (Recommended)** physical resolution and Landscape orientation. The Settings screenshot contains personal account identifiers, so only its technical values are logged on [Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5#issuecomment-6523145162), never the full image. This verifies the OS **setting**, not a simultaneous Qt app rendering at that scale, physical 100/125% behavior, full keyboard support or a measured 1500×860 logical viewport. At 150% the nominal logical desktop is ~1280×720 before taskbar, so a 1500×860 logical window cannot fit fully; don't call that clipping a UI defect. **P2 still 3/6, weighted 18.4%.**
 
+## Owner-approved interaction contract, UX-CTRL-001 (30 October 2026)
+
+The owner **approved** the research-backed **native Qt, group-based, progressively implemented** control design. [Full binding contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) defines Tab/Shift+Tab between meaningful regions, arrows **within** focused controls/vehicle collections, visible focus separate from selected C++ vehicle ID, correct modal Escape priority, native text/dropdown behaviour, and accessibility. **No global nearest-pixel engine**, no speculative framework; P2 tests and fixes first, minimal shared pieces in P4, extend only as real P5/P6 screens arrive. This is **owner approval of design policy**, NOT owner acceptance of latest physical MinGW arrow performance or completion of P4. **P2 3/6; overall 18.4% unchanged.**
+
 ## 4. Exact verified evidence and limits
 
 | Evidence level | What passed | Source |

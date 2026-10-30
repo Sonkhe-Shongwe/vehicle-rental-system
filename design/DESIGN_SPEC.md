@@ -80,6 +80,10 @@ State handling: hover and press for clickable controls, focus ring clearly visib
 
 Do not use uncontrolled looping animations, heavy blur, simulated payment effects or photo backgrounds that obscure labels.
 
+### Approved keyboard/focus policy, UX-CTRL-001 (30 October 2026)
+
+[Binding Qt-first interaction contract](../docs/KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) is **owner-approved**, even though the aesthetic review document remains a dated design draft. Tab/Shift+Tab traverses meaningful groups; local arrows navigate active Fleet grids/tables and native menu controls; Navy keyboard focus is visually distinct from Teal/Mint selected state; input arrows remain native; Escape dismisses topmost popup first and restores focus. No global nearest-pixel focus graph, and no silent mutation from moving focus. Only a small shared FocusIndicator/focus convention will be extracted in P4; full native a11y acceptance remains open.
+
 ## 7. Screen sizes, behaviour and QA
 
 Targets: 1500×860 / 1280×720 Windows desktop and **physical OS scale 100%, 125%, 150%**. Layout must handle vertical scrolling gracefully. Dense content must not clip CTA, label, quote or drawer; keyboard Tab/Shift+Tab, Enter, Escape and confirmation focus order must be correct.

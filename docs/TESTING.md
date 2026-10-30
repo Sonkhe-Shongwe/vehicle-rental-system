@@ -19,6 +19,10 @@
 
 **Synthetic Qt `QT_SCALE_FACTOR=1.25/1.5` is not physical monitor scaling.** User-provided PNG pixel dimensions are not Windows Display Settings percentage. An assistant does not have local Qt Creator control.
 
+## Approved keyboard acceptance specification (policy, not a new PASS)
+
+Owner approved [UX-CTRL-001 native-first keyboard/focus contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) on 30 Oct 2026. QA must separately verify (a) logical Tab/Shift+Tab group order and focus restoration, (b) each arrow selecting correct C++ vehicle ID in Gallery/Table without unrelated scroll, (c) selected ID surviving sort/filter/view changes, (d) key repeat, boundary/no-wrap, compact layout and non-existent cells, (e) text caret/ComboBox native arrow behaviour, (f) keyboard focus visually distinguishable from selection, (g) popup-before-Inspector Escape and safe forms as those features arrive, and (h) real owner Qt Creator hardware vs hosted CI. Preserve **PASS/FAIL/NOT TESTED** and exact source SHA/Qt kit. **Specification approval has zero test-credit.**
+
 ## Latest native keyboard regression evidence
 
 [Source `f486c8a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f486c8a32b156ddeec1816b2ab2a4811c2c45431), [Actions 41059423971](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971) **9/9 PASS Linux + 9/9 PASS Windows** including new `rental_studio_p2_arrows_focus` real QTest Gallery/Table spatial keys, filtered-sort proxy, Tab/Backtab, no independent Gallery scroll, no input-arrow interference. Prior owner's MinGW Tab/Shift+Tab worked but arrows did not select vehicles. Updated source owner smoothness/focus and physical OS DPI still unverified. No P2 gate increment.

@@ -14,6 +14,10 @@ This branch's `spikes/qtquick_p2/` is a real, read-only C++/Qt Quick **Fleet fea
 
 **Do not merge this Draft PR #6, old PR #3/#4 or stable main without explicit owner consent.** Previous early “not compiled” notes are preserved in [historical spike README](README_PRE_CANONICAL_AUDIT_2026-10-30.md).
 
+## Owner-approved navigation architecture for future development
+
+**30 October 2026:** [UX-CTRL-001 Keyboard, Focus and Interaction Contract](../../docs/KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) is owner approved. Native Qt focus scopes and built-in GridView/ListView are preferred; Tab/Shift+Tab moves between logical regions, collection arrows select C++ vehicle IDs, visible keyboard focus differs from selection, text/dropdown arrows retain their native semantics, and topmost popup/dialog handles Escape first. **Only current P2 Fleet controls are built.** Extract minimal reusable focus components in P4 as actual screens justify them. Do not build a global nearest-pixel engine, add unrequested application shortcuts or treat this policy approval as hardware Qt6.10.2 validation. P2 remains 3/6 and total weighted 18.4%.
+
 ## Current arrow-key vehicle selection (native P2)
 
 **Implemented and verified in hosted Qt6.8.3 CI:** [source f486c8a](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f486c8a32b156ddeec1816b2ab2a4811c2c45431), [run 41059423971](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971), **9/9 CTests Linux and Windows**. Gallery Up/Down/Left/Right selects the adjacent displayed C++ vehicle; Table Up/Down selects previous/next row; the Inspector changes alongside selection; scrolling only reveals selected items, never substitutes for vehicle navigation. Tab/Shift+Tab moves between groups, visible Navy border marks keyboard focus, normal search/ComboBox arrows unaffected. Source contains an additional real native `rental_studio_p2_arrows_focus` CTest and `--arrows-smoke` CLI mode.
