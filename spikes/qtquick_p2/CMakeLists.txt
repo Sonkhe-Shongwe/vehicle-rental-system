@@ -1,6 +1,7 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
-qt_add_executable(rental_studio_qtquick_spike main.cpp)
+qt_add_executable(rental_studio_qtquick_spike main.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
 # Compile the SHA-256 of the exact fictional fixtures into the executable.
