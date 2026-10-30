@@ -1,16 +1,6 @@
-> **30 October 2026 | NEW P2 PORTABLE WINDOWS ON-DEVICE REVIEW KIT (latest):** Source `3620d83518cc01bce047b6f0a17deab0b96079b6` on [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) compiled and passed **8/8 real CTests Linux Qt6.8.3 and 8/8 Windows Qt6.8.3** in [Actions 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629). Additionally Windows used `windeployqt` to build a self-contained **review-only** portable kit, with only fictional SHA-256-pinned demo data and on-device PowerShell validation script. **PASS** packaged real C++ model and QML compact smoke after relocation, deliberate tampered-demo rejection and ZIP integrity. [Portable kit evidence](P2_WINDOWS_PHYSICAL_KIT_VERIFIED_2026-10-30.md); Windows Actions artifact `p2-windows-physical-acceptance-kit` ID `12972169619` (7-day retention). **Owner's physical Windows/Qt Creator and 100/125/150% OS scaling still NOT TESTED**, no toolkit go/no-go; **P2 remains 3/6 (50%), weighted overall 18.4%**. P1 licensed imagery/accessibility/owner full-design approval still OPEN. Both Draft PRs unmerged; main untouched. Previous older lines below are dated history.
-
-> **30 October 2026 | CURRENT VERIFIED P2 NATIVE KEYBOARD/DPI CHECKPOINT:** New actual source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` passed [Linux+Windows Qt6.8.3 Actions run 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448): **8/8 CTests on each** including C++ Fleet, compiled QML Gallery/Table at 1500×860 and 1280×720, **real Qt Test Space/Escape selection**, live resizing, and **synthetic Qt scaling 125/150%**. Twelve real Qt Quick PNGs across both platforms inspected for actual dimensions and representative layouts. Initial run [41045247197](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045247197) **FAILED 7/8**, fixed actual QML ListView delegate test lookup and reran without weakening assertions. [Detailed latest report](P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). **P2 still 3/6 (50%), weighted total still 18.4%**, because physical owner's Windows 100/125/150%, Qt Creator kit and toolkit go/no-go are NOT VERIFIED. P1 imagery/accessibility/owner signoff remains open. PR #6 stays draft; PR #4 unmerged; main untouched. Earlier dated source-unverified notes below are superseded.
-
-> **30 October 2026 | LATEST P2 SOURCE AHEAD OF VERIFIED RUN:** New native QTest keyboard/live-resize and synthetic 125%/150% DPR smoke paths were committed at `eb7bb9e22c5e3a2bd2525068202ddd2899783ae7` on Draft PR #6. [Exact source-stage report](P2_KEYBOARD_DPI_SOURCE_PENDING_2026-10-30.md). GitHub source/static review verified, **but no new Actions run for that SHA was reported at inspection**: do NOT reuse prior passes as evidence for these new tests. Previous compiled P2 CI at `f45147d` remains Linux/Windows 5/5; **P2 3/6 (50%) and weighted 18.4% unchanged**. Physical owner Windows Qt Creator/DPI and owner P1 signoff remain pending. Main and old Draft PR #4 remain untouched.
-
-> **30 October 2026 verified phase increment:** P2's three hosted-native acceptance checks for QML compile/launch, five-vehicle typed domain model and Gallery/Table/Inspector shared state passed [exact-source Linux/Windows CI](P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). **P0 5/5, P1 7/10, P2 3/6 (50%), P3–P9 0**; weighted evidence coverage **18.4%**, NOT release readiness. Real owner Windows Qt Creator/physical scaling/toolkit go-no-go pending. Formula-driven Excel tracker updated and delivered in conversation. Previous 13.4% table below is the historical 30 October morning baseline and is superseded by this checkpoint; do not double-count it.
-
-> **30 October 2026 P2 implementation status:** [Source prepared, Qt6 configure blocked](P2_QTQUICK_SPIKE_SOURCE_REPORT_2026-10-30.md). Do not count uncompiled new code toward verified progress. **Baseline unchanged:** P0 5/5, P1 7/10, P2 0/6, weighted delivery coverage **13.4%**. Owner design signoff and licensed photos remain open.
-
 # Rental Studio 2.0 | P0–P9 Acceptance and Progress Governance
 
-**30 October 2026 | Evidence-based programme baseline, not a release forecast.**
+**30 October 2026 | Current evidence-weighted programme score.** [Canonical state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md). Historical preliminary 13.4% is superseded; the operative verified score below is 18.4%. This is NOT release readiness.
 
 ## Two independent statuses
 
@@ -24,7 +14,7 @@
 |---|---|---:|---:|---:|---:|---|
 | P0 | Recoverable baseline, historical C++/Qt behaviour and data safety | 5% | 5/5 | **100%** | 5.0% | Historical baseline documented |
 | P1 | Whole-product design, usability, assets, owner approval | 12% | 7/10 | **70%** | 8.4% | OPEN |
-| P2 | Native Windows Qt Quick/QML and typed C++ feasibility | 10% | 3/6 | **50%** | 5.0% | OPEN: physical Windows and go/no-go |
+| P2 | Native Windows Qt Quick/QML and typed C++ feasibility | 10% | 3/6 | **50%** | 5.0% | OPEN: owner physical Windows/toolkit decision |
 | P3 | C++ domain/application/services, models and safe result boundary | 12% | 0/7 | 0% | 0% | Not started |
 | P4 | Shared Qt Quick components, navigation, focus and motion | 12% | 0/7 | 0% | 0% | Not started |
 | P5 | Single persisted Corolla rental vertical slice end to end | 16% | 0/8 | 0% | 0% | Not started |
@@ -36,9 +26,15 @@
 
 **P0 evidence:** domain audit, safety/rule specification, fictional data, verified branch safety, historic compiled Qt Widgets Linux run 40944222722 and Windows run 40944222486 (CTest 2/2 on previous code SHA). Legacy UI passes must not be reused for Qt Quick.
 
-**Historical baseline:** 12/74 checks and 13.4% were recorded before native P2 CI. This baseline is superseded; it remains history, not the current total.\n\n**P1 verified seven:** three-workspace IA, owner-selected PDF theme, actual 1500×860 and 1280×720 browser screens, gallery/table/rental browser smoke, declined/empty/error states, keyboard/focus/state regressions. **Three unfinished:** broad screen-reader/zoom/native accessibility audit, model-matched licensed vehicle photography, explicit whole-product owner approval.
+**Historical initial baseline** was 12/74 and 13.4% before P2 native verification. Current counts are in the table above.
 
-**P2 verified three:** [Compiled native QML/C++ acceptance evidence](P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md), extended with [keyboard, live resize and synthetic scaling checks](P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). The new tests strengthen P2 evidence but do not satisfy physical Windows owner checks or toolkit approval.\n\n## P2–P9 acceptance requirements
+**P1 verified seven:** three-workspace IA, owner-selected PDF theme, actual 1500×860 and 1280×720 browser screens, gallery/table/rental browser smoke, declined/empty/error states, keyboard/focus/state regressions. **Three unfinished:** broad screen-reader/zoom/native accessibility audit, model-matched licensed vehicle photography, explicit whole-product owner approval.
+
+**Owner physical Windows partial proof:** local Qt Creator 6.10.2 MinGW Debug compiled/launched the actual read-only Fleet spike; user screenshots verified Corolla Inspector, Gallery/Table selected vehicle, available-only four, correct Rate sort and Escape clear. This does NOT prove whole keyboard accessibility, recorded OS scaling, local CTest SHA or toolkit owner go/no-go, so **P2 remains 3/6**.
+
+**P2 verified three:** [Exact-source hosted Windows/Linux 8/8 native QML and interaction/DPI checks](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md), excluding physical Windows scaling and toolkit signoff.
+
+## P2–P9 acceptance requirements
 
 **P2:** record actual Windows Qt/Qt Creator/compile kit; genuine QML desktop launch; five typed C++ vehicle model values; live Fleet Gallery ↔ Table ↔ Inspector shared state; keyboard/live resize/physical Windows scaling; recorded go/no-go technology decision. No storage rewrite in spike.
 
@@ -60,4 +56,4 @@
 
 Each acceptance check requires: exact branch/SHA and date; toolchain/OS; real command, PASS/FAIL, output/screenshots; safe fictional-only fixtures; regression and rollback notes; any owner decision recorded separately. Never convert “designed” into “implemented”, “browser tested” into “Qt tested”, or “candidate” into “approved”. No arbitrary percentage increases for document writing or time spent. Maintain editable detailed checklist and formula-driven XLSX supplied in conversation.
 
-**Next action:** close P1 owner visual/accessibility/imagery requirements, then perform bounded P2 real Windows Qt Quick feasibility. Separate later SQLite, installer, AI/cloud and other unrelated architecture work.
+**Next accepted action:** finish the remaining real Windows Qt Creator exact SHA/CTest, manually supported OS Settings 100/125/150% scaling, keyboard/resize/focus evidence and explicit toolkit go/no-go. P2 Qt Quick already BUILT and RUN on hosted platforms and on the owner's Windows computer. P1 whole-product image/accessibility/final owner design gate remains open in parallel. Do not restart the approved theme search, prematurely rewrite Qt models, or start SQLite/installer/API/AI.

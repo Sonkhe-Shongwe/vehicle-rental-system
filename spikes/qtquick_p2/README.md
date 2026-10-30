@@ -1,59 +1,15 @@
-> **30 October 2026 | NEW P2 PORTABLE WINDOWS ON-DEVICE REVIEW KIT (latest):** Source `3620d83518cc01bce047b6f0a17deab0b96079b6` on [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) compiled and passed **8/8 real CTests Linux Qt6.8.3 and 8/8 Windows Qt6.8.3** in [Actions 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629). Additionally Windows used `windeployqt` to build a self-contained **review-only** portable kit, with only fictional SHA-256-pinned demo data and on-device PowerShell validation script. **PASS** packaged real C++ model and QML compact smoke after relocation, deliberate tampered-demo rejection and ZIP integrity. [Portable kit evidence](../../docs/P2_WINDOWS_PHYSICAL_KIT_VERIFIED_2026-10-30.md); Windows Actions artifact `p2-windows-physical-acceptance-kit` ID `12972169619` (7-day retention). **Owner's physical Windows/Qt Creator and 100/125/150% OS scaling still NOT TESTED**, no toolkit go/no-go; **P2 remains 3/6 (50%), weighted overall 18.4%**. P1 licensed imagery/accessibility/owner full-design approval still OPEN. Both Draft PRs unmerged; main untouched. Previous older lines below are dated history.
+# P2 Qt Quick Fleet Spike | Current Native Test Reference
 
-> **30 October 2026 | CURRENT VERIFIED P2 NATIVE KEYBOARD/DPI CHECKPOINT:** New actual source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` passed [Linux+Windows Qt6.8.3 Actions run 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448): **8/8 CTests on each** including C++ Fleet, compiled QML Gallery/Table at 1500×860 and 1280×720, **real Qt Test Space/Escape selection**, live resizing, and **synthetic Qt scaling 125/150%**. Twelve real Qt Quick PNGs across both platforms inspected for actual dimensions and representative layouts. Initial run [41045247197](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045247197) **FAILED 7/8**, fixed actual QML ListView delegate test lookup and reran without weakening assertions. [Detailed latest report](../../docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). **P2 still 3/6 (50%), weighted total still 18.4%**, because physical owner's Windows 100/125/150%, Qt Creator kit and toolkit go/no-go are NOT VERIFIED. P1 imagery/accessibility/owner signoff remains open. PR #6 stays draft; PR #4 unmerged; main untouched. Earlier dated source-unverified notes below are superseded.
+**30 October 2026: SOURCE COMPILED AND HOSTED TESTS GREEN; USER WINDOWS QT CREATOR APP LAUNCHED; FINAL P2 GATE OPEN.**
 
-> **CURRENT 30 October 2026 verification:** This spike now **builds and executes on hosted Linux and Windows Qt6.8.3**, with native model/UI CTests **5/5 on each**, [run 41043137443](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137443). Actual screenshot dimensions validated at 1500×860 and 1280×720 on both; see [evidence and limits](../../docs/P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). This is **not** physical owner Windows Qt Creator or 100/125/150% acceptance. The old source-prepared status and missing-local-SDK note below remain as historical context.
+**Read the synchronized project documents first:** [Current State](../../docs/PROJECT_STATE_CANONICAL.md), [Full Audit](../../docs/FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [Universal Continuation Prompt](../../docs/AI_CONTINUATION_PROMPT.md), [Current Windows checklist](../../docs/WINDOWS_ACCEPTANCE.md).
 
-# P2 Qt Quick + C++ Fleet feasibility spike
+This branch's `spikes/qtquick_p2/` is a real, read-only C++/Qt Quick **Fleet feasibility** target, **not** the full rental product. `BUILD_QTQUICK_P2_SPIKE=ON` enables it; OFF is the legacy default. Source uses actual `RentalSystem` through typed `QAbstractListModel`/`QSortFilterProxyModel`; Gallery/Table share filter/sort/selected vehicle ID and right Inspector. Only fictional SHA-256-pinned fixtures are loaded into disposable temporary storage. No real new rental writes, production images, SQLite, API or installer.
 
-**Status 30 Oct 2026: SOURCE PREPARED; NOT COMPILED OR APPROVED ON WINDOWS.**
+**Hosted Qt6.8.3:** [Actions run 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629) 8/8 CTests Linux GCC and 8/8 Windows MSVC, plus `windeployqt` portable QML smoke and altered fictional data rejection. Owner's **Desktop Qt6.10.2 MinGW 64-bit Debug** locally compiled/launched Qt Quick; screenshots confirm C001 Corolla R450/day, Gallery/Table selection parity, four Available, Rate sort and Escape dismissal. Local Qt Creator version, SHA/CTest, real Windows OS scaling and owner Qt Quick go/no-go remain UNVERIFIED. **P2 3/6; overall 18.4% weighted, NOT release readiness.**
 
-Isolated read-only Qt Quick executable reusing actual `RentalSystem`, `Vehicle`, `Car` and `Motorcycle` from the legacy C++17 code. It displays five **fictional** demo vehicles in a Gallery/Table backed by one `QAbstractListModel` plus `QSortFilterProxyModel`, with a shared vehicle-ID selection and contextual inspector. The selected Navy/Teal/Cloud design is a minimal reference, not finished implementation of the full visual prototype.
+**Owner's local steps:** GitHub Desktop on `spike/p2-qtquick-fleet-20261030` → Fetch/Pull → Qt Creator open root `CMakeLists.txt`, kit Qt6.10.2 MinGW 64-bit Debug, options `BUILD_QTQUICK_P2_SPIKE=ON` and `BUILD_TESTING=ON`, new CMake build directory if moved, build and run `rental_studio_qtquick_spike`. Test manual keyboard/real Windows Display Settings 100%,125%,150% where supported, 1280×720/1500×860 live resizing, and record local source SHA/CTest. Full [on-device checklist](WINDOWS_PHYSICAL_ACCEPTANCE.md). **Do not force unsupported scales or edit real customer data.**
 
-No source or customer data is written: executable copies only `demo/vehicles.txt` and `demo/rentals.txt` into a new auto-removed `QTemporaryDir`, passes that path into `RentalSystem`, and has **no mutation methods or storage controls**. No `--data-dir` parameter is accepted. A model self-test checks the 5/4 inventory, Honda filter, Rented status, search/sort/selection and compares both source files byte-for-byte.
+**Future native keyboard rule:** group-local Arrow navigation, Tab/Shift+Tab between regions, Enter/Space activation, Escape dismiss, preserve text-input caret. P4 design target, not already implemented globally. A partly scrolled Gallery top row is a possible usability observation, not established defect.
 
-## Native Windows steps (required before marking P2 verified)
-
-1. In **Windows Qt Creator**, install/select a **Qt 6.5+ desktop MSVC or MinGW kit** with **Qt Quick, QML, Quick Controls 2** modules; record Qt Creator, Qt, compiler, Windows version and physical scaling.
-2. Check out this exact **spike branch in a clean clone**, not an operational/customer data directory. Do not open or edit real source-adjacent `vehicles.txt`/`rentals.txt`.
-3. Open root `CMakeLists.txt`; set `BUILD_QTQUICK_P2_SPIKE=ON`, `BUILD_TESTING=ON`. Existing Widgets target remains intact and is built normally.
-4. Configure/build Release. Example from **Qt 6 MSVC Developer PowerShell** with an installed Qt kit available to CMake:
-   ```powershell
-   cmake -S . -B build-p2 -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_TESTING=ON -DCMAKE_PREFIX_PATH="C:/Qt/6.8.3/msvc2022_64"
-   cmake --build build-p2 --config Release --parallel 2
-   ctest --test-dir build-p2 -C Release --output-on-failure
-   .\build-p2\spikes\qtquick_p2\Release\rental_studio_qtquick_spike.exe
-   ```
-   The executable path varies by kit/generator. Qt Creator Run is preferred.
-5. Confirm **five entries**, **four available**, **one rented Ranger**, **R450/day Corolla**; search `Honda` shows one, Gallery ↔ Table preserves search/status/selected ID, inspector shows correct details, rented vehicle has no Rent action.
-6. Repeat at **1500×860 and 1280×720**, live resize, Tab/Shift+Tab/Enter/Space/Esc where relevant. Use real Windows Display settings **100/125/150% scaling**. Note layout problems and screenshot the **real Qt executable** for evidence.
-7. Capture exact git SHA, Qt/Windows kit versions, screenshots, `ctest` output and problems. Do **not** report PASS based on a clean CMake listing or browser prototype.
-
-**Expected baseline:** the legacy domain and Qt Widgets GUI CTests continue to pass; P2 model CTest is an *additional* optional test. The Qt Quick app must render and respond on Windows before progressing to any P3/P4/P5 full rebuild. No hosted CI or cross-platform success was claimed for this source.
-
-**Go/no-go:** If Qt Quick modules are unavailable, compile fails, or native behaviour/performance is poor, record the failure and reconsider toolkit before architectural work.
-
-### Evidence status at source creation
-
-- GitHub review-branch source: **implemented, uncompiled**.
-- Current executing environment: Debian GNU/Linux 13, GCC/CMake/Ninja available but **Qt6 development packages missing**; live `cmake` cannot complete and must not be recorded as PASS.
-- Historical Linux and Windows Qt Widgets CI runs from different commits remain valid **only for the old UI**.
-- Project phase score stays P0 100%, P1 70%, P2 0%, weighted **13.4%** until a P2 check is actually executed.
-
-## Hosted CI (separate from owner's physical Windows acceptance)
-
-The opt-in review workflow `.github/workflows/p2-qtquick-review.yml` runs the new QML target alongside unchanged Qt Widgets targets on Ubuntu 24.04/GCC and Windows Server 2022/MSVC using Qt 6.8.3. It captures **real QQuickWindow** Gallery and Table screenshots at 1500×860 and 1280×720 and checks model parity, but **cannot establish true physical monitor scaling**. This workflow runs for a **draft pull request targeted at the product-reset documentation branch**, not on stable main. It is not proof of successful execution until a run actually passes; if GitHub Actions is restricted, record the failure without waiver.
-
-## Additional native acceptance instrumentation (30 October 2026)
-
-Opt-in P2 CTests now include **real Qt Test keyboard** events (Space to switch Gallery/Table, Space to select a native Table delegate, Escape to dismiss the selected Inspector, dynamic 1280x720 -> 1500x860 window resizing) and separately recorded **QT_SCALE_FACTOR 1.25 / 1.5 synthetic DPI** captures at 1024x660 logical. This is not a browser simulation. The synthetic scale tests exercise Qt's devicePixelRatio, but **cannot replace physical Windows monitor or Qt Creator acceptance**. No production booking/data-writing actions are added.
-
-Use the exact native test output and attached screenshots; do not mark P2 physical Windows gate complete from hosted CI.
-
-## Portable Windows on-device P2 review (source-stage)
-
-An isolated Windows acceptance kit is built through `windeployqt` by the P2 Windows CI job, including Qt Quick dependencies and **only committed fictional** `demo/vehicles.txt` and `demo/rentals.txt`. The native executable checks both fixtures against their compile-time SHA-256 before loading into an auto-deleted temporary directory. If fixture files are altered, the application refuses to start. The kit is for **local verification**, not a public release or installer.
-
-After a successful packaging workflow, download `p2-windows-physical-acceptance-kit` from the matching workflow's **Artifacts** section, extract it to a disposable user folder on Windows, and run `Verify-P2-Windows.ps1` in PowerShell. The script checks the bundled demo hashes before/after tests, records environment details, runs the real packaged self-test and compact UI smoke, and walks through manual 100/125/150% Windows display and keyboard checks. It does not change Windows display settings, make internet requests, or touch customer data. Record screenshots of the real QML executable, not the earlier HTML prototype.
-
-The kit intentionally uses `windeployqt --no-compiler-runtime`. For machines missing the MSVC runtime, install Microsoft's **official** current Visual C++ x64 Redistributable rather than copying DLLs from developer machines. A successful hosted packaged smoke remains weaker than physical owner testing and does not exit P2.
+**Do not merge this Draft PR #6, old PR #3/#4 or stable main without explicit owner consent.** Previous early “not compiled” notes are preserved in [historical spike README](README_PRE_CANONICAL_AUDIT_2026-10-30.md).

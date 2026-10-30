@@ -1,3 +1,5 @@
+> **ACTIVE BRANCH CONTINUITY ANCHOR (30 October 2026):** [Canonical State](PROJECT_STATE_CANONICAL.md), [Full Audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [Universal Prompt](AI_CONTINUATION_PROMPT.md) synchronize with the planning branch. Owner's real Windows Qt Creator Qt6.10.2 MinGW compiled/launched Fleet; Corolla, view parity, sort/filter/Escape manually verified. P1 7/10 and P2 3/6, weighted 18.4%, physical DPI/extended keyboard/owner go-no-go still OPEN. Notes below are chronological and historical.
+
 # Current Continuity — Product Rebuild (Post-Reset)
 
 ## 30 October 2026 — Portable physical-Windows P2 review kit generated and hosted-tested
