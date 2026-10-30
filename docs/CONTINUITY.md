@@ -1,5 +1,13 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Owner selects expanded Navy / Emerald / Cloud White PDF direction
+
+- Owner explicitly chose the uploaded **Rental Studio Theme Redesign Proposal Expanded** nine-page PDF as the direction for the project. Adopt **Midnight Navy `#17324D`**, **Emerald Teal `#0F766E`**, **Cloud White `#F6F8FA`**, **Ice Blue `#EAF0F4`**, **Soft Mint `#E8F5F0`** with three-item left navigation and a clear guided Rentals form/live quote split as reference. This supersedes earlier unselected sage/copper, generic V3 blue and greyscale theme hypotheses.
+- Exact visual system and source page references recorded in [owner theme direction](../design/r1/OWNER_THEME_DIRECTION_2026-10-30.md); the owner PDF was inspected, not altered or claimed to be a compiled Qt screenshot. Local numerical WCAG contrast check: `#64748B`/canvas 4.47:1 fails 4.5; replace muted text with `#5F6F82`/canvas 4.83:1. Whites/navy/teal also checked as documented.
+- **R1 remains open** for full-workspace application to Overview, Fleet Gallery/Table/Inspector and Rentals Active/History/Returns, compact/wide layout, state, accessible focus, actual approved vehicle photos and owner visual sign-off. The PDF's illustrative Pending status and Save draft control are not current domain features.
+- This was a **design-documentation-only increment**; no Qt/C++ build, app runtime, Qt Quick proof, new hosted GitHub Actions result, Windows mouse/DPI validation, SQL migration, or change to stable main/old PR #4.
+
+
 ## 30 October 2026 — R1 principle approval, greyscale comparison produced
 
 - Owner **approved the workspace design principles only**: operations-led Overview, vehicle-led Fleet, task-led Rentals, within a coherent medium-light tonal shell; the final palette, typography, spatial composition, imagery and native toolkit are not approved.

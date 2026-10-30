@@ -1,3 +1,5 @@
+> **30 October 2026 latest owner selection (takes precedence over older palette candidates below):** The owner selected the nine-page **Rental Studio Theme Redesign Proposal Expanded** PDF as the design direction. Its **Midnight Navy / Emerald Teal / Cloud White**, ice-blue sidebar, soft-mint quote, left navigation and the p.4 guided Rentals composition replace prior speculative sage/copper and generic V3 blue palette directions. [Exact tokens, accessibility fixes, proposed behaviour boundaries and incomplete whole-product acceptance](r1/OWNER_THEME_DIRECTION_2026-10-30.md). **This is approved art direction, not yet an approved complete multi-workspace UI or compiled Qt implementation.** Old "proposed palette" entries below are retained as dated source history only and MUST NOT override the latest owner choice.
+
 # Rental Studio — Light-First Product Experience Specification (Decision Draft)
 
 **Date:** 29 October 2026 · **Status:** DIRECTION AGREED; HIGH-FIDELITY DESIGNS AND TOOLKIT STILL NEED PROOF  

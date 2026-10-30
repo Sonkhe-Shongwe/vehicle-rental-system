@@ -1,3 +1,5 @@
+> **30 October 2026 precedence update:** The owner has now selected the expanded nine-page Rental Studio PDF as our visual direction. Read [owner-selected theme contract](../design/r1/OWNER_THEME_DIRECTION_2026-10-30.md) before new design work. Use navy `#17324D`, teal `#0F766E`, cloud-white canvas `#F6F8FA`, ice-blue sidebar `#EAF0F4`, mint quote `#E8F5F0`. The previous prompt's "no approved palette" statement is **superseded**, but whole-product design approval and Windows Qt Quick feasibility are STILL OUTSTANDING. Do not implement pending bookings/draft saves from illustrative UI components.
+
 # AI Continuation Prompt | Vehicle Rental System 2.0
 
 **Reconciled 30 October 2026.** This prompt supersedes the Qt Widgets redesign continuation previously published on main. Read the live records before acting; it does not approve a new design or a full rewrite.

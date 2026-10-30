@@ -1,3 +1,5 @@
+> **Superseded for final theme/layout choices, 30 October 2026:** The owner selected a new [Navy / Emerald / Cloud White reference](OWNER_THEME_DIRECTION_2026-10-30.md) in a nine-page PDF. Earlier A/B greyscale comparisons remain **historic workflow and composition research** only; neither is an approved complete app layout. The left-navigation and side-by-side Rentals quote in the latest PDF inform the next unified design review. Do not continue arguing old A/B colour choices.
+
 # R1 / G1 | Whole-product greyscale composition comparison
 
 **30 October 2026 | Owner principles approved, compositions UNDER REVIEW**  
