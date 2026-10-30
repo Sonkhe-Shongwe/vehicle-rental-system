@@ -17,11 +17,14 @@ on:
       - spike/p2-qtquick-fleet-20261030
       # Stacked P3-B draft review targets the unmerged P3-A branch.
       - feature/p3-typed-fleet-read-20261030
+      # P3-C is a stacked draft review of the approved P3-B quote boundary.
+      - feature/p3-rental-quote-20261030
     paths:
       - CMakeLists.txt
       - 'src/application/**'
       - 'tests/p3_fleet_read_tests.cpp'
       - 'tests/p3_rental_quote_tests.cpp'
+      - 'tests/p3_rental_confirm_tests.cpp'
       - 'spikes/qtquick_p2/**'
       - '.github/workflows/p2-qtquick-review.yml'
   workflow_dispatch:
