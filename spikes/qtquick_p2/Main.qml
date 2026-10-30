@@ -646,6 +646,14 @@ ApplicationWindow {
                             Accessible.name: "Return the selected active rental"
                             onClicked: returnConfirmation.open()
                         }
+                        Button {
+                            objectName: "rentalArchiveButton"
+                            text: "Archive returned"
+                            activeFocusOnTab: true
+                            enabled: archiveActions.canArchiveSelected
+                            Accessible.name: "Archive selected returned rental"
+                            onClicked: archiveConfirmation.open()
+                        }
                         Label {
                             objectName: "rentalReturnMessage"
                             Layout.fillWidth: true
@@ -687,6 +695,47 @@ ApplicationWindow {
                                 }
                             }
                         }
+                    }
+                    Dialog {
+                        id: archiveConfirmation
+                        objectName: "rentalArchiveDialog"
+                        title: "Archive returned rental"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        standardButtons: Dialog.NoButton
+                        contentItem: ColumnLayout {
+                            spacing: 12
+                            Label {
+                                text: "Move " + rentalsModel.selectedRentalId +
+                                      " to archived history? The record will not be deleted."
+                                color: navy; wrapMode: Text.WordWrap
+                            }
+                            RowLayout {
+                                Button {
+                                    objectName: "rentalArchiveCancel"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: archiveConfirmation.close()
+                                }
+                                Button {
+                                    objectName: "rentalArchiveConfirm"
+                                    text: "Confirm archive"
+                                    activeFocusOnTab: true
+                                    enabled: archiveActions.canArchiveSelected
+                                    onClicked: {
+                                        archiveConfirmation.close()
+                                        archiveActions.archiveSelected()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Label {
+                        text: archiveActions.lastArchiveMessage
+                        color: ink
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
                     }
                     RowLayout {
                         Layout.fillWidth: true

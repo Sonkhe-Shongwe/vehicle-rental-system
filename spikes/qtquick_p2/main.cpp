@@ -26,6 +26,7 @@
 #include "src/application/rental_confirm_service.h"
 #include "src/application/rental_return_controller.h"
 #include "src/application/rental_booking_controller.h"
+#include "src/application/rental_archive_controller.h"
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
 // values from disposable fictional fixtures. No Vehicle* reaches QML.
@@ -297,6 +298,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-filter-smoke", "Test real QML Active/History filtering and keyboard selected IDs."});
     parser.addOption({"rentals-return-smoke", "Test real QML confirmed return through C++ domain and model refresh."});
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
+    parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -345,6 +347,7 @@ int main(int argc, char *argv[]) {
                                          [&fleet]{ fleet.refreshAfterCommit(); });
     RentalBookingController bookingActions(system, rentalModel,
                                             [&fleet]{ fleet.refreshAfterCommit(); });
+    RentalArchiveController archiveActions(system, rentalRead, rentalModel);
     if (parser.isSet("self-test")) {
     const Vehicle *corolla = system.findVehicleById("C001");
     if (!corolla) {
@@ -388,6 +391,7 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("rentalsModel", &rentalModel);
     engine.rootContext()->setContextProperty("rentalActions", &rentalActions);
     engine.rootContext()->setContextProperty("bookingActions", &bookingActions);
+    engine.rootContext()->setContextProperty("archiveActions", &archiveActions);
     engine.loadFromModule("RentalStudioSpike", "Main");
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
@@ -1199,6 +1203,99 @@ int main(int argc, char *argv[]) {
             qInfo()<<"P3 actual QML guided booking PASS"<<suffix
                     <<"C++ price/availability, Cancel, confirmed receipt,"
                     <<"no optimistic model write, dual-model refresh and SHA fixture guard";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("rentals-archive-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 170;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1100,&app,[&,window,compact]{
+            const auto find=[](const auto &self,QQuickItem *item,
+                                const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *candidate=self(self,child,name))return candidate;
+                return nullptr;
+            };
+            auto *list=find(find,window->contentItem(),"rentalList");
+            auto *archive=find(find,window->contentItem(),"rentalArchiveButton");
+            if(!list||!archive||archive->isEnabled()){
+                qCritical()<<"P3 archive button should be initially disabled";
+                app.exit(171);return;
+            }
+            const auto press=[&](QQuickItem *item){
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(70);
+            };
+            list->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if(rentalModel.selectedRentalId()!="R002"||!archiveActions.canArchiveSelected() ||
+               !archive->isEnabled()){
+                qCritical()<<"P3 archival returned selection not enabled";
+                app.exit(172);return;
+            }
+            QByteArray initial;
+            if(!readFile(disposable.filePath("rentals.txt"),&initial)){
+                app.exit(173);return;
+            }
+            press(archive);
+            auto *cancel=find(find,window->contentItem(),"rentalArchiveCancel");
+            if(!cancel){qCritical()<<"P3 archive modal absent";app.exit(174);return;}
+            press(cancel);
+            QByteArray afterCancel;
+            if(!readFile(disposable.filePath("rentals.txt"),&afterCancel)||
+               afterCancel!=initial||!archiveActions.canArchiveSelected()){
+                qCritical()<<"P3 cancel unexpectedly archived";
+                app.exit(175);return;
+            }
+            press(archive);
+            auto *confirm=find(find,window->contentItem(),"rentalArchiveConfirm");
+            if(!confirm||!confirm->isEnabled()){
+                qCritical()<<"P3 confirm archive unavailable";
+                app.exit(176);return;
+            }
+            press(confirm);
+            QTest::qWait(120);
+            if(rentalModel.selectedRentalId()!="R002" ||
+               archiveActions.canArchiveSelected() || archive->isEnabled() ||
+               rentalModel.data(rentalModel.index(1,0),
+                        RentalListModel::StatusRole).toString()!="Archived" ||
+               !system.findRentalById("R002")->getIsArchived() ||
+               fleet.availableCount()!=4 || archiveActions.archiveSelected()) {
+                qCritical()<<"P3 archival commit/selection/status failed";
+                app.exit(177);return;
+            }
+            rentalModel.setStatusFilter("History");
+            if(rentalModel.count()!=1 || rentalModel.selectedRentalId()!="R002"){
+                qCritical()<<"P3 archived history filter lost record";
+                app.exit(178);return;
+            }
+            const QString suffix=compact?"1280x720":"1500x860";
+            const QImage shot=window->grabWindow();
+            if(shot.isNull()||shot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !shot.save("p3-qt-rentals-archive-"+suffix+".png","PNG")){
+                qCritical()<<"P3 archived QML screenshot invalid";
+                app.exit(179);return;
+            }
+            QByteArray sourceFleet,sourceRental,changed;
+            if(!readFile(vehicles,&sourceFleet)||
+               !readFile(rentals,&sourceRental)||
+               !readFile(disposable.filePath("rentals.txt"),&changed)||
+               sourceFleet!=beforeVehicles || sourceRental!=beforeRentals ||
+               changed==initial){
+                qCritical()<<"P3 archive affected source fixtures or did not save";
+                app.exit(180);return;
+            }
+            qInfo()<<"P3 QML returned-rental archive PASS"<<suffix
+                    <<"Cancel, persisted archive, selected History and no source writes";
             app.exit(0);
         });
     }
