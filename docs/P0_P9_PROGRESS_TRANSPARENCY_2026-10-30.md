@@ -1,3 +1,5 @@
+> **P3 acceptance review, 30 October 2026 (CURRENT):** Verified source [79f45de](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/79f45ded7e91687aaaaaf8e8047e6e673a690586) adds a stale-domain quote-confirmation regression (changed price, model, or removed vehicle). [Core Linux 41094884664](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41094884664) **5/5 PASS**; [native Linux/Windows 41094884974](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41094884974) **13/13 each PASS**, portable Windows safety PASS. Criterion review ACCEPTS P3 domain characterization, no false commit success, and model/domain test evidence. **P3 3/7 (42.9%); overall 19/74 accepted, 25.2% weighted**. Four P3 criteria OPEN. This is neither full P3 acceptance nor release approval. Old 0/7 and 20.1% below are superseded dated snapshots. [Detailed P3 criterion verdict](P3_ACCEPTANCE_REVIEW_2026-10-30.md).
+
 > **LATEST P3-C SOURCE STATUS (30 October 2026):** [Draft PR #9](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/9) adds a typed C++ rental confirmation command over the existing domain and the P3-B quote, with explicit revalidation, no optimistic receipt and file-failure rollback. **Verified at source `d9779cd172af4fe5314b10d9c43dba9b32945164`:** [Linux Qt Core 5/5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41083939062), [native Qt 6.8.3 Linux 13/13 + Windows 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41083938717), plus Windows portable/fake-fixture safeguards PASS. [Complete test and risk record](P3_C_RENTAL_CONFIRM_VERIFIED_2026-10-30.md). Stacked P3-A/B/C code remains in **unmerged Draft PR #7/#8/#9**. **P3 0/7 formal accepted, P2 4/6, P1 7/10 and 16/74 total, 20.1% weighted unchanged.** No QML booking UI or local owner MinGW test for this revision. Historical summaries below reflect earlier P3-A/B code stage.
 
 > **P3-B LATEST VERIFIED IMPLEMENTATION (30 Oct 2026):** Owner-approved Qt Quick/C++ direction; [Draft PR #8](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/8) from isolated `feature/p3-rental-quote-20261030`, based on P3-A Draft PR #7, implements only a read-only, typed C++ quote service, preserving immediate 1–365-day rules and authoritative domain pricing/availability. [Code `f8289567`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f8289567eb3da16ca13acc9d8a449f57cbea0e69) passed [Linux Core 4/4](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41074601176) plus [Linux Qt6.8.3 12/12 and Windows Qt6.8.3 12/12](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41074601145), Windows portable/demo tamper PASS. [Full verified report](P3_B_QUOTE_VERIFIED_2026-10-30.md). **P1/P2 owner physical design and Windows acceptance remain OPEN; P3 remains 0/7; 16/74 and weighted 20.1% unchanged.** Stable `main` and stacked draft PRs all unmerged.
@@ -23,14 +25,14 @@
 | P0 | Recoverable baseline, historical C++/Qt behaviour and data safety | 5% | 5/5 | **100%** | 5.0% | Historical baseline documented |
 | P1 | Whole-product design, usability, assets, owner approval | 12% | 7/10 | **70%** | 8.4% | OPEN |
 | P2 | Native Windows Qt Quick/QML and typed C++ feasibility | 10% | 4/6 | **66.7%** | 6.7% | OPEN: owner toolkit GO signed; physical Windows QA pending |
-| P3 | C++ domain/application/services, models and safe result boundary | 12% | 0/7 | 0% | 0% | STARTED: P3-A isolated, 11/11 hosted both, awaiting milestone acceptance |
+| P3 | C++ domain/application/services, models and safe result boundary | 12% | 3/7 | **42.9%** | **5.1%** | OPEN: three criteria accepted; four outstanding |
 | P4 | Shared Qt Quick components, navigation, focus and motion | 12% | 0/7 | 0% | 0% | Not started |
 | P5 | Single persisted Corolla rental vertical slice end to end | 16% | 0/8 | 0% | 0% | Not started |
 | P6 | Complete fleet + rental lifecycle parity, negative paths | 14% | 0/9 | 0% | 0% | Not started |
 | P7 | Stable IDs, money, storage, backup/migration hardening | 9% | 0/8 | 0% | 0% | Not started |
 | P8 | Offline Windows deploy/installer, privacy/licensing | 5% | 0/6 | 0% | 0% | Not started |
 | P9 | Native QA, independent latest-SHA CI and owner release | 5% | 0/8 | 0% | 0% | Not started |
-| **Total** | 74 source-gated acceptance checks | **100%** | **16/74** | Not a simple average | **20.1%** | **NOT RELEASED** |
+| **Total** | 74 source-gated acceptance checks | **100%** | **19/74** | Not a simple average | **25.2%** | **NOT RELEASED** |
 
 **P0 evidence:** domain audit, safety/rule specification, fictional data, verified branch safety, historic compiled Qt Widgets Linux run 40944222722 and Windows run 40944222486 (CTest 2/2 on previous code SHA). Legacy UI passes must not be reused for Qt Quick.
 
@@ -43,6 +45,10 @@
 **Owner physical Windows partial proof:** local Qt Creator 6.10.2 MinGW Debug compiled/launched the actual read-only Fleet spike; user screenshots verified Corolla Inspector, Gallery/Table selected vehicle, available-only four, correct Rate sort and Escape clear. A later real Windows Settings screenshot **now confirms 150% Recommended at 1920×1080 Recommended**, but does NOT prove Qt application behaviour at that scale, other supported scales, whole keyboard accessibility, local CTest SHA or toolkit owner go/no-go, so **P2 remains 3/6**.
 
 **P2 verified three:** [Exact-source hosted Windows/Linux 8/8 native QML and interaction/DPI checks](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md), excluding physical Windows scaling and toolkit signoff.
+
+## Formal P3 review: three accepted, four open
+
+**Accepted:** domain characterization, no false receipt/commit success, model/domain regression testing. **Open:** complete typed command/result scope, injectable time and repository seam, operational C++ Fleet/Rentals models, and proof that future live QML Rentals delegates pricing/availability entirely to C++. See [criterion review](P3_ACCEPTANCE_REVIEW_2026-10-30.md) and exact CI. P3 phase remains OPEN; no owner Windows or final product approval implied.
 
 ## P2–P9 acceptance requirements
 
