@@ -176,7 +176,7 @@ ApplicationWindow {
                 }
                 Item { Layout.fillHeight: true }
                 Label {
-                    text: "P3 · Read-only integration proof\nFictional demo · No booking buttons"
+                    text: "P3 · Verified fictional data\nC++ domain owns all writes"
                     color: ink; font.pixelSize: 11
                     wrapMode: Text.WordWrap
                 }
@@ -511,14 +511,129 @@ ApplicationWindow {
                         }
                         Item { Layout.fillWidth: true }
                         Label {
-                            text: "Read-only · C++ domain snapshots"
+                            text: "C++ domain · Fictional rental workflow"
                             color: ink; font.pixelSize: 12
                         }
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Fictional demo records only. Return uses the existing C++ domain and saves to an isolated temporary copy. Booking and archive actions are not available."
+                        text: "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
                         color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Button {
+                            id: newBookingButton
+                            objectName: "rentalNewBookingButton"
+                            text: "New rental"
+                            activeFocusOnTab: true
+                            Accessible.name: "Create a new fictional rental"
+                            onClicked: bookingDialog.open()
+                        }
+                        Label {
+                            objectName: "rentalBookingMessage"
+                            Layout.fillWidth: true
+                            color: ink
+                            wrapMode: Text.WordWrap
+                            text: bookingActions.lastMessage
+                        }
+                    }
+                    Dialog {
+                        id: bookingDialog
+                        objectName: "rentalBookingDialog"
+                        title: "New rental: review authoritative quote"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        width: Math.min(620, window.width - 80)
+                        standardButtons: Dialog.NoButton
+                        onClosed: bookingActions.discardPreview()
+                        contentItem: ColumnLayout {
+                            spacing: 10
+                            Label {
+                                text: "Demo only. No booking occurs until Confirm booking succeeds."
+                                color: ink; wrapMode: Text.WordWrap
+                            }
+                            RowLayout {
+                                Label { text: "Vehicle ID"; color: navy; Layout.preferredWidth: 92 }
+                                TextField {
+                                    id: bookingVehicleId
+                                    objectName: "bookingVehicleId"
+                                    Layout.fillWidth: true
+                                    placeholderText: "C001"
+                                    Accessible.name: "Vehicle ID for rental quote"
+                                    onTextEdited: bookingActions.discardPreview()
+                                }
+                                Label { text: "Days"; color: navy }
+                                SpinBox {
+                                    id: bookingDays
+                                    objectName: "bookingDays"
+                                    from: 1; to: 365; value: 2
+                                    editable: true
+                                    Accessible.name: "Rental days"
+                                    onValueModified: bookingActions.discardPreview()
+                                }
+                            }
+                            Button {
+                                objectName: "bookingPreviewButton"
+                                text: "Preview C++ quote"
+                                activeFocusOnTab: true
+                                onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
+                            }
+                            Label {
+                                objectName: "bookingQuoteSummary"
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                color: navy
+                                font.bold: bookingActions.canConfirm
+                                text: bookingActions.quoteSummary
+                            }
+                            Label {
+                                text: "Customer details are sent only to the C++ commit service."
+                                color: ink; wrapMode: Text.WordWrap
+                            }
+                            TextField {
+                                id: bookingCustomer
+                                objectName: "bookingCustomer"
+                                Layout.fillWidth: true
+                                placeholderText: "Customer name"
+                                Accessible.name: "Fictional customer name"
+                            }
+                            TextField {
+                                id: bookingPhone
+                                objectName: "bookingPhone"
+                                Layout.fillWidth: true
+                                placeholderText: "Contact number"
+                                Accessible.name: "Fictional contact number"
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Button {
+                                    objectName: "bookingCancelButton"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: {
+                                        bookingCustomer.clear()
+                                        bookingPhone.clear()
+                                        bookingDialog.close()
+                                    }
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    objectName: "bookingConfirmButton"
+                                    text: "Confirm booking"
+                                    enabled: bookingActions.canConfirm
+                                    activeFocusOnTab: true
+                                    onClicked: {
+                                        if (bookingActions.confirm(bookingCustomer.text, bookingPhone.text)) {
+                                            bookingCustomer.clear()
+                                            bookingPhone.clear()
+                                            bookingDialog.close()
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     RowLayout {
                         Layout.fillWidth: true
