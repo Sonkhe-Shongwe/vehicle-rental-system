@@ -266,6 +266,25 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_injection_tests)
 endif()
 
+# P3 typed operational fleet and guarded archive deletion. Never exposed
+# to QML; uses default atomic files in QTemporaryDir with forced failures.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_admin_command_tests
+        tests/p3_admin_command_tests.cpp
+        src/application/rental_admin_commands.h
+        src/application/rental_admin_commands.cpp
+        src/application/rental_quote_service.cpp
+        src/application/rental_confirm_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_admin_command_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_admin_command_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_admin_commands
+        COMMAND vehicle_rental_p3_admin_command_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)
