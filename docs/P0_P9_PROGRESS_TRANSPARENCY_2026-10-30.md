@@ -1,3 +1,5 @@
+> **P3 FULL SOURCE ACCEPTANCE (30 OCTOBER 2026): 7/7 checks verified, 23/74 total accepted, 32.1% weighted evidence coverage.** [Injectable clock/repository source `ca4a19f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/ca4a19f275beb3f026989cb60e25cd3783b7e280) retains the existing file names and QSaveFile default, adding clock plus atomic storage injection and memory-only failure/reopen tests. [Typed fleet/admin source `94a6e45`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/94a6e45fb77eb50a5df72586e7631359e11b98ff) adds C++ typed add/remove and guarded deletion of already-archived records; there is no destructive QML control. Exact-source [Core CI 41113952556](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41113952556) **13/13 passed** and [native Qt6.8.3 Linux/Windows CI 41113952541](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41113952541) **31/31 on each OS passed**, including hosted Windows packaged automatic checks. All P3 C++ application boundary acceptance requirements are met. **This does not approve production data use, P5/P6 operational parity, legacy Qt Widgets migration, P7 backup/schema work, physical owner Windows Qt Creator/MinGW tests, P1 design/accessibility, or release.** Default main untouched, stacked PRs draft/unmerged. See [final P3 audit](P3_FINAL_ACCEPTANCE_VERIFIED_2026-10-30.md). Earlier status entries below are historical.  
+
 > **CURRENT P3 ACCEPTANCE CLOSURE: 5/7, 21/74 total, 28.6% weighted (30 Oct 2026).** C++ guided quote and booking [5eb29d2](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/5eb29d2d5da414f5d94bdff9c5c2f71c212474d9), Qt Quick keyboard-driver correction [85394be](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/85394be1f46cc0206e07c29fa7e8b426d7ac29d8), and typed non-destructive archive [a00b9e0](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/a00b9e0f04d5cdb38c1494a15d1794e84a4d232a) give the synthetic-only Qt Quick preview real C++ booking, return and archive actions. [Core run 41111055252](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41111055252) 11/11 PASS and [native Linux/Windows run 41111055285](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41111055285) 29/29 PASS **on each OS**, with Windows packaged checks PASS. Independent CTest job logs inspected. P3 acceptance checks **4: C++ Fleet/Rental models and commit refresh** and **5: C++-owned quote/price/availability in QML** now ACCEPTED within P3 scope. Checks **2: complete typed commands** and **3: injectable clock/repository** still OPEN. Qt Quick remains SHA-pinned fictional fixtures in disposable directories; P1/P2 owner physical signoff and P5/P6 production lifecycle remain OPEN. Stable main untouched and stacked PRs draft/unmerged. Supersedes dated status paragraphs below.
 
 > **P3-I VERIFIED, 30 October 2026 (CURRENT):** [Exact source `eb09681`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/eb096817ca8b34fd590d23978e34a9007e7104a6) adds a narrowly scoped C++ `RentalReturnService` and `RentalReturnController` with typed MissingRental/NotActive/InvalidReturnDate/CommitFailed results, real Qt Quick **Return selected rental** with confirmation and Cancel on SHA-pinned fictional input copied to QTemporaryDir, and **only-after-commit** Rental/Fleet refresh. Forced QSaveFile failure rolls back the domain and does not emit a successful result or refresh; no arbitrary operational data paths, customer contact QML roles, payment, booking or destructive archive buttons were introduced. [Linux Core 9/9 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41107908823); [Linux GCC and hosted Windows MSVC Qt6.8.3 23/23 PASS each, plus Windows packaged checks PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41107908887), verified from actual CTest/job logs. Both OS screenshot archives and Windows physical acceptance kit uploaded. This is a **synthetic-only opt-in preview**, not an operational full Rentals journey; P3 check 2/4 still PARTIAL, check 5 OPEN, check 3 repository seam OPEN. **P3 remains 3/7, total 19/74, weighted 25.2%**. Stable main unchanged, PR draft/unmerged, owner physical Windows Qt Creator/real scaling and P1 a11y/signoff OPEN. [Full P3-I report](P3_I_RETURN_ACTION_VERIFIED_2026-10-30.md). Previous P3-H and earlier status entries below are historical.
@@ -24,7 +26,7 @@
 
 # Rental Studio 2.0 | P0–P9 Acceptance and Progress Governance
 
-**30 October 2026 | Current evidence-weighted programme score.** [Canonical state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md). Historical 13.4%, 20.1% and 25.2% are superseded; the operative verified score is 28.6% (P3 closure sprint). This is NOT release readiness.
+**30 October 2026 | Current evidence-weighted programme score.** [Canonical state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md). Historical 13.4%, 20.1%, 25.2% and 28.6% are superseded; the current verified score is **32.1%** after P3 closure. This is NOT release readiness.
 
 ## Two independent statuses
 
@@ -39,14 +41,14 @@
 | P0 | Recoverable baseline, historical C++/Qt behaviour and data safety | 5% | 5/5 | **100%** | 5.0% | Historical baseline documented |
 | P1 | Whole-product design, usability, assets, owner approval | 12% | 7/10 | **70%** | 8.4% | OPEN |
 | P2 | Native Windows Qt Quick/QML and typed C++ feasibility | 10% | 4/6 | **66.7%** | 6.7% | OPEN: owner toolkit GO signed; physical Windows QA pending |
-| P3 | C++ domain/application/services, models and safe result boundary | 12% | **5/7** | **71.4%** | **8.6%** | OPEN: typed commands and injection |
+| P3 | C++ domain/application/services, models and safe result boundary | 12% | **7/7** | **100%** | **12.0%** | Source acceptance closed; P5/P6 product operations separate |
 | P4 | Shared Qt Quick components, navigation, focus and motion | 12% | 0/7 | 0% | 0% | Not started |
 | P5 | Single persisted Corolla rental vertical slice end to end | 16% | 0/8 | 0% | 0% | Not started |
 | P6 | Complete fleet + rental lifecycle parity, negative paths | 14% | 0/9 | 0% | 0% | Not started |
 | P7 | Stable IDs, money, storage, backup/migration hardening | 9% | 0/8 | 0% | 0% | Not started |
 | P8 | Offline Windows deploy/installer, privacy/licensing | 5% | 0/6 | 0% | 0% | Not started |
 | P9 | Native QA, independent latest-SHA CI and owner release | 5% | 0/8 | 0% | 0% | Not started |
-| **Total** | 74 source-gated acceptance checks | **100%** | **21/74** | Not a simple average | **28.6%** | **NOT RELEASED** |
+| **Total** | 74 source-gated acceptance checks | **100%** | **23/74** | Not a simple average | **32.1%** | **NOT RELEASED** |
 
 **P0 evidence:** domain audit, safety/rule specification, fictional data, verified branch safety, historic compiled Qt Widgets Linux run 40944222722 and Windows run 40944222486 (CTest 2/2 on previous code SHA). Legacy UI passes must not be reused for Qt Quick.
 
@@ -59,6 +61,10 @@
 **Owner physical Windows partial proof:** local Qt Creator 6.10.2 MinGW Debug compiled/launched the actual read-only Fleet spike; user screenshots verified Corolla Inspector, Gallery/Table selected vehicle, available-only four, correct Rate sort and Escape clear. A later real Windows Settings screenshot **now confirms 150% Recommended at 1920×1080 Recommended**, but does NOT prove Qt application behaviour at that scale, other supported scales, whole keyboard accessibility, local CTest SHA or toolkit owner go/no-go, so **P2 remains 3/6**.
 
 **P2 verified three:** [Exact-source hosted Windows/Linux 8/8 native QML and interaction/DPI checks](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md), excluding physical Windows scaling and toolkit signoff.
+
+## P3 FINAL: 7/7 checks accepted, overall 32.1%
+
+Clock/repository source ca4a19f and typed fleet/admin source 94a6e45 passed Core 13/13, native Linux 31/31 and native Windows 31/31, with Windows packaged safety PASS. P3 typed command/results and independent injected clock/storage boundary now accepted alongside the five prior checks. **P3 7/7; overall 23/74; weighted 32.1%.** See [full final P3 report](P3_FINAL_ACCEPTANCE_VERIFIED_2026-10-30.md). All P1/P2 owner tests and P4-P9 remain open.
 
 ## P3-I verified C++ return transaction and synthetic-only QML confirmed action
 
