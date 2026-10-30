@@ -59,6 +59,16 @@ if(BUILD_TESTING)
         rental_studio_p3_rentals_qml_wide
         rental_studio_p3_rentals_qml_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 50)
+    # P3-H: real wide/compact Qt Quick Active/History filter and keyboard
+    # selection checks, never a QML implementation of lifecycle rules.
+    add_test(NAME rental_studio_p3_filter_qml_wide
+        COMMAND rental_studio_qtquick_spike --rentals-filter-smoke)
+    add_test(NAME rental_studio_p3_filter_qml_compact
+        COMMAND rental_studio_qtquick_spike --rentals-filter-smoke --compact)
+    set_tests_properties(
+        rental_studio_p3_filter_qml_wide
+        rental_studio_p3_filter_qml_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 50)
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES

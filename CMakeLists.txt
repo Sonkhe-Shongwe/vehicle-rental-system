@@ -164,6 +164,24 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_rental_model_tests)
 endif()
 
+# P3-H: lifecycle filtering and stable selected ID in the Qt Core read model.
+# Kept separate from P3-E characterization; uses only disposable records.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_rental_filter_tests
+        tests/p3_rental_filter_tests.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_rental_filter_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_rental_filter_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_rental_filter
+        COMMAND vehicle_rental_p3_rental_filter_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)

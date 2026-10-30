@@ -75,6 +75,42 @@ ApplicationWindow {
         function onSortByChanged() { Qt.callLater(window.syncCurrentVehicle) }
     }
 
+    // Rental Arrow navigation follows only C++-filtered visible rows. Text
+    // input, filter buttons, Tab and Escape retain native key behaviour.
+    function navigateRentals(delta) {
+        if (rentalsModel.count === 0)
+            return
+        const current = rentalsModel.selectedRow
+        const target = current < 0 ? 0 :
+                       Math.max(0, Math.min(rentalsModel.count - 1, current + delta))
+        if (current === target)
+            return
+        if (rentalsModel.selectVisibleRow(target))
+            rentalList.positionViewAtIndex(target, ListView.Contain)
+    }
+
+    function handleRentalArrow(event) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Up)
+            navigateRentals(-1)
+        else if (event.key === Qt.Key_Down)
+            navigateRentals(1)
+        else
+            return
+        event.accepted = true
+    }
+
+    function syncCurrentRental() {
+        rentalList.currentIndex = rentalsModel.selectedRow
+    }
+
+    Connections {
+        target: rentalsModel
+        function onSelectionChanged() { Qt.callLater(window.syncCurrentRental) }
+        function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
+    }
+
     function handleVehicleArrow(event) {
         // Deliberately do NOT intercept Tab/Shift+Tab, Enter/Space, Escape,
         // text-input cursor keys or native ComboBox arrow controls.
@@ -484,6 +520,33 @@ ApplicationWindow {
                         text: "Fictional records only. Dates, statuses and totals come from C++. No booking or return actions are available in this proof."
                         color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
                     }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: ["All", "Active", "History"]
+                            delegate: Button {
+                                required property string modelData
+                                objectName: "rentalFilter" + modelData
+                                text: modelData
+                                activeFocusOnTab: true
+                                Accessible.name: "Show " + modelData.toLowerCase() + " rentals"
+                                onClicked: rentalsModel.statusFilter = modelData
+                                background: Rectangle {
+                                    radius: 8
+                                    color: rentalsModel.statusFilter === parent.modelData ? navy : ice
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: rentalsModel.statusFilter === parent.modelData ? "white" : navy
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    font.bold: rentalsModel.statusFilter === parent.modelData
+                                }
+                            }
+                        }
+                        Item { Layout.fillWidth: true }
+                    }
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -504,6 +567,9 @@ ApplicationWindow {
                                 Layout.fillHeight: true
                                 clip: true
                                 spacing: 7
+                                activeFocusOnTab: true
+                                keyNavigationEnabled: false
+                                Keys.onPressed: (event) => window.handleRentalArrow(event)
                                 model: rentalsModel
                                 Accessible.role: Accessible.List
                                 Accessible.name: "Fictional rental records"

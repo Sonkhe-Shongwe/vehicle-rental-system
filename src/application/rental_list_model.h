@@ -16,6 +16,7 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(QString selectedRentalId READ selectedRentalId NOTIFY selectionChanged)
     Q_PROPERTY(int selectedRow READ selectedRow NOTIFY selectionChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
 public:
     enum Role {
         RentalIdRole = Qt::UserRole + 1,
@@ -38,22 +39,29 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_items.size(); }
+    QString statusFilter() const { return m_statusFilter; }
+    void setStatusFilter(const QString &filter);
     QString selectedRentalId() const { return m_selectedRentalId; }
     int selectedRow() const;
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool selectById(const QString &rentalId);
+    Q_INVOKABLE bool selectVisibleRow(int row);
     Q_INVOKABLE void clearSelection();
 
 signals:
     void selectionChanged();
     void countChanged();
+    void statusFilterChanged();
 
 private:
     int rowForId(const QString &rentalId) const;
+    QList<RentalRecordSummary> filtered(const QList<RentalRecordSummary> &all) const;
 
     const RentalReadService &m_service;
+    QList<RentalRecordSummary> m_allItems;
     QList<RentalRecordSummary> m_items;
+    QString m_statusFilter = QStringLiteral("All");
     QString m_selectedRentalId;
 };
 

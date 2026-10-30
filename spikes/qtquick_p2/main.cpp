@@ -292,6 +292,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"focus-edges-smoke", "Test filtered selection, sorted focus, empty states, boundaries and responsive columns."});
     parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
     parser.addOption({"rentals-smoke", "Test the real read-only QML Rentals view and C++ commit-triggered refresh."});
+    parser.addOption({"rentals-filter-smoke", "Test real QML Active/History filtering and keyboard selected IDs."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -841,6 +842,118 @@ int main(int argc, char *argv[]) {
                     << "keyboard selection, committed booking, both explicit"
                     << " model refreshes, Fleet availability/filter/Inspector,"
                     << " archived history, source-fixture protection";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("rentals-filter-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 100;
+        const bool compact = parser.isSet("compact");
+        window->resize(compact ? 1280 : 1500, compact ? 720 : 860);
+        window->setProperty("workspace", 2);
+        QTimer::singleShot(1000, &app, [&, window, compact] {
+            auto *list = window->findChild<QQuickItem*>("rentalList");
+            auto *selected = window->findChild<QQuickItem*>("rentalSelectionText");
+            const auto findVisual = [](const auto &self, QQuickItem *item,
+                                       const QString &name) -> QQuickItem* {
+                if (!item) return nullptr;
+                if (item->objectName()==name && item->isVisible()) return item;
+                for (auto *child : item->childItems()) {
+                    if (auto *found=self(self, child, name)) return found;
+                }
+                return nullptr;
+            };
+            auto *activeButton = findVisual(findVisual, window->contentItem(),
+                                             "rentalFilterActive");
+            auto *historyButton = findVisual(findVisual, window->contentItem(),
+                                              "rentalFilterHistory");
+            auto *allButton = findVisual(findVisual, window->contentItem(),
+                                          "rentalFilterAll");
+            if (!list || !list->isVisible() || !selected ||
+                !activeButton || !historyButton || !allButton ||
+                rentalModel.count()!=2 || list->property("count").toInt()!=2) {
+                qCritical() << "P3-H real filter/list QML controls absent";
+                app.exit(101); return;
+            }
+            const auto press = [window](QQuickItem *item) {
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(70);
+            };
+            list->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if (rentalModel.selectedRentalId()!="R001" ||
+                rentalModel.selectedRow()!=0 || !selected->property("text").toString().contains("R001")) {
+                qCritical() << "P3-H rental arrow did not select first visible ID";
+                app.exit(102); return;
+            }
+            press(historyButton);
+            if (rentalModel.statusFilter()!="History" || rentalModel.count()!=1 ||
+                list->property("count").toInt()!=1 ||
+                !rentalModel.selectedRentalId().isEmpty() ||
+                rentalModel.data(rentalModel.index(0,0),RentalListModel::RentalIdRole).toString()!="R002") {
+                qCritical() << "P3-H keyboard History filter or hidden selection failed";
+                app.exit(103); return;
+            }
+            list->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if (rentalModel.selectedRentalId()!="R002" ||
+                rentalModel.selectedRow()!=0) {
+                qCritical() << "P3-H history list arrow selection failed";
+                app.exit(104); return;
+            }
+            const QString suffix = compact?"1280x720":"1500x860";
+            const QImage historyShot=window->grabWindow();
+            if (historyShot.isNull() ||
+                historyShot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+                !historyShot.save("p3-qt-rentals-history-"+suffix+".png","PNG")) {
+                qCritical() << "P3-H real History QML screenshot failed" << historyShot.size();
+                app.exit(105); return;
+            }
+            // Returned and archived records must both stay in History after a
+            // real C++ domain operation and explicit model refresh.
+            if (!system.archiveRental("R002")) {
+                qCritical() << "P3-H fictional archive failed";
+                app.exit(106); return;
+            }
+            if (rentalModel.data(rentalModel.index(0,0),RentalListModel::StatusRole).toString()!="Returned") {
+                qCritical() << "P3-H History was optimistically updated";
+                app.exit(107); return;
+            }
+            rentalModel.refresh();
+            QCoreApplication::processEvents();
+            if (rentalModel.statusFilter()!="History" || rentalModel.count()!=1 ||
+                rentalModel.selectedRentalId()!="R002" ||
+                rentalModel.data(rentalModel.index(0,0),RentalListModel::StatusRole).toString()!="Archived") {
+                qCritical() << "P3-H archived record left History or lost selection";
+                app.exit(108); return;
+            }
+            press(activeButton);
+            if (rentalModel.statusFilter()!="Active" || rentalModel.count()!=1 ||
+                rentalModel.selectedRentalId()!="" ||
+                rentalModel.data(rentalModel.index(0,0),RentalListModel::RentalIdRole).toString()!="R001") {
+                qCritical() << "P3-H Active filter and selection dismissal failed";
+                app.exit(109); return;
+            }
+            // No hidden selection is resurrected on All.
+            press(allButton);
+            if (rentalModel.statusFilter()!="All" || rentalModel.count()!=2 ||
+                !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical() << "P3-H All filter resurrected hidden selection";
+                app.exit(110); return;
+            }
+            QByteArray originalFleet, originalRentals;
+            if (!readFile(vehicles,&originalFleet) || !readFile(rentals,&originalRentals) ||
+                originalFleet!=beforeVehicles || originalRentals!=beforeRentals) {
+                qCritical() << "P3-H source SHA-pinned fictional fixtures mutated";
+                app.exit(111); return;
+            }
+            qInfo() << "P3-H REAL QML Active/History/All PASS" << suffix
+                    << "focus, keyboard filter, arrows, stable IDs, archive"
+                    << " refresh, protected source demo bytes";
             app.exit(0);
         });
     }

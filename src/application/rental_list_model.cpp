@@ -26,7 +26,8 @@ QString dueStateText(RentalDueState due) {
 }
 
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
-    : QAbstractListModel(parent), m_service(service), m_items(service.records()) {}
+    : QAbstractListModel(parent), m_service(service),
+      m_allItems(service.records()), m_items(m_allItems) {}
 
 int RentalListModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : m_items.size();
@@ -66,6 +67,52 @@ QHash<int, QByteArray> RentalListModel::roleNames() const {
         {StatusRole, "status"},
         {DueStateRole, "dueState"}
     };
+}
+
+
+QList<RentalRecordSummary> RentalListModel::filtered(
+        const QList<RentalRecordSummary> &all) const {
+    if (m_statusFilter == QStringLiteral("All"))
+        return all;
+    QList<RentalRecordSummary> result;
+    for (const auto &item : all) {
+        const bool active = item.status == RentalRecordStatus::Active;
+        if ((m_statusFilter == QStringLiteral("Active") && active) ||
+            (m_statusFilter == QStringLiteral("History") && !active))
+            result.append(item);
+    }
+    return result;
+}
+
+void RentalListModel::setStatusFilter(const QString &filter) {
+    // The C++ model, never QML, determines which lifecycle flags are history.
+    if (filter != QStringLiteral("All") &&
+        filter != QStringLiteral("Active") &&
+        filter != QStringLiteral("History"))
+        return;
+    if (filter == m_statusFilter)
+        return;
+    const int oldCount = m_items.size();
+    const int oldRow = selectedRow();
+    const QString oldId = m_selectedRentalId;
+    m_statusFilter = filter;
+    QList<RentalRecordSummary> visible = filtered(m_allItems);
+    beginResetModel();
+    m_items = std::move(visible);
+    if (rowForId(oldId) < 0)
+        m_selectedRentalId.clear();
+    endResetModel();
+    emit statusFilterChanged();
+    if (m_items.size() != oldCount)
+        emit countChanged();
+    if (oldId != m_selectedRentalId || oldRow != selectedRow())
+        emit selectionChanged();
+}
+
+bool RentalListModel::selectVisibleRow(int row) {
+    if (row < 0 || row >= m_items.size())
+        return false;
+    return selectById(m_items.at(row).rentalId);
 }
 
 int RentalListModel::rowForId(const QString &id) const {
@@ -110,9 +157,11 @@ void RentalListModel::refresh() {
     const int priorRow = selectedRow();
     const QString priorId = m_selectedRentalId;
     QList<RentalRecordSummary> latest = m_service.records();
+    QList<RentalRecordSummary> visible = filtered(latest);
 
     beginResetModel();
-    m_items = std::move(latest);
+    m_allItems = std::move(latest);
+    m_items = std::move(visible);
     if (rowForId(priorId) < 0)
         m_selectedRentalId.clear();
     endResetModel();
