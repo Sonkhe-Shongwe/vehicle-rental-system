@@ -36,7 +36,7 @@
 
 **Boundary policy:** do not wrap a non-popup Gallery/Table invisibly from last item to first (or vice versa). At an empty, disabled or no-next-item boundary, keep a clear, stable focus/selection. If the final Grid row is incomplete, remain on the nearest valid **actual grid item** in the requested direction or stay put; never skip to an unrelated workspace. Popup menus may use their native cycling behaviour.
 
-**Cross-region Right from sidebar:** the owner's example of moving from Fleet navigation directly into the primary workspace/search may be introduced later as a **specific, explicit and tested focus connection** if usability demonstrates value. Default is `Tab`; do not implement uncontrolled nearest-target arrows across the page.
+**Cross-region Right from sidebar, owner-approved hybrid (Option A):** When the Fleet sidebar item **has keyboard focus**, `Right` will enter the **Search** control when that explicit connection is implemented. While Search is focused, `Left/Right` continue to move the **text caret**, and `Tab` advances to **All**, followed by the other controls in normal task order. Native `ComboBox` arrows keep their option-selection meaning. **Do not add an Enter-to-edit navigation mode or a global nearest-pixel focus engine.** The visually active Fleet sidebar item need not be keyboard-focused. This is an **approved rule for future scoped P4 implementation**, **not implemented/verified by today's P2 spike**; do not block the next product milestone on building it now.
 
 ## 4. Fleet interaction rules for current P2 and later P4
 
