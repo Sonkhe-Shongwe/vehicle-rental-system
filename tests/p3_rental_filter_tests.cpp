@@ -126,9 +126,11 @@ int main(int argc, char **argv) {
     check(resets>=8 && counts>=6 && selections>=5 && filters==5,
           "native Qt reset/count/selection/filter signals emitted as appropriate");
 
-    check(contents(temp.filePath("vehicles.txt")) != fleetBefore &&
+    // Returns/archive/delete persist in rentals.txt, not vehicles.txt.
+    // Rental read filtering must not imply any fleet rewrite.
+    check(contents(temp.filePath("vehicles.txt")) == fleetBefore &&
           contents(temp.filePath("rentals.txt")) != ledgerBefore,
-          "domain operations really persisted changes");
+          "domain rental lifecycle persists without rewriting fleet file");
     const auto fleetAfter=contents(temp.filePath("vehicles.txt"));
     const auto ledgerAfter=contents(temp.filePath("rentals.txt"));
     model.setStatusFilter("All");
