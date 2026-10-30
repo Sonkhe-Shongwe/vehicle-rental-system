@@ -1,3 +1,5 @@
+> **30 October 2026 R1 browser review evidence (NOT Qt evidence):** [Full owner-theme interactive review and checks](../design/r1/OWNER_THEME_FULL_PRODUCT_BROWSER_REVIEW_2026-10-30.md). Source was tested under Debian 13 / Chromium 144 / Playwright on fictional browser-memory data, with 14 principal viewport captures and checks for search, guided quote, cancel, create, return, empty, long text and simulated failure. **No new CMake/CTest, Qt Quick, physical Windows DPI, disk persistence or owner final aesthetic acceptance occurred.** Older source Qt Widgets CI pass remains historical only.
+
 # Testing Policy and Evidence — Product Rebuild
 
 **Decision date:** 29 October 2026  

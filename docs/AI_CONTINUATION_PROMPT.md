@@ -1,3 +1,5 @@
+> **30 October 2026 design progress:** [Full selected-theme browser review](../design/r1/OWNER_THEME_FULL_PRODUCT_BROWSER_REVIEW_2026-10-30.md) now exists and passed documented Chromium smoke tests. Do **not** repeat the same cross-screen browser redesign blindly; seek owner full-product acceptance, refine identified design issues, then perform Windows Qt Quick/C++ feasibility. This does NOT supersede needed native testing, screenshot review, licensed photographs, or release gate.
+
 > **30 October 2026 precedence update:** The owner has now selected the expanded nine-page Rental Studio PDF as our visual direction. Read [owner-selected theme contract](../design/r1/OWNER_THEME_DIRECTION_2026-10-30.md) before new design work. Use navy `#17324D`, teal `#0F766E`, cloud-white canvas `#F6F8FA`, ice-blue sidebar `#EAF0F4`, mint quote `#E8F5F0`. The previous prompt's "no approved palette" statement is **superseded**, but whole-product design approval and Windows Qt Quick feasibility are STILL OUTSTANDING. Do not implement pending bookings/draft saves from illustrative UI components.
 
 # AI Continuation Prompt | Vehicle Rental System 2.0

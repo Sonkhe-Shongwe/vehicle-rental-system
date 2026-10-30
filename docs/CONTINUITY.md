@@ -1,5 +1,14 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Owner theme applied to whole-product browser design review
+
+- Built a self-contained **HTML/CSS/JS** high-fidelity review applying the owner-selected Midnight Navy / Emerald Teal / Cloud White proposal to **Overview, Fleet Gallery + Table + selected inspector, simulated Add Vehicle form, New Rental Vehicle/Customer/Review, Active, History and Return**. Original generic vector vehicles are *illustrative only*, and no model photography has been approved.
+- **Verified on Debian GNU/Linux 13, Chromium 144.0.7559.96, Python Playwright headless:** seven principal views at 1500×860 and 1280×720 (14 captures), three 1024×768 horizontal checks, 5/4/1 fleet figures, R2,300 booked (not cash), Corolla quote R1,350, Gallery/Table search/selection, validation, cancel non-mutation, fake create/return/history, empty/long names and simulated write failure. No page JS errors. The browser UI does **not** persist to disk.
+- Owner review package (HTML, screenshots/contact sheets, browser test report) delivered as ChatGPT conversation downloads, **not committed application code**. Full evidence, exact source HTML checksum and outstanding native checks: [R1 owner-theme browser review](../design/r1/OWNER_THEME_FULL_PRODUCT_BROWSER_REVIEW_2026-10-30.md).
+- Corrected previous prototype initialization error from stale A/B switch binding; first failed local attempt remains a **failed precursor**. Also corrected a Playwright locator that clicked the Return subtab instead of the explicit Return action. Successful final browser checks do not certify Qt/QML or Windows.
+- **R1 stays open for owner review, licensed imagery, detailed accessibility and final visual signoff.** R2/QML native Windows not started; no C++ domain/storage changes or merge.
+
+
 ## 30 October 2026 — Owner selects expanded Navy / Emerald / Cloud White PDF direction
 
 - Owner explicitly chose the uploaded **Rental Studio Theme Redesign Proposal Expanded** nine-page PDF as the direction for the project. Adopt **Midnight Navy `#17324D`**, **Emerald Teal `#0F766E`**, **Cloud White `#F6F8FA`**, **Ice Blue `#EAF0F4`**, **Soft Mint `#E8F5F0`** with three-item left navigation and a clear guided Rentals form/live quote split as reference. This supersedes earlier unselected sage/copper, generic V3 blue and greyscale theme hypotheses.
