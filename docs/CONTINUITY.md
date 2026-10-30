@@ -84,3 +84,12 @@ Owner reported GitHub Actions usage limit with expected 1 November 2026 reset. P
 ## Next decision
 
 Approve or revise a coherent high-fidelity design review set (Overview + Fleet Gallery/Table/Drawer + Rentals/Active/Return/History, two target sizes, accessible and stateful). Then perform **Windows Qt Quick feasibility**, not a blind total rewrite. Technical sign-off and owner visual acceptance are explicit future gates.
+
+
+## 30 October 2026 — UX-CTRL-001 keyboard/focus contract owner APPROVED
+
+- **Owner decision:** adopt a **small, Qt-native, context-aware control system** now and extend it as real Rental Studio features are implemented. Full approved specification: [Keyboard, Focus and Interaction Contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md).
+- **Interaction boundary:** `Tab`/`Shift+Tab` between meaningful groups, directional keys **within** focused Gallery/Table/sidebar/menu groups, normal input caret/dropdown behaviour, stable C++ selected vehicle ID independent of QML index and focus, distinct keyboard focus/selection visuals. Scrolling reveals a newly selected card but never substitutes for selection. Modal/dialog Escape has priority over clearing Fleet Inspector; business mutations always require explicit actions.
+- **No speculative framework:** reject global nearest-pixel arrow navigation and an application-wide shortcut manager. P2 tests current Fleet and fixes observed local faults; P3 preserves typed selected-ID boundaries; P4 extracts the smallest shared native focus/style conventions; P5/P6 add real guided form, dialog, return and history behaviour; P9 completes accessibility/physical QA.
+- **Evidence boundary unchanged:** P2 arrow source `f486c8a` has [9/9 Linux and 9/9 hosted Windows CTests](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971) but no owner signoff on the new Qt6.10.2 MinGW focus smoothness. Earlier Tab/Shift+Tab were user-confirmed; no physical P2 gate closed by this design decision.
+- **Governance:** update [canonical status](PROJECT_STATE_CANONICAL.md), [full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [general-purpose continuation prompt](AI_CONTINUATION_PROMPT.md) and P-phase criteria together when implementation/evidence changes. **P2 3/6, P4 0/7, 15/74 accepted, weighted 18.4%, NOT RELEASED**. Stable main and Draft PRs remain unmerged.
