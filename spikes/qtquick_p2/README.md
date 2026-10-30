@@ -33,3 +33,7 @@ No source or customer data is written: executable copies only `demo/vehicles.txt
 - Current executing environment: Debian GNU/Linux 13, GCC/CMake/Ninja available but **Qt6 development packages missing**; live `cmake` cannot complete and must not be recorded as PASS.
 - Historical Linux and Windows Qt Widgets CI runs from different commits remain valid **only for the old UI**.
 - Project phase score stays P0 100%, P1 70%, P2 0%, weighted **13.4%** until a P2 check is actually executed.
+
+## Hosted CI (separate from owner's physical Windows acceptance)
+
+The opt-in review workflow `.github/workflows/p2-qtquick-review.yml` runs the new QML target alongside unchanged Qt Widgets targets on Ubuntu 24.04/GCC and Windows Server 2022/MSVC using Qt 6.8.3. It captures **real QQuickWindow** Gallery and Table screenshots at 1500×860 and 1280×720 and checks model parity, but **cannot establish true physical monitor scaling**. This workflow runs for a **draft pull request targeted at the product-reset documentation branch**, not on stable main. It is not proof of successful execution until a run actually passes; if GitHub Actions is restricted, record the failure without waiver.

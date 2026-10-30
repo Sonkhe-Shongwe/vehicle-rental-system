@@ -172,6 +172,7 @@ ApplicationWindow {
                             currentIndex: window.gallery ? 0 : 1
                             GridView {
                                 id: galleryView
+                                objectName: "fleetGallery"
                                 clip: true
                                 model: fleet.visibleModel
                                 cellWidth: width < 790 ? width / 2 : width / 3
@@ -221,6 +222,7 @@ ApplicationWindow {
                             }
                             ListView {
                                 id: tableView
+                                objectName: "fleetTable"
                                 clip: true
                                 model: fleet.visibleModel
                                 spacing: 6

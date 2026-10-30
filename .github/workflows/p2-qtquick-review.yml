@@ -1,0 +1,92 @@
+name: P2 Qt Quick native compile and runtime smoke
+
+on:
+  pull_request:
+    branches:
+      - docs/product-rebuild-reset-20261029
+    paths:
+      - CMakeLists.txt
+      - 'spikes/qtquick_p2/**'
+      - '.github/workflows/p2-qtquick-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p2-qtquick-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Qt 6.8.3 / Linux GCC / real QML smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+      QT_QUICK_BACKEND: software
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build prerequisites
+        run: sudo apt-get update && sudo apt-get install -y ninja-build g++ cmake libgl1 libxkbcommon-x11-0 libxcb-cursor0
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          cache: true
+      - name: Configure opt-in spike alongside legacy app
+        run: cmake -S . -B build-p2 -G Ninja -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR"
+      - name: Build unchanged legacy app and new QML executable
+        run: cmake --build build-p2 --parallel 2
+      - name: Run complete legacy + P2 native CTest
+        run: ctest --test-dir build-p2 --output-on-failure
+      - name: Upload real compiled QML screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-qtquick-linux-screenshots
+          path: build-p2/spikes/qtquick_p2/p2-qt-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  windows:
+    name: Qt 6.8.3 / Windows MSVC / real QML smoke
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+      QT_QUICK_BACKEND: software
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          cache: true
+      - name: Configure on exact Qt kit
+        shell: pwsh
+        run: |
+          cmake -S . -B build-p2 -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build unchanged legacy app and new Qt Quick executable
+        shell: pwsh
+        run: |
+          cmake --build build-p2 --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run complete CTest with hosted Windows offscreen UI checks
+        shell: pwsh
+        run: |
+          ctest --test-dir build-p2 -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload real compiled QML screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-qtquick-windows-screenshots
+          path: build-p2/spikes/qtquick_p2/p2-qt-*.png
+          if-no-files-found: ignore
+          retention-days: 7

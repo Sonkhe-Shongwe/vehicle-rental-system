@@ -7,6 +7,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QQuickWindow>
+#include <QQuickItem>
+#include <QTimer>
+#include <QImage>
 #include <QSortFilterProxyModel>
 #include <QTemporaryDir>
 #include <QVariant>
@@ -217,6 +221,8 @@ int main(int argc, char *argv[]) {
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addOption({"self-test", "Test model, filtering, selection, and fixture integrity without a GUI."});
+    parser.addOption({"ui-smoke", "Load the native QML scene and capture actual Gallery/Table views."});
+    parser.addOption({"compact", "Use the compact 1280x720 viewport for the UI smoke."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -279,6 +285,59 @@ int main(int argc, char *argv[]) {
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
+    }
+    if (parser.isSet("ui-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) {
+            qCritical() << "P2 QML root is not a native Quick window";
+            return 6;
+        }
+        auto *gallery = window->findChild<QQuickItem*>("fleetGallery");
+        auto *table = window->findChild<QQuickItem*>("fleetTable");
+        if (!gallery || !table || fleet.totalCount() != 5 ||
+            fleet.availableCount() != 4) {
+            qCritical() << "P2 native QML view objects or demo domain data missing";
+            return 7;
+        }
+
+        const bool compact = parser.isSet("compact");
+        window->setWidth(compact ? 1280 : 1500);
+        window->setHeight(compact ? 720 : 860);
+        const QString suffix = compact ? "1280x720" : "1500x860";
+        // A real QQuickWindow screenshot is deliberately required for this
+        // optional CI smoke. Failure cannot masquerade as passing native UI.
+        QTimer::singleShot(1000, &app, [&, suffix] {
+            if (!gallery->isVisible() || table->isVisible()) {
+                qCritical() << "Gallery is not the visible initial Fleet view";
+                app.exit(8); return;
+            }
+            QImage image = window->grabWindow();
+            if (image.isNull() ||
+                !image.save("p2-qt-gallery-" + suffix + ".png", "PNG")) {
+                qCritical() << "Cannot capture actual QML Gallery";
+                app.exit(9); return;
+            }
+            fleet.setQuery("Honda");
+            fleet.selectById("M001");
+            window->setProperty("gallery", false);
+            QTimer::singleShot(450, &app, [&, suffix] {
+                if (gallery->isVisible() || !table->isVisible() ||
+                    fleet.selectedId() != "M001" ||
+                    static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() != 1) {
+                    qCritical() << "QML Gallery/Table visibility or C++ model parity failed";
+                    app.exit(10); return;
+                }
+                QImage tableImage = window->grabWindow();
+                if (tableImage.isNull() ||
+                    !tableImage.save("p2-qt-table-" + suffix + ".png", "PNG")) {
+                    qCritical() << "Cannot capture actual QML Table";
+                    app.exit(11); return;
+                }
+                qInfo() << "P2 native Qt Quick UI smoke PASS:" << suffix
+                        << "Gallery, Table, selected ID, filtered domain model";
+                app.exit(0);
+            });
+        });
     }
     return app.exec();
 }
