@@ -30,7 +30,7 @@
 
 **P1 verified seven:** three-workspace IA, owner-selected PDF theme, actual 1500×860 and 1280×720 browser screens, gallery/table/rental browser smoke, declined/empty/error states, keyboard/focus/state regressions. **Three unfinished:** broad screen-reader/zoom/native accessibility audit, model-matched licensed vehicle photography, explicit whole-product owner approval.
 
-**Owner physical Windows partial proof:** local Qt Creator 6.10.2 MinGW Debug compiled/launched the actual read-only Fleet spike; user screenshots verified Corolla Inspector, Gallery/Table selected vehicle, available-only four, correct Rate sort and Escape clear. This does NOT prove whole keyboard accessibility, recorded OS scaling, local CTest SHA or toolkit owner go/no-go, so **P2 remains 3/6**.
+**Owner physical Windows partial proof:** local Qt Creator 6.10.2 MinGW Debug compiled/launched the actual read-only Fleet spike; user screenshots verified Corolla Inspector, Gallery/Table selected vehicle, available-only four, correct Rate sort and Escape clear. A later real Windows Settings screenshot **now confirms 150% Recommended at 1920×1080 Recommended**, but does NOT prove Qt application behaviour at that scale, other supported scales, whole keyboard accessibility, local CTest SHA or toolkit owner go/no-go, so **P2 remains 3/6**.
 
 **P2 verified three:** [Exact-source hosted Windows/Linux 8/8 native QML and interaction/DPI checks](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md), excluding physical Windows scaling and toolkit signoff.
 

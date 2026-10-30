@@ -16,7 +16,7 @@ The new read-only **Qt Quick/C++ Fleet P2 spike** is implemented on the separate
 
 **Hosted Qt 6.8.3:** [run 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629) passed **8/8 Linux and 8/8 Windows CTests**, plus Windows portable bundle, model/QML smoke and altered demo rejection. [Run 41048156914](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41048156914) passed the later docs-only spike branch head. The owner also **compiled/launched the real Qt Quick app locally** using Desktop Qt **6.10.2 MinGW Debug** in Qt Creator, and verified selected Corolla, synchronized Gallery/Table, Available filter, Rate sort and Escape clearing Inspector, all in actual Windows screenshots.
 
-**Not proved on owner machine:** physical Windows Settings 100/125/150% scale, full Tab/Shift+Tab and arrow focus, local full CTest log, exact local SHA or formal Qt Quick go/no-go. Synthetic hosted DPI is not real monitor acceptance.
+**Not proved on owner machine:** native Qt app behavior at the now-confirmed **150% Recommended / 1920×1080 Recommended** Windows Settings baseline and supported 100%/125% scales, full Tab/Shift+Tab and arrow focus, local full CTest log, exact local SHA or formal Qt Quick go/no-go. Synthetic hosted DPI is not real monitor acceptance.
 
 ## Side-by-side Qt Creator workflow
 
