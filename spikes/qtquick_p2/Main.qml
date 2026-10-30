@@ -298,12 +298,17 @@ ApplicationWindow {
                             spacing: 12
                             RowLayout {
                                 Label {
-                                    text: "Vehicle details"; color: navy; font.pixelSize: 18
+                                    text: "Vehicle details"; color: navy; font.pixelSize: 17
                                     font.bold: true
                                     Layout.fillWidth: true
+                                    elide: Text.ElideRight
                                 }
                                 Button {
-                                    text: "×"; enabled: fleet.selectedId !== ""
+                                    text: "×"
+                                    visible: fleet.selectedId !== ""
+                                    Layout.preferredWidth: 32
+                                    Layout.maximumWidth: 32
+                                    Layout.preferredHeight: 32
                                     Accessible.name: "Close vehicle details"
                                     onClicked: fleet.clearSelection()
                                 }

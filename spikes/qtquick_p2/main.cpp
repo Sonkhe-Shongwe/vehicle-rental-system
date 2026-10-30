@@ -312,6 +312,12 @@ int main(int argc, char *argv[]) {
                 app.exit(8); return;
             }
             QImage image = window->grabWindow();
+            const QSize expected(compact ? 1280 : 1500, compact ? 720 : 860);
+            if (image.size() != expected) {
+                qCritical() << "Native screenshot viewport mismatch; expected"
+                            << expected << "actual" << image.size();
+                app.exit(12); return;
+            }
             if (image.isNull() ||
                 !image.save("p2-qt-gallery-" + suffix + ".png", "PNG")) {
                 qCritical() << "Cannot capture actual QML Gallery";
@@ -328,6 +334,12 @@ int main(int argc, char *argv[]) {
                     app.exit(10); return;
                 }
                 QImage tableImage = window->grabWindow();
+                if (tableImage.size() != QSize(compact ? 1280 : 1500,
+                                              compact ? 720 : 860)) {
+                    qCritical() << "Native Table screenshot viewport mismatch; actual"
+                                << tableImage.size();
+                    app.exit(13); return;
+                }
                 if (tableImage.isNull() ||
                     !tableImage.save("p2-qt-table-" + suffix + ".png", "PNG")) {
                     qCritical() << "Cannot capture actual QML Table";

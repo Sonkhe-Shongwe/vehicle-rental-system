@@ -79,7 +79,15 @@ jobs:
         run: |
           cmake --build build-p2 --config Release --parallel 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run complete CTest with hosted Windows offscreen UI checks
+      - name: Set large virtual display for true 1500x860 and 1280x720 captures
+        shell: pwsh
+        run: |
+          if (Get-Command Set-DisplayResolution -ErrorAction SilentlyContinue) {
+            Set-DisplayResolution -Width 1920 -Height 1080 -Force
+          } else {
+            Write-Warning "Set-DisplayResolution unavailable; exact screenshot-size CTests must still pass."
+          }
+      - name: Run complete CTest with hosted Windows native-QPA UI checks
         shell: pwsh
         run: |
           ctest --test-dir build-p2 -C Release --output-on-failure
