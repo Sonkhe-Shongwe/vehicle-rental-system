@@ -101,6 +101,48 @@ jobs:
         run: |
           ctest --test-dir build-p2 -C Release --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Create disposable on-device Windows P2 acceptance kit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $exe = "build-p2/spikes/qtquick_p2/Release/rental_studio_qtquick_spike.exe"
+          if (-not (Test-Path $exe)) { throw "Native Windows P2 executable missing" }
+          $dest = "build-p2/p2-windows-physical-acceptance-kit"
+          New-Item -ItemType Directory -Path "$dest/demo" -Force | Out-Null
+          Copy-Item $exe "$dest/RentalStudioP2Review.exe"
+          Copy-Item "demo/vehicles.txt" "$dest/demo/vehicles.txt"
+          Copy-Item "demo/rentals.txt" "$dest/demo/rentals.txt"
+          Copy-Item "spikes/qtquick_p2/Verify-P2-Windows.ps1" "$dest/Verify-P2-Windows.ps1"
+          Copy-Item "spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md" "$dest/WINDOWS_PHYSICAL_ACCEPTANCE.md"
+          Set-Content -Path "$dest/SOURCE_COMMIT.txt" -NoNewline -Value "$env:GITHUB_SHA"
+          $deployer = Join-Path $env:QT_ROOT_DIR "bin/windeployqt.exe"
+          if (-not (Test-Path $deployer)) { throw "windeployqt unavailable" }
+          # This is a QA kit, not a redistributable installer. Microsoft VC++
+          # runtime must come from the official installer, not copied raw.
+          & $deployer --release --no-compiler-runtime --qmldir "spikes/qtquick_p2" "$dest/RentalStudioP2Review.exe"
+          if ($LASTEXITCODE -ne 0) { throw "windeployqt failed: $LASTEXITCODE" }
+          $stageExe = (Resolve-Path "$dest/RentalStudioP2Review.exe").Path
+          # Test relocation in a package-only directory before uploading.
+          $original = [System.IO.File]::ReadAllBytes((Resolve-Path "$dest/demo/vehicles.txt").Path)
+          try {
+            [System.IO.File]::AppendAllText((Resolve-Path "$dest/demo/vehicles.txt").Path, "`nUNTRUSTED")
+            & $stageExe --self-test
+            if ($LASTEXITCODE -eq 0) { throw "Tampered source fixture unexpectedly accepted" }
+            Write-Host "Expected non-demo fixture rejection observed"
+          } finally {
+            [System.IO.File]::WriteAllBytes((Resolve-Path "$dest/demo/vehicles.txt").Path, $original)
+          }
+          & "$dest/Verify-P2-Windows.ps1" -VerifyOnly
+          if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P2 verification failed" }
+          # Do not bundle runner-specific test outputs or host diagnostics.
+          Remove-Item "$dest/acceptance-evidence" -Recurse -Force -ErrorAction SilentlyContinue
+      - name: Upload disposable Windows P2 physical acceptance kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-windows-physical-acceptance-kit
+          path: build-p2/p2-windows-physical-acceptance-kit/**
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload real compiled QML screenshots
         if: always()
         uses: actions/upload-artifact@v4
