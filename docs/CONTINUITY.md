@@ -1,5 +1,12 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Hosted-verifiable portable P2 Windows acceptance kit ready
+
+- [P2 source SHA `3620d835`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/3620d83518cc01bce047b6f0a17deab0b96079b6) adds CMake-pinned SHA-256 validation and bundled fictional-only demo data, Windows PowerShell acceptance script/manual checklist; P2 Windows CI uses `windeployqt` to make a 7-day acceptance artifact.
+- [Actions 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629) passed **8/8 hosted Linux + 8/8 hosted Windows native Qt CTests**, relocated portable self-test and compiled compact QML smoke, and negative demo-fixture corruption test. Downloaded ZIP CRC and provenance confirmed.
+- [Full P2 evidence on Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_WINDOWS_PHYSICAL_KIT_VERIFIED_2026-10-30.md). Still cannot claim actual user Windows Qt Creator or physical 100/125/150% DPI; **P2 3/6 / total weighted 18.4%**. Both draft PRs and stable main remain untouched/unmerged.
+
+
 ## 30 October 2026 — P2 native keyboard and synthetic DPI tests verified, owner physical gate open
 
 - [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) current tested source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` passed [native Qt6.8.3 CI run 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448): **8/8 Ubuntu/GCC** and **8/8 Windows Server/MSVC** CTests, retaining two prior domain/Widgets tests, typed C++ Fleet, Gallery/Table screenshots, QTest Space/Escape and live resize, and synthetic 125/150% DPI checks.
