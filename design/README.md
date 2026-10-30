@@ -19,6 +19,8 @@
 **Master decisions:** [Product Rebuild Audit](../docs/PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md)  
 **Current design brief:** [Light-First Experience Specification](DESIGN_SPEC.md).
 
+**Owner-approved interaction decision, UX-CTRL-001:** [Keyboard, Focus and Interaction Contract](../docs/KEYBOARD_FOCUS_INTERACTION_CONTRACT.md). Native Qt focus conventions, one small product-wide key policy now, reusable focus styling in P4, per-feature implementation and tests as future functions arrive. This is not final product-wide accessibility acceptance and does not change the 18.4% verification score.
+
 ## Approved design direction
 
 - Bright, inviting, neatly structured software; **no dark application shell**.

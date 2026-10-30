@@ -44,6 +44,8 @@
 
 **P3:** domain characterisation, typed command/results, injectable Clock and repository, actual C++ fleet/rental models, QML never owns booking price or availability, no fake write success, model/domain unit tests.
 
+**P4 approved design input, NOT an accepted check:** [Owner-approved native-first Keyboard, Focus and Interaction Contract, UX-CTRL-001](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) signed off 30 Oct 2026. Rules are specified now; the minimal shared implementation, real feature integration and acceptance tests still belong to P4 and later gates. **P4 remains 0/7; total stays 15/74 = 18.4%.**
+
 **P4:** native selected design tokens, robust shared Qt Quick shell, reusable list/card/table/field/quote/dialog/status components, focus and accessibility, reduced-motion behaviour, two-window-size/native screenshots, owner Qt design feedback.
 
 **P5:** available Corolla selected, guided validated flow, authoritative R450 × 3 quote, actual durable confirmed save, Overview/Fleet/Active consistency, restart reconstruction, duplicate and declined actions, true write-failure rejection.

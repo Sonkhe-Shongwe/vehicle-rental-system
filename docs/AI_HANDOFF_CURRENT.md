@@ -10,6 +10,10 @@ Premium light Midnight Navy **#17324D**, Emerald Teal **#0F766E**, Cloud White *
 
 Owner wants intuitive keyboard movement: **Tab/Shift+Tab between groups; Up/Down within list/menu; Left/Right for meaningful horizontal siblings; Enter/Space activation; Escape dismissal; preserve arrows for text editing.** This is design work for P4, not current global arrow support.
 
+## Owner-approved control system decision
+
+**UX-CTRL-001 approved 30 October 2026:** [Binding keyboard/focus contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md). Use native Qt FocusScope, built-in collection controls and meaningful Tab groups, not a global nearest-pixel engine. Fleet arrows change vehicle selection with C++ ID and Inspector; scroll only reveals the selected card. Visible focus and domain selection are separate. Esc first dismisses top modal; text/dropdown arrows stay native. P2 requires owner physical smoothness/focus review, P4 builds only tiny reusable focus pieces, future forms/dialogs gain context-local rules when built. **Design decision only, P2 still 3/6, P4 0/7, weighted 18.4%.**
+
 ## Current technical state
 
 - Repo **Sonkhe-Shongwe/vehicle-rental-system**, planning **docs/product-rebuild-reset-20261029**, source **spike/p2-qtquick-fleet-20261030**. Stable **main** unchanged at audited **9bfca8786af1c64b0284a5a1bb3e2186573147a4**. Active [Issue #5](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/5); [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) unmerged; rejected historical Draft PR #3/#4 unmerged.

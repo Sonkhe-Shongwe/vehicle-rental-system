@@ -21,6 +21,8 @@ One evidence-based schedule: **P0–P9**, not additional independent R0–R8/G0�
 
 P2 is **actively implemented and hosted-tested** (8/8 Qt CTests Windows and Linux). Owner's Qt Creator local Fleet app also launched, with screenshot-confirmed Gallery/Table/Inspector/Available/Rate/Escape. Remaining physical Windows 100/125/150% Settings scale, measured window dimensions/live resize, complete Tab/focus verification and explicit Qt Quick go/no-go are required to close the gate. In parallel P1 requires final visual owner signoff, licensed model-matched images and accessibility.
 
+**Approved controls plan (UX-CTRL-001):** [Binding interaction contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md). P2 validates and, when needed, corrects Fleet arrows, Tab, selection and scroll on real Windows. P3 separates focus/currentIndex from C++ selected-ID state. P4 implements a **minimal** shared focus indicator, native focus scopes and component conventions. P5/P6 add safe guided form/modal/list semantics with each feature. P9 verifies physical keyboard and assistive access end to end. **Design-policy approval is not a new P4 accepted check or progress percentage.**
+
 After gates, begin bounded P3 typed C++ services, P4 shared native Qt UI with **group-local keyboard arrows and Tab navigation**, P5 durable Corolla rental vertical slice, P6 complete parity, P7 storage decision, P8 Windows install and P9 QA/release. Preserve business rules and data safety, no full rewrite or premature SQLite.
 
 **Review branches:** code in [P2 Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) (unmerged) and planning docs branch; stable main protected by process. Historical roadmap preserved [in archive](archive/ROADMAP_PRE_CANONICAL_AUDIT_2026-10-30.md).

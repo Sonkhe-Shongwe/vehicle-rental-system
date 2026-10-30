@@ -20,6 +20,10 @@ The new read-only **Qt Quick/C++ Fleet P2 spike** is implemented on the separate
 
 **Not proved on owner machine:** native Qt app behavior at the now-confirmed **150% Recommended / 1920×1080 Recommended** Windows Settings baseline and supported 100%/125% scales, full Tab/Shift+Tab and arrow focus, local full CTest log, exact local SHA or formal Qt Quick go/no-go. Synthetic hosted DPI is not real monitor acceptance.
 
+## Approved future-proof control system
+
+[Keyboard, Focus and Interaction Contract, UX-CTRL-001](docs/KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) was owner-approved 30 Oct 2026: **native Qt first**, Tab between meaningful focus groups, arrows change vehicles inside Gallery/Table instead of scrolling alone, visible focus separate from selected C++ vehicle ID, native input/ComboBox conventions, topmost popup Escape and safe explicit business actions. Build only the controls needed for current P2; extract small reusable parts in P4 and apply per feature later. The contract is a **design decision**, not proof of hardware arrow smoothness, P4 implementation or an updated release score.
+
 ## Side-by-side Qt Creator workflow
 
 In GitHub Desktop choose the vehicle-rental-system repo and P2 spike branch; Fetch/Pull origin. Open the **root CMakeLists.txt** in Qt Creator with installed Qt Quick modules and Desktop Qt6 kit; CMake options **BUILD_QTQUICK_P2_SPIKE=ON**, **BUILD_TESTING=ON**. Use a fresh build folder if the repository location moved, build, then select run target **rental_studio_qtquick_spike**. User's repository was last shown inside **C:\Users\Lenovo\Downloads\Github Projects\vehicle-rental-system**; old directory paths may have become invalid. See [source-branch instructions](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/spikes/qtquick_p2/README.md).
