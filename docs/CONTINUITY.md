@@ -1,5 +1,12 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — P2 keyboard/resize and synthetic DPI regression source staged
+
+- New isolated P2 source commit `eb7bb9e22c5e3a2bd2525068202ddd2899783ae7` adds real Qt Test keyboard (Space to toggle Gallery/Table, Space to select row, Escape to dismiss inspector), window live-resize bounds checks, and `QT_SCALE_FACTOR=1.25/1.5` Qt screenshot/dpr assertions.
+- Static readback and source guards checked; **no new Actions run for this SHA** was available at documentation time, so runtime status is **unverified**, not a pass. Previous Linux+Windows 5/5 CTests at `f45147d` are preserved as earlier checkpoint only.
+- [Exact status, pending tests and reproduction](P2_KEYBOARD_DPI_SOURCE_PENDING_2026-10-30.md). Progress **P2 3/6 and weighted 18.4% remains frozen**; owner Windows hardware/Qt Creator, physical OS scaling and toolkit decision still required. No new architecture or data mutation.
+
+
 ## 30 October 2026 — Hosted native Qt Quick P2 SUCCESS on Linux and Windows
 
 - Source SHA `f45147d05d3449ffc89514fb1e685e2990c843fc` on **Draft PR #6**, isolated source branch based on docs reset. Added strict native QML screenshot smoke CTests for Gallery and Table at 1500×860 and 1280×720 without losing the existing legacy domain/GUI CTests. Read-only real C++ domain model and fake fixture isolation preserved.
