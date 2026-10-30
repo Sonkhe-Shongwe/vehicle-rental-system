@@ -7,7 +7,7 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio · P3 native Fleet and Rentals read-only proof"
+    title: "Rental Studio · P4 shared native shell · fictional demo"
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
@@ -194,7 +194,7 @@ ApplicationWindow {
                     font.pixelSize: 30; font.bold: true; color: navy
                 }
                 Item { Layout.fillWidth: true }
-                Label { text: "READ-ONLY · C++ DEMO MODEL"; color: ink; font.pixelSize: 12 }
+                Label { text: "FICTIONAL DEMO · C++ DOMAIN WRITES"; color: ink; font.pixelSize: 12 }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: "#D8E2E8" }
 
@@ -814,6 +814,7 @@ ApplicationWindow {
                                 delegate: Button {
                                     id: rentalRow
                                     objectName: "rentalRow"
+                                    required property int index
                                     required property string rentalId
                                     required property string vehicleId
                                     required property string status
