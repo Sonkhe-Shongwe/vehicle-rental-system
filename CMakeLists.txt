@@ -99,6 +99,21 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_fleet_read_tests)
 endif()
 
+# P3-B: read-only rental quote preview + characterized legacy validation.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_quote_tests
+        tests/p3_rental_quote_tests.cpp
+        src/application/rental_quote_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_quote_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_quote_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_quote
+        COMMAND vehicle_rental_p3_quote_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)
