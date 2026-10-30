@@ -1,3 +1,5 @@
+> **VERIFIED P3-C SOURCE at `d9779cd172af4fe5314b10d9c43dba9b32945164`:** [Full Qt native Actions 41083938717](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41083938717) **Linux 13/13 + hosted Windows 13/13 CTests**, Windows portable and fictional-fixture checks PASS. [Standalone Linux core 41083939062](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41083939062) **5/5 CTests PASS**. [Complete evidence and limits](P3_C_RENTAL_CONFIRM_VERIFIED_2026-10-30.md). This **does not** mean P3 gate fully accepted, P5 workflow built or user's physical Qt Creator retested. P2 4/6, P3 0/7, 16/74, 20.1% weighted remain unchanged.
+
 # P3-C | Typed Rental Confirmation and Persistence-Failure Handling
 
 **Scope:** isolated [P3-C source branch](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/tree/feature/p3-rental-confirm-20261030), stacked on [P3-B Draft PR #8](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/8), with existing P3-A and Qt Quick P2 foundation unmerged. **No new QML screen, P5 complete journey or SQLite migration.**
