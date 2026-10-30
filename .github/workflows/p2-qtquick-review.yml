@@ -1,6 +1,15 @@
 name: P2 Qt Quick native compile and runtime smoke
 
 on:
+  # Branch-scoped fallback if PR synchronize delivery is delayed.
+  # Runs exactly the same native build, CTests and screenshot checks.
+  push:
+    branches:
+      - spike/p2-qtquick-fleet-20261030
+    paths:
+      - CMakeLists.txt
+      - 'spikes/qtquick_p2/**'
+      - '.github/workflows/p2-qtquick-review.yml'
   pull_request:
     branches:
       - docs/product-rebuild-reset-20261029
@@ -14,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: p2-qtquick-${{ github.event.pull_request.number || github.ref }}
+  group: p2-qtquick-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
