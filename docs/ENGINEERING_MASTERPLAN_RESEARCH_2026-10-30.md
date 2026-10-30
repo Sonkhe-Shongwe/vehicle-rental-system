@@ -1,3 +1,5 @@
+> **HISTORICAL RESEARCH STATUS ONLY (30 October 2026 audit):** Read [Canonical State](PROJECT_STATE_CANONICAL.md) and [Full Continuity Audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) for today's facts. This document remains valuable dated research; its old assertions of no selected palette or Qt Quick implementation were accurate in their earlier stage but are now superseded. Selected Navy/Teal theme and read-only C++/QML Fleet P2 exist; final P1/P2 owner gates remain open.
+
 # Vehicle Rental System 2.0 — Full Engineering Masterplan
 
 **30 October 2026 | Research-based planning proposal; not implementation approval**
