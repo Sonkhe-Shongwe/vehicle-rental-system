@@ -1,5 +1,12 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Native Qt Quick P2 passes independent Linux/Windows CI (review branch)
+
+- [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) preserves the Widgets baseline and implements an opt-in Qt6 Quick/C++ Fleet proof using a disposable fictional copy. Exact source `f45147d05d3449ffc89514fb1e685e2990c843fc` passed Qt6.8.3 Ubuntu/GCC **5/5** CTests and Windows Server 2022/MSVC **5/5** CTests in [run 41043137443](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137443). Compiled Qt Gallery/Table PNGs at both requested sizes examined.
+- P2 design defects discovered in genuine screenshots, then fixed: Windows offscreen tofu glyphs, 1028px-width virtual desktop limitation, compact toolbar/Inspector overflow. Tests tightened to verify exact screenshot pixel dimensions; no bypasses.
+- [Full evidence](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). **P2 3/6, weighted 18.4%**; owner physical Windows Qt Creator/DPI/keyboard and toolkit choice still OPEN. P1 design owner signoff, licensed vehicle imagery and accessibility OPEN. Main and historical PR #4 unmerged.
+
+
 ## 30 October 2026 — Final independent design audit and P0–P9 transparency baseline
 
 - Final selected-theme offline **browser** prototype now supports a clean product-view mode, corrected modal keyboard trap and focus restoration, Fleet Table Space/Enter selection, distinct due/overdue status semantics, inline invalid-day and empty-fleet guidance, and compact 1280×720 visible rental CTA + quote. No Qt/C++ code changed.
