@@ -7,7 +7,7 @@
 namespace {
 bool validText(const QString &value) {
     return !value.trimmed().isEmpty() && !value.contains('|') &&
-           !value.contains('\\n') && !value.contains('\\r');
+           !value.contains('\n') && !value.contains('\r');
 }
 bool sameQuote(const RentalQuotePreview &reviewed, const RentalQuotePreview &fresh) {
     // Displayed values are never accepted as the current business truth.

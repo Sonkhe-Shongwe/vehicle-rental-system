@@ -13,7 +13,7 @@
 
 namespace {
 void require(bool ok, const char *message) {
-    if (!ok) { std::cerr << "P3 confirm FAIL: " << message << '\\n'; std::exit(1); }
+    if (!ok) { std::cerr << "P3 confirm FAIL: " << message << '\n'; std::exit(1); }
 }
 QByteArray bytes(const QString &path) {
     QFile f(path);
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
         require(confirmService.confirm(badCustomer).error ==
                 RentalConfirmationError::InvalidCustomerName, "delimiter injection rejected");
         auto badPhone = requestFor(*quote.quote);
-        badPhone.phoneNumber = "000\\n999";
+        badPhone.phoneNumber = "000\n999";
         require(confirmService.confirm(badPhone).error ==
                 RentalConfirmationError::InvalidPhoneNumber, "newline phone rejected");
         auto invalid = requestFor(*quote.quote);
@@ -140,6 +140,6 @@ int main(int argc, char **argv) {
                 QFile::exists(blockedLedger),
                 "retry after fixing storage safely persists once");
     }
-    std::cout << "P3 typed rental confirmation and rollback PASS\\n";
+    std::cout << "P3 typed rental confirmation and rollback PASS\n";
     return 0;
 }
