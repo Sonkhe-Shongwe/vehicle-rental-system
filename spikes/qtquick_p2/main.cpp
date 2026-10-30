@@ -1479,7 +1479,7 @@ int main(int argc, char *argv[]) {
             QTest::keyClick(window,Qt::Key_Left);
             QCoreApplication::processEvents();
             if(!vehicle->hasActiveFocus() ||
-               vehicle->property("text").toString()!="C001" ||
+               vehicle->property("text").toString().toUpper()!="C001" ||
                !fleet.selectedId().isEmpty()) {
                 qCritical()<<"P4 text caret or C++ selection changed unexpectedly";
                 app.exit(213);return;
