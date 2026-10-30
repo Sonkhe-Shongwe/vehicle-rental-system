@@ -1,3 +1,5 @@
+> **30 October 2026 engineering research checkpoint:** [Full Software Engineering Masterplan](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md) documents a Windows Qt Quick proof, single end-to-end rental vertical slice, isolated domain/state refactor, later SQLite decision, release/installer/privacy gates and source-specific test requirements. This is **proposed planning**, not permission to start the whole rebuild; design art direction and Windows Qt feasibility remain unapproved.
+
 > **Current design research checkpoint — 30 October 2026:** The owner still approves the three-workspace structure and gallery/table Fleet, but rejects the bright/white and generic blue V1–V3 themes. Current research thesis: **vehicle-first workspace with tonal depth and polished motion**, synthesising [Rivian, Arc and Tide Guide](../design/V4_RIVIAN_ARC_TIDE_REFERENCE_BREAKDOWN_2026-10-30.md). **Do not start new mockups or QML UI before owner reviews this reference breakdown.** Exact palette, fonts, animation, photography, UI and Qt migration remain unapproved. The earlier sage and blue candidate tokens below are superseded aesthetically.
 
 # Current Project Handoff — Product Reset
