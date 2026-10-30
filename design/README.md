@@ -1,3 +1,5 @@
+> **30 October 2026 — Current research direction:** After rejecting the overbright V1/V2 and generic professional-blue V3 visual experiments, the owner chose to study **Rivian (vehicle-first), Arc (tonal workspace), and Tide Guide (information/motion)** together. The agreed structure remains unchanged, and **no new exact palette or UI is approved**. The authoritative new reference handoff is [Design DNA: Rivian × Arc × Tide Guide](V4_RIVIAN_ARC_TIDE_REFERENCE_BREAKDOWN_2026-10-30.md). The earlier V3 blue token research below remains *historical exploration only*, not an implementation instruction.
+
 > **30 October 2026 V3 research — professional light-blue system:** The owner approves the current screen structure but rejects V1/V2 font, theme and overbright colour decisions. [Read the researched V3 blueprint and Qt 6.8 feasibility study](V3_PROFESSIONAL_BLUE_BLUEPRINT_RESEARCH_2026-10-30.md). Blue/steel-neutral tokens are **proposed, not final approval**; no new Qt UI has been built.
 
 # Design Workspace — New Light-First Rental Studio
