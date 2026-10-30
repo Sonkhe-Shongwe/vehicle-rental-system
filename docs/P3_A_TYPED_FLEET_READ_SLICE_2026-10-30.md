@@ -1,3 +1,5 @@
+> **VERIFIED at initial implementation `9fa9028` (30 Oct 2026):** [Linux/Windows full native Qt6.8.3 Actions 41071876101](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41071876101) both **11/11 PASS** including P3-A CTest, plus Windows portable smoke and fictional-data tamper rejection; [Qt Core Linux 41071876017](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41071876017) **3/3 PASS**. Owner's explicit Qt Quick technology GO is now recorded as P2 decision acceptance; **P2 4/6, P3 0/7, overall 16/74 and weighted 20.1%**, P1/P2 remaining physical/design checks open. This note supersedes any preliminary `18.4%` baseline below, which described the state **before** owner technology approval.
+
 # P3-A | First Typed Fleet Read Boundary
 
 **Current status:** implementation in isolated `feature/p3-typed-fleet-read-20261030` branch, branched off the approved Qt Quick P2 source. **Owner approved Qt Quick/QML as presentation and C++ as authoritative business logic.** P1 and P2 outstanding physical and aesthetic checks remain OPEN. This slice does not close the P3 phase or authorize merging.
