@@ -1,3 +1,5 @@
+> **LATEST P2 FLEET KEYBOARD CHECKPOINT (30 October 2026):** Owner confirms **Tab and Shift+Tab worked** locally but reports **Gallery arrows merely scrolled instead of selecting vehicles** in the previous Qt Creator build. [Source fix `f486c8a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f486c8a32b156ddeec1816b2ab2a4811c2c45431) now makes Gallery arrows select spatially adjacent C++ vehicle IDs (Up/Down/Left/Right), Table Up/Down select rows, and keyboard focus visibly distinct from selection. Text field/combo arrows retain native behaviour, Tab/Backtab traverse groups. [Qt6.8.3 Actions run 41059423971](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971) **PASS 9/9 native CTests Linux AND 9/9 Windows**, including new real keyboard arrows, no stand-alone Gallery scroll, search caret noninterference, filter parity, Tab/Shift+Tab, and previously verified portable fake-fixture safeguards. **New source has NOT yet been pulled/rebuilt/accepted on owner's Qt6.10.2 MinGW PC:** focus order/smoothness, hardware scale and full-product accessibility pending. **P2 remains 3/6 (50%), weighted coverage 18.4%**, not release readiness. Historical 8/8 results or 'no arrows implemented' text below represent an earlier code stage.
+
 # Rental Studio 2.0 | Current Testing and Evidence Policy
 
 **Audited 30 October 2026.** [Canonical state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) · [P2 owner physical Windows checklist](WINDOWS_ACCEPTANCE.md).
@@ -16,6 +18,10 @@
 **Failure history, never hide:** Native Windows initial offscreen glyph boxes and hosted screenshot width clipping fixed; first expanded Qt keyboard CI run [41045247197](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045247197) was **7/8 FAIL on both platforms**, due QQuickItem delegate lookup; following [41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448) passed **8/8 on both** after fixing actual rendered-delegate traversal, no test waiver.
 
 **Synthetic Qt `QT_SCALE_FACTOR=1.25/1.5` is not physical monitor scaling.** User-provided PNG pixel dimensions are not Windows Display Settings percentage. An assistant does not have local Qt Creator control.
+
+## Latest native keyboard regression evidence
+
+[Source `f486c8a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f486c8a32b156ddeec1816b2ab2a4811c2c45431), [Actions 41059423971](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971) **9/9 PASS Linux + 9/9 PASS Windows** including new `rental_studio_p2_arrows_focus` real QTest Gallery/Table spatial keys, filtered-sort proxy, Tab/Backtab, no independent Gallery scroll, no input-arrow interference. Prior owner's MinGW Tab/Shift+Tab worked but arrows did not select vehicles. Updated source owner smoothness/focus and physical OS DPI still unverified. No P2 gate increment.
 
 ## Immediate remaining P2 test evidence
 
