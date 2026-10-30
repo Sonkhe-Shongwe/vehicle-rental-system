@@ -371,9 +371,29 @@ int main(int argc, char *argv[]) {
             if (window->property("gallery").toBool()) {
                 qCritical() << "Space did not activate Table button"; app.exit(22); return;
             }
-            auto *row = window->findChild<QQuickItem*>("fleetTableRow");
-            if (!row || !row->property("vehicleId").isValid()) {
-                qCritical() << "Qt Table delegate not found"; app.exit(23); return;
+            // ListView delegates are dynamically instantiated and can be
+            // visually parented without being QObject children of QQuickWindow.
+            // Wait for the actual native frame and traverse *visual* items.
+            QTest::qWait(180);
+            const auto findVisual = [](const auto &self, QQuickItem *item,
+                                       const QString &name) -> QQuickItem* {
+                if (!item) return nullptr;
+                if (item->objectName() == name && item->isVisible()) return item;
+                for (QQuickItem *child : item->childItems()) {
+                    if (auto *match = self(self, child, name)) return match;
+                }
+                return nullptr;
+            };
+            auto *tableView = findVisual(findVisual, window->contentItem(),
+                                         QStringLiteral("fleetTable"));
+            auto *row = findVisual(findVisual, tableView,
+                                   QStringLiteral("fleetTableRow"));
+            if (!tableView || !tableView->isVisible() ||
+                !row || !row->property("vehicleId").isValid()) {
+                qCritical() << "Visible Qt Table delegate not found after layout"
+                            << "table" << tableView
+                            << "row" << row;
+                app.exit(23); return;
             }
             const QString expectedId = row->property("vehicleId").toString();
             row->forceActiveFocus(Qt::TabFocusReason);
