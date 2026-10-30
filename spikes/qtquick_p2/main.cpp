@@ -1379,13 +1379,13 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 workspace native Space activation failed";
                 app.exit(198);return;
             }
-            auto *rentals=findVisible(findVisible,root,"rentalList");
+            auto *rentalListItem=findVisible(findVisible,root,"rentalList");
             auto *returnButton=findVisible(findVisible,root,"rentalReturnButton");
-            if(!rentals||!returnButton) {
+            if(!rentalListItem||!returnButton) {
                 qCritical()<<"P4 rental list or dialog action absent";
                 app.exit(199);return;
             }
-            rentals->forceActiveFocus(Qt::TabFocusReason);
+            rentalListItem->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Down);
             QCoreApplication::processEvents();
             if(rentalModel.selectedRentalId()!="R001" || !returnButton->isEnabled()) {
