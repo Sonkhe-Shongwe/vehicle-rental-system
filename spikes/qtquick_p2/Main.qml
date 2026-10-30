@@ -20,6 +20,53 @@ ApplicationWindow {
 
     color: canvas
 
+    // Arrow keys are for moving between *vehicles* only while Fleet has
+    // keyboard focus. The view scrolls only to reveal a newly focused vehicle.
+    // Search text and ComboBox controls retain their native arrow behaviour.
+    function navigateVehicles(deltaRow, deltaColumn) {
+        const view = window.gallery ? galleryView : tableView
+        if (view.count === 0)
+            return
+        const columns = window.gallery
+                      ? Math.max(1, Math.round(galleryView.width / galleryView.cellWidth))
+                      : 1
+        const selected = fleet.selectedVisibleIndex()
+        // When a previous selection is filtered out, restart on the first
+        // visible vehicle instead of navigating from a stale source row.
+        let current = selected >= 0 && selected < view.count ? selected : -1
+        let target = current < 0 ? 0 : current
+        if (current >= 0) {
+            if (deltaRow !== 0)
+                target = Math.max(0, Math.min(view.count - 1, current + deltaRow * columns))
+            else if (deltaColumn !== 0) {
+                const col = current % columns
+                if (deltaColumn > 0 && col + 1 < columns && current + 1 < view.count)
+                    target = current + 1
+                else if (deltaColumn < 0 && col > 0)
+                    target = current - 1
+            }
+        }
+        view.currentIndex = target
+        fleet.selectVisibleIndex(target)
+        if (window.gallery)
+            galleryView.positionViewAtIndex(target, GridView.Contain)
+        else
+            tableView.positionViewAtIndex(target, ListView.Contain)
+    }
+
+    function handleVehicleArrow(event) {
+        // Deliberately do NOT intercept Tab/Shift+Tab, Enter/Space, Escape,
+        // text-input cursor keys or native ComboBox arrow controls.
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Up) navigateVehicles(-1, 0)
+        else if (event.key === Qt.Key_Down) navigateVehicles(1, 0)
+        else if (window.gallery && event.key === Qt.Key_Left) navigateVehicles(0, -1)
+        else if (window.gallery && event.key === Qt.Key_Right) navigateVehicles(0, 1)
+        else return
+        event.accepted = true
+    }
+
     // Global dismiss action for the read-only inspector. The triggering
     // card/table button retains focus; selection is only a view state.
     Shortcut {
@@ -143,6 +190,7 @@ ApplicationWindow {
                                 spacing: 8
                                 TextField {
                                     id: search
+                                    objectName: "fleetSearchField"
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 150
                                     placeholderText: "Search model or vehicle ID"
@@ -174,13 +222,19 @@ ApplicationWindow {
                                 Button {
                                     objectName: "fleetGalleryToggle"
                                     text: "Gallery"
-                                    onClicked: window.gallery = true
+                                    onClicked: {
+                                        window.gallery = true
+                                        galleryView.forceActiveFocus(Qt.OtherFocusReason)
+                                    }
                                     Accessible.name: "Show Fleet gallery"
                                 }
                                 Button {
                                     objectName: "fleetTableToggle"
                                     text: "Table"
-                                    onClicked: window.gallery = false
+                                    onClicked: {
+                                        window.gallery = false
+                                        tableView.forceActiveFocus(Qt.OtherFocusReason)
+                                    }
                                     Accessible.name: "Show Fleet table"
                                 }
                             }
@@ -193,12 +247,24 @@ ApplicationWindow {
                                 id: galleryView
                                 objectName: "fleetGallery"
                                 clip: true
+                                activeFocusOnTab: true
+                                keyNavigationEnabled: false
+                                Accessible.name: "Fleet Gallery. Arrow keys change vehicles."
+                                Accessible.role: Accessible.List
+                                Keys.onPressed: (event) => window.handleVehicleArrow(event)
+                                onActiveFocusChanged: {
+                                    if (activeFocus) {
+                                        const selected = fleet.selectedVisibleIndex()
+                                        currentIndex = selected >= 0 ? selected : 0
+                                    }
+                                }
                                 model: fleet.visibleModel
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 cellHeight: 215
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
                                     id: vehicleCard
+                                    required property int index
                                     required property string vehicleId
                                     required property string displayName
                                     required property string vehicleType
@@ -206,15 +272,20 @@ ApplicationWindow {
                                     required property bool available
                                     width: galleryView.cellWidth - 12
                                     height: 195
-                                    activeFocusOnTab: true
+                                    activeFocusOnTab: false
+                                    Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
                                                     + (available ? ", available" : ", rented")
-                                    onClicked: fleet.selectById(vehicleId)
+                                    onClicked: {
+                                        galleryView.currentIndex = index
+                                        fleet.selectById(vehicleId)
+                                        galleryView.forceActiveFocus(Qt.MouseFocusReason)
+                                    }
                                     background: Rectangle {
                                         radius: 12
                                         color: fleet.selectedId === vehicleCard.vehicleId ? mint : "white"
-                                        border.width: fleet.selectedId === vehicleCard.vehicleId ? 2 : 1
-                                        border.color: fleet.selectedId === vehicleCard.vehicleId ? teal : "#D8E2E8"
+                                        border.width: galleryView.activeFocus && galleryView.currentIndex === vehicleCard.index ? 3 : (fleet.selectedId === vehicleCard.vehicleId ? 2 : 1)
+                                        border.color: galleryView.activeFocus && galleryView.currentIndex === vehicleCard.index ? navy : (fleet.selectedId === vehicleCard.vehicleId ? teal : "#D8E2E8")
                                     }
                                     contentItem: ColumnLayout {
                                         anchors.margins: 12
@@ -243,12 +314,24 @@ ApplicationWindow {
                                 id: tableView
                                 objectName: "fleetTable"
                                 clip: true
+                                activeFocusOnTab: true
+                                keyNavigationEnabled: false
+                                Accessible.name: "Fleet Table. Up and Down select vehicles."
+                                Accessible.role: Accessible.List
+                                Keys.onPressed: (event) => window.handleVehicleArrow(event)
+                                onActiveFocusChanged: {
+                                    if (activeFocus) {
+                                        const selected = fleet.selectedVisibleIndex()
+                                        currentIndex = selected >= 0 ? selected : 0
+                                    }
+                                }
                                 model: fleet.visibleModel
                                 spacing: 6
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
                                     id: vehicleRow
                                     objectName: "fleetTableRow"
+                                    required property int index
                                     required property string vehicleId
                                     required property string displayName
                                     required property string vehicleType
@@ -256,14 +339,19 @@ ApplicationWindow {
                                     required property bool available
                                     width: tableView.width
                                     height: 60
-                                    activeFocusOnTab: true
-                                    onClicked: fleet.selectById(vehicleId)
+                                    activeFocusOnTab: false
+                                    onClicked: {
+                                        tableView.currentIndex = index
+                                        fleet.selectById(vehicleId)
+                                        tableView.forceActiveFocus(Qt.MouseFocusReason)
+                                    }
+                                    Accessible.role: Accessible.ListItem
                                     Accessible.name: "Select " + displayName + ", " + vehicleId
                                     background: Rectangle {
                                         radius: 8
                                         color: fleet.selectedId === vehicleRow.vehicleId ? mint : "white"
-                                        border.color: fleet.selectedId === vehicleRow.vehicleId ? teal : "#D8E2E8"
-                                        border.width: fleet.selectedId === vehicleRow.vehicleId ? 2 : 1
+                                        border.color: tableView.activeFocus && tableView.currentIndex === vehicleRow.index ? navy : (fleet.selectedId === vehicleRow.vehicleId ? teal : "#D8E2E8")
+                                        border.width: tableView.activeFocus && tableView.currentIndex === vehicleRow.index ? 3 : (fleet.selectedId === vehicleRow.vehicleId ? 2 : 1)
                                     }
                                     contentItem: RowLayout {
                                         spacing: 14

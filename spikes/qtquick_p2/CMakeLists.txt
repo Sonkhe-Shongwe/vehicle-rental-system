@@ -35,6 +35,10 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p2_keyboard_resize PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software"
         TIMEOUT 35)
+    add_test(NAME rental_studio_p2_arrows_focus COMMAND rental_studio_qtquick_spike --arrows-smoke)
+    set_tests_properties(rental_studio_p2_arrows_focus PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software"
+        TIMEOUT 40)
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES

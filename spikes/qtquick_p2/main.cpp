@@ -187,6 +187,20 @@ public:
         m_selectedId = vehicle->getId();
         emit selectionChanged();
     }
+    // Visible rows are defined by the authoritative C++ proxy, not QML's
+    // scroll offsets. Keyboard navigation therefore follows filtered/sorted IDs.
+    Q_INVOKABLE int selectedVisibleIndex() const {
+        if (m_selectedId.isEmpty()) return -1;
+        for (int row = 0; row < m_proxy.rowCount(); ++row) {
+            if (m_proxy.index(row, 0).data(FleetModel::VehicleId).toString()
+                == m_selectedId) return row;
+        }
+        return -1;
+    }
+    Q_INVOKABLE void selectVisibleIndex(int row) {
+        if (row < 0 || row >= m_proxy.rowCount()) return;
+        selectById(m_proxy.index(row, 0).data(FleetModel::VehicleId).toString());
+    }
     Q_INVOKABLE void clearSelection() {
         if (m_selectedId.isEmpty()) return;
         m_selectedId.clear();
@@ -227,6 +241,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ui-smoke", "Load the native QML scene and capture actual Gallery/Table views."});
     parser.addOption({"compact", "Use the compact 1280x720 viewport for the UI smoke."});
     parser.addOption({"input-smoke", "Drive actual QML buttons with keyboard events and test live resize."});
+    parser.addOption({"arrows-smoke", "Exercise native QML Gallery/Table arrow navigation, focus, and filter parity."});
     parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
     parser.process(app);
 
@@ -463,6 +478,83 @@ int main(int argc, char *argv[]) {
                     app.exit(0);
                 });
             });
+        });
+    }
+    if (parser.isSet("arrows-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 40;
+        // The compact viewport has two visual columns. Validate *real*
+        // QQuickWindow key delivery and C++ proxy selection, not an isolated JS helper.
+        window->resize(1280, 720);
+        QTimer::singleShot(900, &app, [&, window] {
+            auto *gallery = window->findChild<QQuickItem*>("fleetGallery");
+            auto *table = window->findChild<QQuickItem*>("fleetTable");
+            auto *search = window->findChild<QQuickItem*>("fleetSearchField");
+            if (!gallery || !table || !search || gallery->width() <= 0 ||
+                !gallery->property("cellWidth").isValid()) {
+                qCritical() << "Missing keyboard navigation views"; app.exit(41); return;
+            }
+            fleet.clearSelection();
+            gallery->forceActiveFocus(Qt::TabFocusReason);
+            auto press = [&](Qt::Key key, const QString &expected, int error) {
+                QTest::keyClick(window, key);
+                QCoreApplication::processEvents();
+                if (fleet.selectedId() != expected) {
+                    qCritical() << "Arrow did not select the correct C++ proxy ID:"
+                                << key << "expected" << expected
+                                << "actual" << fleet.selectedId();
+                    app.exit(error); return false;
+                }
+                return true;
+            };
+            if (!press(Qt::Key_Right, "C002", 42) ||
+                !press(Qt::Key_Right, "M001", 43) ||
+                !press(Qt::Key_Down, "C001", 44) ||
+                !press(Qt::Key_Left, "C003", 45) ||
+                !press(Qt::Key_Up, "C002", 46)) return;
+            // The read-only inspector follows visual navigation, and moving
+            // within the first rows does not flick the Gallery independently.
+            if (fleet.selectedName() != "Ford Ranger" ||
+                gallery->property("contentY").toDouble() > 1.0) {
+                qCritical() << "Inspector mismatch or stray scroll on arrow" ;
+                app.exit(47); return;
+            }
+            // A keyboard-only Backtab/Tab round-trip must not trap focus.
+            QTest::keyClick(window, Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if (gallery->hasActiveFocus()) {
+                qCritical() << "Shift+Tab trapped focus inside Fleet Gallery";
+                app.exit(48); return;
+            }
+            QTest::keyClick(window, Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if (!gallery->hasActiveFocus()) {
+                qCritical() << "Tab failed to return to Gallery focus scope";
+                app.exit(49); return;
+            }
+            // Input caret arrow is NOT a vehicle selection shortcut.
+            search->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window, Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if (fleet.selectedId() != "C002") {
+                qCritical() << "Search input stole vehicle arrow handling";
+                app.exit(50); return;
+            }
+            window->setProperty("gallery", false);
+            table->forceActiveFocus(Qt::TabFocusReason);
+            if (!press(Qt::Key_Down, "M001", 51) ||
+                !press(Qt::Key_Down, "C003", 52) ||
+                !press(Qt::Key_Up, "M001", 53)) return;
+            fleet.setStatus("Available");
+            if (fleet.selectedVisibleIndex() != 0) {
+                qCritical() << "Filtered table did not retain visible Honda ID";
+                app.exit(54); return;
+            }
+            fleet.selectById("C002"); // The rented Ranger is now filtered out.
+            if (fleet.selectedVisibleIndex() != -1 ||
+                !press(Qt::Key_Down, "M001", 55)) return;
+            qInfo() << "P2 REAL QML arrow navigation / Tab/Backtab / no stray Gallery scrolling PASS";
+            app.exit(0);
         });
     }
     if (parser.isSet("dpi-smoke")) {
