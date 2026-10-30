@@ -46,12 +46,33 @@ ApplicationWindow {
                     target = current - 1
             }
         }
+        // At a collection boundary the arrow is consumed, but neither the
+        // selected ID nor the scroll position should move.
+        if (target === current && current >= 0)
+            return
         view.currentIndex = target
         fleet.selectVisibleIndex(target)
         if (window.gallery)
             galleryView.positionViewAtIndex(target, GridView.Contain)
         else
             tableView.positionViewAtIndex(target, ListView.Contain)
+    }
+
+    // A proxy reorder can change the visible row without changing the stable
+    // vehicle ID. Keep BOTH views' current rows aligned with the C++ selection.
+    // Defer until Qt has applied any pending model layout/filter changes.
+    function syncCurrentVehicle() {
+        const row = fleet.selectedVisibleIndex()
+        galleryView.currentIndex = row
+        tableView.currentIndex = row
+    }
+
+    Connections {
+        target: fleet
+        function onSelectionChanged() { Qt.callLater(window.syncCurrentVehicle) }
+        function onQueryChanged() { Qt.callLater(window.syncCurrentVehicle) }
+        function onStatusChanged() { Qt.callLater(window.syncCurrentVehicle) }
+        function onSortByChanged() { Qt.callLater(window.syncCurrentVehicle) }
     }
 
     function handleVehicleArrow(event) {

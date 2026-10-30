@@ -137,6 +137,7 @@ public:
         if (query == m_query) return;
         m_query = query;
         m_proxy.setQuery(query);
+        clearHiddenSelection();
         emit queryChanged();
     }
     void setStatus(const QString &status) {
@@ -144,6 +145,7 @@ public:
         if (status == m_status) return;
         m_status = status;
         m_proxy.setStatus(status);
+        clearHiddenSelection();
         emit statusChanged();
     }
     void setSortBy(const QString &sort) {
@@ -212,6 +214,12 @@ signals:
     void sortByChanged();
     void selectionChanged();
 private:
+    // Clearing a now-invisible ID prevents the Inspector from describing a
+    // vehicle that no longer exists in the user's filtered Fleet view.
+    void clearHiddenSelection() {
+        if (!m_selectedId.isEmpty() && selectedVisibleIndex() < 0)
+            clearSelection();
+    }
     const Vehicle *selectedVehicle() const {
         return m_selectedId.isEmpty()
             ? nullptr : m_system.findVehicleById(m_selectedId);
@@ -242,6 +250,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"compact", "Use the compact 1280x720 viewport for the UI smoke."});
     parser.addOption({"input-smoke", "Drive actual QML buttons with keyboard events and test live resize."});
     parser.addOption({"arrows-smoke", "Exercise native QML Gallery/Table arrow navigation, focus, and filter parity."});
+    parser.addOption({"focus-edges-smoke", "Test filtered selection, sorted focus, empty states, boundaries and responsive columns."});
     parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
     parser.process(app);
 
@@ -554,6 +563,97 @@ int main(int argc, char *argv[]) {
             if (fleet.selectedVisibleIndex() != -1 ||
                 !press(Qt::Key_Down, "M001", 55)) return;
             qInfo() << "P2 REAL QML arrow navigation / Tab/Backtab / no stray Gallery scrolling PASS";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("focus-edges-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 60;
+        window->resize(1280, 720);
+        QTimer::singleShot(900, &app, [&, window] {
+            auto *gallery = window->findChild<QQuickItem*>("fleetGallery");
+            auto *table = window->findChild<QQuickItem*>("fleetTable");
+            auto *search = window->findChild<QQuickItem*>("fleetSearchField");
+            if (!gallery || !table || !search) {
+                qCritical() << "Missing real QML Fleet collections"; app.exit(61); return;
+            }
+            const auto step = [&](Qt::Key key, const QString &id, int error) {
+                QTest::keyClick(window, key);
+                QCoreApplication::processEvents();
+                if (fleet.selectedId() != id) {
+                    qCritical() << "Focus edge mismatch" << key << id << fleet.selectedId();
+                    app.exit(error); return false;
+                }
+                return true;
+            };
+            // A user who filters out the inspected Ranger must no longer see
+            // an Inspector for an invisible record.
+            fleet.selectById("C002");
+            fleet.setStatus("Available");
+            if (!fleet.selectedId().isEmpty()) {
+                // rowCount is a model method, not a Qt property.
+                qCritical() << "Filtered-out selection was not dismissed";
+                app.exit(62); return;
+            }
+            fleet.selectById("C001");
+            fleet.setSortBy("Rate");
+            QTest::qWait(90);
+            gallery->forceActiveFocus(Qt::TabFocusReason);
+            QCoreApplication::processEvents();
+            if (fleet.selectedVisibleIndex() != 3 ||
+                gallery->property("currentIndex").toInt() != 3) {
+                qCritical() << "Sort left gallery focus on incorrect vehicle row"
+                            << fleet.selectedVisibleIndex()
+                            << gallery->property("currentIndex").toInt();
+                app.exit(63); return;
+            }
+            if (!step(Qt::Key_Left, "C003", 64) ||
+                !step(Qt::Key_Right, "C001", 65)) return;
+            const qreal scrollBefore = gallery->property("contentY").toDouble();
+            if (!step(Qt::Key_Right, "C001", 66) ||
+                std::abs(gallery->property("contentY").toDouble()-scrollBefore)>1.1) {
+                qCritical() << "Right boundary must not wrap or scroll";
+                app.exit(67); return;
+            }
+            // Matching and empty search both reconcile the Inspector; Up
+            // with no records may neither select nor scroll.
+            fleet.setQuery("Toyota");
+            QTest::qWait(60);
+            if (fleet.selectedId() != "C001" ||
+                fleet.selectedVisibleIndex() != 0 ||
+                gallery->property("currentIndex").toInt() != 0) {
+                qCritical() << "Matching query did not preserve stable vehicle ID";
+                app.exit(68); return;
+            }
+            fleet.setQuery("no-such-demo-vehicle");
+            QTest::qWait(60);
+            if (!fleet.selectedId().isEmpty() ||
+                gallery->property("count").toInt() != 0 ||
+                !step(Qt::Key_Down, QString(), 69)) {
+                qCritical() << "Empty query left selected stale vehicle";
+                app.exit(70); return;
+            }
+            fleet.setQuery("");
+            fleet.setStatus("All");
+            fleet.setSortBy("Name");
+            window->resize(1500, 860); // Three visual Gallery columns.
+            QTest::qWait(100);
+            fleet.selectById("C002");
+            gallery->forceActiveFocus(Qt::TabFocusReason);
+            QTest::qWait(60);
+            const int columns = qRound(gallery->width() /
+                                       gallery->property("cellWidth").toDouble());
+            if (columns != 3 ||
+                !step(Qt::Key_Down, "C001", 71) ||
+                !step(Qt::Key_Left, "C001", 72) ||
+                !step(Qt::Key_Right, "M002", 73)) {
+                qCritical() << "Responsive grid direction wrong:" << columns;
+                app.exit(74); return;
+            }
+            search->forceActiveFocus(Qt::TabFocusReason);
+            if (!step(Qt::Key_Left, "M002", 75)) return;
+            qInfo() << "P2 real Qt Grid/Table focus boundary, filtered Inspector,"
+                       " sort-ID sync and responsive grid PASS";
             app.exit(0);
         });
     }
