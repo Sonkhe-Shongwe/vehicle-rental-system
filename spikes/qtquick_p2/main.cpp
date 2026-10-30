@@ -308,11 +308,15 @@ int main(int argc, char *argv[]) {
         ok = ok && fleet.selectedId() == "M001";
         fleet.setQuery("");
         fleet.setStatus("Rented");
-        ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1;
+        // A hidden vehicle must no longer remain in the visible Inspector.
+        ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1
+                && fleet.selectedId().isEmpty();
         fleet.setSortBy("Rate");
         fleet.setStatus("All");
+        fleet.selectById("M001");
         ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 5
-                && fleet.selectedId() == "M001";
+                && fleet.selectedId() == "M001"
+                && fleet.selectedVisibleIndex() >= 0;
         fleet.selectById("C002");
         ok = ok && !fleet.selectedAvailable();
         fleet.clearSelection();
