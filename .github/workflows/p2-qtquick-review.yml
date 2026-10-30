@@ -56,7 +56,9 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 25
     env:
-      QT_QPA_PLATFORM: offscreen
+      # Native Windows QPA exposes the Windows font database; the offscreen
+      # plugin had rendered every Latin label as empty tofu squares.
+      QT_QPA_PLATFORM: windows
       QT_QUICK_BACKEND: software
     steps:
       - uses: actions/checkout@v4

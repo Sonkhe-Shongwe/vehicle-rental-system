@@ -135,35 +135,52 @@ ApplicationWindow {
                     ColumnLayout {
                         Layout.fillWidth: true; Layout.fillHeight: true
                         spacing: 14
-                        RowLayout {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            TextField {
-                                id: search
+                            spacing: 7
+                            RowLayout {
                                 Layout.fillWidth: true
-                                placeholderText: "Search model or vehicle ID"
-                                text: fleet.query
-                                onTextEdited: fleet.query = text
-                                Accessible.name: "Search fleet"
+                                spacing: 8
+                                TextField {
+                                    id: search
+                                    Layout.fillWidth: true
+                                    Layout.minimumWidth: 150
+                                    placeholderText: "Search model or vehicle ID"
+                                    text: fleet.query
+                                    onTextEdited: fleet.query = text
+                                    Accessible.name: "Search fleet"
+                                }
+                                ComboBox {
+                                    Layout.preferredWidth: 138
+                                    model: ["All", "Available", "Rented"]
+                                    Accessible.name: "Filter fleet status"
+                                    onActivated: fleet.status = currentText
+                                }
+                                ComboBox {
+                                    Layout.preferredWidth: 116
+                                    model: ["Name", "Rate"]
+                                    Accessible.name: "Sort fleet"
+                                    onActivated: fleet.sortBy = currentText
+                                }
                             }
-                            ComboBox {
-                                model: ["All", "Available", "Rented"]
-                                Accessible.name: "Filter fleet status"
-                                onActivated: fleet.status = currentText
-                            }
-                            ComboBox {
-                                model: ["Name", "Rate"]
-                                Accessible.name: "Sort fleet"
-                                onActivated: fleet.sortBy = currentText
-                            }
-                            Button {
-                                text: "Gallery"
-                                onClicked: window.gallery = true
-                                Accessible.name: "Show Fleet gallery"
-                            }
-                            Button {
-                                text: "Table"
-                                onClicked: window.gallery = false
-                                Accessible.name: "Show Fleet table"
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: window.gallery ? "Vehicle gallery" : "Vehicle table"
+                                    color: ink
+                                    font.pixelSize: 12
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: "Gallery"
+                                    onClicked: window.gallery = true
+                                    Accessible.name: "Show Fleet gallery"
+                                }
+                                Button {
+                                    text: "Table"
+                                    onClicked: window.gallery = false
+                                    Accessible.name: "Show Fleet table"
+                                }
                             }
                         }
 
@@ -269,6 +286,7 @@ ApplicationWindow {
                         }
                     }
                     Rectangle {
+                        objectName: "vehicleInspector"
                         Layout.preferredWidth: 258
                         Layout.fillHeight: true
                         color: "white"
@@ -293,13 +311,14 @@ ApplicationWindow {
                             Label {
                                 text: fleet.selectedId === "" ? "Select a vehicle" : fleet.selectedName
                                 color: navy; font.pixelSize: 21; font.bold: true
+                                Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                             }
                             Label {
                                 text: fleet.selectedId === "" ?
                                     "Select a Gallery card or Table row to inspect the same C++ vehicle record." :
                                     fleet.selectedId + " · " + fleet.selectedType
-                                color: ink; wrapMode: Text.WordWrap
+                                color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap
                             }
                             Rectangle { Layout.fillWidth: true; height: 1; color: "#D8E2E8" }
                             Label {
@@ -317,8 +336,9 @@ ApplicationWindow {
                                 color: fleet.selectedAvailable ? teal : navy
                             }
                             Label {
+                                objectName: "inspectorHint"
                                 text: "P2 is non-mutating. Booking actions are intentionally absent."
-                                color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
+                                color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 12
                             }
                             Item { Layout.fillHeight: true }
                         }
