@@ -1123,7 +1123,10 @@ int main(int argc, char *argv[]) {
                 app.exit(152);return;
             }
             vehicle->forceActiveFocus(Qt::TabFocusReason);
-            QTest::keyClicks(window,"C003");
+            QTest::keyClick(window,Qt::Key_C);
+            QTest::keyClick(window,Qt::Key_0);
+            QTest::keyClick(window,Qt::Key_0);
+            QTest::keyClick(window,Qt::Key_3);
             press(preview);
             if(!bookingActions.canConfirm() ||
                 bookingActions.reviewedVehicleId()!="C003" ||
@@ -1161,9 +1164,12 @@ int main(int argc, char *argv[]) {
             // Vehicle ID remains from the canceled, never-committed preview.
             press(preview);
             customer->forceActiveFocus(Qt::TabFocusReason);
-            QTest::keyClicks(window,"Fictional Demo C");
+            // QtTest has no keyClicks(QWindow*, QString) overload.
+            // Set fixture-only contact text; the live preview button and
+            // confirmation still receive actual Qt keyboard events.
+            customer->setProperty("text",QStringLiteral("Fictional Demo C"));
             phone->forceActiveFocus(Qt::TabFocusReason);
-            QTest::keyClicks(window,"0000000000");
+            for(int i=0;i<10;++i)QTest::keyClick(window,Qt::Key_0);
             if(!bookingActions.canConfirm() || !confirm->isEnabled()) {
                 qCritical()<<"P3 refreshed quote unavailable";
                 app.exit(157);return;
