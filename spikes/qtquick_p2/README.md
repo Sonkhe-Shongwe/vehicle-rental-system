@@ -13,3 +13,10 @@ This branch's `spikes/qtquick_p2/` is a real, read-only C++/Qt Quick **Fleet fea
 **Future native keyboard rule:** group-local Arrow navigation, Tab/Shift+Tab between regions, Enter/Space activation, Escape dismiss, preserve text-input caret. P4 design target, not already implemented globally. A partly scrolled Gallery top row is a possible usability observation, not established defect.
 
 **Do not merge this Draft PR #6, old PR #3/#4 or stable main without explicit owner consent.** Previous early “not compiled” notes are preserved in [historical spike README](README_PRE_CANONICAL_AUDIT_2026-10-30.md).
+
+## Current arrow-key vehicle selection (native P2)
+
+**Implemented and verified in hosted Qt6.8.3 CI:** [source f486c8a](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f486c8a32b156ddeec1816b2ab2a4811c2c45431), [run 41059423971](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41059423971), **9/9 CTests Linux and Windows**. Gallery Up/Down/Left/Right selects the adjacent displayed C++ vehicle; Table Up/Down selects previous/next row; the Inspector changes alongside selection; scrolling only reveals selected items, never substitutes for vehicle navigation. Tab/Shift+Tab moves between groups, visible Navy border marks keyboard focus, normal search/ComboBox arrows unaffected. Source contains an additional real native `rental_studio_p2_arrows_focus` CTest and `--arrows-smoke` CLI mode.
+
+**Owner verification still needed:** In GitHub Desktop Fetch/Pull on `spike/p2-qtquick-fleet-20261030`, rebuild in Qt Creator Qt 6.10.2 MinGW. Click the Ford card to give Gallery focus, then press Right (Honda), Down (Corolla), Left (Hyundai), Up (Ford). Switch Table, select a row and use Down/Up. Verify focus outline, selection and rate/Inspector match each key, plus Tab and Shift+Tab don't trap. Report input smoothness/accuracy. The owner confirmed Tab/Shift+Tab work in prior build, but **that prior local code scrolled for arrows**; do not claim the new code already owner-approved. P2 remains 3/6, overall weighted 18.4%.
+
