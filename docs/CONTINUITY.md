@@ -1,5 +1,13 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — R1 principle approval, greyscale comparison produced
+
+- Owner **approved the workspace design principles only**: operations-led Overview, vehicle-led Fleet, task-led Rentals, within a coherent medium-light tonal shell; the final palette, typography, spatial composition, imagery and native toolkit are not approved.
+- Prepared browser-only **A Split Stage** and **B Integrated Canvas** full-workspace greyscale comparison using fictional repository demo data, an in-memory simulated rental lifecycle and original illustrative SVG vehicle shapes. The HTML and two multi-screen contact sheets were delivered as conversation attachments; their source is **not** an implemented or committed Qt application.
+- Local **Chromium 144 on Debian 13 / Playwright** verified both variants at 1500×860 and 1280×720 (20 viewport captures) and checked 1024×768 compact behavior. Verified counts 5/4/1, R2,300 booked (not collected), R1,350 fictional Corolla quote, gallery/table search, selection/inspector, Esc close, simulated confirmation/no-cancel/return/history/archive/delete, and no document-level horizontal overflow in the checked states. No browser JS page errors. No CMake, CTest, native Windows, physical DPI, database or persistence verification executed.
+- Detailed review scope, positive and negative checks, outstanding design states and artifact provenance documented in [R1 composition review](../design/r1/COMPOSITION_REVIEW.md). **R1/G1 stays OPEN for owner aesthetic selection and complete state review.** Qt Quick Windows proof remains NOT STARTED; old PR #4 and main remain untouched.
+
+
 ## 30 October 2026 - Masterplan and continuation authority reconciled
 
 - Checked live `main` (`9bfca8786af1c64b0284a5a1bb3e2186573147a4`), historic Draft PR #4 (`d1704ec3174b765e3dc82ff03a5531f09e8b507e`), Issue #2 supersession comment, and Issue #5's 30 October research and approval boundaries.
