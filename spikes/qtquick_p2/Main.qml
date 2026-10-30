@@ -671,6 +671,7 @@ ApplicationWindow {
                     Dialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
+                        width: Math.min(480, window.width - 80)
                         closePolicy: Popup.CloseOnEscape
                         onClosed: Qt.callLater(function() {
                             if (returnSelectedButton.visible && returnSelectedButton.enabled)
@@ -712,6 +713,7 @@ ApplicationWindow {
                     Dialog {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
+                        width: Math.min(480, window.width - 80)
                         closePolicy: Popup.CloseOnEscape
                         onClosed: Qt.callLater(function() {
                             if (archiveActionButton.visible && archiveActionButton.enabled)
