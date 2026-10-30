@@ -1,3 +1,5 @@
+> **HISTORICAL UNVERIFIED STAGE, SUPERSEDED 30 October:** After this source-pending note, actual Linux and Windows Qt6.8.3 tests on `eeb0848` passed **8/8 on both** in [run 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448), including real keyboard/resize and simulated 125/150% DPI. See [verified follow-up](P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). Physical owner's Windows DPI and owner toolkit decision still PENDING; weighted 18.4% unchanged.
+
 # P2 native keyboard, live-resize and synthetic DPI verification
 
 **30 October 2026 | Code staged, verification pending for latest source.**

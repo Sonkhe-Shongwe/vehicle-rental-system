@@ -1,5 +1,13 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Native P2 keyboard, live resize and synthetic DPI verified in hosted CI
+
+- Final tested source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` on [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6). [Actions 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448) **Qt6.8.3 8/8 PASS Ubuntu/GCC and 8/8 PASS Windows/MSVC2022**. Three new CTests cover real QTest Space/Escape keyboard actions, live window resize, and synthetic QT_SCALE_FACTOR 1.25 and 1.5; previous five tests still pass.
+- Native screenshots inspected; real Qt images at wide 1500×860, compact 1280×720, synthetic 1280×825 and 1536×990 physical pixels on both platforms. Fake disposable demo records only.
+- Recorded genuine failure from [first expanded run 41045247197](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045247197): 7/8 both, row lookup used QObject hierarchy instead of QQuickItem visual hierarchy. Corrected and reran, preserving test requirement. Added branch-scoped `push` CI fallback due absent new PR synchronize runs, not a waiver.
+- [Full verified evidence](P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). **P2 3/6 (50%) and weighted 18.4% remain unchanged** because owner's real Windows kit, OS 100/125/150% physical DPI, broader keyboard/accessibility and go/no-go are pending. Design P1 final owner signoff/licensed images/accessibility remain open. Both Draft PRs remain unmerged, stable main unchanged.
+
+
 ## 30 October 2026 — P2 keyboard/resize and synthetic DPI regression source staged
 
 - New isolated P2 source commit `eb7bb9e22c5e3a2bd2525068202ddd2899783ae7` adds real Qt Test keyboard (Space to toggle Gallery/Table, Space to select row, Escape to dismiss inspector), window live-resize bounds checks, and `QT_SCALE_FACTOR=1.25/1.5` Qt screenshot/dpr assertions.
