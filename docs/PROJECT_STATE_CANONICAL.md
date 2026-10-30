@@ -78,6 +78,8 @@ The owner **approved** the research-backed **native Qt, group-based, progressive
 
 Formula: `overall = SUM(phase weight × (verified acceptance checks / total acceptance checks))`. This is **evidence-weighted checklist coverage**, not percent complete code or release readiness. A test being added, an old result being repeated, a prompt being updated or owner screenshots supporting only part of a compound criterion does **not** automatically add progress. [Full criterion plan](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md). Do not change weights/status without clear dated exact-source evidence and a logged gate decision.
 
+**P2-to-P3 engineering recommendation (30 October 2026):** [Decision memo and bounded P3 kickoff](P2_DECISION_AND_P3_CORE_KICKOFF_2026-10-30.md). Recommend **conditional GO for Qt Quick presentation + authoritative C++ domain** based on 10/10 hosted Linux/Windows Qt CTests and user's real Windows Fleet operation; **formal owner technology go/no-go remains OPEN**. Current P2 source is read-only. Proposed P3-A first slice is a typed, by-value Fleet summary adapter/characterization test on a new isolated branch **after explicit owner approval**, preserving current `RentalSystem`, fictional fixtures and no SQLite/storage rewrite. P3 stays **0/7**, P2 stays **3/6**, overall **18.4%**, no merge.
+
 ## 6. Open gates and logical next steps
 
 **P1:** owner final whole-product design approval **NOT GIVEN**; model-matched properly licensed car/bike images outstanding; broader native accessibility/screen reader review outstanding. The visual direction is selected; don't re-run the rejected palette search.
