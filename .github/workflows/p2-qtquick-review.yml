@@ -13,8 +13,12 @@ on:
   pull_request:
     branches:
       - docs/product-rebuild-reset-20261029
+      # P3 is reviewed independently against the unmerged P2 source branch.
+      - spike/p2-qtquick-fleet-20261030
     paths:
       - CMakeLists.txt
+      - 'src/application/**'
+      - 'tests/p3_fleet_read_tests.cpp'
       - 'spikes/qtquick_p2/**'
       - '.github/workflows/p2-qtquick-review.yml'
   workflow_dispatch:

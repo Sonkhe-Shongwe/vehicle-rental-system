@@ -19,9 +19,10 @@
 #include <QVariant>
 #include <cmath>
 #include "rentalsystem.h"
+#include "src/application/fleet_read_service.h"
 
-// Uses RentalSystem's existing domain objects from a disposable copy of
-// committed fictional fixtures. Neither QML nor this prototype can write.
+// The P3 typed application read boundary snapshots RentalSystem objects as
+// values from disposable fictional fixtures. No Vehicle* reaches QML.
 class FleetModel final : public QAbstractListModel {
     Q_OBJECT
 public:
@@ -29,22 +30,34 @@ public:
         VehicleId = Qt::UserRole + 1,
         DisplayName, VehicleType, DailyRate, Available, Details
     };
-    explicit FleetModel(const RentalSystem &system, QObject *parent = nullptr)
-        : QAbstractListModel(parent), m_vehicles(system.getVehicles()) {}
+    explicit FleetModel(const FleetReadService &readService, QObject *parent = nullptr)
+        : QAbstractListModel(parent), m_vehicles(readService.vehicles()) {}
+    const FleetVehicleSummary *findById(const QString &id) const {
+        for (const auto &item : m_vehicles) {
+            if (item.id.compare(id.trimmed(), Qt::CaseInsensitive) == 0)
+                return &item;
+        }
+        return nullptr;
+    }
+    int availableCount() const {
+        int count = 0;
+        for (const auto &v : m_vehicles) count += v.available;
+        return count;
+    }
     int rowCount(const QModelIndex &parent = QModelIndex()) const override {
         return parent.isValid() ? 0 : m_vehicles.size();
     }
     QVariant data(const QModelIndex &index, int role) const override {
         if (!index.isValid() || index.row() < 0 || index.row() >= m_vehicles.size())
             return {};
-        const Vehicle *v = m_vehicles.at(index.row());
+        const FleetVehicleSummary &v = m_vehicles.at(index.row());
         switch (role) {
-        case VehicleId: return v->getId();
-        case DisplayName: return v->getBrand() + " " + v->getModel();
-        case VehicleType: return v->typeName();
-        case DailyRate: return v->getPricePerDay();
-        case Available: return !v->getIsRented();
-        case Details: return v->extraDetails();
+        case VehicleId: return v.id;
+        case DisplayName: return v.displayName();
+        case VehicleType: return v.type;
+        case DailyRate: return v.legacyDailyRate;
+        case Available: return v.available;
+        case Details: return v.details;
         default: return {};
         }
     }
@@ -54,7 +67,7 @@ public:
                 {Available,"available"},{Details,"details"}};
     }
 private:
-    const QList<Vehicle*> m_vehicles;
+    const QList<FleetVehicleSummary> m_vehicles;
 };
 
 class FleetProxy final : public QSortFilterProxyModel {
@@ -125,7 +138,7 @@ class FleetController final : public QObject {
     Q_PROPERTY(int availableCount READ availableCount CONSTANT)
 public:
     explicit FleetController(RentalSystem &system, QObject *parent = nullptr)
-        : QObject(parent), m_system(system), m_source(system, this), m_proxy(this) {
+        : QObject(parent), m_readService(system), m_source(m_readService, this), m_proxy(this) {
         m_proxy.setSourceModel(&m_source);
         m_proxy.sort(0);
     }
@@ -158,35 +171,31 @@ public:
     QString selectedId() const { return m_selectedId; }
     QString selectedName() const {
         const auto *v = selectedVehicle();
-        return v ? v->getBrand() + " " + v->getModel() : QString();
+        return v ? v->displayName() : QString();
     }
     QString selectedType() const {
         const auto *v = selectedVehicle();
-        return v ? v->typeName() : QString();
+        return v ? v->type : QString();
     }
     QString selectedDetails() const {
         const auto *v = selectedVehicle();
-        return v ? v->extraDetails() : QString();
+        return v ? v->details : QString();
     }
     QString selectedRate() const {
         const auto *v = selectedVehicle();
-        return v ? QString::number(v->getPricePerDay(), 'f', 2) : QString();
+        return v ? QString::number(v->legacyDailyRate, 'f', 2) : QString();
     }
     bool selectedAvailable() const {
         const auto *v = selectedVehicle();
-        return v && !v->getIsRented();
+        return v && v->available;
     }
     int totalCount() const { return m_source.rowCount(); }
-    int availableCount() const {
-        int count = 0;
-        for (auto *v : m_system.getVehicles()) count += !v->getIsRented();
-        return count;
-    }
+    int availableCount() const { return m_source.availableCount(); }
     Q_INVOKABLE void selectById(const QString &id) {
-        const auto *vehicle = m_system.findVehicleById(id);
+        const auto *vehicle = m_source.findById(id);
         if (!vehicle) return;
-        if (m_selectedId == vehicle->getId()) return;
-        m_selectedId = vehicle->getId();
+        if (m_selectedId == vehicle->id) return;
+        m_selectedId = vehicle->id;
         emit selectionChanged();
     }
     // Visible rows are defined by the authoritative C++ proxy, not QML's
@@ -220,11 +229,11 @@ private:
         if (!m_selectedId.isEmpty() && selectedVisibleIndex() < 0)
             clearSelection();
     }
-    const Vehicle *selectedVehicle() const {
+    const FleetVehicleSummary *selectedVehicle() const {
         return m_selectedId.isEmpty()
-            ? nullptr : m_system.findVehicleById(m_selectedId);
+            ? nullptr : m_source.findById(m_selectedId);
     }
-    RentalSystem &m_system;
+    FleetReadService m_readService;
     FleetModel m_source;
     FleetProxy m_proxy;
     QString m_query;
