@@ -9,12 +9,14 @@ ApplicationWindow {
     visible: true
     title: "Rental Studio · P3 native Fleet and Rentals read-only proof"
 
-    readonly property color navy: "#17324D"
-    readonly property color teal: "#0F766E"
-    readonly property color canvas: "#F6F8FA"
-    readonly property color ice: "#EAF0F4"
-    readonly property color mint: "#E8F5F0"
-    readonly property color ink: "#5F6F82"
+    // Shared owner-selected tokens; preserve the existing local bindings.
+    DesignTokens { id: designTokens }
+    readonly property color navy: designTokens.navy
+    readonly property color teal: designTokens.teal
+    readonly property color canvas: designTokens.canvas
+    readonly property color ice: designTokens.ice
+    readonly property color mint: designTokens.mint
+    readonly property color ink: designTokens.ink
     property int workspace: 1
     property bool gallery: true
 
@@ -128,6 +130,9 @@ ApplicationWindow {
     // card/table button retains focus; selection is only a view state.
     Shortcut {
         sequence: "Escape"
+        // Topmost modal owns Escape. Never clear a record behind a dialog.
+        enabled: !bookingDialog.visible &&
+                 !returnConfirmation.visible && !archiveConfirmation.visible
         onActivated: {
             if (window.workspace === 2) rentalsModel.clearSelection()
             else fleet.clearSelection()
@@ -152,25 +157,17 @@ ApplicationWindow {
                     Layout.bottomMargin: 28
                 }
                 Repeater {
+                    id: workspaceItems
                     model: ["Overview", "Fleet", "Rentals"]
-                    delegate: Button {
-                        required property string modelData
-                        required property int index
-                        Layout.fillWidth: true
-                        text: modelData
-                        activeFocusOnTab: true
-                        Accessible.name: modelData + " workspace"
+                    delegate: WorkspaceNavButton {
+                        currentWorkspace: window.workspace === index
+                        workspaceItems: workspaceItems
                         onClicked: window.workspace = index
-                        background: Rectangle {
-                            radius: 10
-                            color: window.workspace === parent.index ? navy : "transparent"
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: window.workspace === parent.index ? "white" : navy
-                            font.bold: window.workspace === parent.index
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 13
+                        onEnterContent: {
+                            window.workspace = 1
+                            Qt.callLater(function() {
+                                search.forceActiveFocus(Qt.TabFocusReason)
+                            })
                         }
                     }
                 }
@@ -341,11 +338,11 @@ ApplicationWindow {
                                         fleet.selectById(vehicleId)
                                         galleryView.forceActiveFocus(Qt.MouseFocusReason)
                                     }
-                                    background: Rectangle {
-                                        radius: 12
-                                        color: fleet.selectedId === vehicleCard.vehicleId ? mint : "white"
-                                        border.width: galleryView.activeFocus && galleryView.currentIndex === vehicleCard.index ? 3 : (fleet.selectedId === vehicleCard.vehicleId ? 2 : 1)
-                                        border.color: galleryView.activeFocus && galleryView.currentIndex === vehicleCard.index ? navy : (fleet.selectedId === vehicleCard.vehicleId ? teal : "#D8E2E8")
+                                    background: FocusFrame {
+                                        objectName: "fleetGalleryFocus"
+                                        keyboardFocused: galleryView.activeFocus &&
+                                                         galleryView.currentIndex === vehicleCard.index
+                                        selected: fleet.selectedId === vehicleCard.vehicleId
                                     }
                                     contentItem: ColumnLayout {
                                         anchors.margins: 12
@@ -407,11 +404,12 @@ ApplicationWindow {
                                     }
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: "Select " + displayName + ", " + vehicleId
-                                    background: Rectangle {
-                                        radius: 8
-                                        color: fleet.selectedId === vehicleRow.vehicleId ? mint : "white"
-                                        border.color: tableView.activeFocus && tableView.currentIndex === vehicleRow.index ? navy : (fleet.selectedId === vehicleRow.vehicleId ? teal : "#D8E2E8")
-                                        border.width: tableView.activeFocus && tableView.currentIndex === vehicleRow.index ? 3 : (fleet.selectedId === vehicleRow.vehicleId ? 2 : 1)
+                                    background: FocusFrame {
+                                        objectName: "fleetTableFocus"
+                                        cornerRadius: 8
+                                        keyboardFocused: tableView.activeFocus &&
+                                                         tableView.currentIndex === vehicleRow.index
+                                        selected: fleet.selectedId === vehicleRow.vehicleId
                                     }
                                     contentItem: RowLayout {
                                         spacing: 14
@@ -547,7 +545,14 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         width: Math.min(620, window.width - 80)
                         standardButtons: Dialog.NoButton
-                        onClosed: bookingActions.discardPreview()
+                        closePolicy: Popup.CloseOnEscape
+                        onClosed: {
+                            bookingActions.discardPreview()
+                            Qt.callLater(function() {
+                                if (newBookingButton.visible && newBookingButton.enabled)
+                                    newBookingButton.forceActiveFocus(Qt.TabFocusReason)
+                            })
+                        }
                         contentItem: ColumnLayout {
                             spacing: 10
                             Label {
@@ -647,6 +652,7 @@ ApplicationWindow {
                             onClicked: returnConfirmation.open()
                         }
                         Button {
+                            id: archiveActionButton
                             objectName: "rentalArchiveButton"
                             text: "Archive returned"
                             activeFocusOnTab: true
@@ -665,6 +671,13 @@ ApplicationWindow {
                     Dialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
+                        closePolicy: Popup.CloseOnEscape
+                        onClosed: Qt.callLater(function() {
+                            if (returnSelectedButton.visible && returnSelectedButton.enabled)
+                                returnSelectedButton.forceActiveFocus(Qt.TabFocusReason)
+                            else if (rentalList.visible)
+                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                        })
                         title: "Confirm rental return"
                         modal: true
                         focus: true
@@ -699,6 +712,13 @@ ApplicationWindow {
                     Dialog {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
+                        closePolicy: Popup.CloseOnEscape
+                        onClosed: Qt.callLater(function() {
+                            if (archiveActionButton.visible && archiveActionButton.enabled)
+                                archiveActionButton.forceActiveFocus(Qt.TabFocusReason)
+                            else if (rentalList.visible)
+                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                        })
                         title: "Archive returned rental"
                         modal: true
                         focus: true
@@ -805,11 +825,14 @@ ApplicationWindow {
                                     Accessible.name: "Rental " + rentalId +
                                                      ", " + status + ", vehicle " + vehicleId
                                     onClicked: rentalsModel.selectById(rentalId)
-                                    background: Rectangle {
-                                        radius: 10
-                                        color: rentalRow.rentalId === rentalsModel.selectedRentalId ? mint : ice
-                                        border.width: rentalRow.activeFocus ? 2 : 1
-                                        border.color: rentalRow.activeFocus ? teal : "#D8E2E8"
+                                    background: FocusFrame {
+                                        objectName: "rentalRowFocus"
+                                        cornerRadius: 10
+                                        idleSurface: designTokens.ice
+                                        keyboardFocused: rentalRow.activeFocus ||
+                                                         (rentalList.activeFocus &&
+                                                          rentalList.currentIndex === index)
+                                        selected: rentalRow.rentalId === rentalsModel.selectedRentalId
                                     }
                                     contentItem: RowLayout {
                                         anchors.margins: 10

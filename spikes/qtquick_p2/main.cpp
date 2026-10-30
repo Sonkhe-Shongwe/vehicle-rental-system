@@ -299,6 +299,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-return-smoke", "Test real QML confirmed return through C++ domain and model refresh."});
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
     parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
+    parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -1296,6 +1297,142 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P3 QML returned-rental archive PASS"<<suffix
                     <<"Cancel, persisted archive, selected History and no source writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p4-shell-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 190;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1200,&app,[&,window,compact] {
+            const auto findVisible=[](const auto &self,QQuickItem *item,
+                                      const QString &name)->QQuickItem*{
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(QQuickItem *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *fleetNav=findVisible(findVisible,root,"workspaceNavFleet");
+            auto *rentalNav=findVisible(findVisible,root,"workspaceNavRentals");
+            auto *overviewNav=findVisible(findVisible,root,"workspaceNavOverview");
+            auto *search=findVisible(findVisible,root,"fleetSearchField");
+            auto *gallery=findVisible(findVisible,root,"fleetGallery");
+            auto *frame=findVisible(findVisible,root,"fleetGalleryFocus");
+            if(!fleetNav||!rentalNav||!overviewNav||!search||!gallery||!frame) {
+                qCritical()<<"P4 native component/navigation controls missing";
+                app.exit(191);return;
+            }
+            rentalNav->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Up);
+            QCoreApplication::processEvents();
+            if(!fleetNav->hasActiveFocus() ||
+               fleet.selectedId()!="") {
+                qCritical()<<"P4 group Up changed business state or missed Fleet focus";
+                app.exit(192);return;
+            }
+            QTest::keyClick(window,Qt::Key_Up);
+            QCoreApplication::processEvents();
+            if(!overviewNav->hasActiveFocus()) {
+                qCritical()<<"P4 second group Up missed Overview";
+                app.exit(193);return;
+            }
+            QTest::keyClick(window,Qt::Key_Up);
+            if(!overviewNav->hasActiveFocus()) {
+                qCritical()<<"P4 sidebar boundary wrapped";
+                app.exit(194);return;
+            }
+            QTest::keyClick(window,Qt::Key_Down);
+            QTest::keyClick(window,Qt::Key_Right);
+            QTest::qWait(90);
+            if(window->property("workspace").toInt()!=1 ||
+               !search->hasActiveFocus()) {
+                qCritical()<<"P4 Fleet Right did not enter Search";
+                app.exit(195);return;
+            }
+            // The focused TextField owns its arrow keys, not Fleet selection.
+            QTest::keyClick(window,Qt::Key_Right);
+            QCoreApplication::processEvents();
+            if(!search->hasActiveFocus() || !fleet.selectedId().isEmpty()) {
+                qCritical()<<"P4 text input arrows were intercepted";
+                app.exit(196);return;
+            }
+            gallery->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            QTest::qWait(60);
+            if(fleet.selectedId()!="C001" ||
+               !frame->property("keyboardFocused").toBool() ||
+               !frame->property("selected").toBool()) {
+                qCritical()<<"P4 shared Fleet focus/selection distinction missing"
+                           <<fleet.selectedId()<<frame->property("keyboardFocused")
+                           <<frame->property("selected");
+                app.exit(197);return;
+            }
+            rentalNav->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if(window->property("workspace").toInt()!=2) {
+                qCritical()<<"P4 workspace native Space activation failed";
+                app.exit(198);return;
+            }
+            auto *rentals=findVisible(findVisible,root,"rentalList");
+            auto *returnButton=findVisible(findVisible,root,"rentalReturnButton");
+            if(!rentals||!returnButton) {
+                qCritical()<<"P4 rental list or dialog action absent";
+                app.exit(199);return;
+            }
+            rentals->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if(rentalModel.selectedRentalId()!="R001" || !returnButton->isEnabled()) {
+                qCritical()<<"P4 rental selection did not follow C++ visible rows";
+                app.exit(200);return;
+            }
+            returnButton->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(80);
+            const auto dialogIsVisible=[&] {
+                auto *dialog=window->findChild<QObject*>("rentalReturnDialog");
+                return dialog && dialog->property("visible").toBool();
+            };
+            if(!dialogIsVisible()) {
+                qCritical()<<"P4 modal did not acquire topmost context";
+                app.exit(201);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(120);
+            if(dialogIsVisible() || rentalModel.selectedRentalId()!="R001" ||
+               !returnButton->hasActiveFocus() ||
+               system.findRentalById("R001")->getIsReturned()) {
+                qCritical()<<"P4 Escape cleared selection or failed modal restoration"
+                           <<rentalModel.selectedRentalId()
+                           <<returnButton->hasActiveFocus();
+                app.exit(202);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage image=window->grabWindow();
+            if(image.isNull() ||
+               image.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !image.save("p4-qt-shared-focus-"+size+".png","PNG")) {
+                qCritical()<<"P4 focus screenshot mismatch";
+                app.exit(203);return;
+            }
+            QByteArray sourceVehicles,sourceRentals,temporaryRentals;
+            if(!readFile(vehicles,&sourceVehicles) ||
+               !readFile(rentals,&sourceRentals) ||
+               !readFile(disposable.filePath("rentals.txt"),&temporaryRentals) ||
+               sourceVehicles!=beforeVehicles || sourceRentals!=beforeRentals ||
+               temporaryRentals!=beforeRentals) {
+                qCritical()<<"P4 keyboard/modal test mutated fictional source or temp ledger";
+                app.exit(204);return;
+            }
+            qInfo()<<"P4 real shared shell PASS"<<size
+                   <<"sidebar Up/Down/Right, native Search, separate focus,"
+                   <<"modal Escape priority/restored focus and no writes";
             app.exit(0);
         });
     }
