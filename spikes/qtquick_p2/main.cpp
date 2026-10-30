@@ -1,5 +1,6 @@
 #include <QAbstractListModel>
 #include <QCommandLineParser>
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -230,7 +231,13 @@ int main(int argc, char *argv[]) {
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
-    const QDir source(QStringLiteral(RENTAL_STUDIO_DEMO_DIR));
+    // For a portable review kit prefer only bundled fake fixtures.
+    // Otherwise fall back to source-tree fake fixtures for Qt Creator/CI.
+    // No arbitrary --data-dir or real customer path can be supplied.
+    const QDir bundled(QDir(QCoreApplication::applicationDirPath()).filePath("demo"));
+    const QDir source(bundled.exists()
+                      ? bundled.absolutePath()
+                      : QStringLiteral(RENTAL_STUDIO_DEMO_DIR));
     QTemporaryDir disposable;
     if (!disposable.isValid()) {
         qCritical() << "Cannot create isolated fixture directory";
@@ -240,10 +247,24 @@ int main(int argc, char *argv[]) {
     const QString vehicles = source.filePath("vehicles.txt");
     const QString rentals = source.filePath("rentals.txt");
     if (!readFile(vehicles, &beforeVehicles) ||
-        !readFile(rentals, &beforeRentals) ||
-        !QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
+        !readFile(rentals, &beforeRentals)) {
+        qCritical() << "Cannot read only fictional demo fixtures";
+        return 3;
+    }
+    // Reject swapped fixtures. Build-time hashes are taken from the exact
+    // committed demo files; no customer data is ever accidentally imported.
+    const QByteArray vehicleHash =
+        QCryptographicHash::hash(beforeVehicles, QCryptographicHash::Sha256).toHex();
+    const QByteArray rentalHash =
+        QCryptographicHash::hash(beforeRentals, QCryptographicHash::Sha256).toHex();
+    if (vehicleHash != QByteArray(RENTAL_STUDIO_DEMO_VEHICLES_SHA256) ||
+        rentalHash != QByteArray(RENTAL_STUDIO_DEMO_RENTALS_SHA256)) {
+        qCritical() << "P2 fixture mismatch: refusing non-demo files";
+        return 3;
+    }
+    if (!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
         !QFile::copy(rentals, disposable.filePath("rentals.txt"))) {
-        qCritical() << "Cannot load committed fictional demo fixtures";
+        qCritical() << "Cannot create disposable demo fixture copies";
         return 3;
     }
 

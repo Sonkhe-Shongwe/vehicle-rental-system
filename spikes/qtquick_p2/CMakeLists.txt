@@ -3,8 +3,14 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
-target_compile_definitions(rental_studio_qtquick_spike
-    PRIVATE RENTAL_STUDIO_DEMO_DIR="${PROJECT_SOURCE_DIR}/demo")
+# Compile the SHA-256 of the exact fictional fixtures into the executable.
+# Neither a portable kit nor Qt Creator may ingest arbitrary operational records.
+file(SHA256 "${PROJECT_SOURCE_DIR}/demo/vehicles.txt" P2_VEHICLES_SHA256)
+file(SHA256 "${PROJECT_SOURCE_DIR}/demo/rentals.txt" P2_RENTALS_SHA256)
+target_compile_definitions(rental_studio_qtquick_spike PRIVATE
+    RENTAL_STUDIO_DEMO_DIR="${PROJECT_SOURCE_DIR}/demo"
+    RENTAL_STUDIO_DEMO_VEHICLES_SHA256="${P2_VEHICLES_SHA256}"
+    RENTAL_STUDIO_DEMO_RENTALS_SHA256="${P2_RENTALS_SHA256}")
 target_include_directories(rental_studio_qtquick_spike PRIVATE "${PROJECT_SOURCE_DIR}")
 target_sources(rental_studio_qtquick_spike PRIVATE
     "${PROJECT_SOURCE_DIR}/vehicle.cpp"

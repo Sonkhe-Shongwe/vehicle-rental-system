@@ -47,3 +47,11 @@ The opt-in review workflow `.github/workflows/p2-qtquick-review.yml` runs the ne
 Opt-in P2 CTests now include **real Qt Test keyboard** events (Space to switch Gallery/Table, Space to select a native Table delegate, Escape to dismiss the selected Inspector, dynamic 1280x720 -> 1500x860 window resizing) and separately recorded **QT_SCALE_FACTOR 1.25 / 1.5 synthetic DPI** captures at 1024x660 logical. This is not a browser simulation. The synthetic scale tests exercise Qt's devicePixelRatio, but **cannot replace physical Windows monitor or Qt Creator acceptance**. No production booking/data-writing actions are added.
 
 Use the exact native test output and attached screenshots; do not mark P2 physical Windows gate complete from hosted CI.
+
+## Portable Windows on-device P2 review (source-stage)
+
+An isolated Windows acceptance kit is built through `windeployqt` by the P2 Windows CI job, including Qt Quick dependencies and **only committed fictional** `demo/vehicles.txt` and `demo/rentals.txt`. The native executable checks both fixtures against their compile-time SHA-256 before loading into an auto-deleted temporary directory. If fixture files are altered, the application refuses to start. The kit is for **local verification**, not a public release or installer.
+
+After a successful packaging workflow, download `p2-windows-physical-acceptance-kit` from the matching workflow's **Artifacts** section, extract it to a disposable user folder on Windows, and run `Verify-P2-Windows.ps1` in PowerShell. The script checks the bundled demo hashes before/after tests, records environment details, runs the real packaged self-test and compact UI smoke, and walks through manual 100/125/150% Windows display and keyboard checks. It does not change Windows display settings, make internet requests, or touch customer data. Record screenshots of the real QML executable, not the earlier HTML prototype.
+
+The kit intentionally uses `windeployqt --no-compiler-runtime`. For machines missing the MSVC runtime, install Microsoft's **official** current Visual C++ x64 Redistributable rather than copying DLLs from developer machines. A successful hosted packaged smoke remains weaker than physical owner testing and does not exit P2.
