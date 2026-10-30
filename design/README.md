@@ -1,3 +1,5 @@
+> **30 October 2026 V3 research — professional light-blue system:** The owner approves the current screen structure but rejects V1/V2 font, theme and overbright colour decisions. [Read the researched V3 blueprint and Qt 6.8 feasibility study](V3_PROFESSIONAL_BLUE_BLUEPRINT_RESEARCH_2026-10-30.md). Blue/steel-neutral tokens are **proposed, not final approval**; no new Qt UI has been built.
+
 # Design Workspace — New Light-First Rental Studio
 
 **Owner direction updated:** 29 October 2026  
