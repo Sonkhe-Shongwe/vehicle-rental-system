@@ -240,8 +240,13 @@ int main(int argc, char *argv[]) {
     RentalSystem system(disposable.path());
     FleetController fleet(system);
     if (parser.isSet("self-test")) {
+    const Vehicle *corolla = system.findVehicleById("C001");
+    if (!corolla) {
+        qCritical() << "Expected fictional Corolla C001 missing";
+        return 4;
+    }
         bool ok = fleet.totalCount() == 5 && fleet.availableCount() == 4
-               && qFuzzyCompare(1.0 + system.findVehicleById("C001")->getPricePerDay(), 451.0);
+               && qFuzzyCompare(1.0 + corolla->getPricePerDay(), 451.0);
         fleet.setQuery("Honda");
         ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1;
         fleet.selectById("M001");

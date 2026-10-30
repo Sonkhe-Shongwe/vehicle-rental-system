@@ -12,6 +12,8 @@ target_sources(rental_studio_qtquick_spike PRIVATE
     "${PROJECT_SOURCE_DIR}/motorcycle.cpp"
     "${PROJECT_SOURCE_DIR}/rental.cpp"
     "${PROJECT_SOURCE_DIR}/rentalsystem.cpp")
+# Opt in to the standard qrc:/qt/qml prefix for engine.loadFromModule.
+qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0

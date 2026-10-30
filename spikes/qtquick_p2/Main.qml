@@ -171,6 +171,7 @@ ApplicationWindow {
                                 cellHeight: 215
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
+                                    id: vehicleCard
                                     required property string vehicleId
                                     required property string displayName
                                     required property string vehicleType
@@ -184,9 +185,9 @@ ApplicationWindow {
                                     onClicked: fleet.selectById(vehicleId)
                                     background: Rectangle {
                                         radius: 12
-                                        color: fleet.selectedId === parent.vehicleId ? mint : "white"
-                                        border.width: fleet.selectedId === parent.vehicleId ? 2 : 1
-                                        border.color: fleet.selectedId === parent.vehicleId ? teal : "#D8E2E8"
+                                        color: fleet.selectedId === vehicleCard.vehicleId ? mint : "white"
+                                        border.width: fleet.selectedId === vehicleCard.vehicleId ? 2 : 1
+                                        border.color: fleet.selectedId === vehicleCard.vehicleId ? teal : "#D8E2E8"
                                     }
                                     contentItem: ColumnLayout {
                                         anchors.margins: 12
@@ -196,16 +197,16 @@ ApplicationWindow {
                                             Layout.alignment: Qt.AlignHCenter
                                         }
                                         Label {
-                                            text: parent.displayName
+                                            text: vehicleCard.displayName
                                             font.bold: true; color: navy
                                             elide: Text.ElideRight
                                             Layout.fillWidth: true
                                         }
-                                        Label { text: parent.vehicleId + " · " + parent.vehicleType; color: ink }
+                                        Label { text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType; color: ink }
                                         Label {
-                                            text: (parent.available ? "Available" : "Rented") +
-                                                  "   ·   R " + parent.dailyRate.toFixed(2) + "/day"
-                                            color: parent.available ? teal : navy
+                                            text: (vehicleCard.available ? "Available" : "Rented") +
+                                                  "   ·   R " + vehicleCard.dailyRate.toFixed(2) + "/day"
+                                            color: vehicleCard.available ? teal : navy
                                             font.pixelSize: 12
                                         }
                                     }
@@ -218,6 +219,7 @@ ApplicationWindow {
                                 spacing: 6
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
+                                    id: vehicleRow
                                     required property string vehicleId
                                     required property string displayName
                                     required property string vehicleType
@@ -230,27 +232,27 @@ ApplicationWindow {
                                     Accessible.name: "Select " + displayName + ", " + vehicleId
                                     background: Rectangle {
                                         radius: 8
-                                        color: fleet.selectedId === parent.vehicleId ? mint : "white"
-                                        border.color: fleet.selectedId === parent.vehicleId ? teal : "#D8E2E8"
-                                        border.width: fleet.selectedId === parent.vehicleId ? 2 : 1
+                                        color: fleet.selectedId === vehicleRow.vehicleId ? mint : "white"
+                                        border.color: fleet.selectedId === vehicleRow.vehicleId ? teal : "#D8E2E8"
+                                        border.width: fleet.selectedId === vehicleRow.vehicleId ? 2 : 1
                                     }
                                     contentItem: RowLayout {
                                         spacing: 14
                                         Label {
-                                            text: parent.displayName
+                                            text: vehicleRow.displayName
                                             Layout.fillWidth: true
                                             color: navy; font.bold: true
                                             elide: Text.ElideRight
                                         }
-                                        Label { text: parent.vehicleId; color: ink }
-                                        Label { text: parent.vehicleType; color: ink }
+                                        Label { text: vehicleRow.vehicleId; color: ink }
+                                        Label { text: vehicleRow.vehicleType; color: ink }
                                         Label {
-                                            text: "R " + parent.dailyRate.toFixed(2)
+                                            text: "R " + vehicleRow.dailyRate.toFixed(2)
                                             color: navy
                                         }
                                         Label {
-                                            text: parent.available ? "Available" : "Rented"
-                                            color: parent.available ? teal : navy
+                                            text: vehicleRow.available ? "Available" : "Rented"
+                                            color: vehicleRow.available ? teal : navy
                                         }
                                     }
                                 }
