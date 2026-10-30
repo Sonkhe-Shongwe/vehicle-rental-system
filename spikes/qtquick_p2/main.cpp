@@ -20,6 +20,10 @@
 #include <cmath>
 #include "rentalsystem.h"
 #include "src/application/fleet_read_service.h"
+#include "src/application/rental_read_service.h"
+#include "src/application/rental_list_model.h"
+#include "src/application/rental_quote_service.h"
+#include "src/application/rental_confirm_service.h"
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
 // values from disposable fictional fixtures. No Vehicle* reaches QML.
@@ -261,6 +265,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"arrows-smoke", "Exercise native QML Gallery/Table arrow navigation, focus, and filter parity."});
     parser.addOption({"focus-edges-smoke", "Test filtered selection, sorted focus, empty states, boundaries and responsive columns."});
     parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
+    parser.addOption({"rentals-smoke", "Test the real read-only QML Rentals view and C++ commit-triggered refresh."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -303,6 +308,8 @@ int main(int argc, char *argv[]) {
 
     RentalSystem system(disposable.path());
     FleetController fleet(system);
+    RentalReadService rentalRead(system);
+    RentalListModel rentalModel(rentalRead);
     if (parser.isSet("self-test")) {
     const Vehicle *corolla = system.findVehicleById("C001");
     if (!corolla) {
@@ -343,6 +350,7 @@ int main(int argc, char *argv[]) {
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("fleet", &fleet);
+    engine.rootContext()->setContextProperty("rentalsModel", &rentalModel);
     engine.loadFromModule("RentalStudioSpike", "Main");
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
@@ -667,6 +675,122 @@ int main(int argc, char *argv[]) {
             if (!step(Qt::Key_Left, "M002", 75)) return;
             qInfo() << "P2 real Qt Grid/Table focus boundary, filtered Inspector,"
                        " sort-ID sync and responsive grid PASS";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("rentals-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) { qCritical() << "P3-F root is not native Qt Quick"; return 80; }
+
+        const bool compact = parser.isSet("compact");
+        window->resize(compact ? 1280 : 1500, compact ? 720 : 860);
+        window->setProperty("workspace", 2);
+        QTimer::singleShot(1050, &app, [&, window, compact] {
+            auto *list = window->findChild<QQuickItem*>("rentalList");
+            auto *selection = window->findChild<QQuickItem*>("rentalSelectionText");
+            if (!list || !selection || !list->isVisible() ||
+                rentalModel.count() != 2 || list->property("count").toInt() != 2) {
+                qCritical() << "P3-F real QML Rentals list/count absent"
+                            << list << selection << rentalModel.count();
+                app.exit(81); return;
+            }
+
+            const auto findRentalRow = [](const auto &self, QQuickItem *item,
+                                          const QString &id) -> QQuickItem* {
+                if (!item) return nullptr;
+                if (item->objectName() == "rentalRow" &&
+                    item->property("rentalId").toString() == id &&
+                    item->isVisible()) return item;
+                for (QQuickItem *child : item->childItems()) {
+                    if (auto *found = self(self, child, id)) return found;
+                }
+                return nullptr;
+            };
+            auto *activeRow = findRentalRow(findRentalRow, list, "R001");
+            auto *returnedRow = findRentalRow(findRentalRow, list, "R002");
+            if (!activeRow || !returnedRow ||
+                activeRow->property("status").toString() != "Active" ||
+                returnedRow->property("status").toString() != "Returned") {
+                qCritical() << "P3-F real QML delegates did not bind domain status";
+                app.exit(82); return;
+            }
+            activeRow->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window, Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (rentalModel.selectedRentalId() != "R001" ||
+                !selection->property("text").toString().contains("R001")) {
+                qCritical() << "P3-F keyboard selection not synced with QML"
+                            << rentalModel.selectedRentalId();
+                app.exit(83); return;
+            }
+            const QString sizeLabel = compact ? "1280x720" : "1500x860";
+            const QImage shot = window->grabWindow();
+            const QSize expected(compact ? 1280 : 1500, compact ? 720 : 860);
+            if (shot.isNull() || shot.size() != expected ||
+                !shot.save("p3-qt-rentals-" + sizeLabel + ".png", "PNG")) {
+                qCritical() << "P3-F real QML screenshot invalid" << shot.size();
+                app.exit(84); return;
+            }
+
+            // The UI has NO write controls. This explicit test-only C++
+            // command acts on the disposable SHA-pinned fictional fixture.
+            // It must not optimistically change the read model before refresh.
+            RentalQuoteService quotes(system);
+            const auto quote = quotes.preview("C001", 3);
+            if (!quote.ok()) {
+                qCritical() << "P3-F domain quote not available";
+                app.exit(85); return;
+            }
+            const RentalConfirmationRequest request{
+                *quote.quote, "Fictional Preview Customer", "0000000000"
+            };
+            const auto committed = RentalConfirmService(system).confirm(request);
+            if (!committed.ok() || committed.receipt->rentalId != "R003" ||
+                rentalModel.count() != 2 || list->property("count").toInt() != 2) {
+                qCritical() << "P3-F commit/refresh boundary failed"
+                            << committed.ok() << rentalModel.count();
+                app.exit(86); return;
+            }
+
+            rentalModel.refresh();  // Only after the successful C++ commit.
+            QTest::qWait(180);
+            QCoreApplication::processEvents();
+            if (rentalModel.count() != 3 || list->property("count").toInt() != 3 ||
+                rentalModel.selectedRentalId() != "R001" ||
+                !findRentalRow(findRentalRow, list, "R003")) {
+                qCritical() << "P3-F QML did not refresh after persisted confirmation";
+                app.exit(87); return;
+            }
+
+            if (!system.archiveRental("R002")) {
+                qCritical() << "P3-F fictional returned rental could not archive";
+                app.exit(88); return;
+            }
+            returnedRow = findRentalRow(findRentalRow, list, "R002");
+            if (!returnedRow || returnedRow->property("status").toString() != "Returned") {
+                qCritical() << "P3-F QML changed before archive refresh";
+                app.exit(89); return;
+            }
+            rentalModel.refresh();
+            QTest::qWait(180);
+            returnedRow = findRentalRow(findRentalRow, list, "R002");
+            if (!returnedRow ||
+                returnedRow->property("status").toString() != "Archived" ||
+                rentalModel.selectedRentalId() != "R001") {
+                qCritical() << "P3-F archive state/selection QML sync failed";
+                app.exit(90); return;
+            }
+
+            QByteArray afterVehicles, afterRentals;
+            if (!readFile(vehicles, &afterVehicles) ||
+                !readFile(rentals, &afterRentals) ||
+                beforeVehicles != afterVehicles || beforeRentals != afterRentals) {
+                qCritical() << "P3-F SHA-pinned demo fixtures were modified";
+                app.exit(91); return;
+            }
+            qInfo() << "P3-F REAL QML Rentals PASS:" << sizeLabel
+                    << "keyboard selection, typed statuses, committed booking,"
+                    << "explicit refresh, archived history, source-fixture protection";
             app.exit(0);
         });
     }

@@ -7,7 +7,7 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio · P2 native Fleet proof (read-only)"
+    title: "Rental Studio · P3 native Fleet and Rentals read-only proof"
 
     readonly property color navy: "#17324D"
     readonly property color teal: "#0F766E"
@@ -92,7 +92,10 @@ ApplicationWindow {
     // card/table button retains focus; selection is only a view state.
     Shortcut {
         sequence: "Escape"
-        onActivated: fleet.clearSelection()
+        onActivated: {
+            if (window.workspace === 2) rentalsModel.clearSelection()
+            else fleet.clearSelection()
+        }
     }
 
     RowLayout {
@@ -137,7 +140,7 @@ ApplicationWindow {
                 }
                 Item { Layout.fillHeight: true }
                 Label {
-                    text: "P2 · Native feasibility only\nDemo fixture · No editing"
+                    text: "P3 · Read-only integration proof\nFictional demo · No booking buttons"
                     color: ink; font.pixelSize: 11
                     wrapMode: Text.WordWrap
                 }
@@ -463,12 +466,108 @@ ApplicationWindow {
                 }
 
                 ColumnLayout {
-                    Label { text: "Rentals will be integrated in P5."; color: navy; font.pixelSize: 22 }
-                    Label {
-                        text: "This native feasibility experiment proves Fleet data binding only. No draft booking, payment or working rental buttons are represented here."
-                        color: ink; wrapMode: Text.WordWrap
+                    spacing: 14
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: "Rental records"
+                            color: navy; font.pixelSize: 21; font.bold: true
+                        }
+                        Item { Layout.fillWidth: true }
+                        Label {
+                            text: "Read-only · C++ domain snapshots"
+                            color: ink; font.pixelSize: 12
+                        }
                     }
-                    Item { Layout.fillHeight: true }
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Fictional records only. Dates, statuses and totals come from C++. No booking or return actions are available in this proof."
+                        color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "white"
+                        radius: 12
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 12
+                            Label {
+                                text: rentalsModel.count + " rental records"
+                                color: navy; font.bold: true
+                            }
+                            ListView {
+                                id: rentalList
+                                objectName: "rentalList"
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                spacing: 7
+                                model: rentalsModel
+                                Accessible.role: Accessible.List
+                                Accessible.name: "Fictional rental records"
+                                ScrollBar.vertical: ScrollBar {}
+                                delegate: Button {
+                                    id: rentalRow
+                                    objectName: "rentalRow"
+                                    required property string rentalId
+                                    required property string vehicleId
+                                    required property string status
+                                    required property string dueState
+                                    required property real total
+                                    width: rentalList.width
+                                    height: 70
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Rental " + rentalId +
+                                                     ", " + status + ", vehicle " + vehicleId
+                                    onClicked: rentalsModel.selectById(rentalId)
+                                    background: Rectangle {
+                                        radius: 10
+                                        color: rentalRow.rentalId === rentalsModel.selectedRentalId ? mint : ice
+                                        border.width: rentalRow.activeFocus ? 2 : 1
+                                        border.color: rentalRow.activeFocus ? teal : "#D8E2E8"
+                                    }
+                                    contentItem: RowLayout {
+                                        anchors.margins: 10
+                                        spacing: 16
+                                        Label {
+                                            text: rentalRow.rentalId
+                                            color: navy; font.bold: true
+                                            Layout.preferredWidth: 74
+                                        }
+                                        Label {
+                                            text: rentalRow.vehicleId
+                                            color: ink
+                                            Layout.preferredWidth: 94
+                                        }
+                                        Label {
+                                            text: rentalRow.status
+                                            color: rentalRow.status === "Active" ? teal : navy
+                                            Layout.preferredWidth: 100
+                                        }
+                                        Label {
+                                            text: rentalRow.dueState
+                                            color: ink
+                                            Layout.fillWidth: true
+                                        }
+                                        Label {
+                                            text: "R " + Number(rentalRow.total).toFixed(2)
+                                            color: navy; font.bold: true
+                                        }
+                                    }
+                                }
+                            }
+                            Label {
+                                objectName: "rentalSelectionText"
+                                text: rentalsModel.selectedRentalId === "" ?
+                                      "No rental selected" :
+                                      "Selected rental: " + rentalsModel.selectedRentalId
+                                color: navy; font.pixelSize: 12
+                                Accessible.name: text
+                            }
+                        }
+                    }
                 }
             }
         }

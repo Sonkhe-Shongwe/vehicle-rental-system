@@ -1,7 +1,12 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
-    ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp)
+    ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
+    ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_quote_service.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_confirm_service.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
 # Compile the SHA-256 of the exact fictional fixtures into the executable.
@@ -44,6 +49,16 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p2_focus_edges PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software"
         TIMEOUT 40)
+    # P3-F: genuine QQuickWindow and delegate-backed Rentals state, selection
+    # and refresh after a committed C++ fictional-domain operation.
+    add_test(NAME rental_studio_p3_rentals_qml_wide
+        COMMAND rental_studio_qtquick_spike --rentals-smoke)
+    add_test(NAME rental_studio_p3_rentals_qml_compact
+        COMMAND rental_studio_qtquick_spike --rentals-smoke --compact)
+    set_tests_properties(
+        rental_studio_p3_rentals_qml_wide
+        rental_studio_p3_rentals_qml_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 50)
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES
