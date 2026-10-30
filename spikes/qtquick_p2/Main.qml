@@ -20,6 +20,13 @@ ApplicationWindow {
 
     color: canvas
 
+    // Global dismiss action for the read-only inspector. The triggering
+    // card/table button retains focus; selection is only a view state.
+    Shortcut {
+        sequence: "Escape"
+        onActivated: fleet.clearSelection()
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 0

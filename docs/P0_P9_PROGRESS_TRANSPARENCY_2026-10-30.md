@@ -1,3 +1,5 @@
+> **30 October 2026 P2 implementation status:** [Source prepared, Qt6 configure blocked](P2_QTQUICK_SPIKE_SOURCE_REPORT_2026-10-30.md). Do not count uncompiled new code toward verified progress. **Baseline unchanged:** P0 5/5, P1 7/10, P2 0/6, weighted delivery coverage **13.4%**. Owner design signoff and licensed photos remain open.
+
 # Rental Studio 2.0 | P0–P9 Acceptance and Progress Governance
 
 **30 October 2026 | Evidence-based programme baseline, not a release forecast.**
