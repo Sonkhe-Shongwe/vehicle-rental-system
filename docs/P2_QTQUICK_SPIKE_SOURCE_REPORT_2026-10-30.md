@@ -1,3 +1,5 @@
+> **SUPERSEDED source-only checkpoint after successful CI on 30 October 2026:** The initial missing local Qt6 SDK remained real for the local Debian environment, but a later opt-in GitHub Actions Qt6.8.3 Linux/Windows run **compiled and passed 5/5 CTests on both** with inspected native PNGs. The current evidence is [P2 native CI verification](P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md); do not interpret this dated source-only note as current P2 0/6.
+
 # P2 Qt Quick + C++ feasibility: source-stage checkpoint
 
 **Date:** 30 October 2026. **Status:** SOURCE PREPARED AND STATIC-REVIEWED ONLY. No native runtime PASS.

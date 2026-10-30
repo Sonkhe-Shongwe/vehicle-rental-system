@@ -1,3 +1,5 @@
+> **CURRENT 30 October 2026 verification:** This spike now **builds and executes on hosted Linux and Windows Qt6.8.3**, with native model/UI CTests **5/5 on each**, [run 41043137443](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137443). Actual screenshot dimensions validated at 1500×860 and 1280×720 on both; see [evidence and limits](../../docs/P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). This is **not** physical owner Windows Qt Creator or 100/125/150% acceptance. The old source-prepared status and missing-local-SDK note below remain as historical context.
+
 # P2 Qt Quick + C++ Fleet feasibility spike
 
 **Status 30 Oct 2026: SOURCE PREPARED; NOT COMPILED OR APPROVED ON WINDOWS.**

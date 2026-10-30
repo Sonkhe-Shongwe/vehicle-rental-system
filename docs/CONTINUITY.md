@@ -1,5 +1,14 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Hosted native Qt Quick P2 SUCCESS on Linux and Windows
+
+- Source SHA `f45147d05d3449ffc89514fb1e685e2990c843fc` on **Draft PR #6**, isolated source branch based on docs reset. Added strict native QML screenshot smoke CTests for Gallery and Table at 1500×860 and 1280×720 without losing the existing legacy domain/GUI CTests. Read-only real C++ domain model and fake fixture isolation preserved.
+- **Actually verified:** [P2 run 41043137443](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137443) PASS **5/5 CTests Ubuntu 24.04 GCC Qt6.8.3**, PASS **5/5 Windows Server 2022 MSVC2022 Qt6.8.3**. Standalone baseline [41043137394](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137394) PASS 2/2. Eight genuine native Qt Quick screenshots downloaded and inspected, confirmed all exact dimensions.
+- Resolved actual screenshot defects: Windows Qt offscreen missing glyphs, Windows hosted display truncating images to ~1028px, compact toolbar and Inspector overflow. Switched UI smoke to Windows platform plugin, configured hosted 1920×1080 display, enforced screenshot dimensions and refined QML layout/close control; no tests bypassed.
+- [Reproducible evidence](P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). Phase tracker **P2 3/6 = 50%** for compiled QML, five-vehicle C++ binding, shared search/filter/selection/Inspector. Overall weighted **18.4%**, not release readiness; P1 remains 7/10. Three P2 checks require real owner Windows Qt Creator, physical DPI/keyboard, recorded go/no-go. No source/customer-data writes, no SQLite.
+- **Main and historical Draft PR #4 unmodified/unmerged**; new Draft PR #6 stays draft. Do not advance to P3 architectural rewrite until the physical P2 gate is complete.
+
+
 ## 30 October 2026 — P2 Qt Quick Fleet bridge staged, native build blocked
 
 - Following user's instruction to move to the next phase, created a **separate P2 candidate branch**, not a broad rewrite. Optional CMake target defaults OFF; C++ Qt abstract fleet model directly reads existing `RentalSystem` in a **disposable** copy of the committed fake demo fixture. QML Gallery/Table share one filter/selection controller; Inspector shows domain-derived data, no rental writes.
