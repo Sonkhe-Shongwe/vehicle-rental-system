@@ -1,5 +1,13 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Portable physical-Windows P2 review kit generated and hosted-tested
+
+- Source `3620d83518cc01bce047b6f0a17deab0b96079b6` on isolated Draft PR #6 adds **bundled only fake-demo** runtime selection, CMake-pinned SHA-256 hashes for both fixture files, tamper refusal, and an on-device `Verify-P2-Windows.ps1` script plus checklist. The old Qt Widgets application, business rules, real files and base main are unchanged.
+- [Actions 41047388629](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41047388629) PASS **8/8 Ubuntu/GCC Qt6.8.3**, **8/8 Windows/MSVC Qt6.8.3** plus **packaged Windows relocatable Qt C++ self-test and compiled QML compact smoke PASS**. Deliberately corrupted fictional package fixture was rejected, original restored; no tests bypassed.
+- Used `windeployqt` to bundle Qt Quick modules/DLLs into **`p2-windows-physical-acceptance-kit`** artifact ID `12972169619`, downloaded ZIP and verified CRC, 1,323 entries, exact `SOURCE_COMMIT.txt`. [Verification boundary](P2_WINDOWS_PHYSICAL_KIT_VERIFIED_2026-10-30.md).
+- Hosted Windows is not owner's PC. Need actual physical 100/125/150% and Qt Creator kit plus signoff before P2 completion. **Progress remains P2 3/6 and 18.4% weighted.** P1 final design owner approval/licensed photos/accessibility pending. Both Draft PRs stay unmerged; no release.
+
+
 ## 30 October 2026 — Native P2 keyboard, live resize and synthetic DPI verified in hosted CI
 
 - Final tested source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` on [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6). [Actions 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448) **Qt6.8.3 8/8 PASS Ubuntu/GCC and 8/8 PASS Windows/MSVC2022**. Three new CTests cover real QTest Space/Escape keyboard actions, live window resize, and synthetic QT_SCALE_FACTOR 1.25 and 1.5; previous five tests still pass.
