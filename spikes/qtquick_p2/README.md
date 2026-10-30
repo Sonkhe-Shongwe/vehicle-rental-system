@@ -39,3 +39,9 @@ No source or customer data is written: executable copies only `demo/vehicles.txt
 ## Hosted CI (separate from owner's physical Windows acceptance)
 
 The opt-in review workflow `.github/workflows/p2-qtquick-review.yml` runs the new QML target alongside unchanged Qt Widgets targets on Ubuntu 24.04/GCC and Windows Server 2022/MSVC using Qt 6.8.3. It captures **real QQuickWindow** Gallery and Table screenshots at 1500×860 and 1280×720 and checks model parity, but **cannot establish true physical monitor scaling**. This workflow runs for a **draft pull request targeted at the product-reset documentation branch**, not on stable main. It is not proof of successful execution until a run actually passes; if GitHub Actions is restricted, record the failure without waiver.
+
+## Additional native acceptance instrumentation (30 October 2026)
+
+Opt-in P2 CTests now include **real Qt Test keyboard** events (Space to switch Gallery/Table, Space to select a native Table delegate, Escape to dismiss the selected Inspector, dynamic 1280x720 -> 1500x860 window resizing) and separately recorded **QT_SCALE_FACTOR 1.25 / 1.5 synthetic DPI** captures at 1024x660 logical. This is not a browser simulation. The synthetic scale tests exercise Qt's devicePixelRatio, but **cannot replace physical Windows monitor or Qt Creator acceptance**. No production booking/data-writing actions are added.
+
+Use the exact native test output and attached screenshots; do not mark P2 physical Windows gate complete from hosted CI.

@@ -172,11 +172,13 @@ ApplicationWindow {
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {
+                                    objectName: "fleetGalleryToggle"
                                     text: "Gallery"
                                     onClicked: window.gallery = true
                                     Accessible.name: "Show Fleet gallery"
                                 }
                                 Button {
+                                    objectName: "fleetTableToggle"
                                     text: "Table"
                                     onClicked: window.gallery = false
                                     Accessible.name: "Show Fleet table"
@@ -246,6 +248,7 @@ ApplicationWindow {
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
                                     id: vehicleRow
+                                    objectName: "fleetTableRow"
                                     required property string vehicleId
                                     required property string displayName
                                     required property string vehicleType

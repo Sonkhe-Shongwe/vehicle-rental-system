@@ -11,6 +11,8 @@
 #include <QQuickItem>
 #include <QTimer>
 #include <QImage>
+#include <QTest>
+#include <QPointF>
 #include <QSortFilterProxyModel>
 #include <QTemporaryDir>
 #include <QVariant>
@@ -223,6 +225,8 @@ int main(int argc, char *argv[]) {
     parser.addOption({"self-test", "Test model, filtering, selection, and fixture integrity without a GUI."});
     parser.addOption({"ui-smoke", "Load the native QML scene and capture actual Gallery/Table views."});
     parser.addOption({"compact", "Use the compact 1280x720 viewport for the UI smoke."});
+    parser.addOption({"input-smoke", "Drive actual QML buttons with keyboard events and test live resize."});
+    parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -349,6 +353,102 @@ int main(int argc, char *argv[]) {
                         << "Gallery, Table, selected ID, filtered domain model";
                 app.exit(0);
             });
+        });
+    }
+    if (parser.isSet("input-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 20;
+        QTimer::singleShot(850, &app, [&, window] {
+            auto *tableToggle = window->findChild<QQuickItem*>("fleetTableToggle");
+            auto *galleryToggle = window->findChild<QQuickItem*>("fleetGalleryToggle");
+            auto *inspector = window->findChild<QQuickItem*>("vehicleInspector");
+            if (!tableToggle || !galleryToggle || !inspector) {
+                qCritical() << "Missing native keyboard test controls"; app.exit(21); return;
+            }
+            tableToggle->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window, Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (window->property("gallery").toBool()) {
+                qCritical() << "Space did not activate Table button"; app.exit(22); return;
+            }
+            auto *row = window->findChild<QQuickItem*>("fleetTableRow");
+            if (!row || !row->property("vehicleId").isValid()) {
+                qCritical() << "Qt Table delegate not found"; app.exit(23); return;
+            }
+            const QString expectedId = row->property("vehicleId").toString();
+            row->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window, Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (fleet.selectedId() != expectedId) {
+                qCritical() << "Space did not select C++ row" << fleet.selectedId()
+                            << expectedId;
+                app.exit(24); return;
+            }
+            QTest::keyClick(window, Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            if (!fleet.selectedId().isEmpty()) {
+                qCritical() << "Escape did not clear Inspector"; app.exit(25); return;
+            }
+            galleryToggle->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window, Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (!window->property("gallery").toBool()) {
+                qCritical() << "Space did not restore Gallery"; app.exit(26); return;
+            }
+
+            // Resize the *same* running Qt Quick window rather than creating
+            // separate fixed-size screenshots. No restart or mock view swap.
+            window->resize(1280, 720);
+            QTimer::singleShot(300, &app, [&, window, inspector] {
+                const QPointF topLeft = inspector->mapToScene(QPointF(0, 0));
+                const QPointF bottomRight = inspector->mapToScene(
+                    QPointF(inspector->width(), inspector->height()));
+                if (window->width() != 1280 || window->height() != 720 ||
+                    topLeft.x() < -1 || topLeft.y() < -1 ||
+                    bottomRight.x() > window->width() + 1 ||
+                    bottomRight.y() > window->height() + 1) {
+                    qCritical() << "Live compact resize clipped Inspector"
+                                << topLeft << bottomRight
+                                << window->width() << window->height();
+                    app.exit(27); return;
+                }
+                window->resize(1500, 860);
+                QTimer::singleShot(200, &app, [&, window] {
+                    if (window->size() != QSize(1500, 860)) {
+                        qCritical() << "Live wide resize failed" << window->size();
+                        app.exit(28); return;
+                    }
+                    qInfo() << "P2 REAL keyboard Space/Escape and live compact/wide resize PASS";
+                    app.exit(0);
+                });
+            });
+        });
+    }
+    if (parser.isSet("dpi-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 30;
+        // 1024x660 logical: remains inside a 1920x1080 hosted desktop at 1.5x.
+        window->resize(1024, 660);
+        QTimer::singleShot(850, &app, [&, window] {
+            bool valid = false;
+            const double requested = qEnvironmentVariable("QT_SCALE_FACTOR").toDouble(&valid);
+            const double actual = window->devicePixelRatio();
+            const QImage shot = window->grabWindow();
+            const QSize expected(qRound(window->width() * actual),
+                                 qRound(window->height() * actual));
+            if (!valid || requested < 1.2 || std::abs(actual-requested) > 0.02 ||
+                shot.isNull() || std::abs(shot.width() - expected.width()) > 2 ||
+                std::abs(shot.height() - expected.height()) > 2) {
+                qCritical() << "Synthetic DPI image mismatch; requested" << requested
+                            << "actual DPR" << actual << "image" << shot.size()
+                            << "expected" << expected;
+                app.exit(31); return;
+            }
+            const QString file = QString("p2-qt-synthetic-%1.png")
+                                    .arg(QString::number(requested, 'f', 2));
+            if (!shot.save(file, "PNG")) { app.exit(32); return; }
+            qInfo() << "P2 synthetic DPI PASS" << requested << actual << shot.size();
+            app.exit(0);
         });
     }
     return app.exec();
