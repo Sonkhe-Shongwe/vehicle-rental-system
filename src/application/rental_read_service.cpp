@@ -43,7 +43,7 @@ RentalReadService::RentalReadService(const RentalSystem &system, Today today)
     : m_system(system), m_today(std::move(today)) {}
 
 QList<RentalRecordSummary> RentalReadService::records() const {
-    const QDate today = m_today ? m_today() : QDate();
+    const QDate today = m_today ? m_today() : m_system.today();
     const QList<Rental*> source = m_system.getRentals();
     QList<RentalRecordSummary> result;
     result.reserve(source.size());
@@ -70,6 +70,6 @@ std::optional<RentalRecordSummary> RentalReadService::recordById(
     const Rental *rental = m_system.findRentalById(id);
     if (rental == nullptr)
         return std::nullopt;
-    const QDate today = m_today ? m_today() : QDate();
+    const QDate today = m_today ? m_today() : m_system.today();
     return makeSummary(*rental, today);
 }

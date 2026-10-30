@@ -16,10 +16,10 @@ RentalReturnResult RentalReturnService::returnById(const QString &id) {
     if (snapshot->status != RentalRecordStatus::Active)
         return {RentalReturnError::NotActive, {}};
 
-    const QDate today = m_today();
+    const QDate today = m_today ? m_today() : m_system.today();
     // Do not call legacy mutation with invalid, pre-start or future dates.
     if (!today.isValid() || today < snapshot->startDate ||
-        today > QDate::currentDate())
+        today > m_system.today())
         return {RentalReturnError::InvalidReturnDate, {}};
 
     // Legacy RentalSystem owns persistence AND rollback after QSaveFile

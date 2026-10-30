@@ -25,7 +25,7 @@ public:
                             std::function<void()> refreshFleet,
                             QObject *parent = nullptr,
                             RentalQuoteService::Today today =
-                                [] { return QDate::currentDate(); });
+                                {});
 
     bool canConfirm() const { return m_reviewed.has_value(); }
     QString reviewedVehicleId() const {

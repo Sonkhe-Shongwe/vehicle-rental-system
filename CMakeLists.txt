@@ -244,6 +244,28 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_archive_controller_tests)
 endif()
 
+# P3 repository/clock injection: real in-memory storage failpoints and
+# historical fake-time booking/return/archiving, no data schema migration.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_injection_tests
+        tests/p3_storage_clock_injection_tests.cpp
+        src/application/rental_quote_service.cpp
+        src/application/rental_confirm_service.cpp
+        src/application/rental_read_service.cpp
+        src/application/rental_return_controller.h
+        src/application/rental_return_controller.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_injection_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_injection_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_injection
+        COMMAND vehicle_rental_p3_injection_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)

@@ -36,7 +36,7 @@ class RentalReadService final {
 public:
     using Today = std::function<QDate()>;
     explicit RentalReadService(const RentalSystem &system,
-                               Today today = [] { return QDate::currentDate(); });
+                               Today today = {});
 
     QList<RentalRecordSummary> records() const;
     QList<RentalRecordSummary> recordsByStatus(RentalRecordStatus status) const;

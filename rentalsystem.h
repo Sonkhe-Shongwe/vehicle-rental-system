@@ -4,11 +4,24 @@
 #include <QList>
 #include <QString>
 #include <QDate>
+#include <QByteArray>
+#include <functional>
+#include <memory>
+#include <optional>
 
 #include "vehicle.h"
 #include "car.h"
 #include "motorcycle.h"
 #include "rental.h"
+
+// Small injectable I/O boundary. Implementations must offer atomic replace
+// semantics for each independent legacy text file. The default uses QSaveFile.
+class RentalStorage {
+public:
+    virtual ~RentalStorage() = default;
+    virtual std::optional<QByteArray> read(const QString &path) const = 0;
+    virtual bool writeAtomic(const QString &path, const QByteArray &data) = 0;
+};
 
 // Central business-logic class for the fleet and rental transactions.
 class RentalSystem
@@ -19,9 +32,15 @@ private:
 
     QString vehiclesFileName;
     QString rentalsFileName;
+    std::shared_ptr<RentalStorage> storage;
+    std::function<QDate()> m_today;
 
 public:
-    explicit RentalSystem(const QString& dataDirectory = QString());
+    using Today = std::function<QDate()>;
+    explicit RentalSystem(const QString& dataDirectory = QString(),
+                          std::shared_ptr<RentalStorage> store = {},
+                          Today today = {});
+    QDate today() const;
     ~RentalSystem();
 
     RentalSystem(const RentalSystem&) = delete;

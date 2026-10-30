@@ -27,7 +27,7 @@ class RentalReturnService final {
 public:
     using Today = std::function<QDate()>;
     RentalReturnService(RentalSystem &system, const RentalReadService &reads,
-                        Today today = [] { return QDate::currentDate(); });
+                        Today today = {});
     RentalReturnResult returnById(const QString &rentalId);
 
 private:
@@ -49,7 +49,7 @@ public:
                            std::function<void()> refreshFleet,
                            QObject *parent = nullptr,
                            RentalReturnService::Today today =
-                               [] { return QDate::currentDate(); });
+                               {});
 
     bool canReturnSelected() const;
     QString lastReturnMessage() const { return m_lastMessage; }
