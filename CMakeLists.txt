@@ -182,6 +182,26 @@ if(BUILD_TESTING)
         COMMAND vehicle_rental_p3_rental_filter_tests)
 endif()
 
+# P3-I: typed domain return action and post-commit-only Qt model refresh.
+# Qt Core, disposable fictional fixtures, rollback forced-failure check.
+if(BUILD_TESTING)
+    add_executable(vehicle_rental_p3_return_controller_tests
+        tests/p3_rental_return_controller_tests.cpp
+        src/application/rental_return_controller.h
+        src/application/rental_return_controller.cpp
+        src/application/rental_list_model.h
+        src/application/rental_list_model.cpp
+        src/application/rental_read_service.cpp
+        vehicle.cpp car.cpp motorcycle.cpp rental.cpp rentalsystem.cpp
+    )
+    target_include_directories(vehicle_rental_p3_return_controller_tests
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(vehicle_rental_p3_return_controller_tests
+        PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+    add_test(NAME vehicle_rental_p3_return_controller
+        COMMAND vehicle_rental_p3_return_controller_tests)
+endif()
+
 # Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
 # CTest, and CI remain unchanged until the native Qt Quick kit is validated.
 option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)

@@ -517,8 +517,61 @@ ApplicationWindow {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Fictional records only. Dates, statuses and totals come from C++. No booking or return actions are available in this proof."
+                        text: "Fictional demo records only. Return uses the existing C++ domain and saves to an isolated temporary copy. Booking and archive actions are not available."
                         color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Button {
+                            id: returnSelectedButton
+                            objectName: "rentalReturnButton"
+                            text: "Return selected rental"
+                            activeFocusOnTab: true
+                            enabled: rentalActions.canReturnSelected
+                            Accessible.name: "Return the selected active rental"
+                            onClicked: returnConfirmation.open()
+                        }
+                        Label {
+                            objectName: "rentalReturnMessage"
+                            Layout.fillWidth: true
+                            color: ink
+                            wrapMode: Text.WordWrap
+                            text: rentalActions.lastReturnMessage
+                        }
+                    }
+                    Dialog {
+                        id: returnConfirmation
+                        objectName: "rentalReturnDialog"
+                        title: "Confirm rental return"
+                        modal: true
+                        focus: true
+                        anchors.centerIn: parent
+                        standardButtons: Dialog.NoButton
+                        contentItem: ColumnLayout {
+                            spacing: 12
+                            Label {
+                                text: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
+                                color: navy
+                            }
+                            RowLayout {
+                                Button {
+                                    objectName: "rentalReturnCancel"
+                                    text: "Cancel"
+                                    activeFocusOnTab: true
+                                    onClicked: returnConfirmation.close()
+                                }
+                                Button {
+                                    objectName: "rentalReturnConfirm"
+                                    text: "Confirm return"
+                                    activeFocusOnTab: true
+                                    enabled: rentalActions.canReturnSelected
+                                    onClicked: {
+                                        returnConfirmation.close()
+                                        rentalActions.returnSelected()
+                                    }
+                                }
+                            }
+                        }
                     }
                     RowLayout {
                         Layout.fillWidth: true
