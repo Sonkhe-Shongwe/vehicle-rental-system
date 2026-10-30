@@ -1,5 +1,14 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — Final independent design audit and P0–P9 transparency baseline
+
+- Final selected-theme offline **browser** prototype now supports a clean product-view mode, corrected modal keyboard trap and focus restoration, Fleet Table Space/Enter selection, distinct due/overdue status semantics, inline invalid-day and empty-fleet guidance, and compact 1280×720 visible rental CTA + quote. No Qt/C++ code changed.
+- **Actually passed** on Debian 13 Chromium 144 Playwright: 19/19 existing browser regression checks plus 63/63 new targeted UX/keyboard assertions, fourteen clean-mode browser screenshots at two desktop sizes, 1024×768 overflow smoke. Exact final HTML SHA-256 `0de4376e35b08ef073399da23455ce8fe860e502b2207b145529435f055a3363`. These are **not Windows/Qt tests**; old failed design attempts are still historical.
+- Independent design judgment: coherent native implementation **reference candidate**. Not a replacement for owner approval. **R1 remains open:** broad accessibility manual audit, licensed model photography and owner whole-product approval pending; P2 native Qt Quick not begun.
+- Published [P0–P9 phase weights/progress](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): 74 checks, P0 historical 5/5, P1 browser 7/10, P2–P9 0 checks, **13.4% evidence-weighted programme coverage**, explicitly not release readiness. Full detail and spreadsheet are available as conversation attachments.
+- Source, fixtures, Qt CI and stable main unchanged; Draft PR #4 stays unmerged. Next accepted gate is still owner review/approval and R1 completion, then bounded Windows QML feasibility.
+
+
 ## 30 October 2026 — Owner theme applied to whole-product browser design review
 
 - Built a self-contained **HTML/CSS/JS** high-fidelity review applying the owner-selected Midnight Navy / Emerald Teal / Cloud White proposal to **Overview, Fleet Gallery + Table + selected inspector, simulated Add Vehicle form, New Rental Vehicle/Customer/Review, Active, History and Return**. Original generic vector vehicles are *illustrative only*, and no model photography has been approved.
