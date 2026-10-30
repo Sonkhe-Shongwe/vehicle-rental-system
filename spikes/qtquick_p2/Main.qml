@@ -245,15 +245,15 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
-                                TextField {
+                                AccessibleTextField {
                                     id: search
+                                    fieldPurpose: "Search fleet"
                                     objectName: "fleetSearchField"
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 150
                                     placeholderText: "Search model or vehicle ID"
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
-                                    Accessible.name: "Search fleet"
                                 }
                                 ComboBox {
                                     Layout.preferredWidth: 138
@@ -425,9 +425,8 @@ ApplicationWindow {
                                             text: "R " + vehicleRow.dailyRate.toFixed(2)
                                             color: navy
                                         }
-                                        Label {
-                                            text: vehicleRow.available ? "Available" : "Rented"
-                                            color: vehicleRow.available ? teal : navy
+                                        RentalStatusLabel {
+                                            state: vehicleRow.available ? "Available" : "Rented"
                                         }
                                     }
                                 }
@@ -528,11 +527,8 @@ ApplicationWindow {
                             Accessible.name: "Create a new fictional rental"
                             onClicked: bookingDialog.open()
                         }
-                        Label {
+                        DomainMessage {
                             objectName: "rentalBookingMessage"
-                            Layout.fillWidth: true
-                            color: ink
-                            wrapMode: Text.WordWrap
                             text: bookingActions.lastMessage
                         }
                     }
@@ -561,12 +557,12 @@ ApplicationWindow {
                             }
                             RowLayout {
                                 Label { text: "Vehicle ID"; color: navy; Layout.preferredWidth: 92 }
-                                TextField {
+                                AccessibleTextField {
                                     id: bookingVehicleId
+                                    fieldPurpose: "Vehicle ID for rental quote"
                                     objectName: "bookingVehicleId"
                                     Layout.fillWidth: true
                                     placeholderText: "C001"
-                                    Accessible.name: "Vehicle ID for rental quote"
                                     onTextEdited: bookingActions.discardPreview()
                                 }
                                 Label { text: "Days"; color: navy }
@@ -585,31 +581,28 @@ ApplicationWindow {
                                 activeFocusOnTab: true
                                 onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
                             }
-                            Label {
+                            DomainMessage {
                                 objectName: "bookingQuoteSummary"
-                                Layout.fillWidth: true
-                                wrapMode: Text.WordWrap
-                                color: navy
-                                font.bold: bookingActions.canConfirm
+                                emphasized: bookingActions.canConfirm
                                 text: bookingActions.quoteSummary
                             }
                             Label {
                                 text: "Customer details are sent only to the C++ commit service."
                                 color: ink; wrapMode: Text.WordWrap
                             }
-                            TextField {
+                            AccessibleTextField {
                                 id: bookingCustomer
+                                fieldPurpose: "Fictional customer name"
                                 objectName: "bookingCustomer"
                                 Layout.fillWidth: true
                                 placeholderText: "Customer name"
-                                Accessible.name: "Fictional customer name"
                             }
-                            TextField {
+                            AccessibleTextField {
                                 id: bookingPhone
+                                fieldPurpose: "Fictional contact number"
                                 objectName: "bookingPhone"
                                 Layout.fillWidth: true
                                 placeholderText: "Contact number"
-                                Accessible.name: "Fictional contact number"
                             }
                             RowLayout {
                                 Layout.fillWidth: true
@@ -660,104 +653,43 @@ ApplicationWindow {
                             Accessible.name: "Archive selected returned rental"
                             onClicked: archiveConfirmation.open()
                         }
-                        Label {
+                        DomainMessage {
                             objectName: "rentalReturnMessage"
-                            Layout.fillWidth: true
-                            color: ink
-                            wrapMode: Text.WordWrap
                             text: rentalActions.lastReturnMessage
                         }
                     }
-                    Dialog {
+                    ConfirmActionDialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
-                        width: Math.min(480, window.width - 80)
-                        closePolicy: Popup.CloseOnEscape
-                        onClosed: Qt.callLater(function() {
-                            if (returnSelectedButton.visible && returnSelectedButton.enabled)
-                                returnSelectedButton.forceActiveFocus(Qt.TabFocusReason)
-                            else if (rentalList.visible)
-                                rentalList.forceActiveFocus(Qt.TabFocusReason)
-                        })
-                        title: "Confirm rental return"
-                        modal: true
-                        focus: true
                         anchors.centerIn: parent
-                        standardButtons: Dialog.NoButton
-                        contentItem: ColumnLayout {
-                            spacing: 12
-                            Label {
-                                text: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
-                                color: navy
-                            }
-                            RowLayout {
-                                Button {
-                                    objectName: "rentalReturnCancel"
-                                    text: "Cancel"
-                                    activeFocusOnTab: true
-                                    onClicked: returnConfirmation.close()
-                                }
-                                Button {
-                                    objectName: "rentalReturnConfirm"
-                                    text: "Confirm return"
-                                    activeFocusOnTab: true
-                                    enabled: rentalActions.canReturnSelected
-                                    onClicked: {
-                                        returnConfirmation.close()
-                                        rentalActions.returnSelected()
-                                    }
-                                }
-                            }
-                        }
+                        title: "Confirm rental return"
+                        question: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
+                        acceptText: "Confirm return"
+                        acceptName: "rentalReturnConfirm"
+                        cancelName: "rentalReturnCancel"
+                        canAccept: rentalActions.canReturnSelected
+                        restoreFocusTo: returnSelectedButton
+                        fallbackFocusTo: rentalList
+                        onConfirmed: rentalActions.returnSelected()
                     }
-                    Dialog {
+                    ConfirmActionDialog {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
-                        width: Math.min(480, window.width - 80)
-                        closePolicy: Popup.CloseOnEscape
-                        onClosed: Qt.callLater(function() {
-                            if (archiveActionButton.visible && archiveActionButton.enabled)
-                                archiveActionButton.forceActiveFocus(Qt.TabFocusReason)
-                            else if (rentalList.visible)
-                                rentalList.forceActiveFocus(Qt.TabFocusReason)
-                        })
-                        title: "Archive returned rental"
-                        modal: true
-                        focus: true
                         anchors.centerIn: parent
-                        standardButtons: Dialog.NoButton
-                        contentItem: ColumnLayout {
-                            spacing: 12
-                            Label {
-                                text: "Move " + rentalsModel.selectedRentalId +
-                                      " to archived history? The record will not be deleted."
-                                color: navy; wrapMode: Text.WordWrap
-                            }
-                            RowLayout {
-                                Button {
-                                    objectName: "rentalArchiveCancel"
-                                    text: "Cancel"
-                                    activeFocusOnTab: true
-                                    onClicked: archiveConfirmation.close()
-                                }
-                                Button {
-                                    objectName: "rentalArchiveConfirm"
-                                    text: "Confirm archive"
-                                    activeFocusOnTab: true
-                                    enabled: archiveActions.canArchiveSelected
-                                    onClicked: {
-                                        archiveConfirmation.close()
-                                        archiveActions.archiveSelected()
-                                    }
-                                }
-                            }
-                        }
+                        title: "Archive returned rental"
+                        question: "Move " + rentalsModel.selectedRentalId +
+                                  " to archived history? The record will not be deleted."
+                        acceptText: "Confirm archive"
+                        acceptName: "rentalArchiveConfirm"
+                        cancelName: "rentalArchiveCancel"
+                        canAccept: archiveActions.canArchiveSelected
+                        restoreFocusTo: archiveActionButton
+                        fallbackFocusTo: rentalList
+                        onConfirmed: archiveActions.archiveSelected()
                     }
-                    Label {
+                    DomainMessage {
+                        objectName: "rentalArchiveMessage"
                         text: archiveActions.lastArchiveMessage
-                        color: ink
-                        wrapMode: Text.WordWrap
-                        Layout.fillWidth: true
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -850,9 +782,8 @@ ApplicationWindow {
                                             color: ink
                                             Layout.preferredWidth: 94
                                         }
-                                        Label {
-                                            text: rentalRow.status
-                                            color: rentalRow.status === "Active" ? teal : navy
+                                        RentalStatusLabel {
+                                            state: rentalRow.status
                                             Layout.preferredWidth: 100
                                         }
                                         Label {
