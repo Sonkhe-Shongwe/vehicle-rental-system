@@ -1,3 +1,5 @@
+> **30 October 2026 CANONICAL CONTINUITY ANCHOR:** Read [Current State](PROJECT_STATE_CANONICAL.md), [Full Audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) and [General-Purpose Prompt](AI_CONTINUATION_PROMPT.md). P2 Qt Quick compiled/ran on owner's Windows 6.10.2 MinGW kit, Gallery/Table/Inspector/Available/Rate/Escape manually verified. P2 physical DPI/extended keyboard/go-no-go and P1 full design approval remain open. 15/74 accepted checks, 18.4% weighted. The notes below are chronological history, including older claims that Qt was not yet built.
+
 # Current Continuity — Product Rebuild (Post-Reset)
 
 ## 30 October 2026 — Hosted-verifiable portable P2 Windows acceptance kit ready
