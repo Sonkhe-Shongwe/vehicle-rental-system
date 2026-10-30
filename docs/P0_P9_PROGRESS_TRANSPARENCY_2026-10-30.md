@@ -1,3 +1,7 @@
+> **30 October 2026 verified phase increment:** P2's three hosted-native acceptance checks for QML compile/launch, five-vehicle typed domain model and Gallery/Table/Inspector shared state passed [exact-source Linux/Windows CI](P2_QTQUICK_NATIVE_CI_VERIFIED_2026-10-30.md). **P0 5/5, P1 7/10, P2 3/6 (50%), P3–P9 0**; weighted evidence coverage **18.4%**, NOT release readiness. Real owner Windows Qt Creator/physical scaling/toolkit go-no-go pending. Formula-driven Excel tracker updated and delivered in conversation. Previous 13.4% table below is the historical 30 October morning baseline and is superseded by this checkpoint; do not double-count it.
+
+> **30 October 2026 P2 implementation status:** [Source prepared, Qt6 configure blocked](P2_QTQUICK_SPIKE_SOURCE_REPORT_2026-10-30.md). Do not count uncompiled new code toward verified progress. **Baseline unchanged:** P0 5/5, P1 7/10, P2 0/6, weighted delivery coverage **13.4%**. Owner design signoff and licensed photos remain open.
+
 # Rental Studio 2.0 | P0–P9 Acceptance and Progress Governance
 
 **30 October 2026 | Evidence-based programme baseline, not a release forecast.**

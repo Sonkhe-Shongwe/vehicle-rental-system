@@ -82,3 +82,13 @@ if(BUILD_TESTING)
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
         TIMEOUT 45)
 endif()
+
+# Isolated P2 technical spike. OFF by default: legacy Qt Widgets builds,
+# CTest, and CI remain unchanged until the native Qt Quick kit is validated.
+option(BUILD_QTQUICK_P2_SPIKE "Build non-mutating Qt Quick Fleet proof" OFF)
+if(BUILD_QTQUICK_P2_SPIKE)
+    if(NOT QT_VERSION_MAJOR EQUAL 6)
+        message(FATAL_ERROR "P2 Qt Quick spike requires Qt 6.5 or later.")
+    endif()
+    add_subdirectory(spikes/qtquick_p2)
+endif()
