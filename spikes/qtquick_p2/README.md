@@ -24,3 +24,7 @@ This branch's `spikes/qtquick_p2/` is a real, read-only C++/Qt Quick **Fleet fea
 
 **Owner verification still needed:** In GitHub Desktop Fetch/Pull on `spike/p2-qtquick-fleet-20261030`, rebuild in Qt Creator Qt 6.10.2 MinGW. Click the Ford card to give Gallery focus, then press Right (Honda), Down (Corolla), Left (Hyundai), Up (Ford). Switch Table, select a row and use Down/Up. Verify focus outline, selection and rate/Inspector match each key, plus Tab and Shift+Tab don't trap. Report input smoothness/accuracy. The owner confirmed Tab/Shift+Tab work in prior build, but **that prior local code scrolled for arrows**; do not claim the new code already owner-approved. P2 remains 3/6, overall weighted 18.4%.
 
+
+## Latest sorted/filtered keyboard focus edge verification
+
+[Focus and filter edge report](../../docs/P2_FLEET_FOCUS_EDGES_VERIFIED_2026-10-30.md): verified exact code `0f5668d`, **10/10 CTests on both native Linux/Windows**, [Actions 41065470256](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41065470256). New test `rental_studio_p2_focus_edges` checks hidden selection dismiss, focus-ID after sort, no boundary scroll, empty list and responsive grid. Earlier failed run retained. **User local Qt Creator 6.10.2 MinGW hardware review still required**; no P2 completion credit or production data touched.
