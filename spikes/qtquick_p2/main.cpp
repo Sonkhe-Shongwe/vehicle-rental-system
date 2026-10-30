@@ -300,6 +300,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
     parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
+    parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -1435,6 +1436,124 @@ int main(int argc, char *argv[]) {
             qInfo()<<"P4 real shared shell PASS"<<size
                    <<"sidebar Up/Down/Right, native Search, separate focus,"
                    <<"modal Escape priority/restored focus and no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p4-components-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 210;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1200,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            QQuickItem *root=window->contentItem();
+            auto *newRental=find(find,root,"rentalNewBookingButton");
+            if(!newRental) {qCritical()<<"P4 New Rental control missing";app.exit(211);return;}
+            const auto press=[&](QQuickItem *item) {
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QTest::qWait(90);
+            };
+            press(newRental);
+            auto *vehicle=find(find,root,"bookingVehicleId");
+            auto *customer=find(find,root,"bookingCustomer");
+            auto *phone=find(find,root,"bookingPhone");
+            auto *quote=find(find,root,"bookingQuoteSummary");
+            auto *cancel=find(find,root,"bookingCancelButton");
+            if(!vehicle||!customer||!phone||!quote||!cancel ||
+               vehicle->height()<43 || customer->height()<43 || phone->height()<43) {
+                qCritical()<<"P4 reusable rental field/quote UI missing or too small";
+                app.exit(212);return;
+            }
+            vehicle->forceActiveFocus(Qt::TabFocusReason);
+            for(Qt::Key key : {Qt::Key_C,Qt::Key_0,Qt::Key_0,Qt::Key_1})
+                QTest::keyClick(window,key);
+            QTest::keyClick(window,Qt::Key_Left);
+            QCoreApplication::processEvents();
+            if(!vehicle->hasActiveFocus() ||
+               vehicle->property("text").toString()!="C001" ||
+               !fleet.selectedId().isEmpty()) {
+                qCritical()<<"P4 text caret or C++ selection changed unexpectedly";
+                app.exit(213);return;
+            }
+            press(cancel);
+            QTest::qWait(110);
+            if(!newRental->hasActiveFocus() || bookingActions.canConfirm()) {
+                qCritical()<<"P4 Booking Cancel focus/quote invalidation missing";
+                app.exit(214);return;
+            }
+            auto *returnButton=find(find,root,"rentalReturnButton");
+            if(!returnButton || !rentalModel.selectById("R001") ||
+               !returnButton->isEnabled()) {
+                qCritical()<<"P4 active fictional rental not selectable";
+                app.exit(215);return;
+            }
+            press(returnButton);
+            auto *returnCancel=find(find,root,"rentalReturnCancel");
+            auto *returnConfirm=find(find,root,"rentalReturnConfirm");
+            if(!returnCancel||!returnConfirm||!returnConfirm->isEnabled()) {
+                qCritical()<<"P4 shared Return confirm/cancel controls unavailable";
+                app.exit(216);return;
+            }
+            press(returnCancel);
+            QTest::qWait(110);
+            if(!returnButton->hasActiveFocus() ||
+               system.findRentalById("R001")->getIsReturned() ||
+               rentalModel.selectedRentalId()!="R001") {
+                qCritical()<<"P4 Return Cancel changed domain/selection/focus";
+                app.exit(217);return;
+            }
+            if(!rentalModel.selectById("R002")) {
+                qCritical()<<"P4 returned demo rental absent";
+                app.exit(218);return;
+            }
+            auto *archiveButton=find(find,root,"rentalArchiveButton");
+            if(!archiveButton || !archiveButton->isEnabled()) {
+                qCritical()<<"P4 Archive action not eligible";
+                app.exit(219);return;
+            }
+            press(archiveButton);
+            auto *archiveCancel=find(find,root,"rentalArchiveCancel");
+            auto *archiveConfirm=find(find,root,"rentalArchiveConfirm");
+            if(!archiveCancel||!archiveConfirm||!archiveConfirm->isEnabled()) {
+                qCritical()<<"P4 shared Archive confirm/cancel controls unavailable";
+                app.exit(220);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(155);
+            if(!archiveButton->hasActiveFocus() ||
+               system.findRentalById("R002")->getIsArchived() ||
+               rentalModel.selectedRentalId()!="R002") {
+                qCritical()<<"P4 Archive Escape stole selection/changed domain";
+                app.exit(221);return;
+            }
+            QByteArray vehiclesNow,rentalsNow,tempRentalsNow;
+            if(!readFile(vehicles,&vehiclesNow) ||
+               !readFile(rentals,&rentalsNow) ||
+               !readFile(disposable.filePath("rentals.txt"),&tempRentalsNow) ||
+               vehiclesNow!=beforeVehicles || rentalsNow!=beforeRentals ||
+               tempRentalsNow!=beforeRentals) {
+                qCritical()<<"P4 Cancel/Escape wrote domain or demo ledger";
+                app.exit(222);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage shot=window->grabWindow();
+            if(shot.isNull() ||
+               shot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !shot.save("p4-qt-shared-components-"+size+".png","PNG")) {
+                qCritical()<<"P4 reusable component screenshot mismatch";
+                app.exit(223);return;
+            }
+            qInfo()<<"P4 shared field, domain message, Return/Archive modal PASS"
+                   <<size<<"keyboard Cancel/Escape and no writes";
             app.exit(0);
         });
     }

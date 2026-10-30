@@ -72,6 +72,7 @@ jobs:
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
             build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -167,5 +168,6 @@ jobs:
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
             build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
           if-no-files-found: ignore
           retention-days: 7

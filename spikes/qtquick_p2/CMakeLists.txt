@@ -112,6 +112,16 @@ if(BUILD_TESTING)
         rental_studio_p4_shared_shell_wide
         rental_studio_p4_shared_shell_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+    # Real component extraction regressions: native fields + shared modal
+    # confirmation with explicit Cancel/Escape and zero disk mutations.
+    add_test(NAME rental_studio_p4_components_wide
+        COMMAND rental_studio_qtquick_spike --p4-components-smoke)
+    add_test(NAME rental_studio_p4_components_compact
+        COMMAND rental_studio_qtquick_spike --p4-components-smoke --compact)
+    set_tests_properties(
+        rental_studio_p4_components_wide
+        rental_studio_p4_components_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES
