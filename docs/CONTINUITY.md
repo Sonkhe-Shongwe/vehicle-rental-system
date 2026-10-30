@@ -1,5 +1,12 @@
 # Current Continuity — Product Rebuild (Post-Reset)
 
+## 30 October 2026 — P2 native keyboard and synthetic DPI tests verified, owner physical gate open
+
+- [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) current tested source `eeb08485245ef127d6a9e53c2d80ec68bca66c0b` passed [native Qt6.8.3 CI run 41045646448](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045646448): **8/8 Ubuntu/GCC** and **8/8 Windows Server/MSVC** CTests, retaining two prior domain/Widgets tests, typed C++ Fleet, Gallery/Table screenshots, QTest Space/Escape and live resize, and synthetic 125/150% DPI checks.
+- Genuine failed first expanded run [41045247197](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41045247197) (7/8 each) fixed by locating dynamically-instantiated Table row through QQuickItem visual tree; no tests bypassed.
+- [Full evidence on P2 branch](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/blob/spike/p2-qtquick-fleet-20261030/docs/P2_NATIVE_INPUT_DPI_VERIFIED_2026-10-30.md). Keep **P2 3/6 (50%) / weighted 18.4%** because physical Windows owner display/Qt Creator and toolkit go/no-go still PENDING. P1 final owner approval, imagery and accessibility remain outstanding; stable main and both Draft PRs remain unmerged.
+
+
 ## 30 October 2026 — Native Qt Quick P2 passes independent Linux/Windows CI (review branch)
 
 - [Draft PR #6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/6) preserves the Widgets baseline and implements an opt-in Qt6 Quick/C++ Fleet proof using a disposable fictional copy. Exact source `f45147d05d3449ffc89514fb1e685e2990c843fc` passed Qt6.8.3 Ubuntu/GCC **5/5** CTests and Windows Server 2022/MSVC **5/5** CTests in [run 41043137443](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41043137443). Compiled Qt Gallery/Table PNGs at both requested sizes examined.
