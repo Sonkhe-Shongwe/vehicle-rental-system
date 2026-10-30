@@ -1,3 +1,5 @@
+> **30 October 2026 technical strategy research:** [Complete Engineering Masterplan and Risk Register](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md). Suggested architecture adds typed application services/models and storage abstraction while keeping the C++ rules authoritative; stage the Qt Quick feasibility, feature parity and SQLite migration in separate testable iterations. **Not implemented.**
+
 # Architecture — Current Source and Rebuild Options
 
 **Status:** Architecture options for owner-authorised full product rebuild. This is a **plan**, not deployed code.  
