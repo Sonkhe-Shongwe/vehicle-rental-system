@@ -7,7 +7,9 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio 2.0 · operational overview · fictional demo"
+    title: persistentFictionalDemo
+           ? "Rental Studio 2.0 · persistent fictional-only demo"
+           : "Rental Studio 2.0 · operational overview · fictional demo"
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
@@ -615,7 +617,9 @@ ApplicationWindow {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
+                        text: persistentFictionalDemo
+                              ? "Persistent fictional-only demo. Bookings survive restart in a fixed local synthetic workspace. No real customer details."
+                              : "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
                         color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
                     }
                     RowLayout {
@@ -703,7 +707,9 @@ ApplicationWindow {
                                 text: bookingActions.lastMessage
                             }
                             Label {
-                                text: "Customer details are sent only to the C++ commit service."
+                                text: persistentFictionalDemo
+                                      ? "Fixed fictional contact is used in persistent demo mode. No real customer details."
+                                      : "Customer details are sent only to the C++ commit service."
                                 color: ink; wrapMode: Text.WordWrap
                             }
                             AccessibleTextField {
@@ -712,6 +718,7 @@ ApplicationWindow {
                                 objectName: "bookingCustomer"
                                 Layout.fillWidth: true
                                 placeholderText: "Customer name"
+                                enabled: !persistentFictionalDemo
                             }
                             AccessibleTextField {
                                 id: bookingPhone
@@ -719,6 +726,7 @@ ApplicationWindow {
                                 objectName: "bookingPhone"
                                 Layout.fillWidth: true
                                 placeholderText: "Contact number"
+                                enabled: !persistentFictionalDemo
                             }
                             RowLayout {
                                 Layout.fillWidth: true
@@ -739,7 +747,9 @@ ApplicationWindow {
                                     enabled: bookingActions.canConfirm
                                     activeFocusOnTab: true
                                     onClicked: {
-                                        if (bookingActions.confirm(bookingCustomer.text, bookingPhone.text)) {
+                                        if (bookingActions.confirm(
+                                            persistentFictionalDemo ? "Fictional Demo Session" : bookingCustomer.text,
+                                            persistentFictionalDemo ? "0000000000" : bookingPhone.text)) {
                                             window.bookingReceiptNotice = bookingActions.lastMessage
                                             bookingCustomer.clear()
                                             bookingPhone.clear()

@@ -69,6 +69,14 @@ void RentalBookingController::discardPreview() {
 
 bool RentalBookingController::confirm(const QString &customerName,
                                        const QString &phoneNumber) {
+    if(m_persistentFictionalOnly &&
+       (customerName!=QStringLiteral("Fictional Demo Session") ||
+        phoneNumber!=QStringLiteral("0000000000"))) {
+        m_message=QStringLiteral("Persistent demo accepts fictional contact only.");
+        emit messageChanged();
+        emit bookingRejected(RentalConfirmationError::InvalidCustomerName);
+        return false;
+    }
     if (!m_reviewed) {
         m_message=QStringLiteral("Preview a valid quote first.");
         emit messageChanged();

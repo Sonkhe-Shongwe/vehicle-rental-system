@@ -27,6 +27,7 @@ public:
                             RentalQuoteService::Today today =
                                 {});
 
+    void setPersistentFictionalOnly(bool active) { m_persistentFictionalOnly=active; }
     bool canConfirm() const { return m_reviewed.has_value(); }
     QString reviewedVehicleId() const {
         return m_reviewed ? m_reviewed->vehicleId : QString();
@@ -51,6 +52,7 @@ private:
     RentalConfirmService m_confirm;
     RentalListModel &m_rentals;
     std::function<void()> m_refreshFleet;
+    bool m_persistentFictionalOnly=false;
     std::optional<RentalQuotePreview> m_reviewed;
     QString m_message;
     QString m_lastRentalId;

@@ -1,6 +1,7 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
+    p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
@@ -43,6 +44,23 @@ qt_add_qml_module(rental_studio_qtquick_spike
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
+    # Real separate executable processes, opt-in fixed Qt TEST location.
+    # Cleanup has its own fixture so CTest also runs it after failures.
+    add_test(NAME rental_studio_p5_session_seed
+        COMMAND rental_studio_qtquick_spike --p5-session-seed-test)
+    add_test(NAME rental_studio_p5_session_reopen
+        COMMAND rental_studio_qtquick_spike --p5-session-reopen-test)
+    add_test(NAME rental_studio_p5_session_clean
+        COMMAND rental_studio_qtquick_spike --p5-session-clean-test)
+    set_tests_properties(rental_studio_p5_session_seed PROPERTIES
+        FIXTURES_SETUP p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_reopen PROPERTIES
+        FIXTURES_REQUIRED p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_clean PROPERTIES
+        FIXTURES_CLEANUP p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
     add_test(NAME rental_studio_p2_model COMMAND rental_studio_qtquick_spike --self-test)
     set_tests_properties(rental_studio_p2_model PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"

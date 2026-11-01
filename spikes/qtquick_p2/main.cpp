@@ -17,6 +17,8 @@
 #include <QPointF>
 #include <QSortFilterProxyModel>
 #include <QTemporaryDir>
+#include <QStandardPaths>
+#include "p5_synthetic_session.h"
 #include <QVariant>
 #include <cmath>
 #include "rentalsystem.h"
@@ -301,6 +303,10 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-return-smoke", "Test real QML confirmed return through C++ domain and model refresh."});
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
     parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
+    parser.addOption({"persistent-fictional-demo", "Opt-in fixed app-owned fictional session surviving restart; never real customer storage."});
+    parser.addOption({"p5-session-seed-test", "CI-only first process persists a controlled fictional booking."});
+    parser.addOption({"p5-session-reopen-test", "CI-only separate process verifies the saved rental and refuses duplicates."});
+    parser.addOption({"p5-session-clean-test", "CI-only remove the identified fixed test sandbox."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
@@ -309,6 +315,26 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
     parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
     parser.process(app);
+    const bool seedTest=parser.isSet("p5-session-seed-test");
+    const bool reopenTest=parser.isSet("p5-session-reopen-test");
+    const bool cleanupTest=parser.isSet("p5-session-clean-test");
+    const bool sessionTest=seedTest || reopenTest || cleanupTest;
+    const bool persistentDemo=parser.isSet("persistent-fictional-demo") || sessionTest;
+    if(sessionTest) {
+        // Separate standard-location test root, never a user's real session.
+        QStandardPaths::setTestModeEnabled(true);
+        QCoreApplication::setApplicationName("RentalStudioP5SyntheticTestOnly");
+    }
+    if(sessionTest && int(seedTest)+int(reopenTest)+int(cleanupTest)!=1) {
+        qCritical()<<"Only one P5 synthetic CI phase is allowed"; return 308;
+    }
+    if(persistentDemo && (parser.isSet("self-test") ||
+       parser.isSet("p5-overview-smoke") || parser.isSet("rentals-smoke") ||
+       parser.isSet("rentals-booking-smoke") || parser.isSet("p4-a11y-smoke") ||
+       parser.isSet("p4-tab-smoke"))) {
+        qCritical()<<"Persistent demo cannot combine with disposable smoke";
+        return 309;
+    }
 
     // No source-adjacent storage or external/customer-data CLI argument.
     // For a portable review kit prefer only bundled fake fixtures.
@@ -342,13 +368,27 @@ int main(int argc, char *argv[]) {
         qCritical() << "P2 fixture mismatch: refusing non-demo files";
         return 3;
     }
-    if (!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
-        !QFile::copy(rentals, disposable.filePath("rentals.txt"))) {
-        qCritical() << "Cannot create disposable demo fixture copies";
-        return 3;
+    QString dataDirectory=disposable.path();
+    const QByteArray marker=QByteArray("RENTAL_STUDIO_SYNTHETIC_ONLY_V1\n") +
+                            vehicleHash + "\n" + rentalHash + "\n";
+    if(persistentDemo) {
+        QString reason;
+        if(cleanupTest) {
+            if(!P5SyntheticSession::cleanForTest(marker,&reason)) {
+                qCritical()<<"Synthetic cleanup refused"<<reason; return 310;
+            }
+            qInfo()<<"P5 identified test session cleaned PASS"; return 0;
+        }
+        if(!P5SyntheticSession::open(beforeVehicles,beforeRentals,marker,&reason)) {
+            qCritical()<<"Synthetic-only session refused"<<reason;
+            return 311;
+        }
+        dataDirectory=P5SyntheticSession::location();
+    } else if(!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
+              !QFile::copy(rentals, disposable.filePath("rentals.txt"))) {
+        qCritical()<<"Cannot create disposable demo copies"; return 3;
     }
-
-    RentalSystem system(disposable.path());
+    RentalSystem system(dataDirectory);
     FleetController fleet(system);
     RentalReadService rentalRead(system);
     RentalListModel rentalModel(rentalRead);
@@ -356,7 +396,50 @@ int main(int argc, char *argv[]) {
                                          [&fleet]{ fleet.refreshAfterCommit(); });
     RentalBookingController bookingActions(system, rentalModel,
                                             [&fleet]{ fleet.refreshAfterCommit(); });
+    bookingActions.setPersistentFictionalOnly(persistentDemo);
     RentalArchiveController archiveActions(system, rentalRead, rentalModel);
+    if(sessionTest) {
+        const QString ledger=QDir(dataDirectory).filePath("rentals.txt");
+        if(seedTest) {
+            if(rentalModel.activeCount()!=1 ||
+               fleet.availableCount()!=4 ||
+               system.findRentalById("R003") ||
+               !bookingActions.preview("C001",3) ||
+               !bookingActions.confirm("Fictional Demo Session","0000000000") ||
+               bookingActions.lastRentalId()!="R003" ||
+               rentalModel.activeCount()!=2 ||
+               fleet.availableCount()!=3) {
+                qCritical()<<"P5 first native process did not save fictional rental";
+                return 312;
+            }
+            QByteArray changed;
+            if(!readFile(ledger,&changed)||changed==beforeRentals) return 313;
+            qInfo()<<"P5 actual process one saved fictional rental PASS";
+            return 0;
+        }
+        if(reopenTest) {
+            QByteArray beforeDuplicate,afterDuplicate;
+            if(!readFile(ledger,&beforeDuplicate) ||
+               rentalModel.activeCount()!=2 ||
+               std::abs(rentalModel.activeBookedValue()-2750.0)>0.01 ||
+               fleet.availableCount()!=3 || !system.findRentalById("R003") ||
+               !system.findVehicleById("C001") ||
+               !system.findVehicleById("C001")->getIsRented()) {
+                qCritical()<<"P5 new process did not reconstruct ledger/occupancy";
+                return 314;
+            }
+            if(bookingActions.preview("C001",3) ||
+               bookingActions.confirm("Real Person","0712345678") ||
+               !readFile(ledger,&afterDuplicate) ||
+               beforeDuplicate!=afterDuplicate ||
+               rentalModel.activeCount()!=2) {
+                qCritical()<<"P5 duplicate or non-fictional booking was not refused";
+                return 315;
+            }
+            qInfo()<<"P5 real second executable process recovered R003 and refused duplicate PASS";
+            return 0;
+        }
+    }
     if (parser.isSet("self-test")) {
     const Vehicle *corolla = system.findVehicleById("C001");
     if (!corolla) {
@@ -406,6 +489,7 @@ int main(int argc, char *argv[]) {
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("motionPolicy", &motion);
+    engine.rootContext()->setContextProperty("persistentFictionalDemo",persistentDemo);
     engine.rootContext()->setContextProperty("fleet", &fleet);
     engine.rootContext()->setContextProperty("rentalsModel", &rentalModel);
     engine.rootContext()->setContextProperty("rentalActions", &rentalActions);
