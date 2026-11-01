@@ -50,6 +50,10 @@ FleetWriteResult FleetWriteService::remove(const QString &id) {
     if (item->getIsRented() ||
         m_system.findActiveRentalByVehicleId(item->getId()))
         return {FleetWriteError::VehicleInUse,{}};
+    // Active contracts are reported as in use; returned/archived contracts
+    // still protect the vehicle's foreign-key-like identifier.
+    if(m_system.hasRentalHistoryForVehicle(item->getId()))
+        return {FleetWriteError::VehicleReferencedByRental,{}};
     const QString canonical=item->getId();
     if (!m_system.removeVehicle(canonical))
         return {FleetWriteError::CommitRejected,{}};
