@@ -9,6 +9,16 @@ FleetRemoveController::FleetRemoveController(
     : QObject(parent),m_writer(system),m_system(system),
       m_disposable(disposable),m_afterCommit(std::move(afterCommit)) {}
 
+bool FleetRemoveController::hasRentalHistory(const QString &id) const {
+    return m_system.hasRentalHistoryForVehicle(id);
+}
+
+bool FleetRemoveController::canRemoveVehicle(const QString &id) const {
+    const Vehicle *vehicle=m_system.findVehicleById(id);
+    return m_disposable && vehicle && !vehicle->getIsRented() &&
+           !m_system.hasRentalHistoryForVehicle(vehicle->getId());
+}
+
 void FleetRemoveController::clearMessage() {
     if(m_message.isEmpty())return;
     m_message.clear();
@@ -37,9 +47,12 @@ bool FleetRemoveController::removeVehicle(
     }
     const FleetWriteResult result=m_writer.remove(vehicle->getId());
     if(!result.ok()) {
-        m_message=result.error==FleetWriteError::VehicleInUse
-          ? QStringLiteral("Vehicle has an active rental. Return it before removal.")
-          : QStringLiteral("Vehicle removal failed. No change was saved.");
+        if(result.error==FleetWriteError::VehicleInUse)
+            m_message=QStringLiteral("An active rental still references this vehicle. Return it first.");
+        else if(result.error==FleetWriteError::VehicleReferencedByRental)
+            m_message=QStringLiteral("Rental history still references this vehicle. Preserve its record or explicitly delete archived contracts first.");
+        else
+            m_message=QStringLiteral("Vehicle removal failed. No change was saved.");
         emit messageChanged();
         return false;
     }
