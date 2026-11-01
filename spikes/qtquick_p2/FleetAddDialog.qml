@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Dialog {
     id: addDialog
-    property var fleetAdmin
+    property var command
     property var focusReturn
     title: "Add fictional fleet vehicle"
     modal: true
