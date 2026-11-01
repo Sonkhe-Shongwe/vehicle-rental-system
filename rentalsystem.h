@@ -50,6 +50,8 @@ public:
     bool addVehicle(Vehicle* vehicle);
     Vehicle* findVehicleById(const QString& id) const;
     bool removeVehicle(const QString& id);
+    // Historical references (active, returned, archived) protect vehicle IDs.
+    bool hasRentalHistoryForVehicle(const QString& id) const;
     bool rentVehicle(const QString& id);
     bool returnVehicle(const QString& id);
 
