@@ -134,6 +134,18 @@ if(BUILD_TESTING)
         rental_studio_p4_focus_route_wide
         rental_studio_p4_focus_route_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # Validate the actual Qt accessibility interfaces and native keyboard
+    # selection-state changes on both real viewport sizes, with fake files.
+    add_test(NAME rental_studio_p4_accessibility_wide
+        COMMAND rental_studio_qtquick_spike --p4-a11y-smoke)
+    add_test(NAME rental_studio_p4_accessibility_compact
+        COMMAND rental_studio_qtquick_spike --p4-a11y-smoke --compact)
+    set_tests_properties(
+        rental_studio_p4_accessibility_wide
+        rental_studio_p4_accessibility_compact
+        PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software;QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1"
+        TIMEOUT 65)
     # P4: both preference modes, both actual window sizes, live preference
     # change and protected synthetic file assertions. Never mutate host OS.
     foreach(MODE ordinary reduced)

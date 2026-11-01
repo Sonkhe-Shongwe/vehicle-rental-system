@@ -1,3 +1,4 @@
+#include <QAccessible>
 #include <QAbstractListModel>
 #include <QCommandLineParser>
 #include <QCryptographicHash>
@@ -303,6 +304,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
+    parser.addOption({"p4-a11y-smoke", "Check live Qt accessibility names, roles and mutually exclusive states on fictional controls."});
     parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
     parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
     parser.process(app);
@@ -1766,6 +1768,105 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 native focus route PASS"<<size
                    <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p4-a11y-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 270;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1250,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if (!item) return nullptr;
+                if (item->objectName()==name && item->isVisible()) return item;
+                for (auto *child:item->childItems())
+                    if (auto *hit=self(self,child,name)) return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            const auto checkRadio=[&](const QString &id,const QString &expectedName,
+                                      bool expectedChecked)->bool {
+                auto *item=find(find,root,id);
+                auto *iface=item ? QAccessible::queryAccessibleInterface(item) : nullptr;
+                if (!iface || !iface->isValid() ||
+                    iface->role()!=QAccessible::RadioButton ||
+                    iface->text(QAccessible::Name)!=expectedName ||
+                    iface->state().checked!=expectedChecked) {
+                    qCritical()<<"P4 accessibility radio mismatch"<<id
+                               <<expectedName<<expectedChecked
+                               <<(iface ? iface->text(QAccessible::Name) : QStringLiteral("missing"))
+                               <<(iface ? static_cast<int>(iface->role()) : -1);
+                    return false;
+                }
+                return true;
+            };
+            if (!checkRadio("fleetGalleryToggle","Fleet gallery view",true) ||
+                !checkRadio("fleetTableToggle","Fleet table view",false)) {
+                app.exit(271);return;
+            }
+            // These native input controls must have meaningful, public names.
+            const auto checkName=[&](const QString &id,const QString &expected)->bool {
+                auto *item=find(find,root,id);
+                auto *iface=item ? QAccessible::queryAccessibleInterface(item) : nullptr;
+                return iface && iface->isValid() &&
+                       iface->text(QAccessible::Name)==expected;
+            };
+            if (!checkName("fleetSearchField","Search fleet") ||
+                !checkName("fleetStatusCombo","Filter fleet status") ||
+                !checkName("fleetSortCombo","Sort fleet")) {
+                qCritical()<<"P4 native Fleet input accessible names absent";
+                app.exit(272);return;
+            }
+            auto *table=find(find,root,"fleetTableToggle");
+            table->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (window->property("gallery").toBool() ||
+                !checkRadio("fleetGalleryToggle","Fleet gallery view",false) ||
+                !checkRadio("fleetTableToggle","Fleet table view",true)) {
+                qCritical()<<"P4 native Fleet view selection inaccessible after keyboard";
+                app.exit(273);return;
+            }
+            window->setProperty("workspace",2);
+            QCoreApplication::processEvents();
+            if (!checkRadio("rentalFilterAll","All rentals",true) ||
+                !checkRadio("rentalFilterActive","Active rentals",false) ||
+                !checkRadio("rentalFilterHistory","History rentals",false)) {
+                app.exit(274);return;
+            }
+            auto *history=find(find,root,"rentalFilterHistory");
+            history->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (rentalModel.statusFilter()!="History" ||
+                !checkRadio("rentalFilterAll","All rentals",false) ||
+                !checkRadio("rentalFilterHistory","History rentals",true)) {
+                qCritical()<<"P4 History accessibility state stale after keyboard";
+                app.exit(275);return;
+            }
+            auto *active=find(find,root,"rentalFilterActive");
+            active->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (rentalModel.statusFilter()!="Active" ||
+                !checkRadio("rentalFilterActive","Active rentals",true) ||
+                !checkRadio("rentalFilterHistory","History rentals",false)) {
+                qCritical()<<"P4 Active accessibility state stale after keyboard";
+                app.exit(276);return;
+            }
+            QByteArray fv,fr,tr;
+            if (!readFile(vehicles,&fv) || !readFile(rentals,&fr) ||
+                !readFile(disposable.filePath("rentals.txt"),&tr) ||
+                fv!=beforeVehicles || fr!=beforeRentals || tr!=beforeRentals) {
+                qCritical()<<"P4 accessibility navigation mutated fictional files";
+                app.exit(277);return;
+            }
+            qInfo()<<"P4 native accessibility controls PASS"
+                   <<(compact?"1280x720":"1500x860")
+                   <<"real roles/names/checked states and immutable fixtures";
             app.exit(0);
         });
     }

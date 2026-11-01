@@ -297,7 +297,11 @@ ApplicationWindow {
                                         window.gallery = true
                                         galleryView.forceActiveFocus(Qt.OtherFocusReason)
                                     }
-                                    Accessible.name: "Show Fleet gallery"
+                                    Accessible.role: Accessible.RadioButton
+                                    Accessible.name: "Fleet gallery view"
+                                    Accessible.checkable: true
+                                    Accessible.checked: window.gallery
+                                    Accessible.description: "Choose the vehicle gallery presentation"
                                 }
                                 Button {
                                     objectName: "fleetTableToggle"
@@ -306,7 +310,11 @@ ApplicationWindow {
                                         window.gallery = false
                                         tableView.forceActiveFocus(Qt.OtherFocusReason)
                                     }
-                                    Accessible.name: "Show Fleet table"
+                                    Accessible.role: Accessible.RadioButton
+                                    Accessible.name: "Fleet table view"
+                                    Accessible.checkable: true
+                                    Accessible.checked: !window.gallery
+                                    Accessible.description: "Choose the vehicle table presentation"
                                 }
                             }
                         }
@@ -719,7 +727,11 @@ ApplicationWindow {
                                 objectName: "rentalFilter" + modelData
                                 text: modelData
                                 activeFocusOnTab: true
-                                Accessible.name: "Show " + modelData.toLowerCase() + " rentals"
+                                Accessible.role: Accessible.RadioButton
+                                Accessible.name: modelData + " rentals"
+                                Accessible.checkable: true
+                                Accessible.checked: rentalsModel.statusFilter === modelData
+                                Accessible.description: "Filter fictional rentals by lifecycle status"
                                 onClicked: rentalsModel.statusFilter = modelData
                                 background: Rectangle {
                                     radius: 8
