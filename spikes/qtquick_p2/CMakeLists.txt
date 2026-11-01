@@ -43,7 +43,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml FleetAddDialog.qml
+    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
