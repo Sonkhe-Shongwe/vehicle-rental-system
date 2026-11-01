@@ -534,7 +534,33 @@ int main(int argc, char *argv[]) {
                 expectedR.removeLast(); // Only R001 remains after exact delete.
             }
             if(actualV!=expectedV || actualR!=expectedR) {
-                qCritical()<<"P6 test child refused unallowlisted fictional rows";
+                qCritical()<<"P6 synthetic allowlist mismatch"
+                           <<"vehicles"<<actualV.size()<<expectedV.size()
+                           <<"match"<<(actualV==expectedV)
+                           <<"rentals"<<actualR.size()<<expectedR.size()
+                           <<"match"<<(actualR==expectedR);
+                // Only hashes and row positions, never arbitrary file content
+                // from a possibly tampered test working directory.
+                for(int i=0;i<actualV.size()&&i<expectedV.size();++i) {
+                    if(actualV.at(i)!=expectedV.at(i)) {
+                        qCritical()<<"P6 different Fleet row"<<i
+                           <<"len"<<actualV.at(i).size()<<expectedV.at(i).size()
+                           <<"actual-sha"<<QCryptographicHash::hash(
+                              actualV.at(i).toUtf8(),QCryptographicHash::Sha256).toHex().left(12)
+                           <<"expected-sha"<<QCryptographicHash::hash(
+                              expectedV.at(i).toUtf8(),QCryptographicHash::Sha256).toHex().left(12);
+                    }
+                }
+                for(int i=0;i<actualR.size()&&i<expectedR.size();++i) {
+                    if(actualR.at(i)!=expectedR.at(i)) {
+                        qCritical()<<"P6 different rental row"<<i
+                           <<"len"<<actualR.at(i).size()<<expectedR.at(i).size()
+                           <<"actual-sha"<<QCryptographicHash::hash(
+                              actualR.at(i).toUtf8(),QCryptographicHash::Sha256).toHex().left(12)
+                           <<"expected-sha"<<QCryptographicHash::hash(
+                              expectedR.at(i).toUtf8(),QCryptographicHash::Sha256).toHex().left(12);
+                    }
+                }
                 return 443;
             }
         }
