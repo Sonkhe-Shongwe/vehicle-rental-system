@@ -2916,6 +2916,8 @@ int main(int argc, char *argv[]) {
             QTest::qWait(130);
             if(!system.findRentalById("R002") ||
                !system.findRentalById("R002")->getIsArchived() ||
+               fleetRemove.canRemoveVehicle("C001") ||
+               !system.hasRentalHistoryForVehicle("C001") ||
                !remove->isEnabled() || archive->isEnabled() ||
                rentalModel.selectedRentalId()!="R002") {
                 qCritical()<<"P6-C archived state did not enable deletion";
@@ -3038,7 +3040,50 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-C native screenshot invalid";
                 app.exit(430);return;
             }
-            qInfo()<<"P6 native archived-only delete, cancel, rollback and reopen PASS"
+            // Cross-workspace transaction proof: removing the last archived
+            // reference releases an otherwise available historical vehicle.
+            if(!fleetRemove.canRemoveVehicle("C001") ||
+               system.hasRentalHistoryForVehicle("C001") ||
+               !fleetRemove.hasRentalHistory("C002")) {
+                qCritical()<<"P6 historical vehicle guard not released after actual archived deletion";
+                app.exit(432);return;
+            }
+            window->setProperty("workspace",1);
+            fleet.selectById("C001");
+            QCoreApplication::processEvents();
+            QTest::qWait(120);
+            auto *fleetRemoveAction=find(find,root,"fleetRemoveSelectedButton");
+            if(!fleetRemoveAction || !fleetRemoveAction->isEnabled()) {
+                qCritical()<<"P6 Fleet action did not enable after history deletion";
+                app.exit(433);return;
+            }
+            press(fleetRemoveAction);
+            auto *fleetDeletePhrase=find(find,root,"fleetRemoveConfirmation");
+            auto *fleetDeleteConfirm=find(find,root,"fleetRemoveConfirm");
+            if(!fleetDeletePhrase || !fleetDeleteConfirm) {
+                qCritical()<<"P6 Fleet removal modal absent after release";
+                app.exit(434);return;
+            }
+            fleetDeletePhrase->setProperty("text",QStringLiteral("REMOVE C001"));
+            press(fleetDeleteConfirm);
+            QTest::qWait(160);
+            RentalSystem finalReopen(disposable.path());
+            QByteArray finalLedger,finalVehicles;
+            if(system.findVehicleById("C001") ||
+               finalReopen.findVehicleById("C001") ||
+               finalReopen.findRentalById("R002") ||
+               !finalReopen.findRentalById("R001") ||
+               !finalReopen.findVehicleById("C002") ||
+               !readFile(disposable.filePath("rentals.txt"),&finalLedger) ||
+               finalLedger!=now ||
+               !readFile(disposable.filePath("vehicles.txt"),&finalVehicles) ||
+               finalVehicles==vehicleInitial ||
+               !readFile(vehicles,&originalV) || originalV!=beforeVehicles ||
+               !readFile(rentals,&originalR) || originalR!=beforeRentals) {
+                qCritical()<<"P6 cross-workspace delete/archive/remove/reopen integrity failed";
+                app.exit(435);return;
+            }
+            qInfo()<<"P6 native archive->history guard->delete->Fleet removal/reopen PASS"
                    <<size;
             app.exit(0);
         });
