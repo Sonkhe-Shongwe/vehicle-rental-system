@@ -16,7 +16,7 @@ struct FleetAddRequest {
 };
 enum class FleetWriteError {
     None, InvalidDetails, DuplicateId, VehicleNotFound,
-    VehicleInUse, CommitRejected
+    VehicleInUse, VehicleReferencedByRental, CommitRejected
 };
 struct FleetWriteResult {
     FleetWriteError error = FleetWriteError::None;
