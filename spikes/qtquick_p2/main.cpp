@@ -2974,6 +2974,75 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-C Escape wrote ledger";
                 app.exit(423);return;
             }
+            // Even a forged current-UI call cannot swap a stale target.
+            if(archivedDelete.permanentlyDelete("R001","DELETE R001")) {
+                qCritical()<<"P6-C stale selected ID deletion accepted";
+                app.exit(424);return;
+            }
+            // The real writer must leave the archived record intact on failure.
+            RentalSystem failing(disposable.path(),
+                                 std::make_shared<P5RejectWriteStorage>());
+            ArchivedDeleteService failedWriter(failing);
+            const auto failed=failedWriter.permanentlyDelete("R002","DELETE R002");
+            if(failed.error!=ArchivedDeleteError::CommitRejected ||
+               !failing.findRentalById("R002") ||
+               !failing.findRentalById("R002")->getIsArchived() ||
+               !readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"P6-C rejected atomic write did not roll back";
+                app.exit(425);return;
+            }
+            P6ArchivedDeleteController fixedSession(
+                system,rentalRead,rentalModel,false);
+            if(fixedSession.canDeleteSelected() ||
+               fixedSession.permanentlyDelete("R002","DELETE R002") ||
+               !readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"P6-C fixed fictional session allowed deletion";
+                app.exit(426);return;
+            }
+            press(remove);
+            field=find(find,root,"rentalDeletePhrase");
+            confirm=find(find,root,"rentalDeleteConfirm");
+            if(!field||!confirm){app.exit(427);return;}
+            field->setProperty("text",QStringLiteral("DELETE R002"));
+            press(confirm);
+            QTest::qWait(180);
+            if(system.findRentalById("R002") ||
+               rentalModel.count()!=0 || rentalModel.historyCount()!=0 ||
+               rentalModel.activeCount()!=1 ||
+               rentalModel.statusFilter()!="History" ||
+               !rentalModel.selectedRentalId().isEmpty() ||
+               remove->isEnabled() ||
+               !list->hasActiveFocus() ||
+               !readFile(ledger,&now)||now==archivedBytes ||
+               !readFile(disposable.filePath("vehicles.txt"),&vehicleNow) ||
+               vehicleNow!=vehicleInitial) {
+                qCritical()<<"P6-C genuine deletion/model/focus reconciliation failed";
+                app.exit(428);return;
+            }
+            RentalSystem reopened(disposable.path());
+            QByteArray originalV,originalR;
+            if(reopened.findRentalById("R002") ||
+               !reopened.findRentalById("R001") ||
+               !reopened.findActiveRentalByVehicleId("C002") ||
+               !readFile(vehicles,&originalV) ||
+               !readFile(rentals,&originalR) ||
+               originalV!=beforeVehicles || originalR!=beforeRentals) {
+                qCritical()<<"P6-C restart or protected fixtures failed";
+                app.exit(429);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage image=window->grabWindow();
+            if(image.isNull() ||
+               image.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !image.save("p6-qt-archived-delete-"+size+".png","PNG")) {
+                qCritical()<<"P6-C native screenshot invalid";
+                app.exit(430);return;
+            }
+            qInfo()<<"P6 native archived-only delete, cancel, rollback and reopen PASS"
+                   <<size;
+            app.exit(0);
+        });
+    }
     if (parser.isSet("p6-fleet-remove-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window)return 395;
