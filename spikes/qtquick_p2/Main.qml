@@ -283,7 +283,7 @@ ApplicationWindow {
                     }
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 172
+                        Layout.preferredHeight: 138
                         radius: 12
                         color: mint
                         border.color: designTokens.border
@@ -345,10 +345,6 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                            Label {
-                                text: "Current C++ due states; rental filters never change Overview totals."
-                                color: ink; wrapMode: Text.WordWrap
-                            }
                         }
                     }
                     RowLayout {
@@ -374,6 +370,7 @@ ApplicationWindow {
                         }
                     }
                     Label {
+                        objectName: "overviewDemoDisclosure"
                         text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }

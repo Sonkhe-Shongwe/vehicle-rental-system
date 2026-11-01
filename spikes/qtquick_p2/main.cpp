@@ -2659,9 +2659,10 @@ int main(int argc, char *argv[]) {
             auto *fleetAction=find(find,root,"overviewOpenFleet");
             auto *overdueAction=find(find,root,"overviewReviewOverdue");
             auto *overdueText=find(find,root,"overviewOldestOverdueText");
+            auto *disclosure=find(find,root,"overviewDemoDisclosure");
             if(!activeCard||!valueCard||!dueCard||!historyCard||
                !activeAction||!fleetAction||!overdueAction||!overdueText ||
-               !overdueAction->isEnabled() ||
+               !disclosure || !overdueAction->isEnabled() ||
                rentalModel.oldestOverdueRentalId()!="R001" ||
                overdueText->property("text").toString()!="Oldest overdue contract: R001" ||
                rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
@@ -2671,6 +2672,18 @@ int main(int argc, char *argv[]) {
                valueCard->property("value").toString()!="R 1400.00") {
                 qCritical()<<"P5 operational Overview initial C++ data missing";
                 app.exit(291);return;
+            }
+            // The compact 1280x720 view must keep the actionable row AND
+            // the explicit fictional/payment disclosure within the window.
+            for(QQuickItem *item:{overdueAction,disclosure}) {
+                const QPointF pos=item->mapToScene(QPointF(0,0));
+                if(!item->isVisible() || pos.y()<0 ||
+                   pos.y()+item->height()>window->height()-3 ||
+                   pos.x()<0 || pos.x()+item->width()>window->width()) {
+                    qCritical()<<"P5 Overview compact action or disclosure clipped"
+                               <<item->objectName()<<pos<<item->size();
+                    app.exit(385);return;
+                }
             }
             const QString size=compact?"1280x720":"1500x860";
             const QImage screenshot=window->grabWindow();
