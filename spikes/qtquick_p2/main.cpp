@@ -510,17 +510,31 @@ int main(int argc, char *argv[]) {
         if(p6Seed && (childV!=beforeVehicles || childR!=beforeRentals))
             return 442;
         if(!p6Seed) {
-            const QString vs=QString::fromUtf8(childV);
-            const QString rs=QString::fromUtf8(childR);
-            if(!vs.contains("Car|C004|Demo Motors|Orion|420.00|0|4") ||
-               !vs.contains("Motorcycle|M003|Demo Moto|Nova|300.00|0|450") ||
-               !rs.contains("Rental|R001|Demo Customer A|0000000000|C002|") ||
-               (p6Update && (!vs.contains("Car|C003|Hyundai|i20|400.00|0|4") ||
-                             !rs.contains("Rental|R002|Demo Customer B|0000000000|C001|"))) ||
-               (p6Final && (vs.contains("Car|C001|") ||
-                             vs.contains("Car|C003|") ||
-                             rs.contains("Rental|R002|")))) {
-                qCritical()<<"P6 test child refused unexpected synthetic lifecycle state";
+            // Exact stage allowlists, not substring checks. A foreign record
+            // with real contact details must never reach RentalSystem.
+            const auto lines=[](QByteArray bytes) {
+                QString content=QString::fromUtf8(bytes);
+                content.replace(QStringLiteral("\\r\\n"),QStringLiteral("\\n"));
+                return content.split(QLatin1Char('\\n'),Qt::SkipEmptyParts);
+            };
+            const QStringList actualV=lines(childV);
+            const QStringList actualR=lines(childR);
+            QStringList expectedV=lines(beforeVehicles);
+            QStringList expectedR=lines(beforeRentals);
+            expectedV<<"Car|C004|Demo Motors|Orion|420.00|0|4"
+                     <<"Motorcycle|M003|Demo Moto|Nova|300.00|0|450";
+            if(p6Update) {
+                if(expectedR.size()!=2 || !expectedR.at(1).endsWith("|1|0"))
+                    return 443;
+                expectedR[1].chop(1);
+                expectedR[1]+="1"; // Original fictional R002 now archived.
+            } else {
+                expectedV.removeAll("Car|C001|Toyota|Corolla|450.00|0|4");
+                expectedV.removeAll("Car|C003|Hyundai|i20|400.00|0|4");
+                expectedR.removeLast(); // Only R001 remains after exact delete.
+            }
+            if(actualV!=expectedV || actualR!=expectedR) {
+                qCritical()<<"P6 test child refused unallowlisted fictional rows";
                 return 443;
             }
         }
