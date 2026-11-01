@@ -1543,6 +1543,45 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-H All filter resurrected hidden selection";
                 app.exit(110); return;
             }
+            // P6 parity: use the real Find rental control, not just a direct
+            // model call. Hidden lookup reveals a record, while unknown/blank
+            // input leaves the selected ID and filter unchanged.
+            auto *lookupField = findVisual(findVisual,window->contentItem(),
+                                            "rentalLookupField");
+            auto *lookupButton = findVisual(findVisual,window->contentItem(),
+                                             "rentalLookupButton");
+            auto *lookupFeedback = findVisual(findVisual,window->contentItem(),
+                                               "rentalLookupFeedback");
+            if(!lookupField || !lookupButton || !lookupFeedback) {
+                qCritical() << "P6-F rental lookup control missing";
+                app.exit(112);return;
+            }
+            rentalModel.setStatusFilter("History");
+            lookupField->setProperty("text", "  r001  ");
+            press(lookupButton);
+            QTest::qWait(90);
+            if(rentalModel.statusFilter()!="All" ||
+               rentalModel.selectedRentalId()!="R001" ||
+               rentalModel.selectedRow()!=0 ||
+               list->property("currentIndex").toInt()!=0) {
+                qCritical() << "P6-F hidden rental lookup failed";
+                app.exit(113);return;
+            }
+            lookupField->setProperty("text", "R999");
+            press(lookupButton);
+            if(rentalModel.statusFilter()!="All" ||
+               rentalModel.selectedRentalId()!="R001" ||
+               !lookupFeedback->property("text").toString().contains("not found")) {
+                qCritical() << "P6-F missing ID changed selection or feedback";
+                app.exit(114);return;
+            }
+            lookupField->setProperty("text", "");
+            press(lookupButton);
+            if(rentalModel.selectedRentalId()!="R001" ||
+               !lookupFeedback->property("text").toString().contains("Enter a rental ID")) {
+                qCritical() << "P6-F empty lookup changed selection";
+                app.exit(115);return;
+            }
             QByteArray originalFleet, originalRentals;
             if (!readFile(vehicles,&originalFleet) || !readFile(rentals,&originalRentals) ||
                 originalFleet!=beforeVehicles || originalRentals!=beforeRentals) {

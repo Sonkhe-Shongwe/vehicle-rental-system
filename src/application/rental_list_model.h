@@ -59,6 +59,9 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool selectById(const QString &rentalId);
+    // Explicit, read-only operator lookup across lifecycle filters. An
+    // existing hidden match is revealed before selection; misses do nothing.
+    Q_INVOKABLE bool locateById(const QString &rentalId);
     Q_INVOKABLE bool selectVisibleRow(int row);
     // Navigate the oldest overdue active contract from the complete C++ snapshot.
     // Read/selection only: no booking, return, archive, or disk write.

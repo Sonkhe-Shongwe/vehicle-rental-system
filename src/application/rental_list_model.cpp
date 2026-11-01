@@ -203,6 +203,26 @@ bool RentalListModel::selectById(const QString &id) {
     return true;
 }
 
+bool RentalListModel::locateById(const QString &rentalId) {
+    const QString requested = rentalId.trimmed();
+    if (requested.isEmpty())
+        return false;
+    QString canonical;
+    for (const auto &item : m_allItems) {
+        if (item.rentalId.compare(requested, Qt::CaseInsensitive) == 0) {
+            canonical = item.rentalId;
+            break;
+        }
+    }
+    if (canonical.isEmpty())
+        return false; // Failed lookup preserves both filter and selection.
+    // Existing operators can find any rental ID, even when currently viewing
+    // Active or History. Only an explicit successful lookup resets the filter.
+    if (rowForId(canonical) < 0)
+        setStatusFilter(QStringLiteral("All"));
+    return selectById(canonical);
+}
+
 void RentalListModel::clearSelection() {
     if (m_selectedRentalId.isEmpty())
         return;

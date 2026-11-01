@@ -29,6 +29,7 @@ ApplicationWindow {
     property string bookingReceiptNotice: ""
     // Cancellation is a separate informational outcome, never a receipt.
     property string bookingCancelledNotice: ""
+    property string rentalLookupFeedback: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -131,6 +132,28 @@ ApplicationWindow {
         else
             return
         event.accepted = true
+    }
+
+    // A deliberate lookup can reveal an ID hidden by the current filter.
+    // Domain history and financial data are never modified by this route.
+    function findRentalById() {
+        const id = rentalLookupField.text.trim()
+        if (id === "") {
+            window.rentalLookupFeedback = "Enter a rental ID."
+            return
+        }
+        if (!rentalsModel.locateById(id)) {
+            window.rentalLookupFeedback = "Rental ID not found."
+            return
+        }
+        window.rentalLookupFeedback = "Selected " + rentalsModel.selectedRentalId
+        Qt.callLater(function() {
+            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                rentalList.currentIndex = rentalsModel.selectedRow
+                rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                rentalList.forceActiveFocus(Qt.TabFocusReason)
+            }
+        })
     }
 
     function syncCurrentRental() {
@@ -1043,7 +1066,32 @@ ApplicationWindow {
                                 }
                             }
                         }
+                        Label {
+                            objectName: "rentalLookupFeedback"
+                            text: window.rentalLookupFeedback
+                            color: ink
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                            Layout.preferredWidth: 165
+                            Accessible.name: text
+                        }
                         Item { Layout.fillWidth: true }
+                        AccessibleTextField {
+                            id: rentalLookupField
+                            objectName: "rentalLookupField"
+                            fieldPurpose: "Find rental by ID"
+                            placeholderText: "Rental ID, e.g. R001"
+                            Layout.preferredWidth: 180
+                            onTextEdited: window.rentalLookupFeedback = ""
+                            onAccepted: window.findRentalById()
+                        }
+                        Button {
+                            objectName: "rentalLookupButton"
+                            text: "Find rental"
+                            activeFocusOnTab: true
+                            Accessible.name: "Find rental by ID"
+                            onClicked: window.findRentalById()
+                        }
                     }
                     Rectangle {
                         Layout.fillWidth: true

@@ -115,6 +115,33 @@ int main(int argc, char **argv) {
               "overdue routing is read-only");
 
 
+        // P6 operator parity: explicit ID lookup must reveal filtered-out
+        // records but never change selection, filter, or disk on a miss.
+        RentalListModel lookup(service);
+        lookup.setStatusFilter("History");
+        check(lookup.count() == 0 && !lookup.locateById(" ") &&
+              !lookup.locateById("R999") &&
+              lookup.statusFilter() == "History" &&
+              lookup.selectedRentalId().isEmpty(),
+              "blank/unknown lookup preserves hidden History filter");
+        check(lookup.locateById("  r002  ") &&
+              lookup.statusFilter() == "All" &&
+              lookup.selectedRentalId() == "R002" &&
+              lookup.selectedRow() == 1,
+              "case-insensitive lookup reveals and selects hidden rental");
+        lookup.setStatusFilter("Active");
+        check(lookup.locateById("R003") &&
+              lookup.statusFilter() == "Active" &&
+              lookup.selectedRentalId() == "R003" &&
+              lookup.selectedRow() == 2,
+              "visible lookup preserves the current filter");
+        check(!lookup.locateById("R999") &&
+              lookup.selectedRentalId() == "R003" &&
+              lookup.statusFilter() == "Active" &&
+              readBytes(vehiclesPath) == fleetBefore &&
+              readBytes(rentalsPath) == rentalsBefore,
+              "failed/read-only lookups preserve selection and storage");
+
         const QModelIndex first = model.index(0, 0);
         const QModelIndex second = model.index(1, 0);
         const QModelIndex third = model.index(2, 0);
