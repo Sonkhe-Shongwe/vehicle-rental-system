@@ -1782,16 +1782,28 @@ int main(int argc, char *argv[]) {
             }
             press(confirm);
             QTest::qWait(150);
-            if (rentalModel.selectedRentalId()!="R001" ||
+            // P6-H deliberately locates the contract in Active. A saved
+            // return therefore disappears from Active and clears selection;
+            // never let an invisible returned record stay actionable.
+            if (rentalModel.statusFilter()!="Active" ||
+                rentalModel.count()!=0 ||
+                !rentalModel.selectedRentalId().isEmpty() ||
                 rentalActions.canReturnSelected() || returnButton->isEnabled() ||
                 fleet.availableCount()!=5 ||
-                rentalModel.data(rentalModel.index(0,0),
-                                 RentalListModel::StatusRole).toString()!="Returned" ||
                 system.findVehicleById("C002")->getIsRented() ||
                 !system.findRentalById("R001")->getIsReturned()) {
-                qCritical()<<"P3-I committed return did not refresh real QML models"
+                qCritical()<<"P6-H committed return did not safely clear Active"
                            <<rentalModel.selectedRentalId()<<fleet.availableCount();
                 app.exit(127);return;
+            }
+            rentalModel.setStatusFilter("History");
+            if(rentalModel.count()!=2 ||
+               rentalModel.data(rentalModel.index(0,0),
+                                RentalListModel::StatusRole).toString()!="Returned" ||
+               !rentalModel.selectedRentalId().isEmpty() ||
+               returnButton->isEnabled()) {
+                qCritical()<<"P6-H persisted return not visible in History";
+                app.exit(137);return;
             }
             if (rentalModel.locateActiveReturn("C002") ||
                 !rentalModel.selectedRentalId().isEmpty() ||
