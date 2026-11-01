@@ -15,7 +15,8 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_booking_controller.h
     ${PROJECT_SOURCE_DIR}/src/application/rental_booking_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.h
-    ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp)
+    ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_admin_commands.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
 if(WIN32)
