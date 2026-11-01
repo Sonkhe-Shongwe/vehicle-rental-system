@@ -1888,12 +1888,21 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 Rentals workspace accessible state stale";
                 app.exit(281);return;
             }
+            // Qt ListView recreates delegates after model reset. Wait for the
+            // actual QQuickWindow render turn, not just synchronous C++ events.
+            // Never pass this test by skipping a missing visible rental row.
+            QTest::qWait(130);
             // Rental row exposes status, due status, value and current selection
             // as spoken metadata; no fictional customer contact is leaked.
+            auto *view=find(find,root,"rentalList");
             auto *row=find(find,root,"rentalRow");
             auto *rowInterface=row ? QAccessible::queryAccessibleInterface(row) : nullptr;
-            if (!rowInterface || !rowInterface->isValid()) {
-                qCritical()<<"P4 rental row missing from accessible tree";
+            if (rentalModel.count()==0 || !view || !rowInterface ||
+                !rowInterface->isValid()) {
+                qCritical()<<"P4 rental row missing from accessible tree"
+                           <<"visible filtered records"<<rentalModel.count()
+                           <<"list view present"<<bool(view)
+                           <<"visible row present"<<bool(row);
                 app.exit(282);return;
             }
             const auto rowName=[&] { return rowInterface->text(QAccessible::Name); };
