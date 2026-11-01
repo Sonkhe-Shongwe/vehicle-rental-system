@@ -1041,7 +1041,10 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         spacing: 8
                         Repeater {
-                            model: ["All", "Active", "History"]
+                            // Retain combined History for previous keyboard
+                            // workflows; Returned and Archived are separate
+                            // read-only C++ lifecycle views.
+                            model: ["All", "Active", "Returned", "Archived", "History"]
                             delegate: Button {
                                 required property string modelData
                                 objectName: "rentalFilter" + modelData

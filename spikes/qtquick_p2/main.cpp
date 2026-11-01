@@ -1465,10 +1465,15 @@ int main(int argc, char *argv[]) {
                                              "rentalFilterActive");
             auto *historyButton = findVisual(findVisual, window->contentItem(),
                                               "rentalFilterHistory");
+            auto *returnedButton = findVisual(findVisual, window->contentItem(),
+                                              "rentalFilterReturned");
+            auto *archivedButton = findVisual(findVisual, window->contentItem(),
+                                              "rentalFilterArchived");
             auto *allButton = findVisual(findVisual, window->contentItem(),
                                           "rentalFilterAll");
             if (!list || !list->isVisible() || !selected ||
                 !activeButton || !historyButton || !allButton ||
+                !returnedButton || !archivedButton ||
                 rentalModel.count()!=2 || list->property("count").toInt()!=2) {
                 qCritical() << "P3-H real filter/list QML controls absent";
                 app.exit(101); return;
@@ -1487,6 +1492,45 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-H rental arrow did not select first visible ID";
                 app.exit(102); return;
             }
+            // The compact Windows/Linux view must keep both extra
+            // lifecycle choices in the visible viewport, not offscreen.
+            for (auto *item : {returnedButton, archivedButton}) {
+                const QPointF pos=item->mapToScene(QPointF(0,0));
+                if(pos.x()<0 || pos.y()<0 ||
+                   pos.x()+item->width()>window->width() ||
+                   pos.y()+item->height()>window->height() ||
+                   item->width()<55 || item->height()<28) {
+                    qCritical()<<"P6-G lifecycle filter outside viewport"
+                               <<pos<<item->size();
+                    app.exit(116);return;
+                }
+            }
+            const QString suffix=compact?"1280x720":"1500x860";
+            press(returnedButton);
+            if(rentalModel.statusFilter()!="Returned" ||
+               rentalModel.count()!=1 || list->property("count").toInt()!=1 ||
+               rentalModel.selectedRentalId()!="" ||
+               rentalModel.data(rentalModel.index(0,0),
+                                RentalListModel::StatusRole).toString()!="Returned" ||
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+                qCritical()<<"P6-G Returned view must show only returned records";
+                app.exit(117);return;
+            }
+            const QImage returnedShot=window->grabWindow();
+            if(returnedShot.isNull() ||
+               returnedShot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !returnedShot.save("p3-qt-rentals-returned-"+suffix+".png","PNG")) {
+                qCritical()<<"P6-G Returned screenshot invalid";
+                app.exit(118);return;
+            }
+            press(archivedButton);
+            if(rentalModel.statusFilter()!="Archived" ||
+               rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
+               !rentalModel.selectedRentalId().isEmpty() ||
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+                qCritical()<<"P6-G Archived empty-state must not include Returned";
+                app.exit(119);return;
+            }
             press(historyButton);
             if (rentalModel.statusFilter()!="History" || rentalModel.count()!=1 ||
                 list->property("count").toInt()!=1 ||
@@ -1503,7 +1547,6 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-H history list arrow selection failed";
                 app.exit(104); return;
             }
-            const QString suffix = compact?"1280x720":"1500x860";
             const QImage historyShot=window->grabWindow();
             if (historyShot.isNull() ||
                 historyShot.size()!=QSize(compact?1280:1500,compact?720:860) ||
@@ -1528,6 +1571,29 @@ int main(int argc, char *argv[]) {
                 rentalModel.data(rentalModel.index(0,0),RentalListModel::StatusRole).toString()!="Archived") {
                 qCritical() << "P3-H archived record left History or lost selection";
                 app.exit(108); return;
+            }
+            press(archivedButton);
+            if(rentalModel.statusFilter()!="Archived" ||
+               rentalModel.count()!=1 || list->property("count").toInt()!=1 ||
+               rentalModel.selectedRentalId()!="R002" ||
+               rentalModel.data(rentalModel.index(0,0),
+                                RentalListModel::StatusRole).toString()!="Archived") {
+                qCritical()<<"P6-G Archived view lost newly archived selection";
+                app.exit(120);return;
+            }
+            const QImage archivedShot=window->grabWindow();
+            if(archivedShot.isNull() ||
+               archivedShot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !archivedShot.save("p3-qt-rentals-archived-"+suffix+".png","PNG")) {
+                qCritical()<<"P6-G Archived screenshot invalid";
+                app.exit(121);return;
+            }
+            press(returnedButton);
+            if(rentalModel.statusFilter()!="Returned" ||
+               rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"P6-G Returned view retained archived selection";
+                app.exit(122);return;
             }
             press(activeButton);
             if (rentalModel.statusFilter()!="Active" || rentalModel.count()!=1 ||
@@ -1588,9 +1654,9 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-H source SHA-pinned fictional fixtures mutated";
                 app.exit(111); return;
             }
-            qInfo() << "P3-H REAL QML Active/History/All PASS" << suffix
-                    << "focus, keyboard filter, arrows, stable IDs, archive"
-                    << " refresh, protected source demo bytes";
+            qInfo() << "P3-H/P6-G REAL QML All/Active/Returned/Archived/History PASS" << suffix
+                    << "keyboard filter, stable IDs, archive, empty states,"
+                    << " ID lookup, KPI independence and protected demo bytes";
             app.exit(0);
         });
     }

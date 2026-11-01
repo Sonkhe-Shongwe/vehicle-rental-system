@@ -130,6 +130,10 @@ QList<RentalRecordSummary> RentalListModel::filtered(
     for (const auto &item : all) {
         const bool active = item.status == RentalRecordStatus::Active;
         if ((m_statusFilter == QStringLiteral("Active") && active) ||
+            (m_statusFilter == QStringLiteral("Returned") &&
+             item.status == RentalRecordStatus::Returned) ||
+            (m_statusFilter == QStringLiteral("Archived") &&
+             item.status == RentalRecordStatus::Archived) ||
             (m_statusFilter == QStringLiteral("History") && !active))
             result.append(item);
     }
@@ -140,6 +144,8 @@ void RentalListModel::setStatusFilter(const QString &filter) {
     // The C++ model, never QML, determines which lifecycle flags are history.
     if (filter != QStringLiteral("All") &&
         filter != QStringLiteral("Active") &&
+        filter != QStringLiteral("Returned") &&
+        filter != QStringLiteral("Archived") &&
         filter != QStringLiteral("History"))
         return;
     if (filter == m_statusFilter)

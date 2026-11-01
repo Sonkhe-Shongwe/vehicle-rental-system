@@ -68,6 +68,51 @@ int main(int argc, char **argv) {
     check(model.statusFilter()=="All" && model.count()==3 &&
           itemId(model,0)=="R001" && itemId(model,1)=="R002" &&
           itemId(model,2)=="R003", "default All includes every state");
+    // P6-G: explicit Returned/Archived filters are derived from the
+    // existing domain status, never a second QML lifecycle implementation.
+    RentalListModel detailed(service);
+    const int stableActive = detailed.activeCount();
+    const int stableHistory = detailed.historyCount();
+    detailed.setStatusFilter("Returned");
+    check(detailed.count()==1 && itemId(detailed,0)=="R002" &&
+          detailed.data(detailed.index(0,0),RentalListModel::StatusRole)=="Returned",
+          "Returned shows only returned, not archived rentals");
+    check(detailed.selectVisibleRow(0) && detailed.selectedRentalId()=="R002",
+          "Returned selected canonical rental ID");
+    detailed.setStatusFilter("Archived");
+    check(detailed.count()==1 && itemId(detailed,0)=="R003" &&
+          detailed.data(detailed.index(0,0),RentalListModel::StatusRole)=="Archived" &&
+          detailed.selectedRentalId().isEmpty(),
+          "Archived shows only archived and clears hidden returned selection");
+    check(detailed.locateById("  r002  ") &&
+          detailed.statusFilter()=="All" &&
+          detailed.selectedRentalId()=="R002",
+          "cross-filter ID lookup reveals Returned from Archived without writing");
+    detailed.setStatusFilter("Archived");
+    check(detailed.locateById("r003") &&
+          detailed.statusFilter()=="Archived" &&
+          detailed.selectedRentalId()=="R003",
+          "lookup preserves Archived when match is visible");
+    detailed.setStatusFilter("History");
+    check(detailed.count()==2 &&
+          itemId(detailed,0)=="R002" && itemId(detailed,1)=="R003" &&
+          detailed.selectedRentalId()=="R003" &&
+          detailed.selectedRow()==1,
+          "History retains both statuses and preserves visible archived ID");
+    detailed.setStatusFilter("Active");
+    check(detailed.count()==1 && itemId(detailed,0)=="R001" &&
+          detailed.selectedRentalId().isEmpty() &&
+          detailed.activeCount()==stableActive &&
+          detailed.historyCount()==stableHistory,
+          "filter changes clear hidden selection but never alter full-snapshot KPIs");
+    const int selectedAfterActive=detailed.selectedRow();
+    detailed.setStatusFilter("returned"); // invalid lower-case filter
+    check(detailed.statusFilter()=="Active" &&
+          detailed.selectedRow()==selectedAfterActive &&
+          contents(temp.filePath("vehicles.txt"))==fleetBefore &&
+          contents(temp.filePath("rentals.txt"))==ledgerBefore,
+          "invalid filter and all read-only views leave exact files untouched");
+
     check(model.selectById("  r002  ") && model.selectedRow()==1,
           "select returned rental by canonical ID");
     model.setStatusFilter("History");
