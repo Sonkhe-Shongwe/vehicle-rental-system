@@ -7,7 +7,7 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio · P4 shared native shell · fictional demo"
+    title: "Rental Studio 2.0 · operational overview · fictional demo"
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
@@ -213,30 +213,106 @@ ApplicationWindow {
 
                 ColumnLayout {
                     spacing: 16
-                    Label { text: "Fleet at a glance"; font.pixelSize: 21; color: navy }
-                    RowLayout {
-                        spacing: 16
-                        Rectangle {
-                            Layout.preferredWidth: 225; Layout.preferredHeight: 120
-                            radius: 12; color: "white"
-                            Column {
-                                anchors.centerIn: parent; spacing: 5
-                                Label { text: String(fleet.totalCount); font.pixelSize: 30; color: navy }
-                                Label { text: "Vehicles in demo"; color: ink }
-                            }
+                    Label {
+                        text: "Operations at a glance"
+                        font.pixelSize: 21; font.bold: true; color: navy
+                    }
+                    Label {
+                        text: "Live from the C++ rental records in this fictional demo."
+                        color: ink; wrapMode: Text.WordWrap
+                    }
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: window.width < 1350 ? 2 : 4
+                        rowSpacing: 12; columnSpacing: 12
+                        OverviewMetricCard {
+                            objectName: "overviewAvailableCard"
+                            metricLabel: "Available vehicles"
+                            value: String(fleet.availableCount)
+                            note: "Of " + fleet.totalCount + " in Fleet"
+                            accent: teal
                         }
-                        Rectangle {
-                            Layout.preferredWidth: 225; Layout.preferredHeight: 120
-                            radius: 12; color: mint
-                            Column {
-                                anchors.centerIn: parent; spacing: 5
-                                Label { text: String(fleet.availableCount); font.pixelSize: 30; color: teal }
-                                Label { text: "Available in demo"; color: navy }
+                        OverviewMetricCard {
+                            objectName: "overviewActiveCard"
+                            metricLabel: "Active rentals"
+                            value: String(rentalsModel.activeCount)
+                            note: "Confirmed rental contracts"
+                            accent: navy
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewOverdueCard"
+                            metricLabel: "Overdue rentals"
+                            value: String(rentalsModel.overdueCount)
+                            note: "From current C++ due-state"
+                            accent: rentalsModel.overdueCount > 0 ? "#B45309" : teal
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewValueCard"
+                            metricLabel: "Active booked value"
+                            value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
+                            note: "Contract totals, not payments"
+                            accent: navy
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 122
+                        radius: 12
+                        color: mint
+                        border.color: designTokens.border
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 9
+                            Label {
+                                text: "Rental lifecycle"
+                                color: navy; font.bold: true; font.pixelSize: 17
+                            }
+                            RowLayout {
+                                spacing: 20
+                                Label {
+                                    objectName: "overviewDueTodayText"
+                                    text: "Due today: " + rentalsModel.dueTodayCount
+                                    color: navy
+                                    Accessible.name: text
+                                }
+                                Label {
+                                    objectName: "overviewHistoryText"
+                                    text: "Returned or archived: " + rentalsModel.historyCount
+                                    color: navy
+                                    Accessible.name: text
+                                }
+                            }
+                            Label {
+                                text: "Metrics refresh only after a successful C++ transaction. Rental filters do not change totals."
+                                color: ink; wrapMode: Text.WordWrap
                             }
                         }
                     }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 12
+                        Button {
+                            id: overviewActiveButton
+                            objectName: "overviewOpenActive"
+                            text: "Review active rentals"
+                            activeFocusOnTab: true
+                            Accessible.name: "Review active rentals"
+                            onClicked: {
+                                rentalsModel.statusFilter = "Active"
+                                window.workspace = 2
+                            }
+                        }
+                        Button {
+                            objectName: "overviewOpenFleet"
+                            text: "Open Fleet"
+                            activeFocusOnTab: true
+                            Accessible.name: "Open Fleet"
+                            onClicked: window.workspace = 1
+                        }
+                    }
                     Label {
-                        text: "Rental value and due dates are deliberately omitted from this Fleet-only feasibility test."
+                        text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }
                     Item { Layout.fillHeight: true }

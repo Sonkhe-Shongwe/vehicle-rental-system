@@ -17,6 +17,12 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(int selectedRow READ selectedRow NOTIFY selectionChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
+    // Derived from the complete C++ snapshot, never the filtered Rentals view.
+    Q_PROPERTY(int activeCount READ activeCount NOTIFY metricsChanged)
+    Q_PROPERTY(int historyCount READ historyCount NOTIFY metricsChanged)
+    Q_PROPERTY(int overdueCount READ overdueCount NOTIFY metricsChanged)
+    Q_PROPERTY(int dueTodayCount READ dueTodayCount NOTIFY metricsChanged)
+    Q_PROPERTY(double activeBookedValue READ activeBookedValue NOTIFY metricsChanged)
 public:
     enum Role {
         RentalIdRole = Qt::UserRole + 1,
@@ -39,6 +45,11 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_items.size(); }
+    int activeCount() const;
+    int historyCount() const;
+    int overdueCount() const;
+    int dueTodayCount() const;
+    double activeBookedValue() const;
     QString statusFilter() const { return m_statusFilter; }
     void setStatusFilter(const QString &filter);
     QString selectedRentalId() const { return m_selectedRentalId; }
@@ -53,6 +64,7 @@ signals:
     void selectionChanged();
     void countChanged();
     void statusFilterChanged();
+    void metricsChanged();
 
 private:
     int rowForId(const QString &rentalId) const;

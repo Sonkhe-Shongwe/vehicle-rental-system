@@ -41,7 +41,7 @@ qt_add_qml_module(rental_studio_qtquick_spike
     VERSION 1.0
     QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
-              ConfirmActionDialog.qml)
+              ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
     add_test(NAME rental_studio_p2_model COMMAND rental_studio_qtquick_spike --self-test)
     set_tests_properties(rental_studio_p2_model PROPERTIES
@@ -107,6 +107,16 @@ if(BUILD_TESTING)
         rental_studio_p3_archive_qml_wide
         rental_studio_p3_archive_qml_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P5 scoped operational Overview: C++-owned KPIs, post-commit refresh,
+    # real wide/compact QQuickWindow and selection-independent totals.
+    add_test(NAME rental_studio_p5_overview_wide
+        COMMAND rental_studio_qtquick_spike --p5-overview-smoke)
+    add_test(NAME rental_studio_p5_overview_compact
+        COMMAND rental_studio_qtquick_spike --p5-overview-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_overview_wide
+        rental_studio_p5_overview_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     # P4 shared QML token/focus/shell regression at real native window sizes.
     add_test(NAME rental_studio_p4_shared_shell_wide
         COMMAND rental_studio_qtquick_spike --p4-shell-smoke)

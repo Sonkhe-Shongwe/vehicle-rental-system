@@ -301,6 +301,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-return-smoke", "Test real QML confirmed return through C++ domain and model refresh."});
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
     parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
+    parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
@@ -1768,6 +1769,123 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 native focus route PASS"<<size
                    <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p5-overview-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 290;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1100,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *activeCard=find(find,root,"overviewActiveCard");
+            auto *valueCard=find(find,root,"overviewValueCard");
+            auto *dueCard=find(find,root,"overviewDueTodayText");
+            auto *historyCard=find(find,root,"overviewHistoryText");
+            auto *activeAction=find(find,root,"overviewOpenActive");
+            auto *fleetAction=find(find,root,"overviewOpenFleet");
+            if(!activeCard||!valueCard||!dueCard||!historyCard||
+               !activeAction||!fleetAction ||
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
+               std::abs(rentalModel.activeBookedValue()-1400.0)>0.01 ||
+               fleet.availableCount()!=4 ||
+               activeCard->property("value").toString()!="1" ||
+               valueCard->property("value").toString()!="R 1400.00") {
+                qCritical()<<"P5 operational Overview initial C++ data missing";
+                app.exit(291);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage screenshot=window->grabWindow();
+            if(screenshot.isNull() ||
+               screenshot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !screenshot.save("p5-qt-operational-overview-"+size+".png","PNG")) {
+                qCritical()<<"P5 real Overview screenshot failed";
+                app.exit(292);return;
+            }
+            // Presentation-only filter must NEVER change aggregate totals.
+            rentalModel.setStatusFilter("History");
+            if(rentalModel.count()!=1 || rentalModel.activeCount()!=1 ||
+               rentalModel.historyCount()!=1 ||
+               std::abs(rentalModel.activeBookedValue()-1400.0)>0.01) {
+                qCritical()<<"P5 Overview KPIs incorrectly scoped to visible filter";
+                app.exit(293);return;
+            }
+            rentalModel.setStatusFilter("All");
+            // The existing C++ quote + confirmation service is the only
+            // writer. Committed records update Fleet and Overview through
+            // the already-established post-commit refresh callback.
+            if(!bookingActions.preview("C001",3) ||
+               !bookingActions.confirm("Fictional Demo Overview","0000000000")) {
+                qCritical()<<"P5 real C++ booked Corolla flow failed"
+                           <<bookingActions.lastMessage();
+                app.exit(294);return;
+            }
+            QCoreApplication::processEvents();
+            if(rentalModel.activeCount()!=2 || rentalModel.historyCount()!=1 ||
+               std::abs(rentalModel.activeBookedValue()-2750.0)>0.01 ||
+               fleet.availableCount()!=3 ||
+               activeCard->property("value").toString()!="2" ||
+               valueCard->property("value").toString()!="R 2750.00") {
+                qCritical()<<"P5 Overview did not update after durable booking"
+                           <<rentalModel.activeCount()<<rentalModel.activeBookedValue()
+                           <<valueCard->property("value");
+                app.exit(295);return;
+            }
+            if(!rentalModel.selectById("R001") || !rentalActions.returnSelected()) {
+                qCritical()<<"P5 real domain return failed";
+                app.exit(296);return;
+            }
+            QCoreApplication::processEvents();
+            if(rentalModel.activeCount()!=1 || rentalModel.historyCount()!=2 ||
+               std::abs(rentalModel.activeBookedValue()-1350.0)>0.01 ||
+               fleet.availableCount()!=4 ||
+               activeCard->property("value").toString()!="1" ||
+               valueCard->property("value").toString()!="R 1350.00" ||
+               historyCard->property("text").toString()!="Returned or archived: 2") {
+                qCritical()<<"P5 Overview did not reconcile committed return";
+                app.exit(297);return;
+            }
+            activeAction->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if(window->property("workspace").toInt()!=2 ||
+               rentalModel.statusFilter()!="Active" ||
+               rentalModel.count()!=1 ||
+               rentalModel.activeCount()!=1) {
+                qCritical()<<"P5 Overview-to-Active action changed metrics or navigation";
+                app.exit(298);return;
+            }
+            window->setProperty("workspace",0);
+            QCoreApplication::processEvents();
+            fleetAction->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if(window->property("workspace").toInt()!=1) {
+                qCritical()<<"P5 Overview-to-Fleet action failed";
+                app.exit(299);return;
+            }
+            QByteArray originalVehicles,originalRentals,afterLedger;
+            if(!readFile(vehicles,&originalVehicles) ||
+               !readFile(rentals,&originalRentals) ||
+               !readFile(disposable.filePath("rentals.txt"),&afterLedger) ||
+               originalVehicles!=beforeVehicles ||
+               originalRentals!=beforeRentals ||
+               afterLedger==beforeRentals) {
+                qCritical()<<"P5 persisted disposable change/original-file safety failed";
+                app.exit(300);return;
+            }
+            qInfo()<<"P5 operational overview PASS"<<size
+                   <<"visible C++ metrics, real booking/return refresh, navigation, safe demo";
             app.exit(0);
         });
     }

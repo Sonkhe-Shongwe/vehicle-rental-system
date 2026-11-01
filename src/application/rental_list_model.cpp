@@ -25,6 +25,44 @@ QString dueStateText(RentalDueState due) {
 }
 }
 
+
+// P5 overview metrics always use the *entire* authoritative read snapshot.
+// A UI filter is a presentation choice, not an operational data boundary.
+int RentalListModel::activeCount() const {
+    int n=0;
+    for(const auto &item:m_allItems)
+        if(item.status==RentalRecordStatus::Active) ++n;
+    return n;
+}
+int RentalListModel::historyCount() const {
+    int n=0;
+    for(const auto &item:m_allItems)
+        if(item.status!=RentalRecordStatus::Active) ++n;
+    return n;
+}
+int RentalListModel::overdueCount() const {
+    int n=0;
+    for(const auto &item:m_allItems)
+        if(item.status==RentalRecordStatus::Active &&
+           item.dueState==RentalDueState::Overdue) ++n;
+    return n;
+}
+int RentalListModel::dueTodayCount() const {
+    int n=0;
+    for(const auto &item:m_allItems)
+        if(item.status==RentalRecordStatus::Active &&
+           item.dueState==RentalDueState::DueToday) ++n;
+    return n;
+}
+double RentalListModel::activeBookedValue() const {
+    double amount=0.0;
+    for(const auto &item:m_allItems)
+        if(item.status==RentalRecordStatus::Active)
+            amount+=item.legacyTotal;
+    // Contract totals are not actual payments, deposits or realized revenue.
+    return amount;
+}
+
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
     : QAbstractListModel(parent), m_service(service),
       m_allItems(service.records()), m_items(m_allItems) {}
@@ -170,4 +208,7 @@ void RentalListModel::refresh() {
         emit countChanged();
     if (priorId != m_selectedRentalId || selectedRow() != priorRow)
         emit selectionChanged();
+    // Emitted only after the caller's authoritative persisted transaction
+    // requests refresh(). Filters and unconfirmed previews never alter KPIs.
+    emit metricsChanged();
 }
