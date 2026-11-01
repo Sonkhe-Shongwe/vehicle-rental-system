@@ -101,6 +101,21 @@ Vehicle* RentalSystem::findVehicleById(const QString& id) const
     return nullptr;
 }
 
+bool RentalSystem::hasRentalHistoryForVehicle(const QString& id) const
+{
+    const QString searchId=id.trimmed();
+    if(searchId.isEmpty())
+        return false;
+    // A returned or archived contract still retains its immutable vehicle ID.
+    // A single-file fleet deletion must never orphan a rental ledger record.
+    for(const Rental *rental: rentals) {
+        if(rental &&
+           rental->getVehicleId().compare(searchId,Qt::CaseInsensitive)==0)
+            return true;
+    }
+    return false;
+}
+
 bool RentalSystem::removeVehicle(const QString& id)
 {
     const QString searchId = id.trimmed();
@@ -112,9 +127,11 @@ bool RentalSystem::removeVehicle(const QString& id)
             continue;
         }
 
-        // A vehicle with an active rental must first be returned.
+        // Rental history is an immutable reference even after return/archive.
+        // Guard in the domain, not only the UI/typed service, so no caller
+        // can delete a vehicle that a surviving rental record still names.
         if (vehicle->getIsRented() ||
-            findActiveRentalByVehicleId(vehicle->getId()) != nullptr) {
+            hasRentalHistoryForVehicle(vehicle->getId())) {
             return false;
         }
 
