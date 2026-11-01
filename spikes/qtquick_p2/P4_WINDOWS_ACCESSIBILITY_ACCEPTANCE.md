@@ -16,12 +16,12 @@ Use **Win + Ctrl + Enter** to enable/disable Windows Narrator if supported. For 
 
 | Test | Expected observable behaviour | Owner result |
 |---|---|---|
-| Sidebar navigation | Overview, Fleet, Rentals announce meaningful destinations; Tab/Shift+Tab and Space activate without unrelated actions | NOT TESTED |
+| Sidebar navigation | Overview, Fleet, Rentals announce meaningful destinations **and which workspace is checked/selected**; Tab/Shift+Tab and Space activate without unrelated actions | NOT TESTED |
 | Fleet Gallery/Table | Two options announce distinguishable names, and the **currently selected** option. Switching via Space updates what Narrator announces | NOT TESTED |
 | Fleet search/status/sort | Input names announce clearly; caret arrows edit Search, ComboBox arrows change options, with visible focus | NOT TESTED |
 | Fleet card/table selection | Arrow keys select the visible vehicle with C++ ID retained; Inspector and highlight agree; Escape clears selected vehicle only in visible Fleet | NOT TESTED |
 | Rentals All/Active/History | Each option announces its name and selected/checked state; changing via Space updates the announcement | NOT TESTED |
-| Rentals list | One Tab stop for the list; arrows navigate records; rental ID/status are understandable without customer personal data | NOT TESTED |
+| Rentals list | One Tab stop for the list; arrows navigate records; rental ID, vehicle, status, **due-state, total amount and currently selected record** are announced without exposing customer names or phone numbers | NOT TESTED |
 | New rental dialog | Initial focus on Vehicle ID, labeled Days/Customer/Phone fields, quote/Cancel/Confirm actions. Escape cancels and restores focus | NOT TESTED |
 | Return/Archive confirmations | Modal focus begins on Cancel, Tab/Shift+Tab remain inside; Escape cancels and returns to the correct action. Never submit a real transaction | NOT TESTED |
 | Reduced motion | Test Windows system animation setting as supported; focus remains immediate; only optional selection tint fade changes | NOT TESTED |
