@@ -3,15 +3,49 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QLockFile>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QSet>
 #include <QStandardPaths>
 #include <QStringList>
 #include <cmath>
+#include <memory>
 
 namespace {
 void error(QString *out,const QString &message) { if(out) *out=message; }
+// The persistent fictional demo has a fixed writable ledger. QSaveFile protects
+// each individual write, but two running app processes could each load an old
+// snapshot and overwrite the other's bookings. Keep one OS-backed lock for the
+// lifetime of this process. The lock sits BESIDE the strictly inventoried data
+// directory so it never weakens the fictional-data file allowlist.
+std::unique_ptr<QLockFile> &heldSessionLock() {
+    static std::unique_ptr<QLockFile> lock;
+    return lock;
+}
+bool lockSession(QString *reason) {
+    if(heldSessionLock()) return true;
+    const QFileInfo target(P5SyntheticSession::location());
+    const QFileInfo parent(target.absolutePath());
+    if(parent.exists() && (!parent.isDir() || parent.isSymLink())) {
+        error(reason,QStringLiteral("Untrusted application-data parent"));
+        return false;
+    }
+    if(!QDir().mkpath(target.absolutePath())) {
+        error(reason,QStringLiteral("Cannot access fictional session parent"));
+        return false;
+    }
+    auto lock=std::make_unique<QLockFile>(target.absoluteFilePath()+QStringLiteral(".lock"));
+    // An operator may keep the app open longer than Qt's default stale age.
+    // A dead process may still be detected by QLockFile's PID/host checks.
+    lock->setStaleLockTime(0);
+    if(!lock->tryLock(0)) {
+        error(reason,QStringLiteral("Fictional session already open in another process"));
+        return false;
+    }
+    heldSessionLock()=std::move(lock);
+    return true;
+}
 bool readFile(const QString &path,QByteArray *result) {
     QFile file(path);
     if(!file.open(QIODevice::ReadOnly))return false;
@@ -126,6 +160,7 @@ bool P5SyntheticSession::validate(const QByteArray &vehiclesSeed,
 bool P5SyntheticSession::open(const QByteArray &vehiclesSeed,
                               const QByteArray &rentalsSeed,
                               const QByteArray &marker,QString *reason) {
+    if(!lockSession(reason))return false;
     if(QFileInfo::exists(location()))
         return validate(vehiclesSeed,rentalsSeed,marker,reason);
     const QFileInfo parent(QFileInfo(location()).absolutePath());
@@ -149,6 +184,7 @@ bool P5SyntheticSession::open(const QByteArray &vehiclesSeed,
 }
 
 bool P5SyntheticSession::cleanForTest(const QByteArray &marker,QString *reason) {
+    if(!lockSession(reason))return false;
     const QDir dir(location());
     if(!dir.exists())return true;
     QByteArray actual;
