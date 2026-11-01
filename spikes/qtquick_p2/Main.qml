@@ -789,8 +789,14 @@ ApplicationWindow {
                                     // The ListView is the single keyboard Tab stop; arrow keys
                                     // select records and rows remain pointer-clickable.
                                     activeFocusOnTab: false
-                                    Accessible.name: "Rental " + rentalId +
-                                                     ", " + status + ", vehicle " + vehicleId
+                                    // Include all the visible record context and selection
+                                    // in one spoken name; never expose customer PII here.
+                                    Accessible.name: (rentalRow.rentalId === rentalsModel.selectedRentalId
+                                                      ? "Selected rental " : "Rental ") +
+                                                     rentalId + ", " + status +
+                                                     ", vehicle " + vehicleId +
+                                                     ", " + dueState +
+                                                     ", total R " + Number(total).toFixed(2)
                                     onClicked: rentalsModel.selectById(rentalId)
                                     background: FocusFrame {
                                         objectName: "rentalRowFocus"

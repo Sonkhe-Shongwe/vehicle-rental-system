@@ -15,7 +15,12 @@ Button {
     objectName: "workspaceNav" + modelData
     text: modelData
     activeFocusOnTab: true
+    // Workspace choices are mutually exclusive; expose active state without
+    // changing native Button activation or the existing C++ workspace routing.
+    Accessible.role: Accessible.RadioButton
     Accessible.name: modelData + " workspace"
+    Accessible.checkable: true
+    Accessible.checked: nav.currentWorkspace
     Accessible.description: "Use Up and Down to navigate workspace names"
     Keys.onPressed: (event) => {
         if (event.modifiers !== Qt.NoModifier || !nav.activeFocus)

@@ -1803,6 +1803,32 @@ int main(int argc, char *argv[]) {
                 }
                 return true;
             };
+            // Side navigation must expose which workspace is current.
+            if (!checkRadio("workspaceNavOverview","Overview workspace",false) ||
+                !checkRadio("workspaceNavFleet","Fleet workspace",true) ||
+                !checkRadio("workspaceNavRentals","Rentals workspace",false)) {
+                app.exit(278);return;
+            }
+            auto *overviewNav=find(find,root,"workspaceNavOverview");
+            overviewNav->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (window->property("workspace").toInt()!=0 ||
+                !checkRadio("workspaceNavOverview","Overview workspace",true) ||
+                !checkRadio("workspaceNavFleet","Fleet workspace",false)) {
+                qCritical()<<"P4 Overview workspace accessibility did not update";
+                app.exit(279);return;
+            }
+            auto *fleetNav=find(find,root,"workspaceNavFleet");
+            fleetNav->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if (window->property("workspace").toInt()!=1 ||
+                !checkRadio("workspaceNavOverview","Overview workspace",false) ||
+                !checkRadio("workspaceNavFleet","Fleet workspace",true)) {
+                qCritical()<<"P4 Fleet workspace accessibility did not update";
+                app.exit(280);return;
+            }
             if (!checkRadio("fleetGalleryToggle","Fleet gallery view",true) ||
                 !checkRadio("fleetTableToggle","Fleet table view",false)) {
                 app.exit(271);return;
@@ -1856,6 +1882,45 @@ int main(int argc, char *argv[]) {
                 !checkRadio("rentalFilterHistory","History rentals",false)) {
                 qCritical()<<"P4 Active accessibility state stale after keyboard";
                 app.exit(276);return;
+            }
+            if (!checkRadio("workspaceNavRentals","Rentals workspace",true) ||
+                !checkRadio("workspaceNavFleet","Fleet workspace",false)) {
+                qCritical()<<"P4 Rentals workspace accessible state stale";
+                app.exit(281);return;
+            }
+            // Rental row exposes status, due status, value and current selection
+            // as spoken metadata; no fictional customer contact is leaked.
+            auto *row=find(find,root,"rentalRow");
+            auto *rowInterface=row ? QAccessible::queryAccessibleInterface(row) : nullptr;
+            if (!rowInterface || !rowInterface->isValid()) {
+                qCritical()<<"P4 rental row missing from accessible tree";
+                app.exit(282);return;
+            }
+            const auto rowName=[&] { return rowInterface->text(QAccessible::Name); };
+            const QString id=row->property("rentalId").toString();
+            const QString due=row->property("dueState").toString();
+            const auto total=row->property("total").toDouble();
+            const QString value=QStringLiteral("total R %1").arg(total,0,'f',2);
+            if (id.isEmpty() || due.isEmpty() ||
+                !rowName().contains(QStringLiteral("Rental ")+id) ||
+                !rowName().contains(due) || !rowName().contains(value)) {
+                qCritical()<<"P4 rental accessible row omitted due/total" <<rowName();
+                app.exit(283);return;
+            }
+            if (!rentalModel.selectById(id)) {
+                qCritical()<<"P4 rental accessible selection setup failed"<<id;
+                app.exit(284);return;
+            }
+            QCoreApplication::processEvents();
+            if (!rowName().startsWith(QStringLiteral("Selected rental ")+id)) {
+                qCritical()<<"P4 selected rental not announced in accessible name"<<rowName();
+                app.exit(285);return;
+            }
+            rentalModel.clearSelection();
+            QCoreApplication::processEvents();
+            if (!rowName().startsWith(QStringLiteral("Rental ")+id)) {
+                qCritical()<<"P4 cleared rental still labelled selected"<<rowName();
+                app.exit(286);return;
             }
             QByteArray fv,fr,tr;
             if (!readFile(vehicles,&fv) || !readFile(rentals,&fr) ||
