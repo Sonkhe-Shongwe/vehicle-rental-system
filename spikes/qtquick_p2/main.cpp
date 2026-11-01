@@ -2181,15 +2181,25 @@ int main(int argc, char *argv[]) {
             auto *days=find(find,root,"bookingDays");
             auto *preview=find(find,root,"bookingPreviewButton");
             auto *confirm=find(find,root,"bookingConfirmButton");
-            auto *dialog=find(find,root,"rentalBookingDialog");
             auto *name=find(find,root,"bookingCustomer");
             auto *phone=find(find,root,"bookingPhone");
+            // QML Dialog derives from Popup, not QQuickItem. The recursive
+            // find() deliberately walks only visible QQuickItem controls:
+            // detecting the actual visible modal inputs is the reliable
+            // cross-platform test of an opened popup, not querying a Popup
+            // objectName as though it were a visual QQuickItem delegate.
             if(window->property("workspace").toInt()!=2 ||
-               !vehicle || !days || !preview || !confirm || !dialog ||
-               !name || !phone || !dialog->isVisible() ||
+               !vehicle || !days || !preview || !confirm ||
+               !name || !phone ||
                vehicle->property("text").toString()!="C001" ||
                bookingActions.canConfirm() || confirm->isEnabled()) {
-                qCritical()<<"P5 Fleet did not prefill the real safe rental dialog";
+                qCritical()<<"P5 Fleet did not prefill the real safe rental dialog"
+                           <<"workspace"<<window->property("workspace")
+                           <<"vehicle control"<<bool(vehicle)
+                           <<"days"<<bool(days)<<"preview"<<bool(preview)
+                           <<"confirm"<<bool(confirm)
+                           <<"name"<<bool(name)<<"phone"<<bool(phone)
+                           <<"vehicle ID"<<(vehicle?vehicle->property("text"):QVariant{});
                 app.exit(342);return;
             }
             days->setProperty("value",3);
@@ -2205,7 +2215,7 @@ int main(int argc, char *argv[]) {
             press(confirm);
             QTest::qWait(130);
             auto *receipt=find(find,root,"rentalBookingMessage");
-            if(!receipt || dialog->isVisible() ||
+            if(!receipt || find(find,root,"bookingConfirmButton") ||
                bookingActions.lastRentalId()!="R003" ||
                receipt->property("text").toString()!="Booking R003 saved." ||
                rentalModel.activeCount()!=2 ||
