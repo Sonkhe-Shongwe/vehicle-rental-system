@@ -3,6 +3,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
     p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
+    fleet_add_controller.h fleet_add_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
