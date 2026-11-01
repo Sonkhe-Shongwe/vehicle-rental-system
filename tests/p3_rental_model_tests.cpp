@@ -193,13 +193,18 @@ int main(int argc, char **argv) {
               model.data(model.index(0, 0), RentalListModel::ActualReturnDateRole)
                   .toDate() == today,
               "selected record remains canonical after return");
-        check(system.removeVehicle("C001"), "remove returned vehicle");
         const QByteArray beforeHistoryRead = readBytes(rentalsPath);
+        const QByteArray beforeHistoryFleet = readBytes(vehiclesPath);
+        check(!system.removeVehicle("C001") &&
+              system.hasRentalHistoryForVehicle("C001") &&
+              system.findVehicleById("C001") != nullptr &&
+              readBytes(vehiclesPath) == beforeHistoryFleet,
+              "returned rental preserves its referenced vehicle in Fleet");
         model.refresh();
         check(model.data(model.index(0, 0), RentalListModel::VehicleIdRole)
                   .toString() == "C001" &&
               readBytes(rentalsPath) == beforeHistoryRead,
-              "historical rental persists without the original fleet vehicle");
+              "historical rental and existing vehicle survive read refresh");
 
         check(system.completeRental("R003", today), "return last active rental");
         check(system.archiveRental("R003"), "archive last returned rental");
