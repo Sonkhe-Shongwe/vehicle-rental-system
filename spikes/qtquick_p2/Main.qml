@@ -694,20 +694,35 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 text: "Remove selected vehicle"
                                 activeFocusOnTab: true
-                                enabled: fleetRemove.canRemove &&
-                                         fleet.selectedId !== "" && fleet.selectedAvailable
+                                enabled: fleet.selectedId !== "" &&
+                                         fleet.selectedAvailable &&
+                                         fleetRemove.canRemoveVehicle(fleet.selectedId)
                                 Accessible.name: "Remove selected available fictional vehicle"
                                 Accessible.description: !fleetRemove.canRemove
                                     ? "Unavailable in persistent fictional-only mode"
                                     : !fleet.selectedAvailable
                                       ? "Return the active rental before vehicle removal"
-                                      : "Requires exact vehicle ID confirmation"
+                                      : fleetRemove.hasRentalHistory(fleet.selectedId)
+                                        ? "Historical rental records reference this vehicle. Removal is blocked."
+                                        : "Requires exact vehicle ID confirmation"
                                 onClicked: {
                                     fleetRemove.clearMessage()
                                     fleetRemoveDialog.targetId = fleet.selectedId
                                     fleetRemoveDialog.targetName = fleet.selectedName
                                     fleetRemoveDialog.open()
                                 }
+                            }
+                            Label {
+                                objectName: "fleetRentalHistoryHint"
+                                visible: fleet.selectedId !== "" &&
+                                         fleet.selectedAvailable &&
+                                         fleetRemove.hasRentalHistory(fleet.selectedId)
+                                text: "Removal blocked: rental history still references this vehicle."
+                                color: ink
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: 12
+                                Layout.fillWidth: true
+                                Accessible.name: text
                             }
                             DomainMessage {
                                 objectName: "fleetRemoveMessage"
