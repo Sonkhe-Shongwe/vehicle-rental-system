@@ -132,6 +132,8 @@ jobs:
           Copy-Item "demo/rentals.txt" "$dest/demo/rentals.txt"
           Copy-Item "spikes/qtquick_p2/Verify-P2-Windows.ps1" "$dest/Verify-P2-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md" "$dest/WINDOWS_PHYSICAL_ACCEPTANCE.md"
+          Copy-Item "spikes/qtquick_p2/Verify-P4-Windows.ps1" "$dest/Verify-P4-Windows.ps1"
+          Copy-Item "spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md" "$dest/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md"
           Set-Content -Path "$dest/SOURCE_COMMIT.txt" -NoNewline -Value "$env:GITHUB_SHA"
           $deployer = Join-Path $env:QT_ROOT_DIR "bin/windeployqt.exe"
           if (-not (Test-Path $deployer)) { throw "windeployqt unavailable" }
@@ -152,6 +154,10 @@ jobs:
           }
           & "$dest/Verify-P2-Windows.ps1" -VerifyOnly
           if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P2 verification failed" }
+          # Run P4 accessibility/focus/motion checks against the relocated
+          # packaged executable, not just its CTest build-tree version.
+          & "$dest/Verify-P4-Windows.ps1" -VerifyOnly
+          if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P4 verification failed" }
           # Do not bundle runner-specific test outputs or host diagnostics.
           Remove-Item "$dest/acceptance-evidence" -Recurse -Force -ErrorAction SilentlyContinue
       - name: Upload disposable Windows P2 physical acceptance kit
