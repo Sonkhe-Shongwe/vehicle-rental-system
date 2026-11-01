@@ -32,6 +32,7 @@
 #include "src/application/rental_return_controller.h"
 #include "src/application/rental_booking_controller.h"
 #include "src/application/rental_archive_controller.h"
+#include "p6_archived_delete_controller.h"
 #include "fleet_add_controller.h"
 #include "fleet_remove_controller.h"
 #include "motion_policy.h"
