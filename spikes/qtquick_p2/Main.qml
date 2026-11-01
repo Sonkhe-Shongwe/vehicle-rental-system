@@ -11,6 +11,9 @@ ApplicationWindow {
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
+    // MotionPolicy is C++-owned; no OS rules or filesystem access in QML.
+    readonly property bool reducedMotion: motionPolicy.reducedMotion
+    readonly property int selectionFadeMs: motionPolicy.selectionFadeMs
     readonly property color navy: designTokens.navy
     readonly property color teal: designTokens.teal
     readonly property color canvas: designTokens.canvas

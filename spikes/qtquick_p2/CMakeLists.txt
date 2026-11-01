@@ -1,6 +1,7 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
+    motion_policy.h motion_policy.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
@@ -15,6 +16,9 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+if(WIN32)
+    target_link_libraries(rental_studio_qtquick_spike PRIVATE user32)
+endif()
 # Compile the SHA-256 of the exact fictional fixtures into the executable.
 # Neither a portable kit nor Qt Creator may ingest arbitrary operational records.
 file(SHA256 "${PROJECT_SOURCE_DIR}/demo/vehicles.txt" P2_VEHICLES_SHA256)
@@ -130,6 +134,23 @@ if(BUILD_TESTING)
         rental_studio_p4_focus_route_wide
         rental_studio_p4_focus_route_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # P4: both preference modes, both actual window sizes, live preference
+    # change and protected synthetic file assertions. Never mutate host OS.
+    foreach(MODE ordinary reduced)
+        foreach(SIZE wide compact)
+            set(args --p4-motion-smoke)
+            if(MODE STREQUAL "reduced")
+                list(APPEND args --p4-reduce-motion)
+            endif()
+            if(SIZE STREQUAL "compact")
+                list(APPEND args --compact)
+            endif()
+            add_test(NAME rental_studio_p4_motion_${MODE}_${SIZE}
+                     COMMAND rental_studio_qtquick_spike ${args})
+            set_tests_properties(rental_studio_p4_motion_${MODE}_${SIZE}
+                PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+        endforeach()
+    endforeach()
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES

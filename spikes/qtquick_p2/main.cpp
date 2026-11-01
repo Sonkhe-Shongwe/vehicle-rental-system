@@ -27,6 +27,7 @@
 #include "src/application/rental_return_controller.h"
 #include "src/application/rental_booking_controller.h"
 #include "src/application/rental_archive_controller.h"
+#include "motion_policy.h"
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
 // values from disposable fictional fixtures. No Vehicle* reaches QML.
@@ -302,6 +303,8 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
+    parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
+    parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -388,8 +391,18 @@ int main(int argc, char *argv[]) {
         qInfo() << "P2 C++ model self-test PASS: 5 fleet, search/status/sort/selection, read-only demo";
         return 0;
     }
+    // Only the dedicated synthetic smoke can override the OS preference.
+    MotionPolicy motion;
+    if (parser.isSet("p4-motion-smoke"))
+        motion.setTestPreference(parser.isSet("p4-reduce-motion"));
+    app.installNativeEventFilter(&motion);
+    QObject::connect(&app, &QGuiApplication::applicationStateChanged,
+                     &motion, [&motion](Qt::ApplicationState) {
+                         motion.refreshFromSystem();
+                     });
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("motionPolicy", &motion);
     engine.rootContext()->setContextProperty("fleet", &fleet);
     engine.rootContext()->setContextProperty("rentalsModel", &rentalModel);
     engine.rootContext()->setContextProperty("rentalActions", &rentalActions);
@@ -1704,6 +1717,86 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 native focus route PASS"<<size
                    <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p4-motion-smoke")) {
+        auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 260;
+        const bool compact = parser.isSet("compact");
+        const bool reduce = parser.isSet("p4-reduce-motion");
+        window->resize(compact ? 1280 : 1500, compact ? 720 : 860);
+        window->setProperty("workspace", 1);
+        QTimer::singleShot(1200, &app, [&, window, compact, reduce]{
+            const auto find=[](const auto &self, QQuickItem *item,
+                               const QString &name) -> QQuickItem* {
+                if (!item) return nullptr;
+                if (item->objectName() == name && item->isVisible())
+                    return item;
+                for (auto *child : item->childItems())
+                    if (auto *found=self(self, child, name)) return found;
+                return nullptr;
+            };
+            auto *frame=find(find, window->contentItem(), "fleetGalleryFocus");
+            auto matches=[&](bool expected) {
+                const int duration=expected ? 0 : 90;
+                return motion.reducedMotion() == expected &&
+                       motion.selectionFadeMs() == duration &&
+                       window->property("reducedMotion").toBool() == expected &&
+                       window->property("selectionFadeMs").toInt() == duration &&
+                       frame && frame->property("selectionFadeMs").toInt() == duration;
+            };
+            if (!matches(reduce)) {
+                qCritical()<<"P4 initial OS-motion injection/binding failed"
+                           <<reduce << motion.selectionFadeMs();
+                app.exit(261);return;
+            }
+            // Simulate a later OS preference change (no host Windows settings
+            // modification) and prove the native QML view responds live.
+            motion.setTestPreference(!reduce);
+            QCoreApplication::processEvents();
+            if (!matches(!reduce)) {
+                qCritical()<<"P4 live reduced-motion preference changed but QML stale";
+                app.exit(262);return;
+            }
+            motion.setTestPreference(reduce);
+            QCoreApplication::processEvents();
+            if (!matches(reduce)) {
+                qCritical()<<"P4 motion restoration failed";
+                app.exit(263);return;
+            }
+            // Focus ring remains immediate and selected-ID updates remain
+            // native C++ operations, without a cosmetic animation dependency.
+            auto *gallery=find(find,window->contentItem(),"fleetGallery");
+            if (!gallery) { app.exit(264);return; }
+            gallery->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if (fleet.selectedId().isEmpty() ||
+                !frame->property("keyboardFocused").toBool()) {
+                qCritical()<<"P4 motion setting affected keyboard selection";
+                app.exit(265);return;
+            }
+            QByteArray vf,rf,temporary;
+            if (!readFile(vehicles,&vf) || !readFile(rentals,&rf) ||
+                !readFile(disposable.filePath("rentals.txt"),&temporary) ||
+                vf!=beforeVehicles || rf!=beforeRentals ||
+                temporary!=beforeRentals) {
+                qCritical()<<"P4 motion test mutated fictional source/ledger";
+                app.exit(266);return;
+            }
+            const QString size=compact ? "1280x720" : "1500x860";
+            const QString mode=reduce ? "reduced" : "ordinary";
+            const QImage image=window->grabWindow();
+            if (image.isNull() ||
+                image.size()!=QSize(compact?1280:1500,compact?720:860) ||
+                !image.save("p4-qt-motion-"+mode+"-"+size+".png","PNG")) {
+                qCritical()<<"P4 motion screenshot incorrect";
+                app.exit(267);return;
+            }
+            qInfo()<<"P4 motion policy PASS" <<mode<<size
+                   <<"duration" <<motion.selectionFadeMs()
+                   <<"live change, instant focus, unmodified fixtures";
             app.exit(0);
         });
     }
