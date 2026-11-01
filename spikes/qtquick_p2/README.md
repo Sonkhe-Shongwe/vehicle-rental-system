@@ -1,3 +1,5 @@
+> **CURRENT SOURCE NOTE (1 NOV 2026):** Although this folder was named for the original **P2 Fleet spike**, the same Qt Quick target now includes P5 booking/overview and P6-A/B disposable fictional Fleet add/remove workflows on [P6 Draft PR #14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14). [Latest checkpoint](../../docs/LATEST_CHECKPOINT.md) | [Native Qt Linux/Windows 64/64 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41321845432) | [Core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41321845349). Original P2-only/read-only descriptions below are **historical**, not the present source capability. Production/customer data remain forbidden.
+
 # P2 Qt Quick Fleet Spike | Current Native Test Reference
 
 **30 October 2026: SOURCE COMPILED AND HOSTED TESTS GREEN; USER WINDOWS QT CREATOR APP LAUNCHED; FINAL P2 GATE OPEN.**
