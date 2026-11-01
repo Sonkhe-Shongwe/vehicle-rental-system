@@ -2854,6 +2854,126 @@ int main(int argc, char *argv[]) {
             app.exit(0);
         });
     }
+    if (parser.isSet("p6-archived-delete-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 410;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1100,&app,[&,window,compact]{
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *item) {
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(110);
+            };
+            auto *root=window->contentItem();
+            auto *list=find(find,root,"rentalList");
+            auto *archive=find(find,root,"rentalArchiveButton");
+            auto *remove=find(find,root,"rentalDeleteArchivedButton");
+            QByteArray initial,now,vehicleInitial,vehicleNow;
+            const QString ledger=disposable.filePath("rentals.txt");
+            if(!list||!archive||!remove||archive->isEnabled()||
+               remove->isEnabled()||rentalModel.count()!=2||
+               !readFile(ledger,&initial)||
+               !readFile(disposable.filePath("vehicles.txt"),&vehicleInitial)) {
+                qCritical()<<"P6-C deletion initial state not disabled/protected";
+                app.exit(411);return;
+            }
+            ArchivedDeleteService typed(system);
+            if(typed.permanentlyDelete("R001","DELETE R001").error!=
+                   ArchivedDeleteError::NotArchived ||
+               typed.permanentlyDelete("R002","DELETE R002").error!=
+                   ArchivedDeleteError::NotArchived ||
+               archivedDelete.permanentlyDelete("R001","DELETE R001") ||
+               !readFile(ledger,&now)||now!=initial) {
+                qCritical()<<"P6-C active/returned deletion was permitted";
+                app.exit(412);return;
+            }
+            // Select returned R002 through the live ListView, then archive it
+            // through its existing separate real keyboard-confirmed QML flow.
+            list->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Down);
+            QTest::keyClick(window,Qt::Key_Down);
+            QCoreApplication::processEvents();
+            if(rentalModel.selectedRentalId()!="R002"||!archive->isEnabled()||
+               remove->isEnabled()) {
+                qCritical()<<"P6-C returned selection had unsafe actions";
+                app.exit(413);return;
+            }
+            press(archive);
+            auto *archiveConfirm=find(find,root,"rentalArchiveConfirm");
+            if(!archiveConfirm){app.exit(414);return;}
+            press(archiveConfirm);
+            QTest::qWait(130);
+            if(!system.findRentalById("R002") ||
+               !system.findRentalById("R002")->getIsArchived() ||
+               !remove->isEnabled() || archive->isEnabled() ||
+               rentalModel.selectedRentalId()!="R002") {
+                qCritical()<<"P6-C archived state did not enable deletion";
+                app.exit(415);return;
+            }
+            auto *history=find(find,root,"rentalFilterHistory");
+            if(!history){app.exit(416);return;}
+            press(history);
+            if(rentalModel.statusFilter()!="History" ||
+               rentalModel.selectedRentalId()!="R002" || rentalModel.count()!=1) {
+                qCritical()<<"P6-C History selection changed before removal";
+                app.exit(417);return;
+            }
+            QByteArray archivedBytes;
+            if(!readFile(ledger,&archivedBytes)||archivedBytes==initial) {
+                qCritical()<<"P6-C archive did not persist";
+                app.exit(418);return;
+            }
+            const QPointF pos=remove->mapToScene(QPointF(0,0));
+            if(pos.x()<0 || pos.y()<0 ||
+               pos.x()+remove->width()>window->width()-2 ||
+               pos.y()+remove->height()>window->height()-2) {
+                qCritical()<<"P6-C destructive action clipped"<<pos;
+                app.exit(419);return;
+            }
+            press(remove);
+            auto *field=find(find,root,"rentalDeletePhrase");
+            auto *confirm=find(find,root,"rentalDeleteConfirm");
+            auto *cancel=find(find,root,"rentalDeleteCancel");
+            auto *target=find(find,root,"rentalDeleteTarget");
+            if(!field||!confirm||!cancel||!target||
+               !target->property("text").toString().contains("R002")) {
+                qCritical()<<"P6-C exact-target deletion modal not visible";
+                app.exit(420);return;
+            }
+            press(confirm); // Blank phrase.
+            field->setProperty("text",QStringLiteral("delete R002"));
+            press(confirm); // Case mismatch.
+            field->setProperty("text",QStringLiteral("DELETE R001"));
+            press(confirm); // Wrong ID.
+            if(!system.findRentalById("R002") ||
+               !readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"P6-C invalid deletion phrase wrote ledger";
+                app.exit(421);return;
+            }
+            press(cancel);
+            if(!readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"P6-C Cancel wrote ledger";
+                app.exit(422);return;
+            }
+            press(remove);
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            QTest::qWait(110);
+            if(!readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"P6-C Escape wrote ledger";
+                app.exit(423);return;
+            }
     if (parser.isSet("p6-fleet-remove-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window)return 395;
