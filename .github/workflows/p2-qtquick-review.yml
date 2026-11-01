@@ -23,6 +23,7 @@ on:
       - feature/p3-rental-confirm-20261030
       # P5-A operational dashboard is stacked on the still-unmerged P4 draft.
       - feature/p4-shared-shell-focus-20261030
+      - feature/p5-operational-overview-20261101
     paths:
       - CMakeLists.txt
       - 'src/application/**'
