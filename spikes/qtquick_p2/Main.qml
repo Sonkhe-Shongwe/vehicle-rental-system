@@ -981,6 +981,18 @@ ApplicationWindow {
                         fallbackFocusTo: rentalList
                         onConfirmed: archiveActions.archiveSelected()
                     }
+                    P6ArchivedDeleteDialog {
+                        id: archivedDeleteDialog
+                        objectName: "rentalDeleteArchivedDialog"
+                        anchors.centerIn: parent
+                        command: archivedDelete
+                        focusReturn: deleteArchivedButton
+                        fallbackFocusReturn: rentalList
+                    }
+                    DomainMessage {
+                        objectName: "rentalDeleteMessage"
+                        text: archivedDelete.lastMessage
+                    }
                     DomainMessage {
                         objectName: "rentalArchiveMessage"
                         text: archiveActions.lastArchiveMessage
