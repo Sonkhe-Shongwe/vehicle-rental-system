@@ -13,7 +13,12 @@ Dialog {
     standardButtons: Dialog.NoButton
     closePolicy: Popup.CloseOnEscape
     onOpened: Qt.callLater(function() {
-        if(addDialog.visible) addBrand.forceActiveFocus(Qt.TabFocusReason)
+        if(addDialog.visible) {
+            // Set after the type-dependent SpinBox bounds have settled.
+            // Without this, its first open may clamp the initial 4 doors to 8.
+            addExtra.value = addType.currentIndex === 0 ? 4 : 450
+            addBrand.forceActiveFocus(Qt.TabFocusReason)
+        }
     })
     onClosed: {
         addBrand.clear()
