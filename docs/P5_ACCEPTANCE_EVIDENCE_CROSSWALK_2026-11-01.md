@@ -1,3 +1,5 @@
+> **P5-H audit update, 1 November 2026:** The eight-criterion automated crosswalk below remains accurate, and an additional reopening data-integrity gap was addressed by [commit `bc5fa2f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/bc5fa2fd740799f75e731ed7d807f5ecc5465626): the opt-in fictional session now **refuses a second active rental for a vehicle already leased**, rather than allowing the C++ loader to silently skip the conflicting row. Actual Linux/Windows [native run 41312855684](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41312855684) **60/60 PASS each**, [Core 41312855685](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41312855685) **13/13 PASS**, including a reversible fake-file conflict injection and byte-identical recovery. This enhances criteria **#5 and #6** but does not change formal acceptance **P5 0/8**, P4 5/7 or programme **28/74, 40.6%**. A single consolidated owner UX/physical review remains a separate gate.
+
 # P5: Eight-criterion Automated Evidence Crosswalk
 **Updated 1 November 2026.** This is a source-to-test crosswalk, NOT owner formal acceptance.
 
