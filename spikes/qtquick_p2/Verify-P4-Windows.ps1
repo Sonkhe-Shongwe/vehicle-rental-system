@@ -49,16 +49,38 @@ $failed = $false
 foreach ($check in $checks) {
     $slug = $check.Name -replace '[^a-zA-Z0-9]+','-'
     $log = Join-Path $dir "P4-$slug.log"
-    Push-Location $dir
+    $stdoutLog = Join-Path $dir "P4-$slug-stdout.log"
+    $stderrLog = Join-Path $dir "P4-$slug-stderr.log"
+    $exitCode = -1
+    $launchError = $null
     try {
+        # PowerShell 5.1 converts native stderr into NativeCommandError when
+        # redirected with *> under ErrorActionPreference=Stop. Qt qInfo()
+        # writes diagnostic PASS messages to stderr even when the exe exits 0.
+        # Start-Process redirects both streams at the OS process boundary,
+        # so only the real exit code determines pass/fail on PS 5.1 and PS 7.
         $commandArgs = [string[]]$check.Arguments
-        & $exe @commandArgs *> $log
-        $exitCode = $LASTEXITCODE
+        $process = Start-Process -FilePath $exe -ArgumentList $commandArgs `
+            -WorkingDirectory $dir -Wait -PassThru `
+            -RedirectStandardOutput $stdoutLog `
+            -RedirectStandardError $stderrLog -ErrorAction Stop
+        $exitCode = $process.ExitCode
     } catch {
-        $exitCode = -1
-        $_ | Out-File -LiteralPath $log -Append -Encoding UTF8
-    } finally {
-        Pop-Location
+        $launchError = ($_ | Out-String)
+    }
+    # Preserve a stable human-readable log path used by the review checklist.
+    # No native diagnostic message should be interpreted as a process failure.
+    Set-Content -LiteralPath $log -Value "Actual process exit code: $exitCode" -Encoding UTF8
+    if (Test-Path -LiteralPath $stdoutLog -PathType Leaf) {
+        Add-Content -LiteralPath $log -Value '--- native stdout ---'
+        Get-Content -LiteralPath $stdoutLog | Add-Content -LiteralPath $log
+    }
+    if (Test-Path -LiteralPath $stderrLog -PathType Leaf) {
+        Add-Content -LiteralPath $log -Value '--- native stderr / Qt diagnostics ---'
+        Get-Content -LiteralPath $stderrLog | Add-Content -LiteralPath $log
+    }
+    if ($null -ne $launchError) {
+        Add-Content -LiteralPath $log -Value $launchError
     }
     if ($exitCode -ne 0) {
         $failed = $true

@@ -157,7 +157,14 @@ jobs:
           # Run P4 accessibility/focus/motion checks against the relocated
           # packaged executable, not just its CTest build-tree version.
           & "$dest/Verify-P4-Windows.ps1" -VerifyOnly
-          if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P4 verification failed" }
+          if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P4 verification failed (PowerShell 7)" }
+          # Regression for owner's actual Windows PowerShell 5.1 host:
+          # Qt qInfo() writes PASS to native stderr. Confirm this is NOT
+          # confused with a terminating NativeCommandError under PS 5.1.
+          # This override is scoped to the CI child process, never systemwide.
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$dest/Verify-P4-Windows.ps1" -VerifyOnly
+          if ($LASTEXITCODE -ne 0) { throw "Packaged P4 Windows PowerShell 5.1 verification failed: $LASTEXITCODE" }
+          Write-Host "P4 Windows PowerShell 5.1 subprocess verification PASS"
           # Do not bundle runner-specific test outputs or host diagnostics.
           Remove-Item "$dest/acceptance-evidence" -Recurse -Force -ErrorAction SilentlyContinue
       - name: Upload disposable Windows P2 physical acceptance kit
