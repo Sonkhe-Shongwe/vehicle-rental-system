@@ -686,6 +686,31 @@ ApplicationWindow {
                                       : "This vehicle is currently rented"
                                 onClicked: window.bookSelectedFleetVehicle()
                             }
+                            Button {
+                                id: removeSelectedFleetButton
+                                objectName: "fleetRemoveSelectedButton"
+                                Layout.fillWidth: true
+                                text: "Remove selected vehicle"
+                                activeFocusOnTab: true
+                                enabled: fleetRemove.canRemove &&
+                                         fleet.selectedId !== "" && fleet.selectedAvailable
+                                Accessible.name: "Remove selected available fictional vehicle"
+                                Accessible.description: !fleetRemove.canRemove
+                                    ? "Unavailable in persistent fictional-only mode"
+                                    : !fleet.selectedAvailable
+                                      ? "Return the active rental before vehicle removal"
+                                      : "Requires exact vehicle ID confirmation"
+                                onClicked: {
+                                    fleetRemove.clearMessage()
+                                    fleetRemoveDialog.targetId = fleet.selectedId
+                                    fleetRemoveDialog.targetName = fleet.selectedName
+                                    fleetRemoveDialog.open()
+                                }
+                            }
+                            DomainMessage {
+                                objectName: "fleetRemoveMessage"
+                                text: fleetRemove.lastMessage
+                            }
                             Item { Layout.fillHeight: true }
                         }
                     }
