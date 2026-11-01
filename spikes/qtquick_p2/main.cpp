@@ -494,7 +494,34 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P5 foreign contact or restore guard failed"<<reason;
                 return 322;
             }
-            qInfo()<<"P5 synthetic-only rejection of unknown files/contact PASS";
+            // A second active contract on the already-rented fictional
+            // Ranger C002 is individually well-formed but impossible for
+            // the domain to load without silently dropping an active row.
+            // Reject the entire session instead of showing a partial ledger.
+            const QByteArray conflictingActive =
+                "Rental|R998|Fictional Demo Session|0000000000|C002|"
+                "2026-11-01|2026-11-04||3|700.00|2100.00|0|0\n";
+            QSaveFile conflicting(ledger);
+            if(!conflicting.open(QIODevice::WriteOnly) ||
+               conflicting.write(beforeTamper+conflictingActive)!=
+                   beforeTamper.size()+conflictingActive.size() ||
+               !conflicting.commit())return 377;
+            const bool acceptedConflict=P5SyntheticSession::open(
+                beforeVehicles,beforeRentals,marker,&reason);
+            QSaveFile unconflicted(ledger);
+            if(!unconflicted.open(QIODevice::WriteOnly) ||
+               unconflicted.write(beforeTamper)!=beforeTamper.size() ||
+               !unconflicted.commit())return 378;
+            QByteArray recovered;
+            if(acceptedConflict ||
+               !P5SyntheticSession::open(beforeVehicles,beforeRentals,marker,&reason) ||
+               !readFile(ledger,&recovered) || recovered!=beforeTamper) {
+                qCritical()<<"P5 conflicting active contract was accepted or restore failed"
+                           <<reason;
+                return 379;
+            }
+            qInfo()<<"P5 synthetic session refused foreign file/contact and"
+                     " conflicting active vehicle while restoring exact bytes PASS";
             return 0;
         }
         if(reopenTest) {

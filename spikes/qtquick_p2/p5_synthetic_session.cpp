@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <QSet>
 #include <QStandardPaths>
 #include <QStringList>
 #include <cmath>
@@ -48,6 +49,10 @@ bool syntheticLedger(const QByteArray &bytes,const QByteArray &seed) {
        original.size()!=2)return false;
     const QRegularExpression id(QStringLiteral("^R[0-9]{3,8}$"));
     const QStringList fleet={"C001","C002","C003","M001","M002"};
+    // The domain loader skips a second active rental for the same vehicle.
+    // Reject the entire persisted session instead: a silent skip would leave
+    // the ledger and displayed Fleet/active-rental counts inconsistent.
+    QSet<QString> activeVehicleIds;
     for(int i=0;i<records.size();++i) {
         const QStringList f=records.at(i).split('|',Qt::KeepEmptyParts);
         if(f.size()!=13 || f.at(0)!="Rental" ||
@@ -66,6 +71,9 @@ bool syntheticLedger(const QByteArray &bytes,const QByteArray &seed) {
         if(f.at(12)!="0" && f.at(12)!="1")return false;
         const bool returned=f.at(11)=="1";
         if(f.at(12)=="1" && !returned)return false;
+        if(!returned && activeVehicleIds.contains(f.at(4)))
+            return false;
+        if(!returned) activeVehicleIds.insert(f.at(4));
         const QDate start=QDate::fromString(f.at(5),Qt::ISODate);
         const QDate due=QDate::fromString(f.at(6),Qt::ISODate);
         const QDate actual=QDate::fromString(f.at(7),Qt::ISODate);
