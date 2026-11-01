@@ -6,6 +6,7 @@ Dialog {
     id: removeDialog
     property var command
     property var focusReturn
+    property var fallbackFocusReturn
     property string targetId: ""
     property string targetName: ""
     title: "Remove fictional fleet vehicle"
@@ -24,6 +25,8 @@ Dialog {
         Qt.callLater(function() {
             if(focusReturn && focusReturn.visible && focusReturn.enabled)
                 focusReturn.forceActiveFocus(Qt.TabFocusReason)
+            else if(fallbackFocusReturn && fallbackFocusReturn.visible && fallbackFocusReturn.enabled)
+                fallbackFocusReturn.forceActiveFocus(Qt.TabFocusReason)
         })
     }
     contentItem: ColumnLayout {
