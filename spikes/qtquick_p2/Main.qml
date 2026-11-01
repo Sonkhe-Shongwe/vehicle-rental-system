@@ -30,6 +30,7 @@ ApplicationWindow {
     // Cancellation is a separate informational outcome, never a receipt.
     property string bookingCancelledNotice: ""
     property string rentalLookupFeedback: ""
+    property string returnLookupFeedback: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -156,13 +157,38 @@ ApplicationWindow {
         })
     }
 
+    // Legacy operator parity without auto-return: an ID resolves to one
+    // ACTIVE record only, then the existing separate confirmation is required.
+    function findActiveReturn() {
+        const id = returnLookupField.text.trim()
+        if (!rentalsModel.locateActiveReturn(id)) {
+            window.returnLookupFeedback = id === ""
+                ? "Enter an active rental or vehicle ID."
+                : "No active rental matches that ID."
+            return
+        }
+        window.returnLookupFeedback =
+            "Ready to review return for " + rentalsModel.selectedRentalId
+        Qt.callLater(function() {
+            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                rentalList.currentIndex = rentalsModel.selectedRow
+                rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                if (returnSelectedButton.enabled)
+                    returnSelectedButton.forceActiveFocus(Qt.TabFocusReason)
+            }
+        })
+    }
+
     function syncCurrentRental() {
         rentalList.currentIndex = rentalsModel.selectedRow
     }
 
     Connections {
         target: rentalsModel
-        function onSelectionChanged() { Qt.callLater(window.syncCurrentRental) }
+        function onSelectionChanged() {
+            window.returnLookupFeedback = ""
+            Qt.callLater(window.syncCurrentRental)
+        }
         function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
     }
 
@@ -990,6 +1016,48 @@ ApplicationWindow {
                         DomainMessage {
                             objectName: "rentalReturnMessage"
                             text: rentalActions.lastReturnMessage
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Label {
+                            text: "Return lookup"
+                            color: navy
+                            font.pixelSize: 12
+                        }
+                        AccessibleTextField {
+                            id: returnLookupField
+                            objectName: "returnLookupField"
+                            fieldPurpose: "Find active rental to return by rental ID or vehicle ID"
+                            placeholderText: "Rental ID or vehicle ID"
+                            Layout.preferredWidth: 195
+                            onTextEdited: {
+                                // Editing a new target must never leave the
+                                // previous contract eligible for confirmation.
+                                rentalsModel.clearSelection()
+                                window.returnLookupFeedback = ""
+                            }
+                            onAccepted: window.findActiveReturn()
+                        }
+                        Button {
+                            id: returnLookupButton
+                            objectName: "returnLookupButton"
+                            text: "Locate return"
+                            activeFocusOnTab: true
+                            Layout.minimumHeight: 36
+                            Accessible.name: "Locate active rental for return"
+                            Accessible.description: "Select only. Opens no confirmation and writes nothing."
+                            onClicked: window.findActiveReturn()
+                        }
+                        Label {
+                            objectName: "returnLookupFeedback"
+                            Layout.fillWidth: true
+                            text: window.returnLookupFeedback
+                            color: ink
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                            Accessible.name: text
                         }
                     }
                     ConfirmActionDialog {

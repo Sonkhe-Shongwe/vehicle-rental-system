@@ -1678,7 +1678,12 @@ int main(int argc, char *argv[]) {
             };
             auto *list=findVisual(findVisual,window->contentItem(),"rentalList");
             auto *returnButton=findVisual(findVisual,window->contentItem(),"rentalReturnButton");
-            if (!list || !returnButton || returnButton->isEnabled()) {
+            auto *returnLookupField=findVisual(findVisual,window->contentItem(),"returnLookupField");
+            auto *returnLookupButton=findVisual(findVisual,window->contentItem(),"returnLookupButton");
+            auto *returnLookupFeedback=findVisual(findVisual,window->contentItem(),"returnLookupFeedback");
+            if (!list || !returnButton || !returnLookupField ||
+                !returnLookupButton || !returnLookupFeedback ||
+                returnButton->isEnabled()) {
                 qCritical()<<"P3-I return button missing or enabled with no selection";
                 app.exit(121);return;
             }
@@ -1692,13 +1697,62 @@ int main(int argc, char *argv[]) {
                 QCoreApplication::processEvents();
                 QTest::qWait(70);
             };
-            list->forceActiveFocus(Qt::TabFocusReason);
-            QTest::keyClick(window,Qt::Key_Down);
-            QCoreApplication::processEvents();
-            if (rentalModel.selectedRentalId()!="R001" ||
-                !returnButton->isEnabled() || fleet.availableCount()!=4) {
-                qCritical()<<"P3-I selected active rental not eligible";
+            // P6-H: locate a hidden active contract by VEHICLE ID using
+            // the real keyboard-activated native lookup. This does not save.
+            rentalModel.setStatusFilter("History");
+            returnLookupField->setProperty("text", "  c002  ");
+            press(returnLookupButton);
+            QTest::qWait(80);
+            QByteArray afterLookup;
+            if (rentalModel.statusFilter()!="Active" ||
+                rentalModel.selectedRentalId()!="R001" ||
+                rentalModel.selectedRow()!=0 ||
+                list->property("currentIndex").toInt()!=0 ||
+                !returnButton->isEnabled() ||
+                !returnButton->hasActiveFocus() ||
+                fleet.availableCount()!=4 ||
+                system.findRentalById("R001")->getIsReturned() ||
+                !readFile(disposable.filePath("rentals.txt"),&afterLookup) ||
+                afterLookup!=originalTempRentals) {
+                qCritical()<<"P6-H vehicle ID lookup did not safely reveal active rental";
                 app.exit(122);return;
+            }
+            // Unknown/historical target must disable any previous return.
+            returnLookupField->setProperty("text", "R002");
+            press(returnLookupButton);
+            if (returnButton->isEnabled() ||
+                !rentalModel.selectedRentalId().isEmpty() ||
+                rentalModel.statusFilter()!="Active" ||
+                !returnLookupFeedback->property("text").toString().contains("No active rental")) {
+                qCritical()<<"P6-H historical rental did not disarm old selection";
+                app.exit(133);return;
+            }
+            returnLookupField->setProperty("text", "C999");
+            press(returnLookupButton);
+            if (returnButton->isEnabled() ||
+                !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"P6-H unknown vehicle ID left stale selection";
+                app.exit(134);return;
+            }
+            returnLookupField->setProperty("text", "");
+            press(returnLookupButton);
+            if (returnButton->isEnabled() ||
+                !returnLookupFeedback->property("text").toString().contains("Enter an active")) {
+                qCritical()<<"P6-H empty target not rejected";
+                app.exit(135);return;
+            }
+            // A RENTAL ID can also locate the same active contract without
+            // returning it. The existing C++ confirmation remains mandatory.
+            returnLookupField->setProperty("text", " r001 ");
+            press(returnLookupButton);
+            QTest::qWait(80);
+            if (rentalModel.selectedRentalId()!="R001" ||
+                !returnButton->isEnabled() ||
+                system.findRentalById("R001")->getIsReturned() ||
+                !readFile(disposable.filePath("rentals.txt"),&afterLookup) ||
+                afterLookup!=originalTempRentals) {
+                qCritical()<<"P6-H rental ID lookup auto-committed or failed";
+                app.exit(136);return;
             }
             press(returnButton);
             auto *cancel=findVisual(findVisual,window->contentItem(),"rentalReturnCancel");
@@ -1739,7 +1793,9 @@ int main(int argc, char *argv[]) {
                            <<rentalModel.selectedRentalId()<<fleet.availableCount();
                 app.exit(127);return;
             }
-            if (rentalActions.returnSelected() ||
+            if (rentalModel.locateActiveReturn("C002") ||
+                !rentalModel.selectedRentalId().isEmpty() ||
+                rentalActions.returnSelected() ||
                 fleet.availableCount()!=5 || !system.findRentalById("R001")->getIsReturned()) {
                 qCritical()<<"P3-I repeated return not safely rejected";
                 app.exit(128);return;
@@ -1773,9 +1829,9 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P3-I real QML return screenshot failed";
                 app.exit(132);return;
             }
-            qInfo()<<"P3-I QML confirmed return PASS" <<size
-                   <<"Cancel, real persisted domain return, Fleet/Rentals parity,"
-                   <<"no repeated return, history and protected demo data";
+            qInfo()<<"P3-I/P6-H QML confirmed return PASS" <<size
+                   <<"vehicle/rental ID lookup, stale target disarm, Cancel,"
+                   <<"explicit C++ persisted return, no duplicate, protected demo data";
             app.exit(0);
         });
     }

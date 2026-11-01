@@ -62,6 +62,10 @@ public:
     // Explicit, read-only operator lookup across lifecycle filters. An
     // existing hidden match is revealed before selection; misses do nothing.
     Q_INVOKABLE bool locateById(const QString &rentalId);
+    // Only selects a uniquely matched ACTIVE rental, identified by rental
+    // ID or vehicle ID. Failed lookups disarm any previous return selection.
+    // Never completes a return, reads contact details, or writes any file.
+    Q_INVOKABLE bool locateActiveReturn(const QString &rentalOrVehicleId);
     Q_INVOKABLE bool selectVisibleRow(int row);
     // Navigate the oldest overdue active contract from the complete C++ snapshot.
     // Read/selection only: no booking, return, archive, or disk write.

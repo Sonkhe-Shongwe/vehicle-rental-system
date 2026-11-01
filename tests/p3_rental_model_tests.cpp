@@ -142,6 +142,32 @@ int main(int argc, char **argv) {
               readBytes(rentalsPath) == rentalsBefore,
               "failed/read-only lookups preserve selection and storage");
 
+        // P6-H: return search is a read-only active-only navigation step.
+        // An unknown, empty or historical ID disarms a stale selection.
+        RentalListModel returnRoute(service);
+        returnRoute.setStatusFilter("History");
+        check(returnRoute.locateActiveReturn("  c002  ") &&
+              returnRoute.statusFilter()=="Active" &&
+              returnRoute.selectedRentalId()=="R002" &&
+              returnRoute.selectedRow()==1,
+              "vehicle-ID return lookup reveals matching active rental");
+        check(returnRoute.locateActiveReturn("r003") &&
+              returnRoute.selectedRentalId()=="R003" &&
+              returnRoute.statusFilter()=="Active",
+              "rental-ID lookup selects canonical active record");
+        check(!returnRoute.locateActiveReturn("C999") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              returnRoute.selectedRow()==-1 &&
+              returnRoute.statusFilter()=="Active",
+              "unknown vehicle ID disarms previously eligible return");
+        check(returnRoute.locateActiveReturn("M001") &&
+              !returnRoute.locateActiveReturn("  ") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              returnRoute.activeCount()==3 &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "blank lookup disarms stale return without writing or changing KPIs");
+
         const QModelIndex first = model.index(0, 0);
         const QModelIndex second = model.index(1, 0);
         const QModelIndex third = model.index(2, 0);
@@ -178,6 +204,20 @@ int main(int argc, char **argv) {
               "unavailable ID does not discard existing selection");
         check(system.completeRental("R002", today),
               "return an independently persisted rental");
+        // Until a successful domain commit is followed by refresh, the
+        // previously captured list deliberately remains unchanged.
+        returnRoute.refresh();
+        const QByteArray afterReturnFleet=readBytes(vehiclesPath);
+        const QByteArray afterReturnLedger=readBytes(rentalsPath);
+        check(returnRoute.locateActiveReturn("C001") &&
+              returnRoute.selectedRentalId()=="R001" &&
+              !returnRoute.locateActiveReturn("C002") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              !returnRoute.locateActiveReturn("r002") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              readBytes(vehiclesPath)==afterReturnFleet &&
+              readBytes(rentalsPath)==afterReturnLedger,
+              "returned vehicle/rental IDs refused, no second return or mutation");
         check(model.data(second, RentalListModel::StatusRole).toString() == "Active",
               "model does not optimistically apply domain change");
         model.refresh();

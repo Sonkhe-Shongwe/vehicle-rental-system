@@ -229,6 +229,33 @@ bool RentalListModel::locateById(const QString &rentalId) {
     return selectById(canonical);
 }
 
+bool RentalListModel::locateActiveReturn(const QString &identifier) {
+    const QString id = identifier.trimmed();
+    QString matchedRental;
+    int matchCount = 0;
+    if (!id.isEmpty()) {
+        for (const auto &item : m_allItems) {
+            if (item.status != RentalRecordStatus::Active)
+                continue;
+            if (item.rentalId.compare(id, Qt::CaseInsensitive) == 0 ||
+                item.vehicleId.compare(id, Qt::CaseInsensitive) == 0) {
+                matchedRental = item.rentalId;
+                ++matchCount;
+                if (matchCount > 1)
+                    break; // Refuse ambiguous or inconsistent active records.
+            }
+        }
+    }
+    if (matchCount != 1) {
+        clearSelection(); // Explicitly disarm a previously eligible return.
+        return false;     // Failed lookup cannot mutate filter or storage.
+    }
+    // A successful explicit return lookup reveals only active contracts;
+    // the separate RentalReturnService revalidates before any commit.
+    setStatusFilter(QStringLiteral("Active"));
+    return selectById(matchedRental);
+}
+
 void RentalListModel::clearSelection() {
     if (m_selectedRentalId.isEmpty())
         return;
