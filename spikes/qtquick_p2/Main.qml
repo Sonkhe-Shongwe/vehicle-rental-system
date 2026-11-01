@@ -728,6 +728,7 @@ ApplicationWindow {
                                 }
                             }
                             Button {
+                                id: bookingPreviewButton
                                 objectName: "bookingPreviewButton"
                                 text: bookingActions.needsFreshQuote ? "Refresh quote" : "Preview C++ quote"
                                 activeFocusOnTab: true
