@@ -83,7 +83,7 @@ Dialog {
         }
         DomainMessage {
             objectName: "fleetAddFeedback"
-            text: fleetAdmin ? fleetAdmin.lastMessage : ""
+            text: command ? command.lastMessage : ""
         }
         RowLayout {
             Button {
@@ -97,9 +97,9 @@ Dialog {
                 objectName: "fleetAddConfirm"
                 text: "Add to demo fleet"
                 activeFocusOnTab: true
-                enabled: fleetAdmin && fleetAdmin.canAdd
+                enabled: command && command.canAdd
                 onClicked: {
-                    if(fleetAdmin.addVehicle(addType.currentText,addBrand.text,
+                    if(command.addVehicle(addType.currentText,addBrand.text,
                                              addModel.text,Number(addRate.text),
                                              addExtra.value))
                         addDialog.close()
