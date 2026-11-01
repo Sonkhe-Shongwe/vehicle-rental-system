@@ -514,8 +514,8 @@ int main(int argc, char *argv[]) {
             // with real contact details must never reach RentalSystem.
             const auto lines=[](QByteArray bytes) {
                 QString content=QString::fromUtf8(bytes);
-                content.replace(QStringLiteral("\\r\\n"),QStringLiteral("\\n"));
-                return content.split(QLatin1Char('\\n'),Qt::SkipEmptyParts);
+                content.replace(QStringLiteral("\r\n"),QStringLiteral("\n"));
+                return content.split(QLatin1Char('\n'),Qt::SkipEmptyParts);
             };
             const QStringList actualV=lines(childV);
             const QStringList actualR=lines(childR);
