@@ -19,6 +19,8 @@ on:
       - feature/p3-typed-fleet-read-20261030
       # P3-C is a stacked draft review of the approved P3-B quote boundary.
       - feature/p3-rental-quote-20261030
+      # P4 shared-shell draft PR is stacked on the accepted P3 branch.
+      - feature/p3-rental-confirm-20261030
     paths:
       - CMakeLists.txt
       - 'src/application/**'
@@ -69,6 +71,10 @@ jobs:
           path: |
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-focus-route-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-motion-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -126,6 +132,8 @@ jobs:
           Copy-Item "demo/rentals.txt" "$dest/demo/rentals.txt"
           Copy-Item "spikes/qtquick_p2/Verify-P2-Windows.ps1" "$dest/Verify-P2-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md" "$dest/WINDOWS_PHYSICAL_ACCEPTANCE.md"
+          Copy-Item "spikes/qtquick_p2/Verify-P4-Windows.ps1" "$dest/Verify-P4-Windows.ps1"
+          Copy-Item "spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md" "$dest/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md"
           Set-Content -Path "$dest/SOURCE_COMMIT.txt" -NoNewline -Value "$env:GITHUB_SHA"
           $deployer = Join-Path $env:QT_ROOT_DIR "bin/windeployqt.exe"
           if (-not (Test-Path $deployer)) { throw "windeployqt unavailable" }
@@ -146,6 +154,17 @@ jobs:
           }
           & "$dest/Verify-P2-Windows.ps1" -VerifyOnly
           if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P2 verification failed" }
+          # Run P4 accessibility/focus/motion checks against the relocated
+          # packaged executable, not just its CTest build-tree version.
+          & "$dest/Verify-P4-Windows.ps1" -VerifyOnly
+          if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P4 verification failed (PowerShell 7)" }
+          # Regression for owner's actual Windows PowerShell 5.1 host:
+          # Qt qInfo() writes PASS to native stderr. Confirm this is NOT
+          # confused with a terminating NativeCommandError under PS 5.1.
+          # This override is scoped to the CI child process, never systemwide.
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$dest/Verify-P4-Windows.ps1" -VerifyOnly
+          if ($LASTEXITCODE -ne 0) { throw "Packaged P4 Windows PowerShell 5.1 verification failed: $LASTEXITCODE" }
+          Write-Host "P4 Windows PowerShell 5.1 subprocess verification PASS"
           # Do not bundle runner-specific test outputs or host diagnostics.
           Remove-Item "$dest/acceptance-evidence" -Recurse -Force -ErrorAction SilentlyContinue
       - name: Upload disposable Windows P2 physical acceptance kit
@@ -163,5 +182,9 @@ jobs:
           path: |
             build-p2/spikes/qtquick_p2/p2-qt-*.png
             build-p2/spikes/qtquick_p2/p3-qt-rentals-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-focus-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-shared-components-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-focus-route-*.png
+            build-p2/spikes/qtquick_p2/p4-qt-motion-*.png
           if-no-files-found: ignore
           retention-days: 7
