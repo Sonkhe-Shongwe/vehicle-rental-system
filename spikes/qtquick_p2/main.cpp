@@ -466,6 +466,7 @@ int main(int argc, char *argv[]) {
                                             [&fleet]{ fleet.refreshAfterCommit(); });
     bookingActions.setPersistentFictionalOnly(persistentDemo);
     RentalArchiveController archiveActions(system, rentalRead, rentalModel);
+    P6ArchivedDeleteController archivedDelete(system,rentalRead,rentalModel,!persistentDemo);
     if(sessionTest) {
         const QString ledger=QDir(dataDirectory).filePath("rentals.txt");
         if(seedTest) {
