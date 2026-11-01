@@ -721,6 +721,13 @@ ApplicationWindow {
                         command: fleetAdmin
                         focusReturn: fleetAddButton
                     }
+                    FleetRemoveDialog {
+                        id: fleetRemoveDialog
+                        objectName: "fleetRemoveDialog"
+                        anchors.centerIn: parent
+                        command: fleetRemove
+                        focusReturn: removeSelectedFleetButton
+                    }
                 }
 
                 ColumnLayout {
