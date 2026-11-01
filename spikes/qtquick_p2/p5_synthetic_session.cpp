@@ -35,8 +35,15 @@ bool syntheticLedger(const QByteArray &bytes,const QByteArray &seed) {
     if(bytes.size()>65536 || bytes.isEmpty())return false;
     const QString content=QString::fromUtf8(bytes);
     if(content.toUtf8()!=bytes)return false;
-    const QStringList records=content.split('\n',Qt::SkipEmptyParts);
-    const QStringList original=QString::fromUtf8(seed).split('\n',Qt::SkipEmptyParts);
+    // Git checkout can materialize the exact pinned fictional TXT as CRLF on
+    // Windows and LF on Linux. Normalize line separators for validation
+    // ONLY, never rewrite or alter the original verified bytes.
+    QString normalized=content;
+    normalized.replace(QStringLiteral("\r\n"),QStringLiteral("\n"));
+    QString seedNormalized=QString::fromUtf8(seed);
+    seedNormalized.replace(QStringLiteral("\r\n"),QStringLiteral("\n"));
+    const QStringList records=normalized.split('\n',Qt::SkipEmptyParts);
+    const QStringList original=seedNormalized.split('\n',Qt::SkipEmptyParts);
     if(records.size()<original.size() || records.size()>40 ||
        original.size()!=2)return false;
     const QRegularExpression id(QStringLiteral("^R[0-9]{3,8}$"));
