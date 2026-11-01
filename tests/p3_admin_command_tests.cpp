@@ -63,10 +63,25 @@ int main(int argc,char **argv) {
             ArchivedDeleteError::NotArchived,"active deletion forbidden");
     require(system.completeRental("R001",QDate::currentDate()),
             "commit returned rental");
+    const QByteArray fleetBeforeHistory=bytes(fleetFile);
+    const QByteArray returnedLedger=bytes(ledgerFile);
+    require(system.hasRentalHistoryForVehicle(" c001 ") &&
+            fleet.remove("C001").error==FleetWriteError::VehicleReferencedByRental &&
+            !system.removeVehicle("C001") &&
+            system.findVehicleById("C001") &&
+            bytes(fleetFile)==fleetBeforeHistory &&
+            bytes(ledgerFile)==returnedLedger,
+            "returned reference blocks service and domain removal without writing");
     require(purge.permanentlyDelete("R001","DELETE R001").error==
             ArchivedDeleteError::NotArchived,"returned but unarchived guard");
     require(system.archiveRental("R001"),"archive before deletion");
     const QByteArray archived=bytes(ledgerFile);
+    require(fleet.remove("c001").error==FleetWriteError::VehicleReferencedByRental &&
+            !system.removeVehicle(" C001 ") &&
+            system.hasRentalHistoryForVehicle("C001") &&
+            bytes(fleetFile)==fleetBeforeHistory &&
+            bytes(ledgerFile)==archived,
+            "archived reference remains protected including normalized ID and disk bytes");
     require(purge.permanentlyDelete("R001","").error==
             ArchivedDeleteError::ExplicitConfirmationRequired &&
             purge.permanentlyDelete("R001","delete R001").error==
@@ -87,7 +102,9 @@ int main(int argc,char **argv) {
             QFile::rename(temp.filePath("ledger-backup"),ledgerFile) &&
             bytes(ledgerFile)==archived,"restore ledger after failed deletion");
     require(purge.permanentlyDelete("R001","DELETE R001").ok() &&
-            !system.findRentalById("R001"),"explicit confirmed deletion persists");
+            !system.findRentalById("R001") &&
+            !system.hasRentalHistoryForVehicle("C001"),
+            "explicit confirmed deletion releases historical reference guard");
     require(purge.permanentlyDelete("R001","DELETE R001").error==
             ArchivedDeleteError::MissingRental,"repeat delete rejected");
 
