@@ -156,6 +156,16 @@ if(BUILD_TESTING)
         rental_studio_p3_archive_qml_wide
         rental_studio_p3_archive_qml_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P5 stale rate and occupancy both require explicit fresh review; a
+    # rejected quote cannot write an optimistic receipt or duplicate rental.
+    add_test(NAME rental_studio_p5_stale_quote_wide
+        COMMAND rental_studio_qtquick_spike --p5-stale-quote-smoke)
+    add_test(NAME rental_studio_p5_stale_quote_compact
+        COMMAND rental_studio_qtquick_spike --p5-stale-quote-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_stale_quote_wide
+        rental_studio_p5_stale_quote_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
     # P5 operator workflow: selected real C++ Fleet item into the guided
     # booking modal with a prefilled authoritative quote and no duplicate CTA.
     add_test(NAME rental_studio_p5_fleet_booking_wide

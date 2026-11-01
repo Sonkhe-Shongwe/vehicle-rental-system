@@ -29,6 +29,7 @@ bool RentalBookingController::preview(const QString &vehicleId, int days) {
     // Discard any previous preview BEFORE a new invalid request, ensuring no
     // stale Confirm action remains available.
     m_reviewed.reset();
+    m_needsFreshQuote=false;
     const auto result=m_quotes.preview(vehicleId,days);
     if (!result.ok()) {
         switch (result.error) {
@@ -59,8 +60,9 @@ bool RentalBookingController::preview(const QString &vehicleId, int days) {
 }
 
 void RentalBookingController::discardPreview() {
-    if (m_reviewed) {
+    if (m_reviewed || m_needsFreshQuote) {
         m_reviewed.reset();
+        m_needsFreshQuote=false;
         emit quoteChanged();
     }
     m_message.clear();
@@ -110,6 +112,7 @@ bool RentalBookingController::confirm(const QString &customerName,
             result.error==RentalConfirmationError::VehicleNotFound ||
             result.error==RentalConfirmationError::InvalidQuote) {
             m_reviewed.reset();
+            m_needsFreshQuote=true;
             emit quoteChanged();
         }
         emit messageChanged();
@@ -119,6 +122,7 @@ bool RentalBookingController::confirm(const QString &customerName,
     // This path ONLY runs after the authoritative QSaveFile commit.
     const QString id=result.receipt->rentalId;
     m_reviewed.reset();
+    m_needsFreshQuote=false;
     m_rentals.refresh();
     if (m_refreshFleet)
         m_refreshFleet();

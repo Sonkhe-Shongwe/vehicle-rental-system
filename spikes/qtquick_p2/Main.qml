@@ -729,8 +729,13 @@ ApplicationWindow {
                             }
                             Button {
                                 objectName: "bookingPreviewButton"
-                                text: "Preview C++ quote"
+                                text: bookingActions.needsFreshQuote ? "Refresh quote" : "Preview C++ quote"
                                 activeFocusOnTab: true
+                                Accessible.name: bookingActions.needsFreshQuote
+                                    ? "Refresh outdated rental quote" : "Preview current C++ rental quote"
+                                Accessible.description: bookingActions.needsFreshQuote
+                                    ? "The previous quote cannot be confirmed. Review current availability and price."
+                                    : "Review a current domain quote before enabling Confirm booking"
                                 onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
                             }
                             DomainMessage {
@@ -792,6 +797,10 @@ ApplicationWindow {
                                             bookingCustomer.clear()
                                             bookingPhone.clear()
                                             bookingDialog.close()
+                                        } else if (bookingActions.needsFreshQuote) {
+                                            // The rejected snapshot cannot be confirmed again.
+                                            // Keep the modal and return focus to its retry action.
+                                            bookingPreviewButton.forceActiveFocus(Qt.TabFocusReason)
                                         }
                                     }
                                 }

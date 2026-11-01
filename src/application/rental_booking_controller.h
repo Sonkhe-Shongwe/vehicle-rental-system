@@ -16,6 +16,7 @@ class RentalListModel;
 class RentalBookingController final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool canConfirm READ canConfirm NOTIFY quoteChanged)
+    Q_PROPERTY(bool needsFreshQuote READ needsFreshQuote NOTIFY quoteChanged)
     Q_PROPERTY(QString reviewedVehicleId READ reviewedVehicleId NOTIFY quoteChanged)
     Q_PROPERTY(QString quoteSummary READ quoteSummary NOTIFY quoteChanged)
     Q_PROPERTY(QString lastMessage READ lastMessage NOTIFY messageChanged)
@@ -29,6 +30,7 @@ public:
 
     void setPersistentFictionalOnly(bool active) { m_persistentFictionalOnly=active; }
     bool canConfirm() const { return m_reviewed.has_value(); }
+    bool needsFreshQuote() const { return m_needsFreshQuote; }
     QString reviewedVehicleId() const {
         return m_reviewed ? m_reviewed->vehicleId : QString();
     }
@@ -53,6 +55,7 @@ private:
     RentalListModel &m_rentals;
     std::function<void()> m_refreshFleet;
     bool m_persistentFictionalOnly=false;
+    bool m_needsFreshQuote=false;
     std::optional<RentalQuotePreview> m_reviewed;
     QString m_message;
     QString m_lastRentalId;
