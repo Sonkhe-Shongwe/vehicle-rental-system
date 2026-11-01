@@ -2850,6 +2850,143 @@ int main(int argc, char *argv[]) {
             app.exit(0);
         });
     }
+    if (parser.isSet("p6-fleet-remove-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 395;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1100,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->isVisible() && item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *item) {
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(110);
+            };
+            auto *root=window->contentItem();
+            auto *remove=find(find,root,"fleetRemoveSelectedButton");
+            QByteArray vehiclesInitial,rentalsInitial,vehiclesCurrent,rentalsCurrent;
+            const QString ledger=disposable.filePath("vehicles.txt");
+            const QString rentalsLedger=disposable.filePath("rentals.txt");
+            if(!remove || remove->isEnabled() || fleet.totalCount()!=5 ||
+               !readFile(ledger,&vehiclesInitial) ||
+               !readFile(rentalsLedger,&rentalsInitial)) {
+                qCritical()<<"P6 Remove Vehicle initial state unsafe";
+                app.exit(396);return;
+            }
+            // A checked-out Ranger is never offered destructive controls.
+            fleet.selectById("C002");
+            QCoreApplication::processEvents();
+            if(remove->isEnabled()) {
+                qCritical()<<"P6 active rental exposed Remove action";
+                app.exit(397);return;
+            }
+            fleet.selectById("C003");
+            QCoreApplication::processEvents();
+            if(!remove->isEnabled() || !fleet.selectedAvailable()) {
+                qCritical()<<"P6 available vehicle removal action missing";
+                app.exit(398);return;
+            }
+            const QPointF pos=remove->mapToScene(QPointF(0,0));
+            if(pos.x()<0 || pos.y()<0 ||
+               pos.x()+remove->width()>window->width()-2 ||
+               pos.y()+remove->height()>window->height()-2) {
+                qCritical()<<"P6 destructive control outside compact viewport"<<pos;
+                app.exit(399);return;
+            }
+            press(remove);
+            auto *field=find(find,root,"fleetRemoveConfirmation");
+            auto *confirm=find(find,root,"fleetRemoveConfirm");
+            auto *cancel=find(find,root,"fleetRemoveCancel");
+            auto *target=find(find,root,"fleetRemoveTarget");
+            if(!field||!confirm||!cancel||!target ||
+               !target->property("text").toString().contains("C003")) {
+                qCritical()<<"P6 removal dialog target missing";
+                app.exit(400);return;
+            }
+            press(confirm); // Empty phrase.
+            field->setProperty("text",QStringLiteral("remove C003")); // wrong case
+            press(confirm);
+            if(fleet.totalCount()!=5 || !system.findVehicleById("C003") ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"P6 invalid confirmation changed the fleet";
+                app.exit(401);return;
+            }
+            press(cancel);
+            QTest::qWait(100);
+            if(fleet.totalCount()!=5 || !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"P6 Cancel modified the fleet";
+                app.exit(402);return;
+            }
+            press(remove);
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            QTest::qWait(110);
+            if(fleet.totalCount()!=5 || !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"P6 Escape modified the fleet";
+                app.exit(403);return;
+            }
+            press(remove);
+            field=find(find,root,"fleetRemoveConfirmation");
+            confirm=find(find,root,"fleetRemoveConfirm");
+            if(!field || !confirm) {app.exit(404);return;}
+            field->setProperty("text",QStringLiteral("REMOVE C003"));
+            press(confirm);
+            if(fleet.totalCount()!=4 || fleet.availableCount()!=3 ||
+               !fleet.selectedId().isEmpty() ||
+               system.findVehicleById("C003") ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent==vehiclesInitial ||
+               !readFile(rentalsLedger,&rentalsCurrent) ||
+               rentalsCurrent!=rentalsInitial) {
+                qCritical()<<"P6 genuine confirmed removal or model reconciliation failed";
+                app.exit(405);return;
+            }
+            RentalSystem reopened(disposable.path());
+            if(reopened.findVehicleById("C003") ||
+               !reopened.findVehicleById("C002") ||
+               !reopened.findActiveRentalByVehicleId("C002")) {
+                qCritical()<<"P6 removal did not rehydrate correctly";
+                app.exit(406);return;
+            }
+            // A failed atomic writer must restore the vehicle in memory,
+            // preserve on-disk bytes and emit no false success message.
+            RentalSystem failing(disposable.path(),
+                                 std::make_shared<P5RejectWriteStorage>());
+            FleetRemoveController failController(failing,true,{});
+            if(failController.removeVehicle("C001","REMOVE C001") ||
+               !failing.findVehicleById("C001") ||
+               !readFile(ledger,&vehiclesInitial) ||
+               vehiclesInitial!=vehiclesCurrent) {
+                qCritical()<<"P6 failed write was not rolled back";
+                app.exit(407);return;
+            }
+            FleetRemoveController blocked(system,false,{});
+            QByteArray seedVehicles,seedRentals;
+            if(blocked.removeVehicle("C001","REMOVE C001") ||
+               !system.findVehicleById("C001") ||
+               !readFile(vehicles,&seedVehicles) ||
+               !readFile(rentals,&seedRentals) ||
+               seedVehicles!=beforeVehicles || seedRentals!=beforeRentals) {
+                qCritical()<<"P6 fixed fictional source / persistent guard failed";
+                app.exit(408);return;
+            }
+            qInfo()<<"P6 native guarded Fleet remove, cancel, rollback PASS"
+                   <<(compact?"1280x720":"1500x860");
+            app.exit(0);
+        });
+    }
     if (parser.isSet("p6-fleet-add-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window)return 386;
