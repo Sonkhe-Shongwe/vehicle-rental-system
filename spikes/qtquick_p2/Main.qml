@@ -693,7 +693,7 @@ ApplicationWindow {
                         id: fleetAddDialog
                         objectName: "fleetAddDialog"
                         anchors.centerIn: parent
-                        fleetAdmin: fleetAdmin
+                        command: fleetAdmin
                         focusReturn: fleetAddButton
                     }
                 }
