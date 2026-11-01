@@ -340,6 +340,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-fleet-to-booking-smoke", "Use actual Fleet inspector keyboard action to open and save an authoritative rental."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p6-recent-activity-smoke", "Test C++-backed bounded recent contracts, scrolling and read-only routing in real QML."});
+    parser.addOption({"p6-contract-detail-smoke", "Test no-PII selected rental contract details and safe close on native Qt Quick."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
     parser.addOption({"p6-archived-delete-smoke", "Test exact-confirmation permanent deletion of archived fictional rentals."});
@@ -2983,6 +2984,120 @@ int main(int argc, char *argv[]) {
                 app.exit(346);return;
             }
             qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p6-contract-detail-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 560;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1200,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *button=find(find,root,"rentalDetailsButton");
+            if(!button || button->isEnabled() ||
+               !rentalModel.selectedContract().isEmpty()) {
+                qCritical()<<"P6-K no-selection detail button not safely disabled";
+                app.exit(561);return;
+            }
+            QByteArray fleetBefore,rentalsBefore;
+            if(!readFile(disposable.filePath("vehicles.txt"),&fleetBefore)||
+               !readFile(disposable.filePath("rentals.txt"),&rentalsBefore)||
+               fleetBefore!=beforeVehicles||rentalsBefore!=beforeRentals) {
+                qCritical()<<"P6-K source fixtures unexpectedly modified";
+                app.exit(562);return;
+            }
+            rentalModel.setStatusFilter("History");
+            if(!rentalModel.locateById("r001")||
+               rentalModel.selectedRentalId()!="R001" ||
+               rentalModel.statusFilter()!="All" ||
+               !button->isEnabled()) {
+                qCritical()<<"P6-K hidden active detail navigation not selected";
+                app.exit(563);return;
+            }
+            button->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            QTest::qWait(80);
+            auto *dialog=find(find,root,"rentalContractDetailsDialog");
+            auto *start=find(find,root,"rentalDetailStart");
+            auto *expected=find(find,root,"rentalDetailExpected");
+            auto *actual=find(find,root,"rentalDetailActual");
+            auto *total=find(find,root,"rentalDetailTotal");
+            auto *status=find(find,root,"rentalDetailStatus");
+            auto *close=find(find,root,"rentalDetailsClose");
+            if(!dialog||!start||!expected||!actual||!total||!status||!close||
+               start->property("text").toString()!="Start date: 2026-10-28" ||
+               expected->property("text").toString()!="Expected return: 2026-10-30" ||
+               actual->property("text").toString()!="Actual return: Not returned"||
+               total->property("text").toString()!="Booked contract total: R 1400.00"||
+               !status->property("text").toString().contains("Active") ||
+               !close->hasActiveFocus()) {
+                qCritical()<<"P6-K active modal dates/rate/keyboard focus missing";
+                app.exit(564);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage shot=window->grabWindow();
+            if(shot.isNull()||shot.size()!=QSize(compact?1280:1500,compact?720:860)||
+               !shot.save("p6-qt-contract-detail-"+size+".png","PNG")) {
+                qCritical()<<"P6-K native detail capture failed";
+                app.exit(565);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            QTest::qWait(75);
+            if(dialog->property("visible").toBool() || !button->hasActiveFocus() ||
+               rentalModel.selectedRentalId()!="R001") {
+                qCritical()<<"P6-K Escape/focus recovery altered selection";
+                app.exit(566);return;
+            }
+            rentalModel.setStatusFilter("Returned");
+            if(rentalModel.selectedRentalId()!="" || button->isEnabled() ||
+               !rentalModel.selectedContract().isEmpty()) {
+                qCritical()<<"P6-K filter did not disarm hidden selected details";
+                app.exit(567);return;
+            }
+            if(!rentalModel.selectById("R002")||!button->isEnabled()) {
+                qCritical()<<"P6-K historical contract not selectable";
+                app.exit(568);return;
+            }
+            button->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            QTest::qWait(75);
+            actual=find(find,root,"rentalDetailActual");
+            status=find(find,root,"rentalDetailStatus");
+            if(!actual||!status ||
+               actual->property("text").toString()!="Actual return: 2026-10-22"||
+               !status->property("text").toString().contains("Returned")) {
+                qCritical()<<"P6-K returned contract actual date/status incorrect";
+                app.exit(569);return;
+            }
+            close=find(find,root,"rentalDetailsClose");
+            if(!close) {app.exit(570);return;}
+            close->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            QTest::qWait(75);
+            QByteArray afterFleet,afterRental;
+            if(dialog->property("visible").toBool() || !button->hasActiveFocus() ||
+               !readFile(disposable.filePath("vehicles.txt"),&afterFleet)||
+               !readFile(disposable.filePath("rentals.txt"),&afterRental)||
+               afterFleet!=fleetBefore||afterRental!=rentalsBefore ||
+               rentalModel.activeCount()!=1||rentalModel.historyCount()!=1) {
+                qCritical()<<"P6-K detail opened/closed with domain mutation";
+                app.exit(571);return;
+            }
+            qInfo()<<"P6-K native purpose-limited contract detail PASS"<<size;
             app.exit(0);
         });
     }

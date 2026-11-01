@@ -103,6 +103,30 @@ QVariantList RentalListModel::recentActivities() const {
     return rows;
 }
 
+QVariantMap RentalListModel::selectedContract() const {
+    if (m_selectedRentalId.isEmpty() || rowForId(m_selectedRentalId) < 0)
+        return {}; // Never disclose stale or hidden rental selection.
+    for (const auto &record : m_allItems) {
+        if (record.rentalId != m_selectedRentalId)
+            continue;
+        // Explicit purpose-limited allowlist; no customer, phone, payments.
+        return {
+            {QStringLiteral("rentalId"),record.rentalId},
+            {QStringLiteral("vehicleId"),record.vehicleId},
+            {QStringLiteral("startDate"),record.startDate.toString(Qt::ISODate)},
+            {QStringLiteral("expectedReturnDate"),record.expectedReturnDate.toString(Qt::ISODate)},
+            {QStringLiteral("actualReturnDate"),record.actualReturnDate.isValid()
+                ? record.actualReturnDate.toString(Qt::ISODate) : QString{}},
+            {QStringLiteral("days"),record.rentalDays},
+            {QStringLiteral("dailyRate"),record.legacyDailyRate},
+            {QStringLiteral("total"),record.legacyTotal},
+            {QStringLiteral("status"),statusText(record.status)},
+            {QStringLiteral("dueState"),dueStateText(record.dueState)}
+        };
+    }
+    return {};
+}
+
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
     : QAbstractListModel(parent), m_service(service),
       m_allItems(service.records()), m_items(m_allItems) {}
@@ -189,8 +213,10 @@ void RentalListModel::setStatusFilter(const QString &filter) {
     emit statusFilterChanged();
     if (m_items.size() != oldCount)
         emit countChanged();
-    if (oldId != m_selectedRentalId || oldRow != selectedRow())
+    if (oldId != m_selectedRentalId || oldRow != selectedRow()) {
         emit selectionChanged();
+        emit selectedContractChanged();
+    }
 }
 
 bool RentalListModel::selectVisibleRow(int row) {
@@ -231,6 +257,7 @@ bool RentalListModel::selectById(const QString &id) {
     if (canonicalId != m_selectedRentalId) {
         m_selectedRentalId = canonicalId;
         emit selectionChanged();
+        emit selectedContractChanged();
     }
     return true;
 }
@@ -287,6 +314,7 @@ void RentalListModel::clearSelection() {
         return;
     m_selectedRentalId.clear();
     emit selectionChanged();
+    emit selectedContractChanged();
 }
 
 void RentalListModel::refresh() {
@@ -310,6 +338,9 @@ void RentalListModel::refresh() {
         emit countChanged();
     if (priorId != m_selectedRentalId || selectedRow() != priorRow)
         emit selectionChanged();
+    // Lifecycle/dates can change while the selected rental ID stays the same.
+    // Force the separate contract view to rebind after authoritative refresh.
+    emit selectedContractChanged();
     // Emitted only after the caller's authoritative persisted transaction
     // requests refresh(). Filters and unconfirmed previews never alter KPIs.
     emit metricsChanged();

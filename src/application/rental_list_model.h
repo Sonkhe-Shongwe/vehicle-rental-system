@@ -7,6 +7,7 @@
 #include <QList>
 #include <QString>
 #include <QVariantList>
+#include <QVariantMap>
 
 // Native Qt read-only model. The service and its owning RentalSystem must
 // outlive this adapter. No Rental* or customer PII is exposed through roles.
@@ -28,6 +29,9 @@ class RentalListModel final : public QAbstractListModel {
     // At most four latest rental START dates, then ID descending. Purpose-
     // limited maps: no customer/contact details, payment or event timestamps.
     Q_PROPERTY(QVariantList recentActivities READ recentActivities NOTIFY metricsChanged)
+    // Only the current selected C++ rental summary. Never customer/phone.
+    // Notified separately on selection AND domain-backed lifecycle refresh.
+    Q_PROPERTY(QVariantMap selectedContract READ selectedContract NOTIFY selectedContractChanged)
 public:
     enum Role {
         RentalIdRole = Qt::UserRole + 1,
@@ -57,6 +61,7 @@ public:
     double activeBookedValue() const;
     QString oldestOverdueRentalId() const;
     QVariantList recentActivities() const;
+    QVariantMap selectedContract() const;
     QString statusFilter() const { return m_statusFilter; }
     void setStatusFilter(const QString &filter);
     QString selectedRentalId() const { return m_selectedRentalId; }
@@ -82,6 +87,7 @@ signals:
     void countChanged();
     void statusFilterChanged();
     void metricsChanged();
+    void selectedContractChanged();
 
 private:
     int rowForId(const QString &rentalId) const;

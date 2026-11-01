@@ -1348,13 +1348,116 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    objectName: "rentalSelectionText"
+                                    text: rentalsModel.selectedRentalId === "" ?
+                                          "No rental selected" :
+                                          "Selected rental: " + rentalsModel.selectedRentalId
+                                    color: navy; font.pixelSize: 12
+                                    Accessible.name: text
+                                    Layout.fillWidth: true
+                                }
+                                Button {
+                                    id: showContractDetailsButton
+                                    objectName: "rentalDetailsButton"
+                                    text: "View contract details"
+                                    Layout.minimumHeight: 36
+                                    activeFocusOnTab: true
+                                    enabled: rentalsModel.selectedContract.rentalId !== undefined
+                                    Accessible.name: "View selected rental contract details"
+                                    Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
+                                    onClicked: contractDetailsDialog.open()
+                                }
+                            }
+                        }
+                    }
+                    Dialog {
+                        id: contractDetailsDialog
+                        objectName: "rentalContractDetailsDialog"
+                        title: "Rental contract details"
+                        width: Math.min(540, window.width - 64)
+                        anchors.centerIn: parent
+                        modal: true
+                        focus: true
+                        closePolicy: Popup.CloseOnEscape
+                        standardButtons: Dialog.NoButton
+                        onOpened: Qt.callLater(function() {
+                            if (contractDetailsDialog.visible)
+                                detailsCloseButton.forceActiveFocus(Qt.TabFocusReason)
+                        })
+                        onClosed: Qt.callLater(function() {
+                            if (showContractDetailsButton.visible && showContractDetailsButton.enabled)
+                                showContractDetailsButton.forceActiveFocus(Qt.TabFocusReason)
+                            else if (rentalList.visible)
+                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                        })
+                        contentItem: ColumnLayout {
+                            spacing: 10
                             Label {
-                                objectName: "rentalSelectionText"
-                                text: rentalsModel.selectedRentalId === "" ?
-                                      "No rental selected" :
-                                      "Selected rental: " + rentalsModel.selectedRentalId
-                                color: navy; font.pixelSize: 12
+                                text: "Read-only contract data from C++. No customer contact or payment details."
+                                color: ink
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                            }
+                            Label {
+                                objectName: "rentalDetailIdentity"
+                                text: "Rental: " + (rentalsModel.selectedContract.rentalId || "None") +
+                                      "  ·  Vehicle: " + (rentalsModel.selectedContract.vehicleId || "None")
+                                color: navy; font.bold: true
                                 Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailStatus"
+                                text: "Status: " + (rentalsModel.selectedContract.status || "Not selected") +
+                                      "  ·  Due: " + (rentalsModel.selectedContract.dueState || "Unknown")
+                                color: navy
+                                Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailStart"
+                                text: "Start date: " + (rentalsModel.selectedContract.startDate || "Not recorded")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailExpected"
+                                text: "Expected return: " + (rentalsModel.selectedContract.expectedReturnDate || "Not recorded")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailActual"
+                                text: "Actual return: " + (rentalsModel.selectedContract.actualReturnDate || "Not returned")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailDuration"
+                                text: "Rental days: " + (rentalsModel.selectedContract.days || 0)
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailRate"
+                                text: "Daily rate: R " + Number(rentalsModel.selectedContract.dailyRate || 0).toFixed(2)
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailTotal"
+                                text: "Booked contract total: R " + Number(rentalsModel.selectedContract.total || 0).toFixed(2)
+                                color: navy; font.bold: true
+                                Accessible.name: text
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: detailsCloseButton
+                                    objectName: "rentalDetailsClose"
+                                    text: "Close"
+                                    Layout.minimumHeight: 36
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Close rental contract details"
+                                    onClicked: contractDetailsDialog.close()
+                                }
                             }
                         }
                     }

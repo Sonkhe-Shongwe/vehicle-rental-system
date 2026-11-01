@@ -222,6 +222,16 @@ if(BUILD_TESTING)
         rental_studio_p5_fleet_booking_wide
         rental_studio_p5_fleet_booking_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P6-K: purpose-limited native contract detail dialog, true actual dates,
+    # hidden-selection guards, modal Escape/focus and no accidental writes.
+    add_test(NAME rental_studio_p6_contract_detail_wide
+        COMMAND rental_studio_qtquick_spike --p6-contract-detail-smoke)
+    add_test(NAME rental_studio_p6_contract_detail_compact
+        COMMAND rental_studio_qtquick_spike --p6-contract-detail-smoke --compact)
+    set_tests_properties(
+        rental_studio_p6_contract_detail_wide
+        rental_studio_p6_contract_detail_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
     # P6-J: genuine Qt window recent-contract read model and hidden-history
     # read-only routing at two sizes with source byte nonmutation.
     add_test(NAME rental_studio_p6_recent_activity_wide

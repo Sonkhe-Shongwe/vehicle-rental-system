@@ -349,6 +349,55 @@ int main(int argc, char **argv) {
               recent.recentActivities().size()==4 &&
               recent.activeCount()==5,
               "recent rows rehydrate lifecycle state after authoritative commit");
+        // P6-K: typed selected-contract projection must be narrow, update on
+        // selection and after lifecycle refresh, and drop hidden/stale IDs.
+        int detailNotifications=0;
+        QObject::connect(&recent,&RentalListModel::selectedContractChanged,
+                         [&detailNotifications]{ ++detailNotifications; });
+        check(recent.selectedContract().isEmpty(),
+              "no selected rental has no contract detail or contact data");
+        recent.setStatusFilter("All");
+        check(recent.selectById("R006") && detailNotifications==1,
+              "selected contract change notified exactly once");
+        const QVariantMap detail=recent.selectedContract();
+        check(detail.value("rentalId").toString()=="R006" &&
+              detail.value("vehicleId").toString()=="C006" &&
+              detail.value("startDate").toString()==today.toString(Qt::ISODate) &&
+              detail.value("expectedReturnDate").toString()==today.addDays(6).toString(Qt::ISODate) &&
+              detail.value("actualReturnDate").toString()==today.toString(Qt::ISODate) &&
+              detail.value("days").toInt()==6 &&
+              detail.value("dailyRate").toDouble()==450.0 &&
+              detail.value("total").toDouble()==2700.0 &&
+              detail.value("status").toString()=="Returned" &&
+              detail.keys()==QStringList({"actualReturnDate","dailyRate","days","dueState",
+                                           "expectedReturnDate","rentalId","startDate","status",
+                                           "total","vehicleId"}),
+              "selected contract contains verified dates and exact no-contact keys");
+        const int beforeSelect=detailNotifications;
+        check(!recent.selectById("R999") && detailNotifications==beforeSelect &&
+              recent.selectedContract()==detail,
+              "unknown selection neither exposes another record nor changes details");
+        recent.setStatusFilter("Active");
+        check(recent.selectedRentalId().isEmpty() &&
+              recent.selectedContract().isEmpty() &&
+              detailNotifications==beforeSelect+1,
+              "filtered-out history clears details and notification");
+        recent.setStatusFilter("All");
+        check(recent.selectById("R006"),"reselect returned contract for archived refresh");
+        const int beforeArchive=detailNotifications;
+        check(recentSystem.archiveRental("R006"),"archive returned fixture for selected-detail refresh");
+        check(recent.selectedContract().value("status").toString()=="Returned",
+              "details never optimistically update before C++ refresh");
+        recent.refresh();
+        check(recent.selectedContract().value("status").toString()=="Archived" &&
+              detailNotifications==beforeArchive+1,
+              "details rebind when selected record status changes but ID is stable");
+        check(recentSystem.deleteArchivedRental("R006"),
+              "delete archived fictional selection for stale-detail test");
+        recent.refresh();
+        check(recent.selectedContract().isEmpty() &&
+              recent.selectedRentalId().isEmpty(),
+              "deleted selected rental revokes details after authoritative refresh");
     }
 
     {
