@@ -22,6 +22,9 @@ ApplicationWindow {
     readonly property color ink: designTokens.ink
     property int workspace: 1
     property bool gallery: true
+    // Confirmed receipt survives closing the ephemeral preview dialog.
+    // Only the C++-verified success branch populates this display string.
+    property string bookingReceiptNotice: ""
 
     color: canvas
 
@@ -623,11 +626,16 @@ ApplicationWindow {
                             text: "New rental"
                             activeFocusOnTab: true
                             Accessible.name: "Create a new fictional rental"
-                            onClicked: bookingDialog.open()
+                            onClicked: {
+                                window.bookingReceiptNotice = ""
+                                bookingDialog.open()
+                            }
                         }
                         DomainMessage {
                             objectName: "rentalBookingMessage"
-                            text: bookingActions.lastMessage
+                            emphasized: window.bookingReceiptNotice !== ""
+                            text: window.bookingReceiptNotice !== ""
+                                  ? window.bookingReceiptNotice : bookingActions.lastMessage
                         }
                     }
                     Dialog {
@@ -688,6 +696,12 @@ ApplicationWindow {
                                 emphasized: bookingActions.canConfirm
                                 text: bookingActions.quoteSummary
                             }
+                            // A declined confirmation must be explained inside
+                            // the still-open dialog, not behind its modal shade.
+                            DomainMessage {
+                                objectName: "bookingDialogFeedback"
+                                text: bookingActions.lastMessage
+                            }
                             Label {
                                 text: "Customer details are sent only to the C++ commit service."
                                 color: ink; wrapMode: Text.WordWrap
@@ -726,6 +740,7 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     onClicked: {
                                         if (bookingActions.confirm(bookingCustomer.text, bookingPhone.text)) {
+                                            window.bookingReceiptNotice = bookingActions.lastMessage
                                             bookingCustomer.clear()
                                             bookingPhone.clear()
                                             bookingDialog.close()

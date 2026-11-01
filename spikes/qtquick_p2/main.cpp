@@ -1186,6 +1186,23 @@ int main(int argc, char *argv[]) {
             }
             // Vehicle ID remains from the canceled, never-committed preview.
             press(preview);
+            auto *feedback=find(find,root,"bookingDialogFeedback");
+            if(!feedback || !bookingActions.canConfirm()) {
+                qCritical()<<"P5 inline booking feedback control missing";
+                app.exit(301);return;
+            }
+            // Invalid C++ confirmation keeps the real modal open and gives
+            // an inline explanation, without mutating any test records.
+            press(confirm);
+            QByteArray declinedLedger;
+            if(feedback->property("text").toString()!=
+                   QStringLiteral("Enter a valid customer name.") ||
+               !bookingActions.lastRentalId().isEmpty() ||
+               !readFile(disposable.filePath("rentals.txt"),&declinedLedger) ||
+               declinedLedger!=beforeRentals || fleet.availableCount()!=4) {
+                qCritical()<<"P5 invalid booking did not show safe inline reason";
+                app.exit(302);return;
+            }
             customer->forceActiveFocus(Qt::TabFocusReason);
             // QtTest has no keyClicks(QWindow*, QString) overload.
             // Set fixture-only contact text; the live preview button and
@@ -1209,6 +1226,22 @@ int main(int argc, char *argv[]) {
                            <<bookingActions.lastRentalId()<<fleet.availableCount()
                            <<rentalModel.count();
                 app.exit(158);return;
+            }
+            // Closing the modal clears its ephemeral preview and lastMessage,
+            // but the saved receipt must remain visible in Rentals.
+            auto *visibleReceipt=find(find,root,"rentalBookingMessage");
+            if(!visibleReceipt ||
+               visibleReceipt->property("text").toString()!=
+                   QStringLiteral("Booking R003 saved.")) {
+                qCritical()<<"P5 successful receipt missing after modal closed";
+                app.exit(303);return;
+            }
+            const auto receiptShot=window->grabWindow();
+            if(receiptShot.isNull() ||
+               receiptShot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !receiptShot.save("p5-qt-booking-receipt-"+suffix+".png","PNG")) {
+                qCritical()<<"P5 native booking receipt screenshot unavailable";
+                app.exit(304);return;
             }
             QByteArray afterOriginalFleet,afterOriginalRentals,afterTempLedger;
             if(!readFile(vehicles,&afterOriginalFleet) || !readFile(rentals,&afterOriginalRentals) ||
@@ -1821,6 +1854,13 @@ int main(int argc, char *argv[]) {
                 app.exit(293);return;
             }
             rentalModel.setStatusFilter("All");
+            // Keep the original reviewed quote for a genuine second-booking
+            // refusal against a newly constructed domain after disk reload.
+            const auto firstQuote=RentalQuoteService(system).preview("C001",3);
+            if(!firstQuote.ok()) {
+                qCritical()<<"P5 original Corolla quote missing";
+                app.exit(305);return;
+            }
             // The existing C++ quote + confirmation service is the only
             // writer. Committed records update Fleet and Overview through
             // the already-established post-commit refresh callback.
@@ -1884,8 +1924,46 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P5 persisted disposable change/original-file safety failed";
                 app.exit(300);return;
             }
-            qInfo()<<"P5 operational overview PASS"<<size
-                   <<"visible C++ metrics, real booking/return refresh, navigation, safe demo";
+            // Recreate the C++ rental domain and models from actual on-disk
+            // disposable QSaveFile records. The public preview intentionally
+            // does NOT persist its temp directory across application launches.
+            RentalSystem reopened(disposable.path());
+            RentalReadService reopenedRead(reopened);
+            RentalListModel reopenedModel(reopenedRead);
+            const auto *persistedCorolla=reopened.findVehicleById("C001");
+            const auto *persistedRanger=reopened.findVehicleById("C002");
+            const auto *persistedBooking=reopened.findRentalById("R003");
+            const auto *persistedReturn=reopened.findRentalById("R001");
+            if(!persistedCorolla || !persistedRanger ||
+               !persistedBooking || !persistedReturn ||
+               !persistedCorolla->getIsRented() ||
+               persistedRanger->getIsRented() ||
+               persistedBooking->getIsReturned() ||
+               !persistedReturn->getIsReturned() ||
+               reopenedModel.count()!=3 ||
+               reopenedModel.activeCount()!=1 ||
+               reopenedModel.historyCount()!=2 ||
+               std::abs(reopenedModel.activeBookedValue()-1350.0)>0.01) {
+                qCritical()<<"P5 disk-reloaded C++ domain/model state incorrect";
+                app.exit(306);return;
+            }
+            // Same reviewed Corolla quote must not create a duplicate.
+            const RentalConfirmationRequest again{
+                *firstQuote.quote,QStringLiteral("Fictional Demo Duplicate"),
+                QStringLiteral("0000000000")};
+            const auto rejected=RentalConfirmService(reopened).confirm(again);
+            QByteArray afterDuplicate;
+            if(rejected.error!=RentalConfirmationError::VehicleUnavailable ||
+               rejected.receipt.has_value() ||
+               !readFile(disposable.filePath("rentals.txt"),&afterDuplicate) ||
+               afterDuplicate!=afterLedger ||
+               reopenedModel.activeCount()!=1 ||
+               !persistedCorolla->getIsRented()) {
+                qCritical()<<"P5 repeated booking damaged saved ledger or occupancy";
+                app.exit(307);return;
+            }
+            qInfo()<<"P5 operational overview/reconstruction PASS"<<size
+                   <<"C++ committed booking/return, disk rehydration, duplicate refusal, safe demo";
             app.exit(0);
         });
     }
