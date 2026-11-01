@@ -1050,6 +1050,10 @@ ApplicationWindow {
                                 objectName: "rentalFilter" + modelData
                                 text: modelData
                                 activeFocusOnTab: true
+                                // Native defaults were only 26 px high.
+                                // Give all lifecycle filter targets a comfortably
+                                // sized keyboard/mouse interaction surface.
+                                Layout.minimumHeight: 36
                                 Accessible.role: Accessible.RadioButton
                                 Accessible.name: modelData + " rentals"
                                 Accessible.checkable: true
