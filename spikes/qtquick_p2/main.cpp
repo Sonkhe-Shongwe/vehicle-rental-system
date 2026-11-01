@@ -451,6 +451,11 @@ int main(int argc, char *argv[]) {
             fleet.refreshAfterCommit();
             fleet.selectById(id);
         });
+    FleetRemoveController fleetRemove(system,!persistentDemo,
+        [&fleet] {
+            fleet.clearSelection();
+            fleet.refreshAfterCommit();
+        });
     RentalReadService rentalRead(system);
     RentalListModel rentalModel(rentalRead);
     RentalReturnController rentalActions(system, rentalRead, rentalModel,
