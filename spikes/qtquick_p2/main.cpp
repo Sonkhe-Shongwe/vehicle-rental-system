@@ -3044,8 +3044,13 @@ int main(int argc, char *argv[]) {
                 auto *brand=find(find,root,"fleetAddBrand");
                 auto *model=find(find,root,"fleetAddModel");
                 auto *rate=find(find,root,"fleetAddRate");
+                auto *extra=find(find,root,"fleetAddExtra");
                 auto *confirm=find(find,root,"fleetAddConfirm");
-                if(!brand||!model||!rate||!confirm){app.exit(446);return;}
+                if(!brand||!model||!rate||!extra||!confirm ||
+                   extra->property("value").toInt()!=4) {
+                    qCritical()<<"P6 first native Add Car default is not 4 doors";
+                    app.exit(446);return;
+                }
                 brand->setProperty("text",QStringLiteral("Demo Motors"));
                 model->setProperty("text",QStringLiteral("Orion"));
                 rate->setProperty("text",QStringLiteral("420"));
@@ -3058,7 +3063,7 @@ int main(int argc, char *argv[]) {
                 brand=find(find,root,"fleetAddBrand");
                 model=find(find,root,"fleetAddModel");
                 rate=find(find,root,"fleetAddRate");
-                auto *extra=find(find,root,"fleetAddExtra");
+                extra=find(find,root,"fleetAddExtra");
                 confirm=find(find,root,"fleetAddConfirm");
                 if(!kind||!brand||!model||!rate||!extra||!confirm) {
                     app.exit(448);return;
