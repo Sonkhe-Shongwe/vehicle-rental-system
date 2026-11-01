@@ -60,6 +60,8 @@
 
 **30 October 2026 | Current evidence-weighted programme score.** [Canonical state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md). Historical 13.4%, 20.1%, 25.2%, 28.6%, 32.1%, 35.5%, 37.2% and 38.9% are superseded; the current verified score is **40.6%**, P4 5/7. This is NOT release readiness.
 
+> **FORMAL P5/P6 AUDIT | 1 NOV 2026:** [Seventeen-item evidence reconciliation](P5_P6_ACCEPTANCE_RECONCILIATION_2026-11-01.md) distinguishes eight original P5 requirements covered by representative native CI from the incomplete owner acceptance gate. P6 has a provisional grouping of six automated-covered, two partial and one full-parity gap; the original roadmap did not individually enumerate nine criteria, so the split is not a revised rubric. Prior P5/P6 `Not started` gate labels were misleading and have been corrected to `IN PROGRESS`. **Formal scores remain P5 0/8, P6 0/9, overall 28/74 and 40.6% evidence-weighted** until original gates are properly approved. No credit invented for code/test work or document updates.
+
 ## Two independent statuses
 
 - **Phase %:** percentage of predefined acceptance checks whose **Verified** status is supported by real dated, reproducible evidence.
@@ -75,8 +77,8 @@
 | P2 | Native Windows Qt Quick/QML and typed C++ feasibility | 10% | 4/6 | **66.7%** | 6.7% | OPEN: owner toolkit GO signed; physical Windows QA pending |
 | P3 | C++ domain/application/services, models and safe result boundary | 12% | **7/7** | **100%** | **12.0%** | Source acceptance closed; P5/P6 product operations separate |
 | P4 | Shared Qt Quick components, navigation, focus and motion | 12% | **5/7** | **71.4%** | **8.6%** | Tokens, screenshots, components, shell, reduced-motion accepted; 2 owner/a11y gates open |
-| P5 | Single persisted Corolla rental vertical slice end to end | 16% | 0/8 | 0% | 0% | Not started |
-| P6 | Complete fleet + rental lifecycle parity, negative paths | 14% | 0/9 | 0% | 0% | Not started |
+| P5 | Single persisted Corolla rental vertical slice end to end | 16% | 0/8 | 0% | 0% | **IN PROGRESS**: all 8 representative native automated behaviors covered; formal owner/acceptance review open |
+| P6 | Complete fleet + rental lifecycle parity, negative paths | 14% | 0/9 | 0% | 0% | **IN PROGRESS**: P6-A/B/C native CI verified; 6 evidenced / 2 partial / 1 unproven in a **provisional** nine-theme crosswalk, not formally accepted |
 | P7 | Stable IDs, money, storage, backup/migration hardening | 9% | 0/8 | 0% | 0% | Not started |
 | P8 | Offline Windows deploy/installer, privacy/licensing | 5% | 0/6 | 0% | 0% | Not started |
 | P9 | Native QA, independent latest-SHA CI and owner release | 5% | 0/8 | 0% | 0% | Not started |
