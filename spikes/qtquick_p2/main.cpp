@@ -2245,9 +2245,16 @@ int main(int argc, char *argv[]) {
             preview=find(find,root,"bookingPreviewButton");
             confirm=find(find,root,"bookingConfirmButton");
             feedback=find(find,root,"bookingDialogFeedback");
-            if(!vehicle||!days||!preview||!confirm||!feedback) {
+            customer=find(find,root,"bookingCustomer");
+            phone=find(find,root,"bookingPhone");
+            if(!vehicle||!days||!preview||!confirm||!feedback||!customer||!phone) {
                 app.exit(358);return;
             }
+            // Prior successful booking deliberately cleared customer inputs.
+            // Re-enter valid fictional details so this negative-path test
+            // reaches changed availability, not InvalidCustomerName first.
+            customer->setProperty("text",QStringLiteral("Fictional Availability Retry"));
+            phone->setProperty("text",QStringLiteral("0000000000"));
             vehicle->setProperty("text",QStringLiteral("C003"));
             days->setProperty("value",2);
             press(preview);
