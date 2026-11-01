@@ -689,6 +689,13 @@ ApplicationWindow {
                             Item { Layout.fillHeight: true }
                         }
                     }
+                    FleetAddDialog {
+                        id: fleetAddDialog
+                        objectName: "fleetAddDialog"
+                        anchors.centerIn: parent
+                        fleetAdmin: fleetAdmin
+                        focusReturn: fleetAddButton
+                    }
                 }
 
                 ColumnLayout {
