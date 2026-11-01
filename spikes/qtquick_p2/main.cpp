@@ -2943,6 +2943,12 @@ int main(int argc, char *argv[]) {
             if(!field || !confirm) {app.exit(404);return;}
             field->setProperty("text",QStringLiteral("REMOVE C003"));
             press(confirm);
+            QTest::qWait(160);
+            auto *remainingAction=find(find,root,"fleetAddButton");
+            if(!remainingAction || !remainingAction->hasActiveFocus()) {
+                qCritical()<<"P6 removed selection failed keyboard focus recovery";
+                app.exit(409);return;
+            }
             if(fleet.totalCount()!=4 || fleet.availableCount()!=3 ||
                !fleet.selectedId().isEmpty() ||
                system.findVehicleById("C003") ||
