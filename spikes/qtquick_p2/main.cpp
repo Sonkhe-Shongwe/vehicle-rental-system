@@ -1581,7 +1581,7 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 Fleet tab controls not found";
                 app.exit(231);return;
             }
-            search->forceActiveFocus(Qt.TabFocusReason);
+            search->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Tab);
             QCoreApplication::processEvents();
             if(!status->hasActiveFocus()) {
@@ -1614,7 +1614,7 @@ int main(int argc, char *argv[]) {
             // Switch to actual rentals UI using a keyboard-activated sidebar.
             auto *rentalNav=find(find,root,"workspaceNavRentals");
             if(!rentalNav){app.exit(237);return;}
-            rentalNav->forceActiveFocus(Qt.TabFocusReason);
+            rentalNav->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Space);
             QTest::qWait(70);
             if(window->property("workspace").toInt()!=2 ||
@@ -1626,7 +1626,7 @@ int main(int argc, char *argv[]) {
             if(!returnButton || !returnButton->isEnabled()) {
                 app.exit(239);return;
             }
-            returnButton->forceActiveFocus(Qt.TabFocusReason);
+            returnButton->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Space);
             QTest::qWait(120);
             auto *cancel=find(find,root,"rentalReturnCancel");
@@ -1671,7 +1671,7 @@ int main(int argc, char *argv[]) {
             // Booking must open on first actual entry field, not background.
             auto *booking=find(find,root,"rentalNewBookingButton");
             if(!booking){app.exit(246);return;}
-            booking->forceActiveFocus(Qt.TabFocusReason);
+            booking->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Space);
             QTest::qWait(110);
             auto *vehicle=find(find,root,"bookingVehicleId");
