@@ -1,6 +1,7 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
+    p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
@@ -41,8 +42,56 @@ qt_add_qml_module(rental_studio_qtquick_spike
     VERSION 1.0
     QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
-              ConfirmActionDialog.qml)
+              ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
+    # Real separate executable processes, opt-in fixed Qt TEST location.
+    # Cleanup has its own fixture so CTest also runs it after failures.
+    add_test(NAME rental_studio_p5_session_seed
+        COMMAND rental_studio_qtquick_spike --p5-session-seed-test)
+    add_test(NAME rental_studio_p5_session_reopen
+        COMMAND rental_studio_qtquick_spike --p5-session-reopen-test)
+    add_test(NAME rental_studio_p5_session_tamper
+        COMMAND rental_studio_qtquick_spike --p5-session-tamper-test)
+    add_test(NAME rental_studio_p5_session_clean
+        COMMAND rental_studio_qtquick_spike --p5-session-clean-test)
+    set_tests_properties(rental_studio_p5_session_seed PROPERTIES
+        FIXTURES_SETUP p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_reopen PROPERTIES
+        FIXTURES_REQUIRED p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_tamper PROPERTIES
+        FIXTURES_REQUIRED p5_synthetic_session
+        DEPENDS rental_studio_p5_session_reopen
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_clean PROPERTIES
+        FIXTURES_CLEANUP p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    # P5 live native QML first booking, second-process real QML Dashboard
+    # recovery, and isolated deterministic disk-write rollback.
+    add_test(NAME rental_studio_p5_ui_session_seed
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-seed-test)
+    add_test(NAME rental_studio_p5_ui_session_reopen
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-reopen-test)
+    add_test(NAME rental_studio_p5_ui_session_clean
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-clean-test)
+    set_tests_properties(rental_studio_p5_ui_session_seed PROPERTIES
+        FIXTURES_SETUP p5_qml_persistent_session
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+    set_tests_properties(rental_studio_p5_ui_session_reopen PROPERTIES
+        FIXTURES_REQUIRED p5_qml_persistent_session
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+    set_tests_properties(rental_studio_p5_ui_session_clean PROPERTIES
+        FIXTURES_CLEANUP p5_qml_persistent_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 20)
+    add_test(NAME rental_studio_p5_ui_write_failure_wide
+        COMMAND rental_studio_qtquick_spike --p5-ui-write-failure-test)
+    add_test(NAME rental_studio_p5_ui_write_failure_compact
+        COMMAND rental_studio_qtquick_spike --p5-ui-write-failure-test --compact)
+    set_tests_properties(
+        rental_studio_p5_ui_write_failure_wide
+        rental_studio_p5_ui_write_failure_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
     add_test(NAME rental_studio_p2_model COMMAND rental_studio_qtquick_spike --self-test)
     set_tests_properties(rental_studio_p2_model PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
@@ -107,6 +156,46 @@ if(BUILD_TESTING)
         rental_studio_p3_archive_qml_wide
         rental_studio_p3_archive_qml_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # All booking-dismissal paths clear uncommitted contact data, revoke
+    # C++ quotes, show honest cancellation and never write a rental.
+    add_test(NAME rental_studio_p5_booking_cancel_wide
+        COMMAND rental_studio_qtquick_spike --p5-booking-cancel-smoke)
+    add_test(NAME rental_studio_p5_booking_cancel_compact
+        COMMAND rental_studio_qtquick_spike --p5-booking-cancel-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_booking_cancel_wide
+        rental_studio_p5_booking_cancel_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # P5 stale rate and occupancy both require explicit fresh review; a
+    # rejected quote cannot write an optimistic receipt or duplicate rental.
+    add_test(NAME rental_studio_p5_stale_quote_wide
+        COMMAND rental_studio_qtquick_spike --p5-stale-quote-smoke)
+    add_test(NAME rental_studio_p5_stale_quote_compact
+        COMMAND rental_studio_qtquick_spike --p5-stale-quote-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_stale_quote_wide
+        rental_studio_p5_stale_quote_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P5 operator workflow: selected real C++ Fleet item into the guided
+    # booking modal with a prefilled authoritative quote and no duplicate CTA.
+    add_test(NAME rental_studio_p5_fleet_booking_wide
+        COMMAND rental_studio_qtquick_spike --p5-fleet-to-booking-smoke)
+    add_test(NAME rental_studio_p5_fleet_booking_compact
+        COMMAND rental_studio_qtquick_spike --p5-fleet-to-booking-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_fleet_booking_wide
+        rental_studio_p5_fleet_booking_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P5 scoped operational Overview: C++-owned KPIs, post-commit refresh,
+    # real wide/compact QQuickWindow and selection-independent totals.
+    add_test(NAME rental_studio_p5_overview_wide
+        COMMAND rental_studio_qtquick_spike --p5-overview-smoke)
+    add_test(NAME rental_studio_p5_overview_compact
+        COMMAND rental_studio_qtquick_spike --p5-overview-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_overview_wide
+        rental_studio_p5_overview_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     # P4 shared QML token/focus/shell regression at real native window sizes.
     add_test(NAME rental_studio_p4_shared_shell_wide
         COMMAND rental_studio_qtquick_spike --p4-shell-smoke)

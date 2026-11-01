@@ -7,7 +7,9 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: "Rental Studio · P4 shared native shell · fictional demo"
+    title: persistentFictionalDemo
+           ? "Rental Studio 2.0 · persistent fictional-only demo"
+           : "Rental Studio 2.0 · operational overview · fictional demo"
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
@@ -22,6 +24,31 @@ ApplicationWindow {
     readonly property color ink: designTokens.ink
     property int workspace: 1
     property bool gallery: true
+    // Confirmed receipt survives closing the ephemeral preview dialog.
+    // Only the C++-verified success branch populates this display string.
+    property string bookingReceiptNotice: ""
+    // Cancellation is a separate informational outcome, never a receipt.
+    property string bookingCancelledNotice: ""
+
+    // Carry the exact selected, AVAILABLE Fleet ID into the existing native
+    // guided booking modal. C++ quote/confirm still owns all business rules.
+    function bookSelectedFleetVehicle() {
+        if (window.workspace !== 1 || fleet.selectedId === "" ||
+                !fleet.selectedAvailable)
+            return
+        const selectedId = fleet.selectedId
+        window.bookingReceiptNotice = ""
+        window.bookingCancelledNotice = ""
+        bookingActions.discardPreview()
+        window.workspace = 2
+        Qt.callLater(function() {
+            if (window.workspace !== 2 || fleet.selectedId !== selectedId ||
+                    !fleet.selectedAvailable)
+                return
+            bookingVehicleId.text = selectedId
+            bookingDialog.open()
+        })
+    }
 
     color: canvas
 
@@ -213,30 +240,138 @@ ApplicationWindow {
 
                 ColumnLayout {
                     spacing: 16
-                    Label { text: "Fleet at a glance"; font.pixelSize: 21; color: navy }
-                    RowLayout {
-                        spacing: 16
-                        Rectangle {
-                            Layout.preferredWidth: 225; Layout.preferredHeight: 120
-                            radius: 12; color: "white"
-                            Column {
-                                anchors.centerIn: parent; spacing: 5
-                                Label { text: String(fleet.totalCount); font.pixelSize: 30; color: navy }
-                                Label { text: "Vehicles in demo"; color: ink }
-                            }
+                    Label {
+                        text: "Operations at a glance"
+                        font.pixelSize: 21; font.bold: true; color: navy
+                    }
+                    Label {
+                        text: "Live from the C++ rental records in this fictional demo."
+                        color: ink; wrapMode: Text.WordWrap
+                    }
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: window.width < 1350 ? 2 : 4
+                        rowSpacing: 12; columnSpacing: 12
+                        OverviewMetricCard {
+                            objectName: "overviewAvailableCard"
+                            metricLabel: "Available vehicles"
+                            value: String(fleet.availableCount)
+                            note: "Of " + fleet.totalCount + " in Fleet"
+                            accent: teal
                         }
-                        Rectangle {
-                            Layout.preferredWidth: 225; Layout.preferredHeight: 120
-                            radius: 12; color: mint
-                            Column {
-                                anchors.centerIn: parent; spacing: 5
-                                Label { text: String(fleet.availableCount); font.pixelSize: 30; color: teal }
-                                Label { text: "Available in demo"; color: navy }
+                        OverviewMetricCard {
+                            objectName: "overviewActiveCard"
+                            metricLabel: "Active rentals"
+                            value: String(rentalsModel.activeCount)
+                            note: "Confirmed rental contracts"
+                            accent: navy
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewOverdueCard"
+                            metricLabel: "Overdue rentals"
+                            value: String(rentalsModel.overdueCount)
+                            note: "From current C++ due-state"
+                            accent: rentalsModel.overdueCount > 0 ? "#B45309" : teal
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewValueCard"
+                            metricLabel: "Active booked value"
+                            value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
+                            note: "Contract totals, not payments"
+                            accent: navy
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 138
+                        radius: 12
+                        color: mint
+                        border.color: designTokens.border
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 9
+                            Label {
+                                text: "Rental lifecycle"
+                                color: navy; font.bold: true; font.pixelSize: 17
+                            }
+                            RowLayout {
+                                spacing: 20
+                                Label {
+                                    objectName: "overviewDueTodayText"
+                                    text: "Due today: " + rentalsModel.dueTodayCount
+                                    color: navy
+                                    Accessible.name: text
+                                }
+                                Label {
+                                    objectName: "overviewHistoryText"
+                                    text: "Returned or archived: " + rentalsModel.historyCount
+                                    color: navy
+                                    Accessible.name: text
+                                }
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 12
+                                Label {
+                                    objectName: "overviewOldestOverdueText"
+                                    text: rentalsModel.oldestOverdueRentalId !== ""
+                                          ? "Oldest overdue contract: " + rentalsModel.oldestOverdueRentalId
+                                          : "No overdue returns need attention"
+                                    color: navy
+                                    font.bold: true
+                                    Accessible.name: text
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: overviewOverdueAction
+                                    objectName: "overviewReviewOverdue"
+                                    text: "Review overdue"
+                                    enabled: rentalsModel.oldestOverdueRentalId !== ""
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Review oldest overdue rental"
+                                    Accessible.description: "Select the oldest overdue active rental without changing its record"
+                                    onClicked: {
+                                        if (!rentalsModel.selectOldestOverdue())
+                                            return
+                                        window.workspace = 2
+                                        Qt.callLater(function() {
+                                            if (window.workspace !== 2)
+                                                return
+                                            rentalList.currentIndex = rentalsModel.selectedRow
+                                            rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                                            rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                        })
+                                    }
+                                }
                             }
                         }
                     }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 12
+                        Button {
+                            id: overviewActiveButton
+                            objectName: "overviewOpenActive"
+                            text: "Review active rentals"
+                            activeFocusOnTab: true
+                            Accessible.name: "Review active rentals"
+                            onClicked: {
+                                rentalsModel.statusFilter = "Active"
+                                window.workspace = 2
+                            }
+                        }
+                        Button {
+                            objectName: "overviewOpenFleet"
+                            text: "Open Fleet"
+                            activeFocusOnTab: true
+                            Accessible.name: "Open Fleet"
+                            onClicked: window.workspace = 1
+                        }
+                    }
                     Label {
-                        text: "Rental value and due dates are deliberately omitted from this Fleet-only feasibility test."
+                        objectName: "overviewDemoDisclosure"
+                        text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }
                     Item { Layout.fillHeight: true }
@@ -512,8 +647,27 @@ ApplicationWindow {
                             }
                             Label {
                                 objectName: "inspectorHint"
-                                text: "P2 is non-mutating. Booking actions are intentionally absent."
+                                text: fleet.selectedId === ""
+                                      ? "Select a vehicle to inspect its details and availability."
+                                      : fleet.selectedAvailable
+                                        ? "Available for a new rental. Review the authoritative C++ quote before confirming."
+                                        : "Already rented. Return the active rental before booking this vehicle again."
                                 color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 12
+                            }
+                            Button {
+                                id: bookSelectedFleetButton
+                                objectName: "fleetBookSelectedButton"
+                                Layout.fillWidth: true
+                                text: "Book selected vehicle"
+                                enabled: fleet.selectedId !== "" && fleet.selectedAvailable
+                                activeFocusOnTab: true
+                                Accessible.name: "Create rental for selected available vehicle"
+                                Accessible.description: fleet.selectedId === ""
+                                    ? "Select an available Fleet vehicle first"
+                                    : fleet.selectedAvailable
+                                      ? "Opens the guided rental quote for " + fleet.selectedId
+                                      : "This vehicle is currently rented"
+                                onClicked: window.bookSelectedFleetVehicle()
                             }
                             Item { Layout.fillHeight: true }
                         }
@@ -536,7 +690,9 @@ ApplicationWindow {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
+                        text: persistentFictionalDemo
+                              ? "Persistent fictional-only demo. Bookings survive restart in a fixed local synthetic workspace. No real customer details."
+                              : "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
                         color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
                     }
                     RowLayout {
@@ -547,11 +703,20 @@ ApplicationWindow {
                             text: "New rental"
                             activeFocusOnTab: true
                             Accessible.name: "Create a new fictional rental"
-                            onClicked: bookingDialog.open()
+                            onClicked: {
+                                window.bookingReceiptNotice = ""
+                                window.bookingCancelledNotice = ""
+                                bookingDialog.open()
+                            }
                         }
                         DomainMessage {
                             objectName: "rentalBookingMessage"
-                            text: bookingActions.lastMessage
+                            emphasized: window.bookingReceiptNotice !== ""
+                            text: window.bookingReceiptNotice !== ""
+                                  ? window.bookingReceiptNotice
+                                  : window.bookingCancelledNotice !== ""
+                                    ? window.bookingCancelledNotice
+                                    : bookingActions.lastMessage
                         }
                     }
                     Dialog {
@@ -569,7 +734,14 @@ ApplicationWindow {
                                 bookingVehicleId.forceActiveFocus(Qt.TabFocusReason)
                         })
                         onClosed: {
+                            // All exits, including Escape and title-bar dismissal,
+                            // must forget uncommitted contact fields and C++ quote.
+                            // Only a confirmed C++ commit can leave a receipt.
                             bookingActions.discardPreview()
+                            bookingCustomer.clear()
+                            bookingPhone.clear()
+                            if (window.bookingReceiptNotice === "")
+                                window.bookingCancelledNotice = "Booking cancelled. No rental saved."
                             Qt.callLater(function() {
                                 if (newBookingButton.visible && newBookingButton.enabled)
                                     newBookingButton.forceActiveFocus(Qt.TabFocusReason)
@@ -602,9 +774,15 @@ ApplicationWindow {
                                 }
                             }
                             Button {
+                                id: bookingPreviewButton
                                 objectName: "bookingPreviewButton"
-                                text: "Preview C++ quote"
+                                text: bookingActions.needsFreshQuote ? "Refresh quote" : "Preview C++ quote"
                                 activeFocusOnTab: true
+                                Accessible.name: bookingActions.needsFreshQuote
+                                    ? "Refresh outdated rental quote" : "Preview current C++ rental quote"
+                                Accessible.description: bookingActions.needsFreshQuote
+                                    ? "The previous quote cannot be confirmed. Review current availability and price."
+                                    : "Review a current domain quote before enabling Confirm booking"
                                 onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
                             }
                             DomainMessage {
@@ -612,8 +790,16 @@ ApplicationWindow {
                                 emphasized: bookingActions.canConfirm
                                 text: bookingActions.quoteSummary
                             }
+                            // A declined confirmation must be explained inside
+                            // the still-open dialog, not behind its modal shade.
+                            DomainMessage {
+                                objectName: "bookingDialogFeedback"
+                                text: bookingActions.lastMessage
+                            }
                             Label {
-                                text: "Customer details are sent only to the C++ commit service."
+                                text: persistentFictionalDemo
+                                      ? "Fixed fictional contact is used in persistent demo mode. No real customer details."
+                                      : "Customer details are sent only to the C++ commit service."
                                 color: ink; wrapMode: Text.WordWrap
                             }
                             AccessibleTextField {
@@ -622,6 +808,7 @@ ApplicationWindow {
                                 objectName: "bookingCustomer"
                                 Layout.fillWidth: true
                                 placeholderText: "Customer name"
+                                enabled: !persistentFictionalDemo
                             }
                             AccessibleTextField {
                                 id: bookingPhone
@@ -629,6 +816,7 @@ ApplicationWindow {
                                 objectName: "bookingPhone"
                                 Layout.fillWidth: true
                                 placeholderText: "Contact number"
+                                enabled: !persistentFictionalDemo
                             }
                             RowLayout {
                                 Layout.fillWidth: true
@@ -636,11 +824,7 @@ ApplicationWindow {
                                     objectName: "bookingCancelButton"
                                     text: "Cancel"
                                     activeFocusOnTab: true
-                                    onClicked: {
-                                        bookingCustomer.clear()
-                                        bookingPhone.clear()
-                                        bookingDialog.close()
-                                    }
+                                    onClicked: bookingDialog.close()
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {
@@ -649,10 +833,21 @@ ApplicationWindow {
                                     enabled: bookingActions.canConfirm
                                     activeFocusOnTab: true
                                     onClicked: {
-                                        if (bookingActions.confirm(bookingCustomer.text, bookingPhone.text)) {
+                                        if (bookingActions.confirm(
+                                            persistentFictionalDemo ? "Fictional Demo Session" : bookingCustomer.text,
+                                            persistentFictionalDemo ? "0000000000" : bookingPhone.text)) {
+                                            window.bookingReceiptNotice = bookingActions.lastMessage
                                             bookingCustomer.clear()
                                             bookingPhone.clear()
                                             bookingDialog.close()
+                                        } else if (bookingActions.needsFreshQuote) {
+                                            // A disabled Confirm can trigger Qt's own fallback
+                                            // focus assignment in this same input event. Return
+                                            // focus only after that change has settled.
+                                            Qt.callLater(function() {
+                                                if (bookingDialog.visible && bookingActions.needsFreshQuote)
+                                                    bookingPreviewButton.forceActiveFocus(Qt.TabFocusReason)
+                                            })
                                         }
                                     }
                                 }

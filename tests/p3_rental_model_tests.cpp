@@ -100,6 +100,20 @@ int main(int argc, char **argv) {
               "first explicit refresh resets model and notifies count once");
         check(model.rowCount(model.index(0, 0)) == 0,
               "Qt list model has no child rows");
+        // This navigation reuses the complete snapshot and does not interfere
+        // with lifecycle filters, selection count assertions or persistence.
+        RentalListModel overdueRoute(service);
+        overdueRoute.setStatusFilter("History");
+        check(overdueRoute.oldestOverdueRentalId()=="R002" &&
+              overdueRoute.selectOldestOverdue() &&
+              overdueRoute.statusFilter()=="Active" &&
+              overdueRoute.selectedRentalId()=="R002" &&
+              overdueRoute.selectedRow()==1,
+              "oldest overdue selectable from history by domain due state");
+        check(readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "overdue routing is read-only");
+
 
         const QModelIndex first = model.index(0, 0);
         const QModelIndex second = model.index(1, 0);
@@ -166,6 +180,9 @@ int main(int argc, char **argv) {
                   .toString() == "R003",
               "selected row now points to the correct rental, not stale position");
 
+        check(model.oldestOverdueRentalId().isEmpty() &&
+              !model.selectOldestOverdue(),
+              "no overdue action after confirmed overdue return");
         check(model.selectById("R001") && model.selectedRow() == 0,
               "select available active contract");
         check(system.completeRental("R001", today), "complete selected contract");
