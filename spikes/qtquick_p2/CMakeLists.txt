@@ -50,6 +50,8 @@ if(BUILD_TESTING)
         COMMAND rental_studio_qtquick_spike --p5-session-seed-test)
     add_test(NAME rental_studio_p5_session_reopen
         COMMAND rental_studio_qtquick_spike --p5-session-reopen-test)
+    add_test(NAME rental_studio_p5_session_tamper
+        COMMAND rental_studio_qtquick_spike --p5-session-tamper-test)
     add_test(NAME rental_studio_p5_session_clean
         COMMAND rental_studio_qtquick_spike --p5-session-clean-test)
     set_tests_properties(rental_studio_p5_session_seed PROPERTIES
@@ -57,6 +59,10 @@ if(BUILD_TESTING)
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
     set_tests_properties(rental_studio_p5_session_reopen PROPERTIES
         FIXTURES_REQUIRED p5_synthetic_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    set_tests_properties(rental_studio_p5_session_tamper PROPERTIES
+        FIXTURES_REQUIRED p5_synthetic_session
+        DEPENDS rental_studio_p5_session_reopen
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
     set_tests_properties(rental_studio_p5_session_clean PROPERTIES
         FIXTURES_CLEANUP p5_synthetic_session

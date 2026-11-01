@@ -18,6 +18,7 @@
 #include <QSortFilterProxyModel>
 #include <QTemporaryDir>
 #include <QStandardPaths>
+#include <QSaveFile>
 #include "p5_synthetic_session.h"
 #include <QVariant>
 #include <cmath>
@@ -307,6 +308,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-session-seed-test", "CI-only first process persists a controlled fictional booking."});
     parser.addOption({"p5-session-reopen-test", "CI-only separate process verifies the saved rental and refuses duplicates."});
     parser.addOption({"p5-session-clean-test", "CI-only remove the identified fixed test sandbox."});
+    parser.addOption({"p5-session-tamper-test", "CI-only verify unexpected files and contact records are rejected."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
@@ -318,21 +320,22 @@ int main(int argc, char *argv[]) {
     const bool seedTest=parser.isSet("p5-session-seed-test");
     const bool reopenTest=parser.isSet("p5-session-reopen-test");
     const bool cleanupTest=parser.isSet("p5-session-clean-test");
-    const bool sessionTest=seedTest || reopenTest || cleanupTest;
+    const bool tamperTest=parser.isSet("p5-session-tamper-test");
+    const bool sessionTest=seedTest || reopenTest || cleanupTest || tamperTest;
     const bool persistentDemo=parser.isSet("persistent-fictional-demo") || sessionTest;
     if(sessionTest) {
         // Separate standard-location test root, never a user's real session.
         QStandardPaths::setTestModeEnabled(true);
         QCoreApplication::setApplicationName("RentalStudioP5SyntheticTestOnly");
     }
-    if(sessionTest && int(seedTest)+int(reopenTest)+int(cleanupTest)!=1) {
+    if(sessionTest &&
+       int(seedTest)+int(reopenTest)+int(cleanupTest)+int(tamperTest)!=1) {
         qCritical()<<"Only one P5 synthetic CI phase is allowed"; return 308;
     }
-    if(persistentDemo && (parser.isSet("self-test") ||
-       parser.isSet("p5-overview-smoke") || parser.isSet("rentals-smoke") ||
-       parser.isSet("rentals-booking-smoke") || parser.isSet("p4-a11y-smoke") ||
-       parser.isSet("p4-tab-smoke"))) {
-        qCritical()<<"Persistent demo cannot combine with disposable smoke";
+    // Never run a legacy test which could intentionally mutate fixtures
+    // against the fixed persistent demo directory. Explicit mode only.
+    if(persistentDemo && parser.optionNames().size()!=1) {
+        qCritical()<<"Persistent fictional mode cannot combine with other switches";
         return 309;
     }
 
@@ -415,6 +418,47 @@ int main(int argc, char *argv[]) {
             QByteArray changed;
             if(!readFile(ledger,&changed)||changed==beforeRentals) return 313;
             qInfo()<<"P5 actual process one saved fictional rental PASS";
+            return 0;
+        }
+        if(tamperTest) {
+            const QString extra=QDir(dataDirectory).filePath("UNTRUSTED_RECORD.txt");
+            QFile unknown(extra);
+            if(!unknown.open(QIODevice::WriteOnly) ||
+               unknown.write("not fixture data")<0) {
+                qCritical()<<"P5 couldn't stage disposable foreign-file negative test";
+                return 318;
+            }
+            unknown.close();
+            QString reason;
+            const bool acceptedForeign=P5SyntheticSession::open(
+                beforeVehicles,beforeRentals,marker,&reason);
+            if(!QFile::remove(extra) || acceptedForeign) {
+                qCritical()<<"P5 unrecognized persistent directory file accepted";
+                return 319;
+            }
+            QByteArray beforeTamper;
+            if(!readFile(ledger,&beforeTamper))return 320;
+            const QByteArray foreignRecord=
+                "Rental|R999|UNTRUSTED NONFICTIONAL|999|C003|"
+                "2026-11-01|2026-11-04||3|400.00|1200.00|0|0\\n";
+            QSaveFile poisoned(ledger);
+            if(!poisoned.open(QIODevice::WriteOnly) ||
+               poisoned.write(beforeTamper+foreignRecord)!=
+                   beforeTamper.size()+foreignRecord.size() ||
+               !poisoned.commit())return 321;
+            const bool acceptedContact=P5SyntheticSession::open(
+                beforeVehicles,beforeRentals,marker,&reason);
+            QSaveFile restored(ledger);
+            if(!restored.open(QIODevice::WriteOnly) ||
+               restored.write(beforeTamper)!=beforeTamper.size() ||
+               !restored.commit() ||
+               acceptedContact ||
+               !P5SyntheticSession::open(
+                   beforeVehicles,beforeRentals,marker,&reason)) {
+                qCritical()<<"P5 foreign contact or restore guard failed"<<reason;
+                return 322;
+            }
+            qInfo()<<"P5 synthetic-only rejection of unknown files/contact PASS";
             return 0;
         }
         if(reopenTest) {
