@@ -15,6 +15,7 @@
 #include <QImage>
 #include <QTest>
 #include <QPointF>
+#include <QProcess>
 #include <QSortFilterProxyModel>
 #include <QTemporaryDir>
 #include <QStandardPaths>
@@ -329,6 +330,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-ui-session-clean-test", "CI-only clean the identified QML session test sandbox."});
     parser.addOption({"p5-ui-write-failure-test", "CI-only real QML confirmation with an injected failed durable write."});
     parser.addOption({"p5-session-tamper-test", "CI-only verify unexpected files and contact records are rejected."});
+    parser.addOption({"p5-session-lock-probe-test", "CI-only child process verifies a held fictional session lock."});
     parser.addOption({"p5-booking-cancel-smoke", "Verify Cancel, Escape and declined booking abandonment scrub drafts without saving."});
     parser.addOption({"p5-stale-quote-smoke", "Test stale price and occupied vehicle rejection in real QML, with explicit quote refresh."});
     parser.addOption({"p5-fleet-to-booking-smoke", "Use actual Fleet inspector keyboard action to open and save an authoritative rental."});
@@ -347,9 +349,10 @@ int main(int argc, char *argv[]) {
     const bool uiCleanupTest=parser.isSet("p5-ui-session-clean-test");
     const bool cleanupTest=parser.isSet("p5-session-clean-test") || uiCleanupTest;
     const bool tamperTest=parser.isSet("p5-session-tamper-test");
+    const bool lockProbeTest=parser.isSet("p5-session-lock-probe-test");
     const bool failureTest=parser.isSet("p5-ui-write-failure-test");
     const bool sessionTest=seedTest || reopenTest || uiSeedTest ||
-                           uiReopenTest || cleanupTest || tamperTest;
+                           uiReopenTest || cleanupTest || tamperTest || lockProbeTest;
     const bool persistentDemo=parser.isSet("persistent-fictional-demo") || sessionTest;
     if(sessionTest) {
         // The UI and non-UI fixture sequences have separate test roots.
@@ -361,7 +364,7 @@ int main(int argc, char *argv[]) {
     }
     if(sessionTest &&
        int(seedTest)+int(reopenTest)+int(uiSeedTest)+int(uiReopenTest)+
-       int(cleanupTest)+int(tamperTest)!=1) {
+       int(cleanupTest)+int(tamperTest)+int(lockProbeTest)!=1) {
         qCritical()<<"Only one P5 synthetic CI phase is allowed"; return 308;
     }
     // Never run a legacy test which could intentionally mutate fixtures
@@ -415,8 +418,17 @@ int main(int argc, char *argv[]) {
             qInfo()<<"P5 identified test session cleaned PASS"; return 0;
         }
         if(!P5SyntheticSession::open(beforeVehicles,beforeRentals,marker,&reason)) {
+            if(lockProbeTest && reason==
+               QStringLiteral("Fictional session already open in another process")) {
+                qInfo()<<"P5 simultaneous fictional process correctly refused PASS";
+                return 0;
+            }
             qCritical()<<"Synthetic-only session refused"<<reason;
             return 311;
+        }
+        if(lockProbeTest) {
+            qCritical()<<"P5 second process incorrectly acquired the fictional ledger";
+            return 380;
         }
         dataDirectory=P5SyntheticSession::location();
     } else if(!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
@@ -457,6 +469,30 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         if(tamperTest) {
+            // A second real executable must not load and write from the same
+            // in-memory rental snapshot while this first instance is running.
+            // The lock must remain held beyond initial fixture verification.
+            QProcess contender;
+            contender.setProgram(QCoreApplication::applicationFilePath());
+            contender.setArguments({QStringLiteral("--p5-session-lock-probe-test")});
+            contender.start();
+            if(!contender.waitForStarted(5000)) {
+                qCritical()<<"P5 second process could not start";
+                return 381;
+            }
+            if(!contender.waitForFinished(10000)) {
+                contender.kill();
+                contender.waitForFinished(5000);
+                qCritical()<<"P5 contention probe timed out";
+                return 382;
+            }
+            if(contender.exitStatus()!=QProcess::NormalExit ||
+               contender.exitCode()!=0) {
+                qCritical()<<"P5 concurrent process did not refuse held session"
+                           <<contender.readAllStandardError()
+                           <<contender.readAllStandardOutput();
+                return 383;
+            }
             const QString extra=QDir(dataDirectory).filePath("UNTRUSTED_RECORD.txt");
             QFile unknown(extra);
             if(!unknown.open(QIODevice::WriteOnly) ||
