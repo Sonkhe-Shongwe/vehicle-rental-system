@@ -167,7 +167,9 @@ ApplicationWindow {
         // The topmost modal owns Escape; selection clearing happens afterward.
         enabled: window.canDismissSelection &&
                  !bookingDialog.visible &&
-                 !returnConfirmation.visible && !archiveConfirmation.visible
+                 !returnConfirmation.visible && !archiveConfirmation.visible &&
+                 !archivedDeleteDialog.visible &&
+                 !fleetAddDialog.visible && !fleetRemoveDialog.visible
         onActivated: {
             if (window.workspace === 1) fleet.clearSelection()
             else if (window.workspace === 2) rentalsModel.clearSelection()
