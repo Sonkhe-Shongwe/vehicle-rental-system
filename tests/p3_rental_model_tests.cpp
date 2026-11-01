@@ -305,6 +305,52 @@ int main(int argc, char **argv) {
               "final refresh cannot write any operational data");
     }
 
+    // P6-J: the Overview's deliberately small read-only contract history
+    // comes from the complete C++ snapshot, not the selected Rentals filter.
+    {
+        QTemporaryDir recentDir;
+        check(recentDir.isValid(), "isolated bounded recent ledger");
+        RentalSystem recentSystem(recentDir.path());
+        RentalReadService recentRead(recentSystem);
+        RentalListModel recent(recentRead);
+        check(recent.recentActivities().isEmpty(),
+              "empty recent panel derives no synthetic or placeholder rows");
+        for(int number=1;number<=6;++number) {
+            const QString vehicle=QString("C%1").arg(number,3,10,QLatin1Char('0'));
+            const QString rental=QString("R%1").arg(number,3,10,QLatin1Char('0'));
+            check(recentSystem.addVehicle(new Car(vehicle,"Fictional","Car",450,4)),
+                  "create isolated vehicle for recent sorting");
+            book(recentSystem,rental,vehicle,number,450);
+        }
+        const QByteArray vehicleBytes=readBytes(recentDir.filePath("vehicles.txt"));
+        const QByteArray ledgerBytes=readBytes(recentDir.filePath("rentals.txt"));
+        recent.refresh();
+        const QVariantList latest=recent.recentActivities();
+        check(latest.size()==4 &&
+              latest.at(0).toMap().value("rentalId").toString()=="R006" &&
+              latest.at(3).toMap().value("rentalId").toString()=="R003" &&
+              latest.at(0).toMap().value("startDate").toString()==today.toString(Qt::ISODate) &&
+              latest.at(0).toMap().value("status").toString()=="Active" &&
+              latest.at(0).toMap().keys()==QStringList({"rentalId","startDate","status","total","vehicleId"}),
+              "bounded four recent contracts with stable same-day order and no contact keys");
+        recent.setStatusFilter("Archived");
+        check(recent.count()==0 && recent.recentActivities()==latest &&
+              recent.activeCount()==6 &&
+              readBytes(recentDir.filePath("vehicles.txt"))==vehicleBytes &&
+              readBytes(recentDir.filePath("rentals.txt"))==ledgerBytes,
+              "read-only recent panel ignores status filter and never writes");
+        check(recentSystem.completeRental("R006",today),
+              "return isolated recent contract");
+        const QVariantList stale=recent.recentActivities();
+        check(stale.at(0).toMap().value("status").toString()=="Active",
+              "recent panel does not optimistically change before domain refresh");
+        recent.refresh();
+        check(recent.recentActivities().at(0).toMap().value("status").toString()=="Returned" &&
+              recent.recentActivities().size()==4 &&
+              recent.activeCount()==5,
+              "recent rows rehydrate lifecycle state after authoritative commit");
+    }
+
     {
         RentalSystem reopened(disposable.path());
         RentalReadService service(reopened);

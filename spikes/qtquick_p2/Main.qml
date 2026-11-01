@@ -289,7 +289,19 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 currentIndex: window.workspace
 
-                ColumnLayout {
+                Flickable {
+                    id: overviewScroll
+                    objectName: "overviewScroll"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    contentWidth: width
+                    contentHeight: overviewContent.implicitHeight
+                    boundsBehavior: Flickable.StopAtBounds
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    ColumnLayout {
+                    id: overviewContent
+                    width: overviewScroll.width
                     spacing: 16
                     Label {
                         text: "Operations at a glance"
@@ -306,6 +318,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewAvailableCard"
                             metricLabel: "Available vehicles"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(fleet.availableCount)
                             note: "Of " + fleet.totalCount + " in Fleet"
                             accent: teal
@@ -313,6 +326,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewActiveCard"
                             metricLabel: "Active rentals"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.activeCount)
                             note: "Confirmed rental contracts"
                             accent: navy
@@ -320,6 +334,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewOverdueCard"
                             metricLabel: "Overdue rentals"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.overdueCount)
                             note: "From current C++ due-state"
                             accent: rentalsModel.overdueCount > 0 ? "#B45309" : teal
@@ -327,6 +342,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewValueCard"
                             metricLabel: "Active booked value"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
                             note: "Contract totals, not payments"
                             accent: navy
@@ -425,7 +441,83 @@ ApplicationWindow {
                         text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }
-                    Item { Layout.fillHeight: true }
+                    Rectangle {
+                        objectName: "overviewRecentPanel"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: recentContent.implicitHeight + 28
+                        radius: 12
+                        color: "white"
+                        border.color: designTokens.border
+                        ColumnLayout {
+                            id: recentContent
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 7
+                            Label {
+                                text: "Recent rental contracts"
+                                font.pixelSize: 17
+                                font.bold: true
+                                color: navy
+                            }
+                            Label {
+                                text: "Latest contract start dates. Not an activity log or payments."
+                                font.pixelSize: 11
+                                color: ink
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                            }
+                            Label {
+                                objectName: "overviewRecentEmpty"
+                                visible: rentalsModel.recentActivities.length === 0
+                                text: "No rental contracts yet."
+                                color: ink
+                                Accessible.name: text
+                            }
+                            Repeater {
+                                model: rentalsModel.recentActivities
+                                delegate: Button {
+                                    required property var modelData
+                                    required property int index
+                                    objectName: "overviewRecentRow" + index
+                                    activeFocusOnTab: true
+                                    Layout.fillWidth: true
+                                    Layout.minimumHeight: 36
+                                    text: modelData.rentalId + "  ·  " + modelData.vehicleId +
+                                          "  ·  " + modelData.startDate + "  ·  " + modelData.status +
+                                          "  ·  R " + Number(modelData.total).toFixed(2)
+                                    Accessible.name: "Review rental " + modelData.rentalId +
+                                                     ", vehicle " + modelData.vehicleId +
+                                                     ", started " + modelData.startDate +
+                                                     ", " + modelData.status +
+                                                     ", booked value R " +
+                                                     Number(modelData.total).toFixed(2)
+                                    Accessible.description: "View contract in Rentals without changing it"
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) {
+                                            const top = mapToItem(overviewContent, 0, 0).y
+                                            overviewScroll.contentY = Math.max(0,
+                                                Math.min(top - 18,
+                                                    overviewScroll.contentHeight - overviewScroll.height))
+                                        }
+                                    }
+                                    onClicked: {
+                                        if (!rentalsModel.locateById(modelData.rentalId))
+                                            return
+                                        window.workspace = 2
+                                        Qt.callLater(function() {
+                                            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                                                rentalList.currentIndex = rentalsModel.selectedRow
+                                                rentalList.positionViewAtIndex(rentalsModel.selectedRow,
+                                                                               ListView.Contain)
+                                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
                 }
 
                 RowLayout {

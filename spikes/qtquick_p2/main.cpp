@@ -339,6 +339,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-stale-quote-smoke", "Test stale price and occupied vehicle rejection in real QML, with explicit quote refresh."});
     parser.addOption({"p5-fleet-to-booking-smoke", "Use actual Fleet inspector keyboard action to open and save an authoritative rental."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
+    parser.addOption({"p6-recent-activity-smoke", "Test C++-backed bounded recent contracts, scrolling and read-only routing in real QML."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
     parser.addOption({"p6-archived-delete-smoke", "Test exact-confirmation permanent deletion of archived fictional rentals."});
@@ -2982,6 +2983,95 @@ int main(int argc, char *argv[]) {
                 app.exit(346);return;
             }
             qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p6-recent-activity-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 550;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1150,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *match=self(self,child,name))return match;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *scroll=find(find,root,"overviewScroll");
+            auto *panel=find(find,root,"overviewRecentPanel");
+            auto *first=find(find,root,"overviewRecentRow0");
+            auto *second=find(find,root,"overviewRecentRow1");
+            auto *disclosure=find(find,root,"overviewDemoDisclosure");
+            const auto rows=rentalModel.recentActivities();
+            if(!scroll||!panel||!first||!second||!disclosure||
+               rows.size()!=2 ||
+               rows.at(0).toMap().value("rentalId").toString()!="R001" ||
+               rows.at(1).toMap().value("rentalId").toString()!="R002" ||
+               rentalModel.activeCount()!=1||rentalModel.historyCount()!=1 ||
+               first->property("text").toString().contains("Demo Customer") ||
+               first->property("text").toString().contains("0000000000")) {
+                qCritical()<<"P6-J recent contracts missing, unsorted or unsafe";
+                app.exit(551);return;
+            }
+            const QPointF disclosurePos=disclosure->mapToScene(QPointF(0,0));
+            if(disclosurePos.y()<0 ||
+               disclosurePos.y()+disclosure->height()>window->height()-2) {
+                qCritical()<<"P6-J Overview existing payment disclosure clipped";
+                app.exit(552);return;
+            }
+            rentalModel.setStatusFilter("Archived");
+            if(rentalModel.count()!=0 || rentalModel.recentActivities().size()!=2 ||
+               !first->property("text").toString().contains("R001") ||
+               rentalModel.activeCount()!=1) {
+                qCritical()<<"P6-J recent contracts incorrectly tied to filter";
+                app.exit(553);return;
+            }
+            QByteArray nowVehicles,nowRentals;
+            if(!readFile(disposable.filePath("vehicles.txt"),&nowVehicles) ||
+               !readFile(disposable.filePath("rentals.txt"),&nowRentals) ||
+               nowVehicles!=beforeVehicles || nowRentals!=beforeRentals) {
+                qCritical()<<"P6-J read-only panel changed disposable or protected inputs";
+                app.exit(554);return;
+            }
+            // Scroll the actual viewport, then keyboard-activate a record
+            // that was hidden by the current Rentals status filter.
+            scroll->setProperty("contentY",scroll->property("contentHeight").toDouble());
+            QCoreApplication::processEvents();
+            QTest::qWait(90);
+            const QPointF pos=second->mapToScene(QPointF(0,0));
+            if(pos.y()<0 || pos.y()+second->height()>window->height()-2 ||
+               pos.x()<0 || pos.x()+second->width()>window->width()) {
+                qCritical()<<"P6-J recent row not reachable after native scroll"<<pos;
+                app.exit(555);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage shot=window->grabWindow();
+            if(shot.isNull()||shot.size()!=QSize(compact?1280:1500,compact?720:860)||
+               !shot.save("p6-qt-recent-contracts-"+size+".png","PNG")) {
+                qCritical()<<"P6-J real Overview capture failed";
+                app.exit(556);return;
+            }
+            second->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            QTest::qWait(90);
+            QByteArray afterVehicles,afterRentals;
+            if(window->property("workspace").toInt()!=2 ||
+               rentalModel.selectedRentalId()!="R002" ||
+               rentalModel.statusFilter()!="All" ||
+               !readFile(disposable.filePath("vehicles.txt"),&afterVehicles)||
+               !readFile(disposable.filePath("rentals.txt"),&afterRentals)||
+               afterVehicles!=nowVehicles || afterRentals!=nowRentals ||
+               rentalModel.activeCount()!=1||rentalModel.historyCount()!=1) {
+                qCritical()<<"P6-J readonly recent contract navigation broke state";
+                app.exit(557);return;
+            }
+            qInfo()<<"P6-J native read-only bounded recent rental routes PASS"<<size;
             app.exit(0);
         });
     }

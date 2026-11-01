@@ -1,6 +1,8 @@
 #include "src/application/rental_list_model.h"
 
 #include <QVariant>
+#include <QVariantMap>
+#include <algorithm>
 #include <utility>
 
 namespace {
@@ -75,6 +77,30 @@ QString RentalListModel::oldestOverdueRentalId() const {
             oldest=&item;
     }
     return oldest ? oldest->rentalId : QString{};
+}
+
+QVariantList RentalListModel::recentActivities() const {
+    // This is latest *contract start date*, not an event/audit log. Do not
+    // treat return/archive state changes as a new chronological event.
+    QList<RentalRecordSummary> ordered=m_allItems;
+    std::sort(ordered.begin(),ordered.end(),
+        [](const RentalRecordSummary &a,const RentalRecordSummary &b) {
+            if(a.startDate!=b.startDate) return a.startDate>b.startDate;
+            return a.rentalId>b.rentalId; // Stable deterministic same-day tie.
+        });
+    QVariantList rows;
+    const int count=std::min(4,static_cast<int>(ordered.size()));
+    for(int i=0;i<count;++i) {
+        const auto &record=ordered.at(i);
+        QVariantMap row;
+        row.insert(QStringLiteral("rentalId"),record.rentalId);
+        row.insert(QStringLiteral("vehicleId"),record.vehicleId);
+        row.insert(QStringLiteral("startDate"),record.startDate.toString(Qt::ISODate));
+        row.insert(QStringLiteral("status"),statusText(record.status));
+        row.insert(QStringLiteral("total"),record.legacyTotal);
+        rows.append(row);
+    }
+    return rows;
 }
 
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
