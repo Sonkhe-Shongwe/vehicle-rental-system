@@ -18,6 +18,9 @@ public:
                           QObject *parent=nullptr);
     QString lastMessage() const { return m_message; }
     bool canRemove() const { return m_disposable; }
+    // May remove only when the domain has no surviving rental references.
+    Q_INVOKABLE bool canRemoveVehicle(const QString &id) const;
+    Q_INVOKABLE bool hasRentalHistory(const QString &id) const;
     Q_INVOKABLE bool removeVehicle(const QString &id,const QString &confirmation);
     Q_INVOKABLE void clearMessage();
 signals:
