@@ -451,6 +451,23 @@ ApplicationWindow {
                                     Accessible.checked: !window.gallery
                                     Accessible.description: "Choose the vehicle table presentation"
                                 }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: fleetAddButton
+                                    objectName: "fleetAddButton"
+                                    text: "Add vehicle"
+                                    enabled: fleetAdmin.canAdd
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Add a fictional car or motorcycle"
+                                    Accessible.description: fleetAdmin.canAdd
+                                        ? "Opens the temporary demo fleet form"
+                                        : "Cannot change the fixed persistent fictional fleet"
+                                    onClicked: fleetAddDialog.open()
+                                }
+                            }
+                            DomainMessage {
+                                objectName: "fleetAddMessage"
+                                text: fleetAdmin.lastMessage
                             }
                         }
 
