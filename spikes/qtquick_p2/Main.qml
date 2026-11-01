@@ -256,12 +256,18 @@ ApplicationWindow {
                                     onTextEdited: fleet.query = text
                                 }
                                 ComboBox {
+                                    id: fleetStatusCombo
+                                    objectName: "fleetStatusCombo"
+                                    activeFocusOnTab: true
                                     Layout.preferredWidth: 138
                                     model: ["All", "Available", "Rented"]
                                     Accessible.name: "Filter fleet status"
                                     onActivated: fleet.status = currentText
                                 }
                                 ComboBox {
+                                    id: fleetSortCombo
+                                    objectName: "fleetSortCombo"
+                                    activeFocusOnTab: true
                                     Layout.preferredWidth: 116
                                     model: ["Name", "Rate"]
                                     Accessible.name: "Sort fleet"
@@ -542,6 +548,10 @@ ApplicationWindow {
                         width: Math.min(620, window.width - 80)
                         standardButtons: Dialog.NoButton
                         closePolicy: Popup.CloseOnEscape
+                        onOpened: Qt.callLater(function() {
+                            if (bookingDialog.visible)
+                                bookingVehicleId.forceActiveFocus(Qt.TabFocusReason)
+                        })
                         onClosed: {
                             bookingActions.discardPreview()
                             Qt.callLater(function() {

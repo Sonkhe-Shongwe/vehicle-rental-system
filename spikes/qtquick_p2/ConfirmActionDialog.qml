@@ -19,6 +19,12 @@ Dialog {
     focus: true
     closePolicy: Popup.CloseOnEscape
     standardButtons: Dialog.NoButton
+    // The modal starts on an explicit action. Tab and Shift+Tab stay within
+    // the two buttons, skipping disabled confirmation safely.
+    onOpened: Qt.callLater(function() {
+        if (dialog.visible && cancelButton.visible)
+            cancelButton.forceActiveFocus(Qt.TabFocusReason)
+    })
     onClosed: Qt.callLater(function() {
         if (dialog.restoreFocusTo && dialog.restoreFocusTo.visible &&
             dialog.restoreFocusTo.enabled)
@@ -37,19 +43,39 @@ Dialog {
         }
         RowLayout {
             Button {
+                id: cancelButton
                 objectName: dialog.cancelName
                 text: "Cancel"
                 activeFocusOnTab: true
                 Accessible.name: "Cancel " + dialog.title
+                Keys.onTabPressed: (event) => {
+                    if (acceptButton.enabled)
+                        acceptButton.forceActiveFocus(Qt.TabFocusReason)
+                    event.accepted = true
+                }
+                Keys.onBacktabPressed: (event) => {
+                    if (acceptButton.enabled)
+                        acceptButton.forceActiveFocus(Qt.BacktabFocusReason)
+                    event.accepted = true
+                }
                 onClicked: dialog.close()
             }
             Item { Layout.fillWidth: true }
             Button {
+                id: acceptButton
                 objectName: dialog.acceptName
                 text: dialog.acceptText
                 activeFocusOnTab: true
                 enabled: dialog.canAccept
                 Accessible.name: dialog.acceptText
+                Keys.onTabPressed: (event) => {
+                    cancelButton.forceActiveFocus(Qt.TabFocusReason)
+                    event.accepted = true
+                }
+                Keys.onBacktabPressed: (event) => {
+                    cancelButton.forceActiveFocus(Qt.BacktabFocusReason)
+                    event.accepted = true
+                }
                 onClicked: {
                     if (dialog.canAccept) {
                         dialog.close()

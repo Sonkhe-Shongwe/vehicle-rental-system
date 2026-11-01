@@ -301,6 +301,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"rentals-archive-smoke", "Drive real QML archival confirmation on a returned fictional rental."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
+    parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
     parser.process(app);
 
     // No source-adjacent storage or external/customer-data CLI argument.
@@ -1554,6 +1555,155 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 shared field, domain message, Return/Archive modal PASS"
                    <<size<<"keyboard Cancel/Escape and no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p4-tab-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if (!window) return 230;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1250,&app,[&,window,compact]{
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(QQuickItem *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *search=find(find,root,"fleetSearchField");
+            auto *status=find(find,root,"fleetStatusCombo");
+            auto *sort=find(find,root,"fleetSortCombo");
+            if(!search||!status||!sort) {
+                qCritical()<<"P4 Fleet tab controls not found";
+                app.exit(231);return;
+            }
+            search->forceActiveFocus(Qt.TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(!status->hasActiveFocus()) {
+                qCritical()<<"P4 Tab search to status failed";
+                app.exit(232);return;
+            }
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(!sort->hasActiveFocus()) {
+                qCritical()<<"P4 Tab status to sort failed";
+                app.exit(233);return;
+            }
+            QTest::keyClick(window,Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if(!status->hasActiveFocus()) {
+                qCritical()<<"P4 Shift+Tab sort to status failed";
+                app.exit(234);return;
+            }
+            QTest::keyClick(window,Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if(!search->hasActiveFocus()) {
+                qCritical()<<"P4 Shift+Tab status to search failed";
+                app.exit(235);return;
+            }
+            QTest::keyClick(window,Qt::Key_Left);
+            if(!search->hasActiveFocus()||!fleet.selectedId().isEmpty()) {
+                qCritical()<<"P4 TextField Left intercepted";
+                app.exit(236);return;
+            }
+            // Switch to actual rentals UI using a keyboard-activated sidebar.
+            auto *rentalNav=find(find,root,"workspaceNavRentals");
+            if(!rentalNav){app.exit(237);return;}
+            rentalNav->forceActiveFocus(Qt.TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(70);
+            if(window->property("workspace").toInt()!=2 ||
+               !rentalModel.selectById("R001")) {
+                qCritical()<<"P4 keyboard workspace change or selected ID";
+                app.exit(238);return;
+            }
+            auto *returnButton=find(find,root,"rentalReturnButton");
+            if(!returnButton || !returnButton->isEnabled()) {
+                app.exit(239);return;
+            }
+            returnButton->forceActiveFocus(Qt.TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(120);
+            auto *cancel=find(find,root,"rentalReturnCancel");
+            auto *confirm=find(find,root,"rentalReturnConfirm");
+            if(!cancel||!confirm||!cancel->hasActiveFocus() ||
+               !confirm->isEnabled()) {
+                qCritical()<<"P4 modal initial Cancel focus failed";
+                app.exit(240);return;
+            }
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(!confirm->hasActiveFocus()) {
+                qCritical()<<"P4 modal Tab did not remain within dialog";
+                app.exit(241);return;
+            }
+            QTest::keyClick(window,Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if(!cancel->hasActiveFocus()) {
+                qCritical()<<"P4 modal Shift+Tab failed";
+                app.exit(242);return;
+            }
+            QTest::keyClick(window,Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if(!confirm->hasActiveFocus()) {
+                qCritical()<<"P4 modal reverse boundary escaped";
+                app.exit(243);return;
+            }
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(!cancel->hasActiveFocus()) {
+                qCritical()<<"P4 modal forward boundary escaped";
+                app.exit(244);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(120);
+            if(!returnButton->hasActiveFocus() ||
+               rentalModel.selectedRentalId()!="R001" ||
+               system.findRentalById("R001")->getIsReturned()) {
+                qCritical()<<"P4 modal Escape changed business state or lost invoker";
+                app.exit(245);return;
+            }
+            // Booking must open on first actual entry field, not background.
+            auto *booking=find(find,root,"rentalNewBookingButton");
+            if(!booking){app.exit(246);return;}
+            booking->forceActiveFocus(Qt.TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(110);
+            auto *vehicle=find(find,root,"bookingVehicleId");
+            if(!vehicle||!vehicle->hasActiveFocus()) {
+                qCritical()<<"P4 Booking initial vehicle field focus failed";
+                app.exit(247);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(120);
+            if(!booking->hasActiveFocus()||bookingActions.canConfirm()){
+                qCritical()<<"P4 booking Escape did not cancel preview/restore";
+                app.exit(248);return;
+            }
+            QByteArray sourceFleet,sourceRental,tempRental;
+            if(!readFile(vehicles,&sourceFleet) ||
+               !readFile(rentals,&sourceRental) ||
+               !readFile(disposable.filePath("rentals.txt"),&tempRental) ||
+               sourceFleet!=beforeVehicles || sourceRental!=beforeRentals ||
+               tempRental!=beforeRentals) {
+                qCritical()<<"P4 Tab/ShiftTab flow modified fixture data";
+                app.exit(249);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage screenshot=window->grabWindow();
+            if(screenshot.isNull()||
+               screenshot.size()!=QSize(compact?1280:1500,compact?720:860)||
+               !screenshot.save("p4-qt-focus-route-"+size+".png","PNG")) {
+                qCritical()<<"P4 focus route screenshot invalid";
+                app.exit(250);return;
+            }
+            qInfo()<<"P4 native focus route PASS"<<size
+                   <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
             app.exit(0);
         });
     }
