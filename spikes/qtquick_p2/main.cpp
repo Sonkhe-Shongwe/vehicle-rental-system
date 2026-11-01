@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -341,6 +342,10 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
     parser.addOption({"p6-archived-delete-smoke", "Test exact-confirmation permanent deletion of archived fictional rentals."});
+    parser.addOption({"p6-restart-flow", "CI-only separate-process P6 fictional lifecycle orchestrator."});
+    parser.addOption({"p6-restart-child-seed", "CI-only first native P6 process, synthetic test working directory."});
+    parser.addOption({"p6-restart-child-update", "CI-only second native P6 process, synthetic test working directory."});
+    parser.addOption({"p6-restart-child-final", "CI-only third native P6 process, synthetic test working directory."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
@@ -348,6 +353,17 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
     parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
     parser.process(app);
+    const bool p6Parent=parser.isSet("p6-restart-flow");
+    const bool p6Seed=parser.isSet("p6-restart-child-seed");
+    const bool p6Update=parser.isSet("p6-restart-child-update");
+    const bool p6Final=parser.isSet("p6-restart-child-final");
+    const bool p6Child=p6Seed||p6Update||p6Final;
+    if(int(p6Parent)+int(p6Seed)+int(p6Update)+int(p6Final)>1 ||
+       ((p6Parent||p6Child) &&
+        parser.optionNames().size()!=(parser.isSet("compact")?2:1))) {
+        qCritical()<<"P6 test phases cannot combine with other options";
+        return 436;
+    }
     const bool seedTest=parser.isSet("p5-session-seed-test");
     const bool reopenTest=parser.isSet("p5-session-reopen-test");
     const bool uiSeedTest=parser.isSet("p5-ui-session-seed-test");
@@ -412,6 +428,103 @@ int main(int argc, char *argv[]) {
         qCritical() << "P2 fixture mismatch: refusing non-demo files";
         return 3;
     }
+    // A disposable parent owns the entire cross-process fixture lifetime;
+    // child processes may only use that exact synthetic test working folder.
+    const QByteArray p6Marker=QByteArray("RENTAL_STUDIO_P6_PROCESS_TEST_ONLY_V1\\n")+
+                              vehicleHash+"\\n"+rentalHash+"\\n";
+    if(p6Parent) {
+        QTemporaryDir run(QDir(QDir::tempPath()).filePath(
+            QStringLiteral("rental-studio-p6-restart-XXXXXX")));
+        if(!run.isValid() ||
+           !QFile::copy(vehicles,run.filePath("vehicles.txt")) ||
+           !QFile::copy(rentals,run.filePath("rentals.txt"))) {
+            qCritical()<<"P6 restart parent could not isolate verified fictional sources";
+            return 437;
+        }
+        QFile token(run.filePath("p6.marker"));
+        if(!token.open(QIODevice::WriteOnly) ||
+           token.write(p6Marker)!=p6Marker.size())return 438;
+        token.close();
+        const QStringList stages={
+            QStringLiteral("--p6-restart-child-seed"),
+            QStringLiteral("--p6-restart-child-update"),
+            QStringLiteral("--p6-restart-child-final")};
+        for(const QString &stage: stages) {
+            QProcess child;
+            child.setProgram(QCoreApplication::applicationFilePath());
+            child.setWorkingDirectory(run.path());
+            QStringList args={stage};
+            if(parser.isSet("compact"))args<<"--compact";
+            child.setArguments(args);
+            child.start();
+            if(!child.waitForStarted(10000) ||
+               !child.waitForFinished(45000) ||
+               child.exitStatus()!=QProcess::NormalExit ||
+               child.exitCode()!=0) {
+                if(child.state()!=QProcess::NotRunning) {
+                    child.kill(); child.waitForFinished(3000);
+                }
+                qCritical()<<"P6 separate native process failed"<<stage
+                           <<child.errorString()<<child.readAllStandardError()
+                           <<child.readAllStandardOutput();
+                return 439;
+            }
+            qInfo()<<"P6 separate process passed"<<stage
+                   <<child.readAllStandardOutput()<<child.readAllStandardError();
+        }
+        QByteArray unchangedV,unchangedR;
+        if(!readFile(vehicles,&unchangedV)||unchangedV!=beforeVehicles ||
+           !readFile(rentals,&unchangedR)||unchangedR!=beforeRentals) {
+            qCritical()<<"P6 original SHA-protected fixtures changed";
+            return 440;
+        }
+        qInfo()<<"P6 three real native executable launches, restart parity PASS"
+               <<(parser.isSet("compact")?"1280x720":"1500x860");
+        return 0; // QTemporaryDir cleans the unique temporary test fixture.
+    }
+    if(p6Child) {
+        const QDir root(QDir::currentPath());
+        const QFileInfo folder(root.absolutePath());
+        const QStringList names=root.entryList(QDir::AllEntries|QDir::Hidden|
+                                          QDir::NoDotAndDotDot,QDir::Name);
+        QFileInfo markerFile(root.filePath("p6.marker"));
+        QFileInfo vehiclesFile(root.filePath("vehicles.txt"));
+        QFileInfo rentalsFile(root.filePath("rentals.txt"));
+        QByteArray actualMarker,childV,childR;
+        if(!folder.fileName().startsWith("rental-studio-p6-restart-") ||
+           !folder.isDir() || folder.isSymLink() ||
+           names!=QStringList({"p6.marker","rentals.txt","vehicles.txt"}) ||
+           !markerFile.isFile() || markerFile.isSymLink() ||
+           !vehiclesFile.isFile() || vehiclesFile.isSymLink() ||
+           !rentalsFile.isFile() || rentalsFile.isSymLink() ||
+           !readFile(markerFile.filePath(),&actualMarker) ||
+           actualMarker!=p6Marker ||
+           !readFile(vehiclesFile.filePath(),&childV) ||
+           !readFile(rentalsFile.filePath(),&childR) ||
+           childV.size()>8192 || childR.size()>8192) {
+            qCritical()<<"P6 test child refused foreign/unsafe working directory";
+            return 441;
+        }
+        // Only this one exact fictional scenario is permitted. Never use a
+        // command-line data path or the P5 fixed persistent session.
+        if(p6Seed && (childV!=beforeVehicles || childR!=beforeRentals))
+            return 442;
+        if(!p6Seed) {
+            const QString vs=QString::fromUtf8(childV);
+            const QString rs=QString::fromUtf8(childR);
+            if(!vs.contains("Car|C004|Demo Motors|Orion|420.00|0|4") ||
+               !vs.contains("Motorcycle|M003|Demo Moto|Nova|300.00|0|450") ||
+               !rs.contains("Rental|R001|Demo Customer A|0000000000|C002|") ||
+               (p6Update && (!vs.contains("Car|C003|Hyundai|i20|400.00|0|4") ||
+                             !rs.contains("Rental|R002|Demo Customer B|0000000000|C001|"))) ||
+               (p6Final && (vs.contains("Car|C001|") ||
+                             vs.contains("Car|C003|") ||
+                             rs.contains("Rental|R002|")))) {
+                qCritical()<<"P6 test child refused unexpected synthetic lifecycle state";
+                return 443;
+            }
+        }
+    }
     QString dataDirectory=disposable.path();
     const QByteArray marker=QByteArray("RENTAL_STUDIO_SYNTHETIC_ONLY_V1\n") +
                             vehicleHash + "\n" + rentalHash + "\n";
@@ -437,10 +550,12 @@ int main(int argc, char *argv[]) {
             return 380;
         }
         dataDirectory=P5SyntheticSession::location();
-    } else if(!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
-              !QFile::copy(rentals, disposable.filePath("rentals.txt"))) {
+    } else if(!p6Child &&
+              (!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
+               !QFile::copy(rentals, disposable.filePath("rentals.txt")))) {
         qCritical()<<"Cannot create disposable demo copies"; return 3;
     }
+    if(p6Child)dataDirectory=QDir::currentPath();
     RentalSystem system(
         dataDirectory,
         failureTest ? std::static_pointer_cast<RentalStorage>(
