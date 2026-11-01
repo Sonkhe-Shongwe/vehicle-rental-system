@@ -2172,6 +2172,15 @@ void MainWindow::removeVehicle()
         return;
     }
 
+    // Match the C++ domain invariant in the legacy Widgets interface too:
+    // returned and archived records must never reference a deleted vehicle.
+    if (rentalSystem.hasRentalHistoryForVehicle(id)) {
+        showWarningMessage("Remove Error",
+                           "Rental history prevents vehicle removal.",
+                           "A returned or archived rental still references this vehicle. Preserve the vehicle while that history exists.");
+        return;
+    }
+
     const QString confirmation =
         QString("Permanently remove this vehicle from the fleet?\n\n"
                 "ID: %1\n"
@@ -2191,7 +2200,7 @@ void MainWindow::removeVehicle()
     if (!rentalSystem.removeVehicle(id)) {
         showWarningMessage("Remove Error",
                            "The vehicle could not be removed.",
-                           "The vehicle may have an active rental.");
+                           "The vehicle may be rented, referenced by historical contracts, or storage may have rejected the change.");
         return;
     }
 
