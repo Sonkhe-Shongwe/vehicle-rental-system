@@ -136,6 +136,16 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p6_archived_delete_wide
         rental_studio_p6_archived_delete_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 75)
+    # P6-E: each CTest itself launches three genuinely independent native
+    # Qt GUI processes within a unique parent-owned disposable synthetic root.
+    # Original fixture hashes and strict child allowlisting protect all inputs.
+    add_test(NAME rental_studio_p6_cross_process_wide
+        COMMAND rental_studio_qtquick_spike --p6-restart-flow)
+    add_test(NAME rental_studio_p6_cross_process_compact
+        COMMAND rental_studio_qtquick_spike --p6-restart-flow --compact)
+    set_tests_properties(rental_studio_p6_cross_process_wide
+        rental_studio_p6_cross_process_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 150)
     # P3-F: genuine QQuickWindow and delegate-backed Rentals state, selection
     # and refresh after a committed C++ fictional-domain operation.
     add_test(NAME rental_studio_p3_rentals_qml_wide
