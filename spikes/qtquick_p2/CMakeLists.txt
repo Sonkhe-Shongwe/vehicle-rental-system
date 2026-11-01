@@ -5,6 +5,7 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     motion_policy.h motion_policy.cpp
     fleet_add_controller.h fleet_add_controller.cpp
     fleet_remove_controller.h fleet_remove_controller.cpp
+    p6_archived_delete_controller.h p6_archived_delete_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
@@ -43,7 +44,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml
+    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
