@@ -37,3 +37,7 @@ Next meaningful P6 work, if the owner asks to continue development: **guarded pe
 ## Handoff order
 
 Start with this file, `docs/PROJECT_STATE_CANONICAL.md`, `docs/AI_HANDOFF_CURRENT.md`, `docs/ROADMAP.md`, `docs/TESTING.md`, `docs/CONTINUITY.md` and the **evergreen** [continuation prompt](AI_CONTINUATION_PROMPT.md). Inspect the relevant dated acceptance report, live source code, tracking issue, PR and actual GitHub Actions logs before editing. Record source commit, verification run, limits and formal owner-acceptance distinction. Update the current checkpoint and related living documents after genuine changes without piling status paragraphs into the evergreen prompt.
+
+## Documentation audit and visibility
+
+The evergreen continuation prompt was rebuilt to remove outdated P2/P3 assumptions. The handoff, canonical state, roadmap, continuity, testing, milestone matrix, root/source READMEs and Windows checklist now link back to this checkpoint. Their older dated history is retained rather than silently rewritten. GitHub currently reports the repository visibility as **public**; do not assume access is private when planning commercial release, sharing internal details or storing data. Visibility changes require the owner's decision.
