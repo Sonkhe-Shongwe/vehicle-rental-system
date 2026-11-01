@@ -51,7 +51,8 @@ foreach ($check in $checks) {
     $log = Join-Path $dir "P4-$slug.log"
     Push-Location $dir
     try {
-        & $exe @($check.Arguments) *> $log
+        $commandArgs = [string[]]$check.Arguments
+        & $exe @commandArgs *> $log
         $exitCode = $LASTEXITCODE
     } catch {
         $exitCode = -1
