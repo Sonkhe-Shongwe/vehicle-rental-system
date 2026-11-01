@@ -80,6 +80,7 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-operational-overview-*.png
             build-p2/spikes/qtquick_p2/p5-qt-booking-receipt-*.png
             build-p2/spikes/qtquick_p2/p5-qt-persistent-*.png
+            build-p2/spikes/qtquick_p2/p5-qt-fleet-booking-receipt-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -194,5 +195,6 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-operational-overview-*.png
             build-p2/spikes/qtquick_p2/p5-qt-booking-receipt-*.png
             build-p2/spikes/qtquick_p2/p5-qt-persistent-*.png
+            build-p2/spikes/qtquick_p2/p5-qt-fleet-booking-receipt-*.png
           if-no-files-found: ignore
           retention-days: 7

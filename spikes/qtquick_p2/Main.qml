@@ -28,6 +28,25 @@ ApplicationWindow {
     // Only the C++-verified success branch populates this display string.
     property string bookingReceiptNotice: ""
 
+    // Carry the exact selected, AVAILABLE Fleet ID into the existing native
+    // guided booking modal. C++ quote/confirm still owns all business rules.
+    function bookSelectedFleetVehicle() {
+        if (window.workspace !== 1 || fleet.selectedId === "" ||
+                !fleet.selectedAvailable)
+            return
+        const selectedId = fleet.selectedId
+        window.bookingReceiptNotice = ""
+        bookingActions.discardPreview()
+        window.workspace = 2
+        Qt.callLater(function() {
+            if (window.workspace !== 2 || fleet.selectedId !== selectedId ||
+                    !fleet.selectedAvailable)
+                return
+            bookingVehicleId.text = selectedId
+            bookingDialog.open()
+        })
+    }
+
     color: canvas
 
     // Arrow keys are for moving between *vehicles* only while Fleet has
@@ -593,8 +612,27 @@ ApplicationWindow {
                             }
                             Label {
                                 objectName: "inspectorHint"
-                                text: "P2 is non-mutating. Booking actions are intentionally absent."
+                                text: fleet.selectedId === ""
+                                      ? "Select a vehicle to inspect its details and availability."
+                                      : fleet.selectedAvailable
+                                        ? "Available for a new rental. Review the authoritative C++ quote before confirming."
+                                        : "Already rented. Return the active rental before booking this vehicle again."
                                 color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 12
+                            }
+                            Button {
+                                id: bookSelectedFleetButton
+                                objectName: "fleetBookSelectedButton"
+                                Layout.fillWidth: true
+                                text: "Book selected vehicle"
+                                enabled: fleet.selectedId !== "" && fleet.selectedAvailable
+                                activeFocusOnTab: true
+                                Accessible.name: "Create rental for selected available vehicle"
+                                Accessible.description: fleet.selectedId === ""
+                                    ? "Select an available Fleet vehicle first"
+                                    : fleet.selectedAvailable
+                                      ? "Opens the guided rental quote for " + fleet.selectedId
+                                      : "This vehicle is currently rented"
+                                onClicked: window.bookSelectedFleetVehicle()
                             }
                             Item { Layout.fillHeight: true }
                         }

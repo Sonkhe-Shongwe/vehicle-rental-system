@@ -329,6 +329,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-ui-session-clean-test", "CI-only clean the identified QML session test sandbox."});
     parser.addOption({"p5-ui-write-failure-test", "CI-only real QML confirmation with an injected failed durable write."});
     parser.addOption({"p5-session-tamper-test", "CI-only verify unexpected files and contact records are rejected."});
+    parser.addOption({"p5-fleet-to-booking-smoke", "Use actual Fleet inspector keyboard action to open and save an authoritative rental."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
@@ -2124,6 +2125,114 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 native focus route PASS"<<size
                    <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
+            app.exit(0);
+        });
+    }
+    if(parser.isSet("p5-fleet-to-booking-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 338;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1150,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->isVisible() && item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *button) {
+                button->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(130);
+            };
+            auto *root=window->contentItem();
+            auto *action=find(find,root,"fleetBookSelectedButton");
+            QByteArray initialLedger,afterLedger;
+            const QString ledger=disposable.filePath("rentals.txt");
+            if(!action || action->isEnabled() ||
+               !readFile(ledger,&initialLedger) ||
+               fleet.selectedId()!="" ||
+               fleet.availableCount()!=4) {
+                qCritical()<<"P5 Fleet booking initial action not safely disabled";
+                app.exit(339);return;
+            }
+            // Existing fictional Ranger C002 is rented: never expose a
+            // working booking CTA or advance to the confirmation dialog.
+            fleet.selectById("C002");
+            QCoreApplication::processEvents();
+            if(action->isEnabled() || fleet.selectedAvailable()) {
+                qCritical()<<"P5 rented Fleet vehicle offered booking action";
+                app.exit(340);return;
+            }
+            // Choose an AVAILABLE real C++ Fleet summary, then use an
+            // actual keyboard-activated button, not an invented QML shortcut.
+            fleet.selectById("C001");
+            QCoreApplication::processEvents();
+            if(!action->isEnabled() || !fleet.selectedAvailable()) {
+                qCritical()<<"P5 available Corolla missing Fleet action";
+                app.exit(341);return;
+            }
+            press(action);
+            auto *vehicle=find(find,root,"bookingVehicleId");
+            auto *days=find(find,root,"bookingDays");
+            auto *preview=find(find,root,"bookingPreviewButton");
+            auto *confirm=find(find,root,"bookingConfirmButton");
+            auto *dialog=find(find,root,"rentalBookingDialog");
+            auto *name=find(find,root,"bookingCustomer");
+            auto *phone=find(find,root,"bookingPhone");
+            if(window->property("workspace").toInt()!=2 ||
+               !vehicle || !days || !preview || !confirm || !dialog ||
+               !name || !phone || !dialog->isVisible() ||
+               vehicle->property("text").toString()!="C001" ||
+               bookingActions.canConfirm() || confirm->isEnabled()) {
+                qCritical()<<"P5 Fleet did not prefill the real safe rental dialog";
+                app.exit(342);return;
+            }
+            days->setProperty("value",3);
+            press(preview);
+            if(!bookingActions.canConfirm() ||
+               !bookingActions.quoteSummary().contains("Total R 1350.00") ||
+               !confirm->isEnabled()) {
+                qCritical()<<"P5 Fleet-provided C001 quote bypassed authoritative C++";
+                app.exit(343);return;
+            }
+            name->setProperty("text",QStringLiteral("Fictional Fleet Quote"));
+            phone->setProperty("text",QStringLiteral("0000000000"));
+            press(confirm);
+            QTest::qWait(130);
+            auto *receipt=find(find,root,"rentalBookingMessage");
+            if(!receipt || dialog->isVisible() ||
+               bookingActions.lastRentalId()!="R003" ||
+               receipt->property("text").toString()!="Booking R003 saved." ||
+               rentalModel.activeCount()!=2 ||
+               fleet.availableCount()!=3 ||
+               !system.findVehicleById("C001")->getIsRented() ||
+               !readFile(ledger,&afterLedger) ||
+               afterLedger==initialLedger) {
+                qCritical()<<"P5 Fleet booking did not persist and show a real receipt";
+                app.exit(344);return;
+            }
+            const QString suffix=compact?"1280x720":"1500x860";
+            const auto shot=window->grabWindow();
+            if(shot.isNull() || shot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !shot.save("p5-qt-fleet-booking-receipt-"+suffix+".png","PNG")) {
+                qCritical()<<"P5 Fleet booking capture failed";
+                app.exit(345);return;
+            }
+            window->setProperty("workspace",1);
+            QCoreApplication::processEvents();
+            QTest::qWait(90);
+            action=find(find,root,"fleetBookSelectedButton");
+            if(!action || action->isEnabled() || fleet.selectedId()!="C001" ||
+               fleet.selectedAvailable()) {
+                qCritical()<<"P5 previously booked Fleet vehicle still bookable";
+                app.exit(346);return;
+            }
+            qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
             app.exit(0);
         });
     }
