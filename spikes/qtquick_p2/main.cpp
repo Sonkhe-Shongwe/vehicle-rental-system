@@ -329,6 +329,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-ui-session-clean-test", "CI-only clean the identified QML session test sandbox."});
     parser.addOption({"p5-ui-write-failure-test", "CI-only real QML confirmation with an injected failed durable write."});
     parser.addOption({"p5-session-tamper-test", "CI-only verify unexpected files and contact records are rejected."});
+    parser.addOption({"p5-booking-cancel-smoke", "Verify Cancel, Escape and declined booking abandonment scrub drafts without saving."});
     parser.addOption({"p5-stale-quote-smoke", "Test stale price and occupied vehicle rejection in real QML, with explicit quote refresh."});
     parser.addOption({"p5-fleet-to-booking-smoke", "Use actual Fleet inspector keyboard action to open and save an authoritative rental."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
@@ -2126,6 +2127,163 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P4 native focus route PASS"<<size
                    <<"Tab/ShiftTab Fleet, bounded modal, Booking focus/Escape, no writes";
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("p5-booking-cancel-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 364;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1160,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *found=self(self,child,name))return found;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *button) {
+                button->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(120);
+            };
+            auto *root=window->contentItem();
+            auto *newRental=find(find,root,"rentalNewBookingButton");
+            auto *outcome=find(find,root,"rentalBookingMessage");
+            const QString ledgerPath=disposable.filePath("rentals.txt");
+            QByteArray original,still;
+            if(!newRental || !outcome || !readFile(ledgerPath,&original) ||
+               rentalModel.count()!=2 || rentalModel.activeCount()!=1 ||
+               fleet.availableCount()!=4 || bookingActions.canConfirm() ||
+               !window->property("bookingReceiptNotice").toString().isEmpty()) {
+                qCritical()<<"P5 cancellation baseline or receipt invalid";
+                app.exit(365);return;
+            }
+            // Cancel button path: reviewed C001 + entered fictional contact
+            // must never persist anything, including on a valid quote.
+            press(newRental);
+            auto *vehicle=find(find,root,"bookingVehicleId");
+            auto *days=find(find,root,"bookingDays");
+            auto *preview=find(find,root,"bookingPreviewButton");
+            auto *cancel=find(find,root,"bookingCancelButton");
+            auto *confirm=find(find,root,"bookingConfirmButton");
+            auto *customer=find(find,root,"bookingCustomer");
+            auto *phone=find(find,root,"bookingPhone");
+            if(!vehicle || !days || !preview || !cancel || !confirm ||
+               !customer || !phone) {
+                qCritical()<<"P5 cancel UI control missing";
+                app.exit(366);return;
+            }
+            vehicle->setProperty("text",QStringLiteral("C001"));
+            days->setProperty("value",3);
+            customer->setProperty("text",QStringLiteral("Fictional Cancel Button"));
+            phone->setProperty("text",QStringLiteral("0000000000"));
+            press(preview);
+            if(!bookingActions.canConfirm() || !confirm->isEnabled() ||
+               !bookingActions.quoteSummary().contains("Total R 1350.00")) {
+                qCritical()<<"P5 cancel prepared quote missing";
+                app.exit(367);return;
+            }
+            press(cancel);
+            QTest::qWait(100);
+            if(bookingActions.canConfirm() || bookingActions.needsFreshQuote() ||
+               !customer->property("text").toString().isEmpty() ||
+               !phone->property("text").toString().isEmpty() ||
+               !newRental->hasActiveFocus() ||
+               !window->property("bookingReceiptNotice").toString().isEmpty() ||
+               outcome->property("text").toString()!="Booking cancelled. No rental saved." ||
+               !readFile(ledgerPath,&still) || still!=original ||
+               rentalModel.count()!=2 || fleet.availableCount()!=4 ||
+               system.findRentalById("R003")) {
+                qCritical()<<"P5 Cancel left contact, quote, false receipt or disk mutation";
+                app.exit(368);return;
+            }
+            // Escape must take the identical safe cleanup route, not merely
+            // hide the popup while retaining the previous customer's data.
+            press(newRental);
+            vehicle=find(find,root,"bookingVehicleId");
+            preview=find(find,root,"bookingPreviewButton");
+            confirm=find(find,root,"bookingConfirmButton");
+            customer=find(find,root,"bookingCustomer");
+            phone=find(find,root,"bookingPhone");
+            if(!vehicle||!preview||!confirm||!customer||!phone ||
+               !customer->property("text").toString().isEmpty() ||
+               !phone->property("text").toString().isEmpty() ||
+               !window->property("bookingCancelledNotice").toString().isEmpty() ||
+               confirm->isEnabled()) {
+                qCritical()<<"P5 reopen after Cancel has stale contact or quote";
+                app.exit(369);return;
+            }
+            vehicle->setProperty("text",QStringLiteral("C001"));
+            customer->setProperty("text",QStringLiteral("Fictional Escape Cancel"));
+            phone->setProperty("text",QStringLiteral("0000000000"));
+            press(preview);
+            if(!bookingActions.canConfirm()) {app.exit(370);return;}
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(180);
+            if(bookingActions.canConfirm() || bookingActions.needsFreshQuote() ||
+               !customer->property("text").toString().isEmpty() ||
+               !phone->property("text").toString().isEmpty() ||
+               !newRental->hasActiveFocus() ||
+               !window->property("bookingReceiptNotice").toString().isEmpty() ||
+               outcome->property("text").toString()!="Booking cancelled. No rental saved." ||
+               !readFile(ledgerPath,&still) || still!=original ||
+               rentalModel.count()!=2 || fleet.availableCount()!=4) {
+                qCritical()<<"P5 Escape did not cancel and scrub draft correctly";
+                app.exit(371);return;
+            }
+            // After a declined confirmation with missing customer, abandoning
+            // the modal must not revive the old quote or preserve contact.
+            press(newRental);
+            vehicle=find(find,root,"bookingVehicleId");
+            preview=find(find,root,"bookingPreviewButton");
+            confirm=find(find,root,"bookingConfirmButton");
+            customer=find(find,root,"bookingCustomer");
+            phone=find(find,root,"bookingPhone");
+            if(!vehicle||!preview||!confirm||!customer||!phone) {
+                app.exit(372);return;
+            }
+            vehicle->setProperty("text",QStringLiteral("C001"));
+            phone->setProperty("text",QStringLiteral("0000000000"));
+            press(preview);
+            press(confirm);
+            auto *feedback=find(find,root,"bookingDialogFeedback");
+            if(!feedback ||
+               feedback->property("text").toString()!="Enter a valid customer name." ||
+               !bookingActions.canConfirm() ||
+               !readFile(ledgerPath,&still) || still!=original) {
+                qCritical()<<"P5 invalid customer pre-cancel wrong";
+                app.exit(373);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(180);
+            if(bookingActions.canConfirm() ||
+               !phone->property("text").toString().isEmpty() ||
+               outcome->property("text").toString()!="Booking cancelled. No rental saved." ||
+               !readFile(ledgerPath,&still) || still!=original) {
+                qCritical()<<"P5 declined then abandoned quote mutated state";
+                app.exit(374);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const auto screenshot=window->grabWindow();
+            if(screenshot.isNull() ||
+               screenshot.size()!=QSize(compact?1280:1500,compact?720:860) ||
+               !screenshot.save("p5-qt-cancel-outcome-"+size+".png","PNG")) {
+                qCritical()<<"P5 canceled booking status screenshot missing";
+                app.exit(375);return;
+            }
+            QByteArray sourceVehicles,sourceRentals;
+            if(!readFile(vehicles,&sourceVehicles) ||
+               !readFile(rentals,&sourceRentals) ||
+               sourceVehicles!=beforeVehicles || sourceRentals!=beforeRentals) {
+                qCritical()<<"P5 cancellation altered protected fictional source";
+                app.exit(376);return;
+            }
+            qInfo()<<"P5 Cancel/Escape/declined safe booking abandonment PASS"<<size;
             app.exit(0);
         });
     }

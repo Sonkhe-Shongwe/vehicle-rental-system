@@ -27,6 +27,8 @@ ApplicationWindow {
     // Confirmed receipt survives closing the ephemeral preview dialog.
     // Only the C++-verified success branch populates this display string.
     property string bookingReceiptNotice: ""
+    // Cancellation is a separate informational outcome, never a receipt.
+    property string bookingCancelledNotice: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -36,6 +38,7 @@ ApplicationWindow {
             return
         const selectedId = fleet.selectedId
         window.bookingReceiptNotice = ""
+        window.bookingCancelledNotice = ""
         bookingActions.discardPreview()
         window.workspace = 2
         Qt.callLater(function() {
@@ -670,6 +673,7 @@ ApplicationWindow {
                             Accessible.name: "Create a new fictional rental"
                             onClicked: {
                                 window.bookingReceiptNotice = ""
+                                window.bookingCancelledNotice = ""
                                 bookingDialog.open()
                             }
                         }
@@ -677,7 +681,10 @@ ApplicationWindow {
                             objectName: "rentalBookingMessage"
                             emphasized: window.bookingReceiptNotice !== ""
                             text: window.bookingReceiptNotice !== ""
-                                  ? window.bookingReceiptNotice : bookingActions.lastMessage
+                                  ? window.bookingReceiptNotice
+                                  : window.bookingCancelledNotice !== ""
+                                    ? window.bookingCancelledNotice
+                                    : bookingActions.lastMessage
                         }
                     }
                     Dialog {
@@ -695,7 +702,14 @@ ApplicationWindow {
                                 bookingVehicleId.forceActiveFocus(Qt.TabFocusReason)
                         })
                         onClosed: {
+                            // All exits, including Escape and title-bar dismissal,
+                            // must forget uncommitted contact fields and C++ quote.
+                            // Only a confirmed C++ commit can leave a receipt.
                             bookingActions.discardPreview()
+                            bookingCustomer.clear()
+                            bookingPhone.clear()
+                            if (window.bookingReceiptNotice === "")
+                                window.bookingCancelledNotice = "Booking cancelled. No rental saved."
                             Qt.callLater(function() {
                                 if (newBookingButton.visible && newBookingButton.enabled)
                                     newBookingButton.forceActiveFocus(Qt.TabFocusReason)
@@ -778,11 +792,7 @@ ApplicationWindow {
                                     objectName: "bookingCancelButton"
                                     text: "Cancel"
                                     activeFocusOnTab: true
-                                    onClicked: {
-                                        bookingCustomer.clear()
-                                        bookingPhone.clear()
-                                        bookingDialog.close()
-                                    }
+                                    onClicked: bookingDialog.close()
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {

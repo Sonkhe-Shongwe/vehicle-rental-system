@@ -156,6 +156,16 @@ if(BUILD_TESTING)
         rental_studio_p3_archive_qml_wide
         rental_studio_p3_archive_qml_compact
         PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # All booking-dismissal paths clear uncommitted contact data, revoke
+    # C++ quotes, show honest cancellation and never write a rental.
+    add_test(NAME rental_studio_p5_booking_cancel_wide
+        COMMAND rental_studio_qtquick_spike --p5-booking-cancel-smoke)
+    add_test(NAME rental_studio_p5_booking_cancel_compact
+        COMMAND rental_studio_qtquick_spike --p5-booking-cancel-smoke --compact)
+    set_tests_properties(
+        rental_studio_p5_booking_cancel_wide
+        rental_studio_p5_booking_cancel_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     # P5 stale rate and occupancy both require explicit fresh review; a
     # rejected quote cannot write an optimistic receipt or duplicate rental.
     add_test(NAME rental_studio_p5_stale_quote_wide
