@@ -1,0 +1,61 @@
+# P5 and P6 acceptance reconciliation, evidence vs signoff
+
+**Audit:** 1 November 2026 | **Source:** `feature/p6-fleet-create-disposable-20261101` | **Draft PR:** [#14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14), stacked on [#12](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/12) and [#10](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/10). This document is **a review of the existing rubric**, not an owner's acceptance decision or a change to the agreed phase weights.
+
+## Scope, authority and latest regression
+
+The original requirement source is [P5 tracking issue #13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/13), the [P5 automated evidence crosswalk](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md), and the original [P0-P9 acceptance matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md). P6's nine requirements were **not** individually numbered in that source: the roadmap gives a single phrase listing capabilities. The nine proposed rows below are an **interpretation for evidence mapping only**. They cannot silently replace or redefine the agreed nine criteria.
+
+Most recent audited entire-branch CI at documentation/source SHA `6b7ee2e376fbbc0c668e1688577a197f27514658`: [Core run 41335378315](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41335378315) **13/13 PASS** and [Qt run 41335378314](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41335378314) **66/66 PASS on Linux GCC and 66/66 PASS on hosted Windows MSVC**, including P6-C and existing P3/P4/P5 native tests. Hosted packaged Windows checks also PASS. Tests verify the **fictional-only development state**, not real operator deployment or hardware Narrator/scale signoff. No real customer data or P7 production persistence path is approved.
+
+**Status terms:** `Automated PASS` means representative actual source/native test evidence for that behavior; `Partial` means relevant working code/tests but a specified gap; `Open` means insufficient full-scope evidence; `Formal accepted` is reserved for owner/criteria-governed signoff. `Automated PASS` is **not** formal acceptance.
+
+## P5: original eight acceptance expectations
+
+The following are faithfully paraphrased from P5 [Issue #13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/issues/13) in its original order. The [P5 existing crosswalk](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md) already reports all eight as automated-covered and explicitly forbids prematurely converting them to formal acceptance.
+
+| # | Original P5 expectation | Actual relevant evidence | Automated | Formal |
+|---:|---|---|---|---|
+| 1 | Select available Corolla in real native UI | `rental_studio_p5_fleet_booking_wide/compact`, selected C001 and CTA | PASS | Pending |
+| 2 | Guided, validated R450/day × 3-day authoritative quote | `rental_studio_p3_booking_qml_*`, `rental_studio_p5_fleet_booking_*`, `rental_studio_p5_stale_quote_*` | PASS | Pending |
+| 3 | Explicit confirmation saves rental via domain atomic write | `rental_studio_p5_ui_session_seed`, `rental_studio_p3_booking_qml_*` | PASS | Pending |
+| 4 | Overview, Fleet, Active Rentals reconcile after confirm | `rental_studio_p5_overview_*`, `rental_studio_p5_fleet_booking_*` | PASS | Pending |
+| 5 | Actual restart/reopen rehydrates booking and availability | `rental_studio_p5_ui_session_seed` and `_reopen` use separate actual Qt processes in restricted fictional session | PASS | Pending |
+| 6 | Duplicate/unavailable attempt declines with no second rental | `rental_studio_p5_ui_session_reopen`, `rental_studio_p5_stale_quote_*`, tamper/lock guards | PASS | Pending |
+| 7 | Cancel, declined and invalid inputs neither write nor fake receipt | `rental_studio_p5_booking_cancel_*`, `rental_studio_p3_booking_qml_*` | PASS | Pending |
+| 8 | Rejected durable write preserves original state, no success receipt | `rental_studio_p5_ui_write_failure_*` and rejecting `RentalStorage` | PASS | Pending |
+
+**P5 audit conclusion:** **8/8 behaviors have representative native automated PASS evidence**. **0/8 remain formally accepted under existing explicit issue/crosswalk restrictions**. The unresolved acceptance action is a **single consolidated owner review of current P5 operator experience**, including actual Windows Qt Creator/MinGW and usable physical scale/accessibility where relevant, followed by an explicit P5 signoff decision. Acceptance methodology should clarify whether each source-test-backed criterion may be credited before full-phase physical signoff; do not silently assume yes. P7 general-data persistence, SQLite and power-loss resilience are separate future commercial gates, not permission to erase P5's fictional-only scope.
+
+## P6: provisional interpretation of nine capability groups
+
+The original P6 roadmap text is: **“Add Car/Motorcycle, search/filter/sort selection, deletion safeguards, active/overdue, return/repeat refusal, archive and delete in allowed states, cancellation non-mutation, restart and full domain parity tests on new UI.”** The grouping below preserves its wording and sequence but is **not an owner-ratified numbered checklist**.
+
+| Provisional # | Original capability grouping | Evidenced source/test | Technical coverage | What remains |
+|---:|---|---|---|---|
+| 1 | Add Car/Motorcycle | [P6-A](P6_A_FLEET_CREATE_NATIVE_VERIFIED_2026-11-01.md), `rental_studio_p6_fleet_add_wide/compact` | Automated PASS | Owner review, commercial storage not enabled |
+| 2 | Search/filter/sort and stable selection | P2/P3 native Fleet Gallery/Table proxy, `rental_studio_p2_focus_edges`, `_arrows_focus` | Automated PASS | Physical usability/scale approval |
+| 3 | Fleet deletion safeguards | [P6-B](P6_B_NATIVE_FLEET_REMOVAL_VERIFIED_2026-11-01.md), `rental_studio_p6_fleet_remove_*` verifies active-rental refusal, Cancel/Escape, rollback | **Partial** | Historical **returned/archived** rental references can still point to a removed vehicle; choose referential-integrity policy and test it before declaring full safeguards |
+| 4 | Active/overdue state and navigation | P3 typed Rentals model; [P5-J](P5_J_ACTIONABLE_OVERDUE_OVERVIEW_VERIFIED_2026-11-01.md); `rental_studio_p5_overview_*` | Automated PASS | Owner operational UI review |
+| 5 | Return and repeated-action refusal | `rental_studio_p3_return_qml_*`, `rental_studio_p5_overview_*`, domain repeated/duplicate rejection | Automated PASS | Full physical operator sequence review |
+| 6 | Archive and permanent delete only in allowed state | `rental_studio_p3_archive_qml_*`, [P6-C](P6_C_ARCHIVED_DELETE_NATIVE_VERIFIED_2026-11-01.md), `rental_studio_p6_archived_delete_*` | Automated PASS | Owner confirmation of destructive UX |
+| 7 | Cancellation non-mutation | `rental_studio_p5_booking_cancel_*`, P6-B/C Cancel, Escape and incorrect-phrase tests | Automated PASS | Consolidated owner UX signoff |
+| 8 | Restart and reconstruct state | Separate-process P5 restricted fictional booking/reopen; P6-A/B/C disposable files reopened by a new C++ domain | **Partial** | P6 Fleet mutations are deliberately disabled in the fixed persistent fictional session, and a full cross-process P6 Fleet/Rentals lifecycle parity test is not established |
+| 9 | Full domain lifecycle parity on new UI | Core `FleetWriteService`, existing typed rental services; individual P3/P5/P6 tests | **Open at full scope** | Complete canonical capability-by-capability parity audit, identify missing operator operations/negative paths, and native end-to-end scenario coverage; do not assume old Qt Widgets rules all have new QML UI counterparts |
+
+**P6 audit conclusion:** Under this **provisional nine-row interpretation**, **6 groups have representative automated PASS**, **2 are partial**, and **1 has no full-scope parity proof**. This is a **diagnostic coverage inventory, not a revised P6 score**. Formal acceptance stays **0/9** until the owner agrees what the nine original requirements precisely mean and the requirements/evidence each satisfy. P6-A/B/C are real, verified milestones, not nothing accomplished.
+
+## Why the overall 40.6% has not changed
+
+The current weighted ledger counts P0 5/5 (5%), P1 7/10 (12%), P2 4/6 (10%), P3 7/7 (12%), P4 5/7 (12%), P5 0/8 (16%), P6 0/9 (14%) and P7-P9 0/22 (19%). Its weighted sum is **40.6%**, and its unweighted formally accepted checklist count is **28/74**. The previous table's P5/P6 gate descriptions as `Not started` are **factually stale**; both phases have implemented/tested code. This audit updates their descriptive statuses without inventing acceptance credit.
+
+If all P5 checks are eventually formally accepted **as originally defined**, the score would add 16 points (approximately **56.6%**) without a new code commit. That is a conditional illustration, **not an approved new result**. If a future owner-approved P6 rubric also accepted six full criteria, another 14×6/9 ≈ 9.33 points would apply. Do not publish either hypothetical number as actual progress.
+
+## Next precise acceptance actions
+
+1. **P5:** arrange one consolidated owner visual/physical interaction review for the existing eight covered requirements; note which checks are explicitly accepted versus still awaiting proof. Keep physical OS scaling/Narrator distinguishable from hosted CI, and do not impose unnecessary repeated PowerShell tests.
+2. **P6:** owner/rubric custodian must explicitly confirm the original nine individually named checks **before scoring individual groups**. Implement and test the concrete historical vehicle-reference integrity rule and identify the remaining QML/legacy parity gaps.
+3. Keep a separate engineering evidence board: P5 **8/8 automated-covered**, P6 **6 pass / 2 partial / 1 open provisional**. Neither is commercial-release readiness.
+4. Do not alter the predefined phase weights, merge PRs, modify stable `main`, enable real data or classify hosted CI as owner signoff. Explicit acceptance decisions must include a dated evidence link and be recorded atomically in the canonical ledger, issue/PR and current checkpoint.
+
+**Result:** evidence reconciled, no acceptance awarded, current official **28/74 and 40.6%** retained deliberately. This report is the path toward legitimately raising that score, not a request to create arbitrary percentages.
