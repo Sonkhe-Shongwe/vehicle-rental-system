@@ -1624,6 +1624,39 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 TextField Left intercepted";
                 app.exit(236);return;
             }
+            // An invisible Fleet selection must survive Escape on Overview.
+            // Only the visible workspace may own selection-dismissal.
+            fleet.selectById("C001");
+            if(fleet.selectedId()!="C001") {
+                qCritical()<<"P4 fictional Fleet selection setup failed";
+                app.exit(253);return;
+            }
+            window->setProperty("workspace",0);
+            QCoreApplication::processEvents();
+            if(window->property("canDismissSelection").toBool()) {
+                qCritical()<<"P4 Overview captured hidden selection dismissal";
+                app.exit(254);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            if(window->property("workspace").toInt()!=0 ||
+               fleet.selectedId()!="C001") {
+                qCritical()<<"P4 Overview Escape cleared hidden Fleet record";
+                app.exit(255);return;
+            }
+            window->setProperty("workspace",1);
+            QCoreApplication::processEvents();
+            if(!window->property("canDismissSelection").toBool()) {
+                qCritical()<<"P4 Fleet selected record cannot be dismissed";
+                app.exit(256);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            if(!fleet.selectedId().isEmpty() ||
+               window->property("canDismissSelection").toBool()) {
+                qCritical()<<"P4 visible Fleet Escape failed to dismiss selection";
+                app.exit(257);return;
+            }
             // Switch to actual rentals UI using a keyboard-activated sidebar.
             auto *rentalNav=find(find,root,"workspaceNavRentals");
             if(!rentalNav){app.exit(237);return;}

@@ -129,16 +129,21 @@ ApplicationWindow {
         event.accepted = true
     }
 
-    // Global dismiss action for the read-only inspector. The triggering
-    // card/table button retains focus; selection is only a view state.
+    // Escape dismisses only a selection in the currently visible workspace.
+    // Never mutate hidden Fleet state while reading Overview, nor capture
+    // Escape when there is no active selection to dismiss.
+    readonly property bool canDismissSelection:
+        (window.workspace === 1 && fleet.selectedId !== "") ||
+        (window.workspace === 2 && rentalsModel.selectedRentalId !== "")
     Shortcut {
         sequence: "Escape"
-        // Topmost modal owns Escape. Never clear a record behind a dialog.
-        enabled: !bookingDialog.visible &&
+        // The topmost modal owns Escape; selection clearing happens afterward.
+        enabled: window.canDismissSelection &&
+                 !bookingDialog.visible &&
                  !returnConfirmation.visible && !archiveConfirmation.visible
         onActivated: {
-            if (window.workspace === 2) rentalsModel.clearSelection()
-            else fleet.clearSelection()
+            if (window.workspace === 1) fleet.clearSelection()
+            else if (window.workspace === 2) rentalsModel.clearSelection()
         }
     }
 
