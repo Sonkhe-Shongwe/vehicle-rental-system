@@ -439,7 +439,7 @@ int main(int argc, char *argv[]) {
             QByteArray beforeTamper;
             if(!readFile(ledger,&beforeTamper))return 320;
             const QByteArray foreignRecord=
-                "Rental|R999|UNTRUSTED NONFICTIONAL|999|C003|"
+                "Rental|R999|UNTRUSTED NONFICTIONAL|0000000000|C003|"
                 "2026-11-01|2026-11-04||3|400.00|1200.00|0|0\\n";
             QSaveFile poisoned(ledger);
             if(!poisoned.open(QIODevice::WriteOnly) ||
