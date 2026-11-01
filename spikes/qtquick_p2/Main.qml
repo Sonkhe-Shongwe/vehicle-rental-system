@@ -727,6 +727,7 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         command: fleetRemove
                         focusReturn: removeSelectedFleetButton
+                        fallbackFocusReturn: fleetAddButton
                     }
                 }
 
