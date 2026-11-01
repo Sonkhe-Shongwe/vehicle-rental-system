@@ -642,6 +642,7 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("motionPolicy", &motion);
     engine.rootContext()->setContextProperty("persistentFictionalDemo",persistentDemo);
     engine.rootContext()->setContextProperty("fleet", &fleet);
+    engine.rootContext()->setContextProperty("fleetAdmin", &fleetAdmin);
     engine.rootContext()->setContextProperty("rentalsModel", &rentalModel);
     engine.rootContext()->setContextProperty("rentalActions", &rentalActions);
     engine.rootContext()->setContextProperty("bookingActions", &bookingActions);
