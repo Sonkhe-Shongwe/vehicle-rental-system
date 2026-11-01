@@ -113,6 +113,8 @@ if(BUILD_TESTING)
         ENVIRONMENT "QT_QUICK_BACKEND=software"
         TIMEOUT 40)
     add_test(NAME rental_studio_p6_fleet_add_wide COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke)
+    add_test(NAME rental_studio_p6_fleet_add_compact COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke --compact)
+    set_tests_properties(rental_studio_p6_fleet_add_wide rental_studio_p6_fleet_add_compact PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     # P3-F: genuine QQuickWindow and delegate-backed Rentals state, selection
     # and refresh after a committed C++ fictional-domain operation.
     add_test(NAME rental_studio_p3_rentals_qml_wide
