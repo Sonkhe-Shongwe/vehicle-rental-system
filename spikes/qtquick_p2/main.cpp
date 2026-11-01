@@ -2842,6 +2842,112 @@ int main(int argc, char *argv[]) {
             app.exit(0);
         });
     }
+    if (parser.isSet("p6-fleet-add-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 386;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1100,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->isVisible() && item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *item) {
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(90);
+            };
+            auto *root=window->contentItem();
+            auto *add=find(find,root,"fleetAddButton");
+            if(!add || !add->isEnabled() || !fleetAdmin.canAdd() ||
+               fleet.totalCount()!=5 || fleet.availableCount()!=4) {
+                qCritical()<<"P6 Add Vehicle initial action unavailable";
+                app.exit(387);return;
+            }
+            QByteArray originalVehicle,originalRental,afterVehicle;
+            const QString ledger=disposable.filePath("vehicles.txt");
+            if(!readFile(ledger,&originalVehicle) ||
+               !readFile(disposable.filePath("rentals.txt"),&originalRental)) {
+                app.exit(388);return;
+            }
+            press(add);
+            auto *kind=find(find,root,"fleetAddType");
+            auto *brand=find(find,root,"fleetAddBrand");
+            auto *model=find(find,root,"fleetAddModel");
+            auto *rate=find(find,root,"fleetAddRate");
+            auto *extra=find(find,root,"fleetAddExtra");
+            auto *confirm=find(find,root,"fleetAddConfirm");
+            if(!kind||!brand||!model||!rate||!extra||!confirm) {
+                qCritical()<<"P6 real Car/Motorcycle dialog fields missing";
+                app.exit(389);return;
+            }
+            // Reject blank/invalid inputs in the actual QML form.
+            rate->setProperty("text",QStringLiteral("420"));
+            press(confirm);
+            if(fleet.totalCount()!=5 || !readFile(ledger,&afterVehicle) ||
+               afterVehicle!=originalVehicle) {
+                qCritical()<<"P6 invalid form incorrectly wrote fleet";
+                app.exit(390);return;
+            }
+            brand->setProperty("text",QStringLiteral("Demo Motors"));
+            model->setProperty("text",QStringLiteral("Orion"));
+            extra->setProperty("value",4);
+            press(confirm);
+            if(fleet.totalCount()!=6 || fleet.availableCount()!=5 ||
+               fleet.selectedId()!="C004" || !system.findVehicleById("C004") ||
+               !readFile(ledger,&afterVehicle) || afterVehicle==originalVehicle) {
+                qCritical()<<"P6 Car commit or Fleet UI refresh failed";
+                app.exit(391);return;
+            }
+            press(add);
+            kind=find(find,root,"fleetAddType");
+            brand=find(find,root,"fleetAddBrand");
+            model=find(find,root,"fleetAddModel");
+            rate=find(find,root,"fleetAddRate");
+            extra=find(find,root,"fleetAddExtra");
+            confirm=find(find,root,"fleetAddConfirm");
+            if(!kind||!brand||!model||!rate||!extra||!confirm) {
+                qCritical()<<"P6 second dialog failed to reopen";
+                app.exit(392);return;
+            }
+            kind->setProperty("currentIndex",1);
+            brand->setProperty("text",QStringLiteral("Demo Moto"));
+            model->setProperty("text",QStringLiteral("Nova"));
+            rate->setProperty("text",QStringLiteral("300"));
+            extra->setProperty("value",450);
+            press(confirm);
+            if(fleet.totalCount()!=7 || fleet.availableCount()!=6 ||
+               fleet.selectedId()!="M003" || !system.findVehicleById("M003")) {
+                qCritical()<<"P6 Motorcycle commit or selection failed";
+                app.exit(393);return;
+            }
+            // Rehydrate the domain from this disposable directory and prove
+            // the checked-in fictional seed is still byte-for-byte protected.
+            RentalSystem reopened(disposable.path());
+            QByteArray protectedV,protectedR,afterRentals;
+            FleetAddController blocked(system,false,[](const QString&){});
+            if(!reopened.findVehicleById("C004") ||
+               !reopened.findVehicleById("M003") ||
+               blocked.addVehicle("Car","Demo","Nope",100,4) ||
+               !readFile(vehicles,&protectedV) ||
+               !readFile(rentals,&protectedR) ||
+               !readFile(disposable.filePath("rentals.txt"),&afterRentals) ||
+               protectedV!=beforeVehicles || protectedR!=beforeRentals ||
+               afterRentals!=originalRental) {
+                qCritical()<<"P6 persisted temp records, read-only guard, or protected seeds failed";
+                app.exit(394);return;
+            }
+            qInfo()<<"P6 native disposable Add Car and Motorcycle PASS"
+                   <<(compact?"1280x720":"1500x860");
+            app.exit(0);
+        });
+    }
     if (parser.isSet("p4-a11y-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if (!window) return 270;
