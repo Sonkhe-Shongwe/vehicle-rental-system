@@ -3082,6 +3082,22 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6 active rental exposed Remove action";
                 app.exit(397);return;
             }
+            // C001 is available yet R002 still references it as a returned
+            // historical contract. The inspector must expose this safeguard
+            // instead of offering a confirmation that can only fail.
+            fleet.selectById("C001");
+            QCoreApplication::processEvents();
+            auto *historyHint=find(find,root,"fleetRentalHistoryHint");
+            if(remove->isEnabled() || !fleet.selectedAvailable() ||
+               !historyHint || !historyHint->property("text").toString().contains("history") ||
+               fleetRemove.canRemoveVehicle("C001") ||
+               fleetRemove.removeVehicle("C001","REMOVE C001") ||
+               !system.findVehicleById("C001") ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"P6 historical returned rental orphan prevention failed";
+                app.exit(431);return;
+            }
             fleet.selectById("C003");
             QCoreApplication::processEvents();
             if(!remove->isEnabled() || !fleet.selectedAvailable()) {
@@ -3164,8 +3180,8 @@ int main(int argc, char *argv[]) {
             RentalSystem failing(disposable.path(),
                                  std::make_shared<P5RejectWriteStorage>());
             FleetRemoveController failController(failing,true,{});
-            if(failController.removeVehicle("C001","REMOVE C001") ||
-               !failing.findVehicleById("C001") ||
+            if(failController.removeVehicle("M001","REMOVE M001") ||
+               !failing.findVehicleById("M001") ||
                !readFile(ledger,&vehiclesInitial) ||
                vehiclesInitial!=vehiclesCurrent) {
                 qCritical()<<"P6 failed write was not rolled back";
