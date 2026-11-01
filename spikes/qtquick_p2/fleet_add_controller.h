@@ -21,3 +21,5 @@ private:
  std::function<void(const QString &)> m_afterCommit;
  QString m_message;
 };
+
+// P6: preliminary adapter; gated pending UI integration and CI.
