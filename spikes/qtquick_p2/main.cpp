@@ -287,6 +287,22 @@ static bool readFile(const QString &path, QByteArray *bytes) {
     return f.error() == QFile::NoError;
 }
 
+// Native QML negative-path test only: the real domain still validates the
+// quote and performs normal rollback when its injected durable writer fails.
+class P5RejectWriteStorage final : public RentalStorage {
+public:
+    std::optional<QByteArray> read(const QString &path) const override {
+        QFile file(path);
+        if(!file.open(QIODevice::ReadOnly)) return std::nullopt;
+        const QByteArray bytes=file.readAll();
+        if(file.error()!=QFile::NoError) return std::nullopt;
+        return bytes;
+    }
+    bool writeAtomic(const QString &, const QByteArray &) override {
+        return false;
+    }
+};
+
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     QCoreApplication::setApplicationName("RentalStudioP2Spike");
@@ -308,6 +324,10 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-session-seed-test", "CI-only first process persists a controlled fictional booking."});
     parser.addOption({"p5-session-reopen-test", "CI-only separate process verifies the saved rental and refuses duplicates."});
     parser.addOption({"p5-session-clean-test", "CI-only remove the identified fixed test sandbox."});
+    parser.addOption({"p5-ui-session-seed-test", "CI-only real QML booking inside a persistent fictional first launch."});
+    parser.addOption({"p5-ui-session-reopen-test", "CI-only second real QML launch displays the previously saved booking."});
+    parser.addOption({"p5-ui-session-clean-test", "CI-only clean the identified QML session test sandbox."});
+    parser.addOption({"p5-ui-write-failure-test", "CI-only real QML confirmation with an injected failed durable write."});
     parser.addOption({"p5-session-tamper-test", "CI-only verify unexpected files and contact records are rejected."});
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
@@ -319,17 +339,26 @@ int main(int argc, char *argv[]) {
     parser.process(app);
     const bool seedTest=parser.isSet("p5-session-seed-test");
     const bool reopenTest=parser.isSet("p5-session-reopen-test");
-    const bool cleanupTest=parser.isSet("p5-session-clean-test");
+    const bool uiSeedTest=parser.isSet("p5-ui-session-seed-test");
+    const bool uiReopenTest=parser.isSet("p5-ui-session-reopen-test");
+    const bool uiCleanupTest=parser.isSet("p5-ui-session-clean-test");
+    const bool cleanupTest=parser.isSet("p5-session-clean-test") || uiCleanupTest;
     const bool tamperTest=parser.isSet("p5-session-tamper-test");
-    const bool sessionTest=seedTest || reopenTest || cleanupTest || tamperTest;
+    const bool failureTest=parser.isSet("p5-ui-write-failure-test");
+    const bool sessionTest=seedTest || reopenTest || uiSeedTest ||
+                           uiReopenTest || cleanupTest || tamperTest;
     const bool persistentDemo=parser.isSet("persistent-fictional-demo") || sessionTest;
     if(sessionTest) {
-        // Separate standard-location test root, never a user's real session.
+        // The UI and non-UI fixture sequences have separate test roots.
         QStandardPaths::setTestModeEnabled(true);
-        QCoreApplication::setApplicationName("RentalStudioP5SyntheticTestOnly");
+        QCoreApplication::setApplicationName(
+            (uiSeedTest||uiReopenTest||uiCleanupTest)
+              ? "RentalStudioP5QmlSyntheticTestOnly"
+              : "RentalStudioP5SyntheticTestOnly");
     }
     if(sessionTest &&
-       int(seedTest)+int(reopenTest)+int(cleanupTest)+int(tamperTest)!=1) {
+       int(seedTest)+int(reopenTest)+int(uiSeedTest)+int(uiReopenTest)+
+       int(cleanupTest)+int(tamperTest)!=1) {
         qCritical()<<"Only one P5 synthetic CI phase is allowed"; return 308;
     }
     // Never run a legacy test which could intentionally mutate fixtures
@@ -391,7 +420,11 @@ int main(int argc, char *argv[]) {
               !QFile::copy(rentals, disposable.filePath("rentals.txt"))) {
         qCritical()<<"Cannot create disposable demo copies"; return 3;
     }
-    RentalSystem system(dataDirectory);
+    RentalSystem system(
+        dataDirectory,
+        failureTest ? std::static_pointer_cast<RentalStorage>(
+            std::make_shared<P5RejectWriteStorage>())
+            : std::shared_ptr<RentalStorage>{});
     FleetController fleet(system);
     RentalReadService rentalRead(system);
     RentalListModel rentalModel(rentalRead);
@@ -543,6 +576,167 @@ int main(int argc, char *argv[]) {
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
+    }
+    if (uiSeedTest || uiReopenTest || failureTest) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 323;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1050,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->isVisible() && item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *found=self(self,child,name))return found;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *control) {
+                control->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(90);
+            };
+            auto *root=window->contentItem();
+            auto *newRental=find(find,root,"rentalNewBookingButton");
+            auto *message=find(find,root,"rentalBookingMessage");
+            QByteArray originalLedger,currentLedger;
+            const QString ledgerPath=QDir(dataDirectory).filePath("rentals.txt");
+            if(!newRental||!message||
+               !readFile(ledgerPath,&originalLedger) ||
+               originalLedger.isEmpty()) {
+                qCritical()<<"P5 Qt UI session failed to load verified ledger";
+                app.exit(324);return;
+            }
+            if(uiReopenTest) {
+                // This native window is in a genuinely separate executable
+                // process from the initial QML booking; no in-memory carryover.
+                window->setProperty("workspace",0);
+                QCoreApplication::processEvents();
+                QTest::qWait(140);
+                auto *active=find(find,root,"overviewActiveCard");
+                auto *value=find(find,root,"overviewValueCard");
+                if(!active||!value||
+                   active->property("value").toString()!="2" ||
+                   value->property("value").toString()!="R 2750.00" ||
+                   rentalModel.activeCount()!=2 ||
+                   rentalModel.count()!=3 || fleet.availableCount()!=3 ||
+                   !system.findVehicleById("C001") ||
+                   !system.findVehicleById("C001")->getIsRented() ||
+                   !system.findRentalById("R003")) {
+                    qCritical()<<"P5 reopened REAL QML Overview did not show committed rental";
+                    app.exit(325);return;
+                }
+                const auto shot=window->grabWindow();
+                if(shot.isNull() ||
+                   !shot.save("p5-qt-persistent-reopened-overview.png","PNG")) {
+                    qCritical()<<"P5 reopened QML Overview screenshot missing";
+                    app.exit(326);return;
+                }
+                window->setProperty("workspace",2);
+                QCoreApplication::processEvents();
+                QTest::qWait(140);
+                newRental=find(find,root,"rentalNewBookingButton");
+                if(!newRental)return app.exit(327);
+                press(newRental);
+                auto *vehicle=find(find,root,"bookingVehicleId");
+                auto *preview=find(find,root,"bookingPreviewButton");
+                auto *confirm=find(find,root,"bookingConfirmButton");
+                auto *errorLabel=find(find,root,"bookingDialogFeedback");
+                if(!vehicle || !preview || !confirm || !errorLabel) {
+                    qCritical()<<"P5 reopened QML duplicate-check controls missing";
+                    app.exit(328);return;
+                }
+                vehicle->setProperty("text",QStringLiteral("C001"));
+                press(preview);
+                if(bookingActions.canConfirm() || confirm->isEnabled() ||
+                   errorLabel->property("text").toString()!="Vehicle is not available." ||
+                   !readFile(ledgerPath,&currentLedger) ||
+                   currentLedger!=originalLedger ||
+                   !window->property("bookingReceiptNotice").toString().isEmpty()) {
+                    qCritical()<<"P5 reopened QML duplicate refusal / no-receipt failed";
+                    app.exit(329);return;
+                }
+                qInfo()<<"P5 real QML cross-process restart + duplicate refusal PASS";
+                app.exit(0);return;
+            }
+            // Initial QML booking and injected writer failure share the same
+            // actual modal path, quote, keyboard-activated buttons and C++ API.
+            if((!failureTest && (rentalModel.count()!=2 ||
+                                 fleet.availableCount()!=4)) ||
+               (failureTest && rentalModel.count()!=2)) {
+                qCritical()<<"P5 initial QML booking baseline unexpected";
+                app.exit(330);return;
+            }
+            press(newRental);
+            auto *vehicle=find(find,root,"bookingVehicleId");
+            auto *days=find(find,root,"bookingDays");
+            auto *preview=find(find,root,"bookingPreviewButton");
+            auto *confirm=find(find,root,"bookingConfirmButton");
+            auto *errorLabel=find(find,root,"bookingDialogFeedback");
+            auto *name=find(find,root,"bookingCustomer");
+            auto *phone=find(find,root,"bookingPhone");
+            if(!vehicle||!days||!preview||!confirm||!errorLabel||
+               !name||!phone) {
+                qCritical()<<"P5 guided native QML rental controls missing";
+                app.exit(331);return;
+            }
+            vehicle->setProperty("text",QStringLiteral("C001"));
+            days->setProperty("value",3);
+            press(preview);
+            if(!bookingActions.canConfirm() ||
+               !bookingActions.quoteSummary().contains("Total R 1350.00") ||
+               !confirm->isEnabled()) {
+                qCritical()<<"P5 QML did not review authoritative Corolla quote";
+                app.exit(332);return;
+            }
+            if(failureTest) {
+                name->setProperty("text",QStringLiteral("Fictional Write Failure"));
+                phone->setProperty("text",QStringLiteral("0000000000"));
+            } else if(name->isEnabled() || phone->isEnabled() ||
+                      !persistentDemo) {
+                qCritical()<<"P5 fictional-only QML contact restriction missing";
+                app.exit(333);return;
+            }
+            press(confirm);
+            QTest::qWait(160);
+            if(failureTest) {
+                if(errorLabel->property("text").toString()!=
+                       "Booking was not saved. No rental confirmed." ||
+                   !window->property("bookingReceiptNotice").toString().isEmpty() ||
+                   !bookingActions.lastRentalId().isEmpty() ||
+                   rentalModel.count()!=2 ||
+                   rentalModel.activeCount()!=1 || fleet.availableCount()!=4 ||
+                   !readFile(ledgerPath,&currentLedger) ||
+                   currentLedger!=originalLedger ||
+                   system.findRentalById("R003")) {
+                    qCritical()<<"P5 injected QSaveFile failure changed disk/state or issued receipt";
+                    app.exit(334);return;
+                }
+                qInfo()<<"P5 real QML rejected injected durable write PASS";
+                app.exit(0);return;
+            }
+            if(bookingActions.lastRentalId()!="R003" ||
+               message->property("text").toString()!="Booking R003 saved." ||
+               window->property("bookingReceiptNotice").toString()!="Booking R003 saved." ||
+               rentalModel.activeCount()!=2 ||
+               fleet.availableCount()!=3 ||
+               !system.findVehicleById("C001")->getIsRented() ||
+               !readFile(ledgerPath,&currentLedger) ||
+               currentLedger==originalLedger) {
+                qCritical()<<"P5 real QML did not save fictional R003 with receipt";
+                app.exit(335);return;
+            }
+            const auto shot=window->grabWindow();
+            if(shot.isNull() ||
+               !shot.save("p5-qt-persistent-booking-receipt.png","PNG")) {
+                qCritical()<<"P5 real QML persistent receipt screenshot missing";
+                app.exit(336);return;
+            }
+            qInfo()<<"P5 native QML first process persisted fake rental PASS";
+            app.exit(0);
+        });
     }
     if (parser.isSet("ui-smoke")) {
         auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());

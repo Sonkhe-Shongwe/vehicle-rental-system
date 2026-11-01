@@ -67,6 +67,31 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p5_session_clean PROPERTIES
         FIXTURES_CLEANUP p5_synthetic_session
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 25)
+    # P5 live native QML first booking, second-process real QML Dashboard
+    # recovery, and isolated deterministic disk-write rollback.
+    add_test(NAME rental_studio_p5_ui_session_seed
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-seed-test)
+    add_test(NAME rental_studio_p5_ui_session_reopen
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-reopen-test)
+    add_test(NAME rental_studio_p5_ui_session_clean
+        COMMAND rental_studio_qtquick_spike --p5-ui-session-clean-test)
+    set_tests_properties(rental_studio_p5_ui_session_seed PROPERTIES
+        FIXTURES_SETUP p5_qml_persistent_session
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+    set_tests_properties(rental_studio_p5_ui_session_reopen PROPERTIES
+        FIXTURES_REQUIRED p5_qml_persistent_session
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
+    set_tests_properties(rental_studio_p5_ui_session_clean PROPERTIES
+        FIXTURES_CLEANUP p5_qml_persistent_session
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 20)
+    add_test(NAME rental_studio_p5_ui_write_failure_wide
+        COMMAND rental_studio_qtquick_spike --p5-ui-write-failure-test)
+    add_test(NAME rental_studio_p5_ui_write_failure_compact
+        COMMAND rental_studio_qtquick_spike --p5-ui-write-failure-test --compact)
+    set_tests_properties(
+        rental_studio_p5_ui_write_failure_wide
+        rental_studio_p5_ui_write_failure_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
     add_test(NAME rental_studio_p2_model COMMAND rental_studio_qtquick_spike --self-test)
     set_tests_properties(rental_studio_p2_model PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
