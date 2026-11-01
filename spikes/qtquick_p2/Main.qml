@@ -798,9 +798,13 @@ ApplicationWindow {
                                             bookingPhone.clear()
                                             bookingDialog.close()
                                         } else if (bookingActions.needsFreshQuote) {
-                                            // The rejected snapshot cannot be confirmed again.
-                                            // Keep the modal and return focus to its retry action.
-                                            bookingPreviewButton.forceActiveFocus(Qt.TabFocusReason)
+                                            // A disabled Confirm can trigger Qt's own fallback
+                                            // focus assignment in this same input event. Return
+                                            // focus only after that change has settled.
+                                            Qt.callLater(function() {
+                                                if (bookingDialog.visible && bookingActions.needsFreshQuote)
+                                                    bookingPreviewButton.forceActiveFocus(Qt.TabFocusReason)
+                                            })
                                         }
                                     }
                                 }
