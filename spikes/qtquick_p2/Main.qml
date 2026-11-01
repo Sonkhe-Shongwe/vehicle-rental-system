@@ -931,6 +931,22 @@ ApplicationWindow {
                             Accessible.name: "Archive selected returned rental"
                             onClicked: archiveConfirmation.open()
                         }
+                        Button {
+                            id: deleteArchivedButton
+                            objectName: "rentalDeleteArchivedButton"
+                            text: "Delete archived"
+                            activeFocusOnTab: true
+                            enabled: archivedDelete.canDeleteSelected
+                            Accessible.name: "Permanently delete selected archived fictional rental"
+                            Accessible.description: archivedDelete.canDeleteSelected
+                                ? "Requires exact DELETE rental ID confirmation"
+                                : "Select an archived rental in a disposable fictional demo"
+                            onClicked: {
+                                archivedDelete.clearMessage()
+                                archivedDeleteDialog.targetId = rentalsModel.selectedRentalId
+                                archivedDeleteDialog.open()
+                            }
+                        }
                         DomainMessage {
                             objectName: "rentalReturnMessage"
                             text: rentalActions.lastReturnMessage
