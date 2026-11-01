@@ -23,6 +23,7 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(int overdueCount READ overdueCount NOTIFY metricsChanged)
     Q_PROPERTY(int dueTodayCount READ dueTodayCount NOTIFY metricsChanged)
     Q_PROPERTY(double activeBookedValue READ activeBookedValue NOTIFY metricsChanged)
+    Q_PROPERTY(QString oldestOverdueRentalId READ oldestOverdueRentalId NOTIFY metricsChanged)
 public:
     enum Role {
         RentalIdRole = Qt::UserRole + 1,
@@ -50,6 +51,7 @@ public:
     int overdueCount() const;
     int dueTodayCount() const;
     double activeBookedValue() const;
+    QString oldestOverdueRentalId() const;
     QString statusFilter() const { return m_statusFilter; }
     void setStatusFilter(const QString &filter);
     QString selectedRentalId() const { return m_selectedRentalId; }
@@ -58,6 +60,9 @@ public:
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool selectById(const QString &rentalId);
     Q_INVOKABLE bool selectVisibleRow(int row);
+    // Navigate the oldest overdue active contract from the complete C++ snapshot.
+    // Read/selection only: no booking, return, archive, or disk write.
+    Q_INVOKABLE bool selectOldestOverdue();
     Q_INVOKABLE void clearSelection();
 
 signals:

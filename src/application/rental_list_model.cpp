@@ -63,6 +63,20 @@ double RentalListModel::activeBookedValue() const {
     return amount;
 }
 
+QString RentalListModel::oldestOverdueRentalId() const {
+    const RentalRecordSummary *oldest=nullptr;
+    for(const auto &item:m_allItems) {
+        if(item.status!=RentalRecordStatus::Active ||
+           item.dueState!=RentalDueState::Overdue)
+            continue;
+        if(!oldest || item.expectedReturnDate<oldest->expectedReturnDate ||
+           (item.expectedReturnDate==oldest->expectedReturnDate &&
+            item.rentalId<oldest->rentalId))
+            oldest=&item;
+    }
+    return oldest ? oldest->rentalId : QString{};
+}
+
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
     : QAbstractListModel(parent), m_service(service),
       m_allItems(service.records()), m_items(m_allItems) {}
@@ -151,6 +165,15 @@ bool RentalListModel::selectVisibleRow(int row) {
     if (row < 0 || row >= m_items.size())
         return false;
     return selectById(m_items.at(row).rentalId);
+}
+
+bool RentalListModel::selectOldestOverdue() {
+    const QString id=oldestOverdueRentalId();
+    if(id.isEmpty())return false;
+    // The user may currently be viewing History. Restore Active before
+    // selecting, without ever mutating the underlying rental domain.
+    setStatusFilter(QStringLiteral("Active"));
+    return selectById(id);
 }
 
 int RentalListModel::rowForId(const QString &id) const {

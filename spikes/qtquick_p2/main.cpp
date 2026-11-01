@@ -2657,8 +2657,13 @@ int main(int argc, char *argv[]) {
             auto *historyCard=find(find,root,"overviewHistoryText");
             auto *activeAction=find(find,root,"overviewOpenActive");
             auto *fleetAction=find(find,root,"overviewOpenFleet");
+            auto *overdueAction=find(find,root,"overviewReviewOverdue");
+            auto *overdueText=find(find,root,"overviewOldestOverdueText");
             if(!activeCard||!valueCard||!dueCard||!historyCard||
-               !activeAction||!fleetAction ||
+               !activeAction||!fleetAction||!overdueAction||!overdueText ||
+               !overdueAction->isEnabled() ||
+               rentalModel.oldestOverdueRentalId()!="R001" ||
+               overdueText->property("text").toString()!="Oldest overdue contract: R001" ||
                rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
                std::abs(rentalModel.activeBookedValue()-1400.0)>0.01 ||
                fleet.availableCount()!=4 ||
@@ -2683,7 +2688,22 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P5 Overview KPIs incorrectly scoped to visible filter";
                 app.exit(293);return;
             }
+            // A keyboard action on Overview must navigate to and select the
+            // authoritative oldest overdue contract, even from History filter.
+            overdueAction->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QCoreApplication::processEvents();
+            if(window->property("workspace").toInt()!=2 ||
+               rentalModel.statusFilter()!="Active" ||
+               rentalModel.selectedRentalId()!="R001" ||
+               rentalModel.selectedRow()!=0 ||
+               rentalModel.activeCount()!=1) {
+                qCritical()<<"P5 actionable overdue navigation failed";
+                app.exit(384);return;
+            }
+            window->setProperty("workspace",0);
             rentalModel.setStatusFilter("All");
+            rentalModel.clearSelection();
             // Keep the original reviewed quote for a genuine second-booking
             // refusal against a newly constructed domain after disk reload.
             const auto firstQuote=RentalQuoteService(system).preview("C001",3);
@@ -2721,7 +2741,9 @@ int main(int argc, char *argv[]) {
                fleet.availableCount()!=4 ||
                activeCard->property("value").toString()!="1" ||
                valueCard->property("value").toString()!="R 1350.00" ||
-               historyCard->property("text").toString()!="Returned or archived: 2") {
+               historyCard->property("text").toString()!="Returned or archived: 2" ||
+               rentalModel.oldestOverdueRentalId()!="" ||
+               overdueAction->isEnabled()) {
                 qCritical()<<"P5 Overview did not reconcile committed return";
                 app.exit(297);return;
             }

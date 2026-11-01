@@ -283,7 +283,7 @@ ApplicationWindow {
                     }
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 122
+                        Layout.preferredHeight: 172
                         radius: 12
                         color: mint
                         border.color: designTokens.border
@@ -310,8 +310,43 @@ ApplicationWindow {
                                     Accessible.name: text
                                 }
                             }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 12
+                                Label {
+                                    objectName: "overviewOldestOverdueText"
+                                    text: rentalsModel.oldestOverdueRentalId !== ""
+                                          ? "Oldest overdue contract: " + rentalsModel.oldestOverdueRentalId
+                                          : "No overdue returns need attention"
+                                    color: navy
+                                    font.bold: true
+                                    Accessible.name: text
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: overviewOverdueAction
+                                    objectName: "overviewReviewOverdue"
+                                    text: "Review overdue"
+                                    enabled: rentalsModel.oldestOverdueRentalId !== ""
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Review oldest overdue rental"
+                                    Accessible.description: "Select the oldest overdue active rental without changing its record"
+                                    onClicked: {
+                                        if (!rentalsModel.selectOldestOverdue())
+                                            return
+                                        window.workspace = 2
+                                        Qt.callLater(function() {
+                                            if (window.workspace !== 2)
+                                                return
+                                            rentalList.currentIndex = rentalsModel.selectedRow
+                                            rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                                            rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                        })
+                                    }
+                                }
+                            }
                             Label {
-                                text: "Metrics refresh only after a successful C++ transaction. Rental filters do not change totals."
+                                text: "Current C++ due states; rental filters never change Overview totals."
                                 color: ink; wrapMode: Text.WordWrap
                             }
                         }
