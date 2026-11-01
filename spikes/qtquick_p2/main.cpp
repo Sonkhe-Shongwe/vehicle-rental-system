@@ -658,6 +658,7 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("rentalActions", &rentalActions);
     engine.rootContext()->setContextProperty("bookingActions", &bookingActions);
     engine.rootContext()->setContextProperty("archiveActions", &archiveActions);
+    engine.rootContext()->setContextProperty("archivedDelete", &archivedDelete);
     engine.loadFromModule("RentalStudioSpike", "Main");
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
