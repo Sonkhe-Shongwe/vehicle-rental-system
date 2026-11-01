@@ -2969,6 +2969,211 @@ int main(int argc, char *argv[]) {
             app.exit(0);
         });
     }
+    if(p6Child) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 444;
+        window->resize(parser.isSet("compact")?1280:1500,
+                       parser.isSet("compact")?720:860);
+        window->setProperty("workspace",p6Seed?1:(p6Update?2:0));
+        QTimer::singleShot(1150,&app,[&,window]{
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *c:item->childItems())
+                    if(auto *hit=self(self,c,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *control) {
+                if(!control || !control->isVisible() || !control->isEnabled())
+                    return false;
+                control->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(140);
+                return true;
+            };
+            auto *root=window->contentItem();
+            auto *add=find(find,root,"fleetAddButton");
+            if(p6Seed) {
+                if(!add || fleet.totalCount()!=5 || rentalModel.count()!=2 ||
+                   !press(add)) {
+                    qCritical()<<"P6 first process did not show initial Fleet add";
+                    app.exit(445);return;
+                }
+                auto *brand=find(find,root,"fleetAddBrand");
+                auto *model=find(find,root,"fleetAddModel");
+                auto *rate=find(find,root,"fleetAddRate");
+                auto *confirm=find(find,root,"fleetAddConfirm");
+                if(!brand||!model||!rate||!confirm){app.exit(446);return;}
+                brand->setProperty("text",QStringLiteral("Demo Motors"));
+                model->setProperty("text",QStringLiteral("Orion"));
+                rate->setProperty("text",QStringLiteral("420"));
+                if(!press(confirm) || fleet.selectedId()!="C004" ||
+                   fleet.totalCount()!=6 || !press(add)) {
+                    qCritical()<<"P6 first process could not add first car";
+                    app.exit(447);return;
+                }
+                auto *kind=find(find,root,"fleetAddType");
+                brand=find(find,root,"fleetAddBrand");
+                model=find(find,root,"fleetAddModel");
+                rate=find(find,root,"fleetAddRate");
+                auto *extra=find(find,root,"fleetAddExtra");
+                confirm=find(find,root,"fleetAddConfirm");
+                if(!kind||!brand||!model||!rate||!extra||!confirm) {
+                    app.exit(448);return;
+                }
+                kind->setProperty("currentIndex",1);
+                brand->setProperty("text",QStringLiteral("Demo Moto"));
+                model->setProperty("text",QStringLiteral("Nova"));
+                rate->setProperty("text",QStringLiteral("300"));
+                extra->setProperty("value",450);
+                if(!press(confirm) || fleet.selectedId()!="M003" ||
+                   fleet.totalCount()!=7 || fleet.availableCount()!=6) {
+                    qCritical()<<"P6 first process failed actual Motorcycle commit";
+                    app.exit(449);return;
+                }
+                window->setProperty("workspace",2);
+                QTest::qWait(200);
+                auto *list=find(find,root,"rentalList");
+                auto *archive=find(find,root,"rentalArchiveButton");
+                if(!list||!archive) {app.exit(450);return;}
+                list->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Down);
+                QTest::keyClick(window,Qt::Key_Down);
+                QCoreApplication::processEvents();
+                if(rentalModel.selectedRentalId()!="R002" || !press(archive) ||
+                   !press(find(find,root,"rentalArchiveConfirm")) ||
+                   !system.findRentalById("R002") ||
+                   !system.findRentalById("R002")->getIsArchived() ||
+                   fleetRemove.canRemoveVehicle("C001")) {
+                    qCritical()<<"P6 first process failed native archival/history";
+                    app.exit(451);return;
+                }
+                qInfo()<<"P6 first native process: Car, Motorcycle, archive saved PASS";
+                app.exit(0);return;
+            }
+            if(p6Update) {
+                if(fleet.totalCount()!=7 || fleet.availableCount()!=6 ||
+                   !system.findVehicleById("C004") ||
+                   !system.findVehicleById("M003") ||
+                   !system.findRentalById("R002") ||
+                   !system.findRentalById("R002")->getIsArchived() ||
+                   !fleetRemove.hasRentalHistory("C001")) {
+                    qCritical()<<"P6 second process did not reconstruct previous UI commits";
+                    app.exit(452);return;
+                }
+                auto *list=find(find,root,"rentalList");
+                auto *remove=find(find,root,"rentalDeleteArchivedButton");
+                if(!list || !remove){app.exit(453);return;}
+                list->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Down);
+                QTest::keyClick(window,Qt::Key_Down);
+                QCoreApplication::processEvents();
+                if(rentalModel.selectedRentalId()!="R002" ||
+                   !press(remove)) {
+                    qCritical()<<"P6 reopened real UI did not select archived R002";
+                    app.exit(454);return;
+                }
+                auto *phrase=find(find,root,"rentalDeletePhrase");
+                auto *deleteButton=find(find,root,"rentalDeleteConfirm");
+                if(!phrase||!deleteButton){app.exit(455);return;}
+                phrase->setProperty("text",QStringLiteral("DELETE R002"));
+                if(!press(deleteButton) || system.findRentalById("R002") ||
+                   rentalModel.historyCount()!=0 ||
+                   !fleetRemove.canRemoveVehicle("C001")) {
+                    qCritical()<<"P6 second process failed exact archive deletion";
+                    app.exit(456);return;
+                }
+                window->setProperty("workspace",1);
+                QTest::qWait(180);
+                auto *fleetRemoveAction=find(find,root,"fleetRemoveSelectedButton");
+                if(!fleetRemoveAction) {app.exit(457);return;}
+                for(const QString &id:{QStringLiteral("C003"),QStringLiteral("C001")}) {
+                    fleet.selectById(id);
+                    QCoreApplication::processEvents();
+                    if(!press(fleetRemoveAction)) {
+                        qCritical()<<"P6 reopen removal disabled unexpectedly"<<id;
+                        app.exit(458);return;
+                    }
+                    auto *field=find(find,root,"fleetRemoveConfirmation");
+                    auto *confirm=find(find,root,"fleetRemoveConfirm");
+                    if(!field||!confirm){app.exit(459);return;}
+                    field->setProperty("text",QStringLiteral("REMOVE ")+id);
+                    if(!press(confirm) || system.findVehicleById(id)) {
+                        qCritical()<<"P6 second process could not remove unreferenced vehicle"<<id;
+                        app.exit(460);return;
+                    }
+                }
+                if(fleet.totalCount()!=5 || fleet.availableCount()!=4 ||
+                   rentalModel.count()!=1 || rentalModel.activeCount()!=1 ||
+                   !system.findRentalById("R001")) {
+                    qCritical()<<"P6 second process Fleet/Rentals totals invalid";
+                    app.exit(461);return;
+                }
+                qInfo()<<"P6 second native process: archived deletion, Fleet removal PASS";
+                app.exit(0);return;
+            }
+            // Third independent executable must render the reconstructed
+            // operator Overview, Fleet and Rentals after previous processes exit.
+            if(!p6Final || fleet.totalCount()!=5 ||
+               fleet.availableCount()!=4 ||
+               rentalModel.count()!=1 || rentalModel.activeCount()!=1 ||
+               rentalModel.historyCount()!=0 ||
+               system.findVehicleById("C001") ||
+               system.findVehicleById("C003") ||
+               !system.findVehicleById("C004") ||
+               !system.findVehicleById("M003") ||
+               system.findRentalById("R002") ||
+               !system.findRentalById("R001") ||
+               !system.hasRentalHistoryForVehicle("C002")) {
+                qCritical()<<"P6 third process failed final domain reconstruction";
+                app.exit(462);return;
+            }
+            auto *active=find(find,root,"overviewActiveCard");
+            if(!active || active->property("value").toString()!="1") {
+                qCritical()<<"P6 third process operator Overview inaccurate";
+                app.exit(463);return;
+            }
+            window->setProperty("workspace",1);
+            QTest::qWait(140);
+            auto *remove=find(find,root,"fleetRemoveSelectedButton");
+            fleet.selectById("C002");
+            QCoreApplication::processEvents();
+            if(!remove || remove->isEnabled() ||
+               fleetRemove.canRemoveVehicle("C002")) {
+                qCritical()<<"P6 third process allowed active vehicle removal";
+                app.exit(464);return;
+            }
+            fleet.selectById("C004");
+            QCoreApplication::processEvents();
+            if(!remove->isEnabled() || !fleetRemove.canRemoveVehicle("C004")) {
+                qCritical()<<"P6 third process lost new Car or selected action";
+                app.exit(465);return;
+            }
+            QByteArray persistedV,persistedR;
+            if(!readFile(QDir(dataDirectory).filePath("vehicles.txt"),&persistedV) ||
+               !readFile(QDir(dataDirectory).filePath("rentals.txt"),&persistedR) ||
+               persistedV.isEmpty() || persistedR.isEmpty()) {
+                app.exit(466);return;
+            }
+            window->setProperty("workspace",2);
+            QTest::qWait(130);
+            if(rentalModel.count()!=1 || rentalModel.historyCount()!=0) {
+                qCritical()<<"P6 third process Rentals UI counts inaccurate";
+                app.exit(467);return;
+            }
+            QByteArray afterV,afterR;
+            if(!readFile(QDir(dataDirectory).filePath("vehicles.txt"),&afterV) ||
+               !readFile(QDir(dataDirectory).filePath("rentals.txt"),&afterR) ||
+               afterV!=persistedV || afterR!=persistedR) {
+                qCritical()<<"P6 third process read-only navigation mutated ledger";
+                app.exit(468);return;
+            }
+            qInfo()<<"P6 third native process: Overview Fleet Rentals restart PASS";
+            app.exit(0);
+        });
+    }
     if (parser.isSet("p6-archived-delete-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window)return 410;
