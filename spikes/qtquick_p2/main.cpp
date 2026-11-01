@@ -3028,7 +3028,9 @@ int main(int argc, char *argv[]) {
             QTest::keyClick(window,Qt::Key_Space);
             QCoreApplication::processEvents();
             QTest::qWait(80);
-            auto *dialog=find(find,root,"rentalContractDetailsDialog");
+            // Qt Quick Dialog is a QQuickPopup QObject, not a QQuickItem.
+            // Find its QObject by name as the existing P3 return smoke does.
+            auto *dialog=window->findChild<QObject*>("rentalContractDetailsDialog");
             auto *start=find(find,root,"rentalDetailStart");
             auto *expected=find(find,root,"rentalDetailExpected");
             auto *actual=find(find,root,"rentalDetailActual");
@@ -3042,7 +3044,16 @@ int main(int argc, char *argv[]) {
                total->property("text").toString()!="Booked contract total: R 1400.00"||
                !status->property("text").toString().contains("Active") ||
                !close->hasActiveFocus()) {
-                qCritical()<<"P6-K active modal dates/rate/keyboard focus missing";
+                qCritical()<<"P6-K active modal dates/rate/keyboard focus missing"
+                           <<"dialog"<<dialog<<"start"<<start<<"expected"<<expected
+                           <<"actual"<<actual<<"total"<<total<<"status"<<status
+                           <<"close"<<close
+                           <<"startText"<<(start?start->property("text").toString():QString{})
+                           <<"expectedText"<<(expected?expected->property("text").toString():QString{})
+                           <<"actualText"<<(actual?actual->property("text").toString():QString{})
+                           <<"totalText"<<(total?total->property("text").toString():QString{})
+                           <<"statusText"<<(status?status->property("text").toString():QString{})
+                           <<"focused"<<(close?close->hasActiveFocus():false);
                 app.exit(564);return;
             }
             const QString size=compact?"1280x720":"1500x860";
