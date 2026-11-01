@@ -1635,6 +1635,22 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 keyboard workspace change or selected ID";
                 app.exit(238);return;
             }
+            // One Tab stop for the Rentals collection, not every row.
+            auto *rentalsList=find(find,root,"rentalList");
+            auto *rentalRow=find(find,root,"rentalRow");
+            if(!rentalsList || !rentalRow ||
+               !rentalsList->property("activeFocusOnTab").toBool() ||
+               rentalRow->property("activeFocusOnTab").toBool()) {
+                qCritical()<<"P4 Rentals collection/delegate Tab policy violated";
+                app.exit(251);return;
+            }
+            rentalsList->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(rentalRow->hasActiveFocus()) {
+                qCritical()<<"P4 Tab incorrectly entered an individual rental row";
+                app.exit(252);return;
+            }
             auto *returnButton=find(find,root,"rentalReturnButton");
             if(!returnButton || !returnButton->isEnabled()) {
                 app.exit(239);return;

@@ -769,7 +769,9 @@ ApplicationWindow {
                                     required property real total
                                     width: rentalList.width
                                     height: 70
-                                    activeFocusOnTab: true
+                                    // The ListView is the single keyboard Tab stop; arrow keys
+                                    // select records and rows remain pointer-clickable.
+                                    activeFocusOnTab: false
                                     Accessible.name: "Rental " + rentalId +
                                                      ", " + status + ", vehicle " + vehicleId
                                     onClicked: rentalsModel.selectById(rentalId)
