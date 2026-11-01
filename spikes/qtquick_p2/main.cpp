@@ -442,6 +442,13 @@ int main(int argc, char *argv[]) {
             std::make_shared<P5RejectWriteStorage>())
             : std::shared_ptr<RentalStorage>{});
     FleetController fleet(system);
+    FleetAddController fleetAdmin(system,!persistentDemo,
+        [&fleet](const QString &id) {
+            fleet.setQuery(QString{});
+            fleet.setStatus(QStringLiteral("All"));
+            fleet.refreshAfterCommit();
+            fleet.selectById(id);
+        });
     RentalReadService rentalRead(system);
     RentalListModel rentalModel(rentalRead);
     RentalReturnController rentalActions(system, rentalRead, rentalModel,
