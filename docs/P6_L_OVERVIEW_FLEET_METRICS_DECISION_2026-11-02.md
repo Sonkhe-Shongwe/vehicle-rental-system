@@ -1,0 +1,43 @@
+# P6-L | Overview and Fleet secondary metrics: source-grounded product decision proposal
+
+**Prepared:** 2 November 2026 (Africa/Johannesburg). **Status:** **RECOMMENDATION FOR OWNER REVIEW, NOT APPROVED DESIGN OR IMPLEMENTED CODE**. **Branch audited:** `feature/p6-fleet-create-disposable-20261101` at `5b494beb` (P6-K documentation head). **Latest exact native-tested implementation:** [`fae183b`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/fae183bb334d227bcc313cc89c8de670c7de66f2), [13/13 core](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457853), [72/72 native Qt Linux and 72/72 Windows](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457990). This P6-L document adds **no UI, metrics, business logic or test**.
+
+## 1. The actual comparison
+
+| Evidence | Qt Widgets historical source | Qt Quick current source | Product implication |
+|---|---|---|---|
+| Fleet occupancy | `mainwindow.cpp::updateDashboardCards` counts all vehicles, rented vehicles and fleet utilisation as rented / total × 100 (0% for empty fleet) | Existing C++ `FleetController` exposes all-fleet `totalCount` and `availableCount`; Overview's Available card says “Of X in Fleet” | Availability is already a primary decision-oriented operational signal; do not duplicate it with a fifth large card unless its action is different |
+| Vehicle category mix | Legacy dashboard shows Cars and Motorcycles, plus available counts by type elsewhere | `FleetReadService::vehicles()` returns read-only typed `FleetVehicleSummary.type` from `Vehicle::typeName()`; QML Fleet Gallery/Table shows each item's category | Category mix is useful in inventory management, not urgent overdue/return triage; a **secondary Fleet** breakdown is a sensible candidate |
+| Transaction values | Legacy `revenueValue` adds rental totals across history, potentially misleading when read as collected revenue | Current QML shows “Active booked value” from `RentalListModel::activeBookedValue()`, with explicit no-payments disclosure | **Preserve the more honest new definition. Never restore historic “Revenue” into the Overview.** |
+| Operations workflow | Legacy Dashboard has total/available/active/utilisation metric cards, fleet-type strip and a recent table | Current Overview has **four** C++-owned cards: Available, Active, Overdue, Active booked value; due-today/oldest-overdue action, Active/Fleet navigation and [four most recent contracts](P6_J_RECENT_CONTRACTS_NATIVE_VERIFIED_2026-11-01.md) | The modern Overview is already more actionable than a metric-heavy inventory summary; adding three KPI cards could crowd compact 1280×720 |
+| Owner visual direction | Old Qt Widgets UI is a capability reference, not the target art direction | [Owner navy/teal direction](../design/r1/OWNER_THEME_DIRECTION_2026-10-30.md) and [working product spec](RENTAL_STUDIO_FINAL_PRODUCT_SPEC_DRAFT_2026-11-01.md) specify three workspaces, low-noise hierarchy and true data | Maintain current **four primary Overview cards** pending explicit owner review |
+
+### Source-derived synthetic sample, not a live business claim
+
+The **SHA-pinned fictional fixture** `demo/vehicles.txt` contains 5 vehicles: **3 cars, 2 motorcycles, 4 available, 1 rented**. Fleet utilisation = 1 ÷ 5 × 100 = **20%**. This is a sample-only reference. **Do not hardcode sample counts into QML, build charts from them, or call this production utilisation.** No accounting-revenue data is provided.
+
+## 2. Three implementation-placement options, not yet approved
+
+| Option | How it would look | Pros | Risks | Recommendation |
+|---|---|---|---|---|
+| **A: Fleet secondary summary (preferred)** | A short, calm read-only status line in Fleet near Gallery/Table and search: “3 cars · 2 motorcycles · 1 of 5 rented (20%)”. Do not interrupt the Inspector or top-row action flow | Closest to where inventory composition affects decisions; keeps Overview clean; one bounded source | Must remain computed from full domain snapshot, not filtered Gallery results; needs new typed model, viewport and accessibility tests | **Propose for owner approval**; no code change until selected |
+| B: Overview lower-priority information | A single subdued sentence below attention and recent contracts, possibly linking to Fleet | Discoverable centrally | Duplicates existing available ratio, consumes scarce height and competes with due actions, especially at 1280×720 | Not preferred |
+| C: No additional count widgets | Keep current Fleet category labels and four Overview KPIs; omit secondary summary | No new code/UI, avoids noise | Makes global car/motorcycle mix less immediately visible than legacy | Acceptable if owner prefers minimalism |
+
+### Exact data semantics required *if* A is approved
+
+- **Use complete authoritative fleet snapshots, not filtered/search-selected cards.** `total` = number of all registered vehicles; `available` = count with `!getIsRented()`; `rented` = `total - available`; `cars` and `motorcycles` count `FleetVehicleSummary.type`, case-insensitively and with explicit known-type rules.
+- **Utilisation is occupancy**, `100 × rented / total`, and **0% only with an explicit “No fleet vehicles” empty state**; this is not revenue, days used or booking conversion.
+- Tie summary refresh to actual C++-committed add/remove/book/return and to third-process startup, never to search/filter, hover or selecting an item. Ensure zero/many/long data and unknown vehicle type do not distort sums.
+- All values should be read-only, with accessible explanatory labels, text plus colour, no customer records, no new writer and no new production fixture permissions.
+- Verify 1500×860 and 1280×720 via real compiled Qt tests on Linux and Windows, and physical Windows 100/125/150% separately. Include full-snapshot invariant after a Fleet filter, booking/return, restart and no-write checks.
+
+**Decision to record:** owner chooses **A Fleet summary, B Overview summary, or C omit**. This document recommends **A**, but no affirmative owner decision has been recorded. Do not claim the UI is accepted or quietly implement A based solely on this audit.
+
+## 3. Closure implications
+
+- **P6-I L02** utilisation/type comparison is **assessed and a proposed placement is ready**; it is **not an implemented parity item or approved product decision**.
+- **P6-I L03** recent *contracts* gap was implemented in [P6-J](P6_J_RECENT_CONTRACTS_NATIVE_VERIFIED_2026-11-01.md), not a genuine return/archive audit timeline.
+- **P6-I L18** purpose-limited non-contact contract-date details were implemented in [P6-K](P6_K_CONTRACT_DETAIL_NATIVE_VERIFIED_2026-11-02.md). Any future customer name/phone view still requires explicit access, minimisation and record-retention policy.
+- The provisional 9th P6 full-lifecycle parity group remains open for owner rubric decisions and sequential physical workflow proof. See [P6-L acceptance candidate and runbook](P6_L_NINE_CRITERION_ACCEPTANCE_REVIEW_PACK_2026-11-02.md).
+- Formal P5 **0/8**, P6 **0/9**, programme **28/74 accepted and 40.6% evidence-weighted coverage** unchanged. Neither is overall feature completion nor release readiness. No real data, merges or stable `main` changes are authorized.
