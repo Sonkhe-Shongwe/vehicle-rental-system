@@ -466,9 +466,9 @@ bool manifestOverflow(){
     // Each synthetic contract fits signed 64-bit cents, but their SUM does not.
     const QByteArray big=
        "Rental|R001|Invented|0000000000|C001|2026-10-01|2026-10-02|"
-       "|1|92233720368547758.00|92233720368547758.00|0|0\n"
+       "|1|50000000000000000.00|50000000000000000.00|0|0\n"
        "Rental|R002|Invented|0000000000|C002|2026-10-01|2026-10-02|"
-       "|1|92233720368547758.00|92233720368547758.00|0|0\n";
+       "|1|50000000000000000.00|50000000000000000.00|0|0\n";
     Report r;
     if(!fixture(cleanV,big,&r))return false;
     const auto obj=QJsonDocument::fromJson(r.manifest()).object(),
