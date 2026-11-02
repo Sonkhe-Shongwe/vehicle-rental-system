@@ -41,6 +41,7 @@
 #include "src/application/p7_sandbox/repository_preview_controller.h"
 #include "src/application/p7_sandbox/sqlite_read_projection.h"
 #include "src/application/p7_sandbox/fictional_fleet_snapshot.h"
+#include "src/application/p7_sandbox/fictional_operations_snapshot.h"
 #endif
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
@@ -818,6 +819,8 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<p7fiction::PreviewController> p7SqlController;
     // Test-only provider fault toggles; never exposed to QML or user input.
     bool p7RefuseFleetReads=false, p7RefuseRentalReads=false;
+    bool p7RefuseOperationsReads=false;
+    std::unique_ptr<p7fiction::FictionalOperationsSnapshot> p7SqlOverview;
     std::unique_ptr<p7fiction::FictionalFleetSnapshot> p7SqlFleet;
     std::unique_ptr<RentalListModel> p7SqlRentals;
     if(p7SqlLabEnabled) {
@@ -827,6 +830,12 @@ int main(int argc, char *argv[]) {
             return 601;
         }
         auto *controller=p7SqlController.get();
+        p7SqlOverview=std::make_unique<p7fiction::FictionalOperationsSnapshot>(
+            [controller,&p7RefuseOperationsReads]() -> std::optional<p7fiction::FleetRows> {
+                if(p7RefuseOperationsReads)return {};
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?repo->fleetRows():std::nullopt;
+            });
         p7SqlFleet=std::make_unique<p7fiction::FictionalFleetSnapshot>(
             [controller,&p7RefuseFleetReads]() -> std::optional<QList<FleetVehicleSummary>> {
                 if(p7RefuseFleetReads)return {};
@@ -841,10 +850,13 @@ int main(int argc, char *argv[]) {
                             std::nullopt;
             });
         QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlOverview.get(),&p7fiction::FictionalOperationsSnapshot::refresh);
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
                          p7SqlFleet.get(),&p7fiction::FictionalFleetSnapshot::refresh);
         QObject::connect(controller,&p7fiction::PreviewController::committed,
                          p7SqlRentals.get(),&RentalListModel::refresh);
-        if(!p7SqlFleet->snapshotAvailable() ||
+        if(!p7SqlOverview->snapshotAvailable() ||
+           !p7SqlFleet->snapshotAvailable() ||
            !p7SqlRentals->snapshotAvailable())return 602;
     }
 #endif
@@ -1050,10 +1062,12 @@ int main(int argc, char *argv[]) {
 #ifdef RENTAL_STUDIO_P7_SQL_LAB
     engine.rootContext()->setContextProperty("p7SqlController",
                                               p7SqlController.get());
+    engine.rootContext()->setContextProperty("p7SqlOverview",p7SqlOverview.get());
     engine.rootContext()->setContextProperty("p7SqlFleet",p7SqlFleet.get());
     engine.rootContext()->setContextProperty("p7SqlRentals",p7SqlRentals.get());
 #else
     engine.rootContext()->setContextProperty("p7SqlController",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlOverview",static_cast<QObject*>(nullptr));
     engine.rootContext()->setContextProperty("p7SqlFleet",static_cast<QObject*>(nullptr));
     engine.rootContext()->setContextProperty("p7SqlRentals",static_cast<QObject*>(nullptr));
 #endif
@@ -1080,6 +1094,9 @@ int main(int argc, char *argv[]) {
             };
             auto *root=window->contentItem();
             auto *nav=find(find,root,"workspaceNavSQLite Lab");
+            auto *overviewFleet=find(find,root,"p7AppOverviewFleet");
+            auto *overviewRentals=find(find,root,"p7AppOverviewRentals");
+            auto *overviewValue=find(find,root,"p7AppOverviewValue");
             auto *fleetText=find(find,root,"p7AppFleetMetrics");
             auto *rentalsText=find(find,root,"p7AppRentalsMetrics");
             auto *receipt=find(find,root,"p7AppReceipt");
@@ -1089,10 +1106,18 @@ int main(int argc, char *argv[]) {
             auto *rentalSelection=find(find,root,"p7AppRentalSelected");
             auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
             auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
-            if(!nav||!fleetText||!rentalsText||!receipt||!lab||
+            if(!nav||!overviewFleet||!overviewRentals||!overviewValue||
+               !fleetText||!rentalsText||!receipt||!lab||
                !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
                !fleetText->property("text").toString().contains("1 available") ||
                !rentalsText->property("text").toString().contains("Active: 0") ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->totalVehicles()!=1 ||
+               p7SqlOverview->availableVehicles()!=1 ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->historyRentals()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
+               !overviewValue->property("text").toString().contains("R 0.00") ||
                p7SqlFleet->totalCount()!=1 || p7SqlRentals->activeCount()!=0 ||
                p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=0 ||
                !fleetVisible->property("text").toString().contains("1 matching") ||
@@ -1115,7 +1140,9 @@ int main(int argc, char *argv[]) {
                !p7SqlController->rejectNextBookingForTest() ||
                !click("p7AppConfirm")||p7SqlController->rentalId()!=""||
                p7SqlFleet->availableCount()!=1||p7SqlRentals->activeCount()!=0||
-               !receipt->property("text").toString().contains("not issued")) {
+               !receipt->property("text").toString().contains("not issued") ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00") {
                 qCritical()<<"P7 real app leaked uncommitted/rejected SQL booking";
                 app.exit(605);return;
             }
@@ -1123,12 +1150,21 @@ int main(int argc, char *argv[]) {
                p7SqlFleet->availableCount()!=0||p7SqlRentals->activeCount()!=1||
                !fleetText->property("text").toString().contains("0 available")||
                !rentalsText->property("text").toString().contains("Active: 1")||
+               p7SqlOverview->activeRentals()!=1 ||
+               p7SqlOverview->availableVehicles()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 1350.00" ||
+               !overviewValue->property("text").toString().contains("R 1350.00")||
                !click("p7AppReturn")||p7SqlFleet->availableCount()!=1||
                !click("p7AppArchive")||p7SqlRentals->historyCount()!=1||
                !click("p7AppRetire")||p7SqlFleet->availableCount()!=0||
                !p7SqlController->independentReopen()||
                !p7SqlRentals->snapshotAvailable()||
                !p7SqlFleet->snapshotAvailable() ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->historyRentals()!=1 ||
+               p7SqlOverview->availableVehicles()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
                p7SqlRentals->count()!=1 || p7SqlFleet->visibleCount()!=1) {
                 qCritical()<<"P7 real app SQL commit and QML availability parity FAILED";
                 app.exit(606);return;
@@ -1201,11 +1237,17 @@ int main(int argc, char *argv[]) {
             // but HIDE every unverifiable row and selected contract in QML.
             p7RefuseFleetReads=true;
             p7RefuseRentalReads=true;
+            p7RefuseOperationsReads=true;
+            p7SqlOverview->refresh();
             p7SqlFleet->refresh();
             p7SqlRentals->refresh();
             QCoreApplication::processEvents();
             if(p7SqlFleet->snapshotAvailable() ||
                p7SqlRentals->snapshotAvailable() ||
+               p7SqlOverview->snapshotAvailable() ||
+               !overviewFleet->property("text").toString().contains("unavailable") ||
+               !overviewRentals->property("text").toString().contains("unavailable") ||
+               !overviewValue->property("text").toString().contains("unavailable") ||
                p7SqlFleet->totalCount()!=1 || p7SqlRentals->count()!=1 ||
                !fleetSelection->property("text").toString().contains("snapshot unavailable") ||
                !rentalSelection->property("text").toString().contains("snapshot unavailable") ||
@@ -1216,11 +1258,15 @@ int main(int argc, char *argv[]) {
             }
             p7RefuseFleetReads=false;
             p7RefuseRentalReads=false;
+            p7RefuseOperationsReads=false;
             lab->setProperty("contentY",0.0);
             QCoreApplication::processEvents();
-            if(!click("p7AppRetryFleet") || !click("p7AppRetryRentals") ||
+            if(!click("p7AppRetryOverview") ||
+               !click("p7AppRetryFleet") || !click("p7AppRetryRentals") ||
                !p7SqlFleet->snapshotAvailable() ||
                !p7SqlRentals->snapshotAvailable() ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
                p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=1 ||
                !fleetSelection->property("text").toString().contains("4 doors") ||
                !rentalSelection->property("text").toString().contains("Archived")) {

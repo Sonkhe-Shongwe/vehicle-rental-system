@@ -34,6 +34,7 @@ if(BUILD_P7_SQLITE_SANDBOX)
         ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_repository.h
         ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_read_projection.h
         ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/fictional_fleet_snapshot.h
+        ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/fictional_operations_snapshot.h
         ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h)
 endif()
 # Compile the SHA-256 of the exact fictional fixtures into the executable.
