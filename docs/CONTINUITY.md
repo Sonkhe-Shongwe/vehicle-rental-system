@@ -33,6 +33,6 @@
 - Continue deferring repetitive manual screenshots until one consolidated physical Windows/MinGW, 100/125/150% scaling, keyboard, Narrator and operator acceptance session. Earlier user screenshots proved two static Fleet filter and summary states only.
 - No real customer/phone/driving-licence data, no unapproved production file imports, privacy/retention policy, general commercial storage, installation/release, merge or tag. P7 ADR and P6 rubric stay owner gated.
 - Use only verified exact source CI results; docs-only heads have scope-only green and skipped expensive build jobs. Never convert 108/108 tests into a fictitious accepted criterion.
-- **28/74 formally accepted, 40.6% weighted evidence; latest compiled source P7-P on stacked draft P7 branch; all drafts unmerged.**
+- **28/74 formally accepted, 40.6% weighted evidence; latest compiled and native-tested source P7-R `de47e0f` on stacked draft P7 branch, with docs-only head `b91c528`; all drafts unmerged.**
 
 See [current road map](ROADMAP.md) and [testing](TESTING.md) for forward gates.
