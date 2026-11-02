@@ -1164,7 +1164,13 @@ int main(int argc, char *argv[]) {
         auto *gallery = window->findChild<QQuickItem*>("fleetGallery");
         auto *table = window->findChild<QQuickItem*>("fleetTable");
         auto *snapshot = window->findChild<QQuickItem*>("fleetSnapshotSummary");
-        if (!gallery || !table || !snapshot ||
+        auto *galleryToggle = window->findChild<QQuickItem*>("fleetGalleryToggle");
+        auto *tableToggle = window->findChild<QQuickItem*>("fleetTableToggle");
+        auto *emptyArt = window->findChild<QQuickItem*>("fleetInspectorEmptyArt");
+        if (!gallery || !table || !snapshot || !galleryToggle || !tableToggle ||
+            !emptyArt || !emptyArt->isVisible() ||
+            !galleryToggle->property("visuallySelected").toBool() ||
+            tableToggle->property("visuallySelected").toBool() ||
             fleet.totalCount() != 5 || fleet.availableCount() != 4 ||
             fleet.carCount() != 3 || fleet.motorcycleCount() != 2 ||
             fleet.rentedCount() != 1 ||
@@ -1208,7 +1214,9 @@ int main(int argc, char *argv[]) {
                         QStringLiteral("3 cars")) ||
                     !snapshot->property("text").toString().contains(
                         QStringLiteral("2 motorcycles")) ||
-                    fleet.rentedCount() != 1) {
+                    fleet.rentedCount() != 1 ||
+                    galleryToggle->property("visuallySelected").toBool() ||
+                    !tableToggle->property("visuallySelected").toBool()) {
                     qCritical() << "QML Gallery/Table visibility or C++ model parity failed";
                     app.exit(10); return;
                 }

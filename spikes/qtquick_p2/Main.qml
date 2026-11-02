@@ -571,6 +571,23 @@ ApplicationWindow {
                                 Button {
                                     objectName: "fleetGalleryToggle"
                                     text: "Gallery"
+                                    property bool visuallySelected: window.gallery
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 102
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        border.width: window.gallery || parent.activeFocus ? 2 : 1
+                                        border.color: parent.activeFocus ? navy : window.gallery ? teal : designTokens.border
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.bold: window.gallery
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     onClicked: {
                                         window.gallery = true
                                         galleryView.forceActiveFocus(Qt.OtherFocusReason)
@@ -584,6 +601,23 @@ ApplicationWindow {
                                 Button {
                                     objectName: "fleetTableToggle"
                                     text: "Table"
+                                    property bool visuallySelected: !window.gallery
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 94
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        border.width: !window.gallery || parent.activeFocus ? 2 : 1
+                                        border.color: parent.activeFocus ? navy : !window.gallery ? teal : designTokens.border
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.bold: !window.gallery
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     onClicked: {
                                         window.gallery = false
                                         tableView.forceActiveFocus(Qt.OtherFocusReason)
@@ -599,7 +633,25 @@ ApplicationWindow {
                                     id: fleetAddButton
                                     objectName: "fleetAddButton"
                                     text: "Add vehicle"
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 124
+                                    hoverEnabled: true
                                     enabled: fleetAdmin.canAdd
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !fleetAddButton.enabled ? "#E6EAEE" :
+                                               fleetAddButton.down ? "#0C625C" :
+                                               fleetAddButton.hovered ? "#0C625C" : teal
+                                        border.width: fleetAddButton.activeFocus ? 3 : 0
+                                        border.color: navy
+                                    }
+                                    contentItem: Text {
+                                        text: fleetAddButton.text
+                                        font.bold: true
+                                        color: fleetAddButton.enabled ? "#FFFFFF" : ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     activeFocusOnTab: true
                                     Accessible.name: "Add a fictional car or motorcycle"
                                     Accessible.description: fleetAdmin.canAdd
@@ -651,7 +703,7 @@ ApplicationWindow {
                                 }
                                 model: fleet.visibleModel
                                 cellWidth: width < 790 ? width / 2 : width / 3
-                                cellHeight: 215
+                                cellHeight: 192
                                 ScrollBar.vertical: ScrollBar {}
                                 delegate: Button {
                                     id: vehicleCard
@@ -662,7 +714,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 195
+                                    height: 176
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -679,24 +731,49 @@ ApplicationWindow {
                                         selected: fleet.selectedId === vehicleCard.vehicleId
                                     }
                                     contentItem: ColumnLayout {
-                                        anchors.margins: 12
-                                        Label {
-                                            text: "◇"
-                                            font.pixelSize: 45; color: teal
-                                            Layout.alignment: Qt.AlignHCenter
+                                        spacing: 4
+                                        anchors.margins: 10
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 76
+                                            color: window.ice
+                                            radius: 9
+                                            VehicleSilhouette {
+                                                id: vehicleArt
+                                                objectName: "vehicleCardArt"
+                                                anchors.centerIn: parent
+                                                vehicleType: vehicleCard.vehicleType
+                                                width: 164
+                                                height: 74
+                                            }
                                         }
                                         Label {
                                             text: vehicleCard.displayName
+                                            font.pixelSize: 15
                                             font.bold: true; color: navy
                                             elide: Text.ElideRight
                                             Layout.fillWidth: true
                                         }
-                                        Label { text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType; color: ink }
                                         Label {
-                                            text: (vehicleCard.available ? "Available" : "Rented") +
-                                                  "   ·   R " + vehicleCard.dailyRate.toFixed(2) + "/day"
-                                            color: vehicleCard.available ? teal : navy
+                                            text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType
+                                            color: ink
                                             font.pixelSize: 12
+                                        }
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 8
+                                            Label {
+                                                text: vehicleCard.available ? "Available" : "Rented"
+                                                font.bold: true
+                                                color: vehicleCard.available ? teal : navy
+                                                font.pixelSize: 12
+                                            }
+                                            Item { Layout.fillWidth: true }
+                                            Label {
+                                                text: "R " + vehicleCard.dailyRate.toFixed(2) + "/day"
+                                                color: navy
+                                                font.pixelSize: 12
+                                            }
                                         }
                                     }
                                 }
@@ -795,15 +872,27 @@ ApplicationWindow {
                                     onClicked: fleet.clearSelection()
                                 }
                             }
+                            Rectangle {
+                                objectName: "fleetInspectorEmptyArt"
+                                visible: fleet.selectedId === ""
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 128
+                                color: ice
+                                radius: 10
+                                VehicleSilhouette {
+                                    anchors.centerIn: parent
+                                    vehicleType: "Car"
+                                }
+                            }
                             Label {
-                                text: fleet.selectedId === "" ? "Select a vehicle" : fleet.selectedName
+                                text: fleet.selectedId === "" ? "Ready to explore" : fleet.selectedName
                                 color: navy; font.pixelSize: 21; font.bold: true
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                             }
                             Label {
                                 text: fleet.selectedId === "" ?
-                                    "Select a Gallery card or Table row to inspect the same C++ vehicle record." :
+                                    "Choose a Gallery card or Table row to see verified vehicle details." :
                                     fleet.selectedId + " · " + fleet.selectedType
                                 color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap
                             }
@@ -822,6 +911,7 @@ ApplicationWindow {
                                     (fleet.selectedAvailable ? "Available" : "Rented")
                                 color: fleet.selectedAvailable ? teal : navy
                             }
+                            Item { Layout.fillHeight: true }
                             Label {
                                 objectName: "inspectorHint"
                                 text: fleet.selectedId === ""
@@ -835,7 +925,24 @@ ApplicationWindow {
                                 id: bookSelectedFleetButton
                                 objectName: "fleetBookSelectedButton"
                                 Layout.fillWidth: true
+                                Layout.minimumHeight: 44
                                 text: "Book selected vehicle"
+                                hoverEnabled: true
+                                background: Rectangle {
+                                    radius: 8
+                                    color: !bookSelectedFleetButton.enabled ? "#E6EAEE" :
+                                           bookSelectedFleetButton.down ? "#0C625C" :
+                                           bookSelectedFleetButton.hovered ? "#0C625C" : teal
+                                    border.width: bookSelectedFleetButton.activeFocus ? 3 : 0
+                                    border.color: navy
+                                }
+                                contentItem: Text {
+                                    text: bookSelectedFleetButton.text
+                                    font.bold: true
+                                    color: bookSelectedFleetButton.enabled ? "#FFFFFF" : ink
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 enabled: fleet.selectedId !== "" && fleet.selectedAvailable
                                 activeFocusOnTab: true
                                 Accessible.name: "Create rental for selected available vehicle"
@@ -850,6 +957,7 @@ ApplicationWindow {
                                 id: removeSelectedFleetButton
                                 objectName: "fleetRemoveSelectedButton"
                                 Layout.fillWidth: true
+                                Layout.minimumHeight: 44
                                 text: "Remove selected vehicle"
                                 activeFocusOnTab: true
                                 enabled: fleet.selectedId !== "" &&
@@ -886,7 +994,6 @@ ApplicationWindow {
                                 objectName: "fleetRemoveMessage"
                                 text: fleetRemove.lastMessage
                             }
-                            Item { Layout.fillHeight: true }
                         }
                     }
                     FleetAddDialog {
