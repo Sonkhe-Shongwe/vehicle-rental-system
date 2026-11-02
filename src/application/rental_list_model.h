@@ -8,6 +8,8 @@
 #include <QString>
 #include <QVariantList>
 #include <QVariantMap>
+#include <functional>
+#include <optional>
 
 // Native Qt read-only model. The service and its owning RentalSystem must
 // outlive this adapter. No Rental* or customer PII is exposed through roles.
@@ -48,6 +50,11 @@ public:
 
     explicit RentalListModel(const RentalReadService &service,
                              QObject *parent = nullptr);
+    // P7-J compatibility seam: caller supplies validated, copy-only domain
+    // snapshots. Nullopt means failed read, not an empty rental database.
+    // Default legacy constructor and QML behavior remain unchanged.
+    using SnapshotProvider = std::function<std::optional<QList<RentalRecordSummary>>()>;
+    explicit RentalListModel(SnapshotProvider provider, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
@@ -93,7 +100,7 @@ private:
     int rowForId(const QString &rentalId) const;
     QList<RentalRecordSummary> filtered(const QList<RentalRecordSummary> &all) const;
 
-    const RentalReadService &m_service;
+    SnapshotProvider m_recordsProvider;
     QList<RentalRecordSummary> m_allItems;
     QList<RentalRecordSummary> m_items;
     QString m_statusFilter = QStringLiteral("All");

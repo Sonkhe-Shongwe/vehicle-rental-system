@@ -120,7 +120,16 @@ set_tests_properties(
 find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Qml Quick QuickControls2 Test)
 add_executable(rental_studio_p7_qml_preview
     p7_qml_preview_tests.cpp
-    ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h)
+    ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h
+    ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_read_projection.h
+    ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
+    ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
+    ${PROJECT_SOURCE_DIR}/rentalsystem.cpp
+    ${PROJECT_SOURCE_DIR}/rental.cpp
+    ${PROJECT_SOURCE_DIR}/vehicle.cpp
+    ${PROJECT_SOURCE_DIR}/car.cpp
+    ${PROJECT_SOURCE_DIR}/motorcycle.cpp)
 target_include_directories(rental_studio_p7_qml_preview PRIVATE ${PROJECT_SOURCE_DIR})
 target_link_libraries(rental_studio_p7_qml_preview PRIVATE
     Qt6::Core Qt6::Sql Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
@@ -131,3 +140,9 @@ add_test(NAME rental_studio_p7_qml_rollback COMMAND rental_studio_p7_qml_preview
 set_tests_properties(
     rental_studio_p7_qml_journey rental_studio_p7_qml_rollback
     PROPERTIES TIMEOUT 40)
+
+# P7-J: same production-facing RentalListModel with a test-only
+# normalized SQLite provider, including real native QML KPI bindings.
+add_test(NAME rental_studio_p7_qml_read_model
+    COMMAND rental_studio_p7_qml_preview read_model)
+set_tests_properties(rental_studio_p7_qml_read_model PROPERTIES TIMEOUT 40)

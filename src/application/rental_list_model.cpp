@@ -128,8 +128,22 @@ QVariantMap RentalListModel::selectedContract() const {
 }
 
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
-    : QAbstractListModel(parent), m_service(service),
-      m_allItems(service.records()), m_items(m_allItems) {}
+    : RentalListModel([&service]() -> std::optional<QList<RentalRecordSummary>> {
+          return service.records();
+      }, parent) {}
+
+RentalListModel::RentalListModel(SnapshotProvider provider, QObject *parent)
+    : QAbstractListModel(parent), m_recordsProvider(std::move(provider)) {
+    // A failed first read is not interpreted as a successfully loaded
+    // business ledger. No production backend uses this constructor yet.
+    if(m_recordsProvider) {
+        auto records=m_recordsProvider();
+        if(records) {
+            m_allItems=std::move(*records);
+            m_items=m_allItems;
+        }
+    }
+}
 
 int RentalListModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : m_items.size();
@@ -324,7 +338,12 @@ void RentalListModel::refresh() {
     const int priorCount = m_items.size();
     const int priorRow = selectedRow();
     const QString priorId = m_selectedRentalId;
-    QList<RentalRecordSummary> latest = m_service.records();
+    // A failed SQL read must never erase a valid existing ListModel
+    // snapshot or emit false post-commit metric change notifications.
+    if(!m_recordsProvider)return;
+    auto loaded=m_recordsProvider();
+    if(!loaded)return;
+    QList<RentalRecordSummary> latest=std::move(*loaded);
     QList<RentalRecordSummary> visible = filtered(latest);
 
     beginResetModel();

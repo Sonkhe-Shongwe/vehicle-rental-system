@@ -51,6 +51,9 @@ public:
     }
     ~PreviewController() override = default;
     bool ready() const { return m_ready; }
+    // No QML exposure: only the fixed, generated-fictional test harness
+    // can attach existing production-facing C++ read model to this repo.
+    const Repository *testOnlyReadRepository() const {return m_repo.get();}
     QString stage() const { return m_stage; }
     QString message() const { return m_message; }
     QString rentalId() const { return m_rental; }
@@ -85,25 +88,25 @@ public:
         m_rental=result.id;
         m_stage="ACTIVE";
         m_message="Fictional "+m_rental+" committed. No payment taken.";
-        emit changed();return true;
+        emit changed();emit committed();return true;
     }
     Q_INVOKABLE bool returnBooking() {
         if(!canReturn())return false;
         if(m_repo->returnRental(m_rental,m_day,m_day)!=Status::Ok)return false;
         m_stage="RETURNED";m_message="Fictional rental returned; history preserved.";
-        emit changed();return true;
+        emit changed();emit committed();return true;
     }
     Q_INVOKABLE bool archiveBooking() {
         if(!canArchive())return false;
         if(m_repo->archive(m_rental)!=Status::Ok)return false;
         m_stage="ARCHIVED";m_message="Fictional history archived, not deleted.";
-        emit changed();return true;
+        emit changed();emit committed();return true;
     }
     Q_INVOKABLE bool retireAsset() {
         if(!canRetire())return false;
         if(m_repo->retire("C001")!=Status::Ok)return false;
         m_stage="RETIRED";m_message="Fictional asset retired. Archived rental remains.";
-        emit changed();return true;
+        emit changed();emit committed();return true;
     }
     // Native harness-only checks. No general user path, PII or migration.
     bool rejectNextBookingForTest() {
@@ -131,6 +134,7 @@ public:
     }
 signals:
     void changed();
+    void committed(); // Emit only after successful SQLite COMMIT.
 private:
     QTemporaryDir m_temp; // Repository destroyed before QTemporaryDir cleans it.
     std::unique_ptr<Repository> m_repo;

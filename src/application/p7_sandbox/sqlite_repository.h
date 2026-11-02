@@ -4,6 +4,7 @@
 #include <QDate>
 #include <QDir>
 #include <QFile>
+#include <QList>
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QSqlDatabase>
@@ -25,6 +26,19 @@ struct Quote {
 };
 struct Booking { Status status=Status::Invalid; QString id; };
 struct RentalView { QString id, vehicleId, status; qint64 totalCents=0; };
+// Read-only P7-J projection DTOs: integer cents stay canonical.
+// Both collections fail closed (nullopt) if any SQL field is invalid.
+struct VehicleRow {
+    QString id, kind, brand, model, state;
+    int spec=0;
+    qint64 rateCents=0;
+};
+struct RentalRow {
+    QString id, vehicleId, status;
+    QDate start, expected, actual;
+    int days=0;
+    qint64 dailyCents=0, totalCents=0;
+};
 class Repository final {
     QString m_root, m_connection;
     QSqlDatabase db;
@@ -246,6 +260,55 @@ public:
         if(!live)return -1;
         auto v=one("SELECT next_id FROM counters WHERE kind=?",{kind});
         return v.isValid()?v.toLongLong():-1;
+    }
+    std::optional<QList<VehicleRow>> vehicleRows() const {
+        if(!live)return {};
+        QSqlQuery q(db);
+        if(!q.exec("SELECT id,kind,brand,model,state,spec,rate_cents "
+                   "FROM vehicles ORDER BY id COLLATE NOCASE"))return {};
+        QList<VehicleRow> rows;
+        while(q.next()) {
+            VehicleRow v{q.value(0).toString(),q.value(1).toString(),
+                q.value(2).toString(),q.value(3).toString(),
+                q.value(4).toString(),q.value(5).toInt(),q.value(6).toLongLong()};
+            if(v.id.isEmpty() || (v.kind!="Car"&&v.kind!="Motorcycle") ||
+               v.brand.trimmed().isEmpty() || v.model.trimmed().isEmpty() ||
+               (v.state!="ACTIVE"&&v.state!="RETIRED") ||
+               v.spec<=0 || v.rateCents<=0)return {};
+            rows.append(v);
+        }
+        return rows;
+    }
+    std::optional<QList<RentalRow>> rentalRows() const {
+        if(!live)return {};
+        QSqlQuery q(db);
+        if(!q.exec("SELECT id,vehicle_id,status,start_date,expected_date,actual_date,"
+                   "days,daily_cents,total_cents FROM rentals ORDER BY id COLLATE NOCASE"))
+            return {};
+        QList<RentalRow> rows;
+        while(q.next()) {
+            RentalRow r;
+            r.id=q.value(0).toString();
+            r.vehicleId=q.value(1).toString();
+            r.status=q.value(2).toString();
+            r.start=QDate::fromString(q.value(3).toString(),Qt::ISODate);
+            r.expected=QDate::fromString(q.value(4).toString(),Qt::ISODate);
+            r.actual=QDate::fromString(q.value(5).toString(),Qt::ISODate);
+            r.days=q.value(6).toInt();
+            r.dailyCents=q.value(7).toLongLong();
+            r.totalCents=q.value(8).toLongLong();
+            if(r.id.isEmpty() || r.vehicleId.isEmpty() ||
+               (r.status!="ACTIVE"&&r.status!="RETURNED"&&r.status!="ARCHIVED") ||
+               !r.start.isValid() || !r.expected.isValid() ||
+               r.expected!=r.start.addDays(r.days) ||
+               r.days<1 || r.days>365 ||
+               (r.status=="ACTIVE"?r.actual.isValid():!r.actual.isValid()) ||
+               r.dailyCents<=0 || r.totalCents<=0 ||
+               r.dailyCents>std::numeric_limits<qint64>::max()/r.days ||
+               r.dailyCents*r.days!=r.totalCents)return {};
+            rows.append(r);
+        }
+        return rows;
     }
     void failNextCommitForTest(){rejectNext=true;}
 };

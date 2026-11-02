@@ -10,6 +10,9 @@
 #include <QTest>
 #include <QTimer>
 #include <QDebug>
+#include <QSignalSpy>
+#include "src/application/p7_sandbox/sqlite_read_projection.h"
+#include "src/application/rental_list_model.h"
 #include "src/application/p7_sandbox/repository_preview_controller.h"
 
 static QQuickItem *find(QQuickItem *item, const QString &name) {
@@ -22,14 +25,27 @@ static QQuickItem *find(QQuickItem *item, const QString &name) {
 int main(int argc,char **argv) {
     QGuiApplication app(argc,argv);
     if(app.arguments().size()!=2 ||
-       (app.arguments()[1]!="journey" && app.arguments()[1]!="rollback")) {
+       (app.arguments()[1]!="journey" && app.arguments()[1]!="rollback"
+        && app.arguments()[1]!="read_model")) {
         qCritical()<<"Only fixed fictional P7-I validation cases accepted";return 2;
     }
     p7fiction::PreviewController preview;
     if(!preview.ready() || !preview.committedStateConsistent())return 3;
+    RentalListModel readModel(
+        [&preview]() -> std::optional<QList<RentalRecordSummary>> {
+            const auto *repo=preview.testOnlyReadRepository();
+            if(!repo)return {};
+            return p7fiction::ReadProjection(*repo).rentals(QDate(2026,11,2));
+        });
+    QObject::connect(&preview,&p7fiction::PreviewController::committed,
+                     &readModel,&RentalListModel::refresh);
+    if(readModel.count()!=0||readModel.activeCount()!=0||
+       readModel.historyCount()!=0)return 11;
+    QSignalSpy metrics(&readModel,&RentalListModel::metricsChanged);
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("previewController",&preview);
+    engine.rootContext()->setContextProperty("sharedRentals",&readModel);
     engine.load(QUrl("qrc:/p7/p7_fictional_preview.qml"));
     auto *window=engine.rootObjects().isEmpty()?nullptr:
         qobject_cast<QQuickWindow*>(engine.rootObjects().first());
@@ -40,7 +56,11 @@ int main(int argc,char **argv) {
         auto *quote=find(root,"p7QuoteLabel");
         auto *receipt=find(root,"p7ReceiptLabel");
         auto *state=find(root,"p7StateLabel");
-        if(!quote||!receipt||!state){app.exit(5);return;}
+        auto *shared=find(root,"p7SharedMetrics");
+        if(!quote||!receipt||!state||!shared ||
+           !shared->property("text").toString().contains("Active rentals: 0")){
+            app.exit(5);return;
+        }
         const auto click=[&](const QString &name)->bool {
             auto *control=find(root,name);
             if(!control || !control->isVisible() || !control->isEnabled() ||
@@ -55,8 +75,9 @@ int main(int argc,char **argv) {
            !receipt->property("text").toString().contains("not issued") ||
            !click("p7PreviewButton") ||
            !quote->property("text").toString().contains("R 1350.00") ||
-           !preview.committedStateConsistent()){
-            qCritical()<<"P7-I initial QML quote/binding failure";
+           !preview.committedStateConsistent() ||
+           metrics.count()!=0 || readModel.activeCount()!=0){
+            qCritical()<<"P7-J uncommitted quote incorrectly refreshed shared RentalListModel";
             app.exit(6);return;
         }
         if(app.arguments()[1]=="rollback") {
@@ -65,6 +86,7 @@ int main(int argc,char **argv) {
                !preview.committedStateConsistent() ||
                preview.rentalId()!="" ||
                !receipt->property("text").toString().contains("not issued") ||
+               metrics.count()!=0 || readModel.count()!=0 ||
                !click("p7ConfirmButton")) {
                 qCritical()<<"P7-I rejected transaction issued false UI receipt";
                 app.exit(7);return;
@@ -76,19 +98,47 @@ int main(int argc,char **argv) {
            !preview.committedStateConsistent() ||
            !receipt->property("text").toString().contains("R001") ||
            !state->property("text").toString().contains("ACTIVE") ||
-           !preview.independentReopen()){
-            qCritical()<<"P7-I confirmed SQLite rental not reflected in QML";
+           !preview.independentReopen() ||
+           readModel.activeCount()!=1 || readModel.historyCount()!=0 ||
+           readModel.count()!=1 || readModel.activeBookedValue()!=1350.0 ||
+           metrics.count()!=1 ||
+           !shared->property("text").toString().contains("Active rentals: 1") ||
+           !readModel.selectById("r001") ||
+           readModel.selectedContract().value("status").toString()!="Active"){
+            qCritical()<<"P7-J shared RentalListModel did not reflect committed SQL booking";
             app.exit(9);return;
         }
         if(!click("p7ReturnButton") || !preview.committedStateConsistent() ||
+           readModel.activeCount()!=0 || readModel.historyCount()!=1 ||
+           readModel.selectedContract().value("status").toString()!="Returned" ||
            !click("p7ArchiveButton") || !preview.committedStateConsistent() ||
+           readModel.selectedContract().value("status").toString()!="Archived" ||
            !click("p7RetireButton") || !preview.committedStateConsistent() ||
            !state->property("text").toString().contains("RETIRED") ||
-           !preview.independentReopen()) {
+           !preview.independentReopen() ||
+           readModel.historyCount()!=1 || readModel.activeCount()!=0 ||
+           metrics.count()!=4 ||
+           !shared->property("text").toString().contains("History: 1")) {
             qCritical()<<"P7-I return/archive/retire not durable through Qt";
             app.exit(10);return;
         }
-        qInfo()<<"P7-I true Qt Quick / C++ typed SQLite preview PASS"
+        if(app.arguments()[1]=="read_model") {
+            readModel.setStatusFilter("Active");
+            if(readModel.count()!=0 || readModel.activeCount()!=0 ||
+               readModel.historyCount()!=1 || !readModel.locateById("R001") ||
+               readModel.selectedContract().value("status").toString()!="Archived"){
+                qCritical()<<"P7-J existing RentalListModel failed status filter and locate";
+                app.exit(12);return;
+            }
+            const auto *repo=preview.testOnlyReadRepository();
+            const auto fleet=repo?p7fiction::ReadProjection(*repo).fleet():std::nullopt;
+            if(!fleet || fleet->size()!=1 || fleet->front().available ||
+               fleet->front().details!="4 doors") {
+                qCritical()<<"P7-J read-only Fleet mapping ignored retired occupancy";
+                app.exit(13);return;
+            }
+        }
+        qInfo()<<"P7-J existing shared Rentals read model / native QML PASS"
                <<app.arguments()[1]<<"R001 fictional, zero contact fields";
         app.exit(0);
     });

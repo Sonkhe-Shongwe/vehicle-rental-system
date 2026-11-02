@@ -122,6 +122,29 @@ ApplicationWindow {
             color: navy
             Accessible.name: text
         }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 90
+            radius: 10
+            color: ice
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 12
+                Label {
+                    text: "SHARED RENTALS READ MODEL · AUTHORITATIVE C++ SNAPSHOT"
+                    color: teal; font.bold: true
+                }
+                Label {
+                    objectName: "p7SharedMetrics"
+                    text: "Active rentals: " + sharedRentals.activeCount +
+                          "  |  History: " + sharedRentals.historyCount +
+                          "  |  Booked value: R " +
+                          sharedRentals.activeBookedValue.toFixed(2)
+                    color: navy; font.bold: true
+                    Accessible.name: text
+                }
+            }
+        }
         Item { Layout.fillHeight: true }
         Label {
             Layout.fillWidth: true
