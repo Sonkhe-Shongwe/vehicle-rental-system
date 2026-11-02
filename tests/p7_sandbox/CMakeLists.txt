@@ -39,3 +39,20 @@ set_tests_properties(
     rental_studio_p7_report_manifest_incomplete
     rental_studio_p7_report_manifest_overflow
     PROPERTIES TIMEOUT 35)
+
+# P7-E: independent staged SQLite backup/recovery proof with generated data only.
+# No runtime app or production storage linkage; opted-in via P7 sandbox flag.
+add_executable(rental_studio_p7_sqlite_backup p7_sqlite_backup_tests.cpp)
+target_link_libraries(rental_studio_p7_sqlite_backup PRIVATE Qt6::Core Qt6::Sql)
+foreach(CASE IN ITEMS snapshot readers uncommitted damaged refuse_overwrite locked)
+    add_test(NAME rental_studio_p7_backup_${CASE}
+        COMMAND rental_studio_p7_sqlite_backup ${CASE})
+endforeach()
+set_tests_properties(
+    rental_studio_p7_backup_snapshot
+    rental_studio_p7_backup_readers
+    rental_studio_p7_backup_uncommitted
+    rental_studio_p7_backup_damaged
+    rental_studio_p7_backup_refuse_overwrite
+    rental_studio_p7_backup_locked
+    PROPERTIES TIMEOUT 45)
