@@ -22,6 +22,7 @@ class FictionalFleetSnapshot final : public QObject {
     // Read-only Fleet inspection uses the same verified C++ values, not
     // QML-side occupancy or status rules. Never returns stale DTOs as current.
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY viewChanged)
+    Q_PROPERTY(QString searchText READ searchText WRITE setSearchText NOTIFY viewChanged)
     Q_PROPERTY(QVariantList visibleVehicles READ visibleVehicles NOTIFY viewChanged)
     Q_PROPERTY(int visibleCount READ visibleCount NOTIFY viewChanged)
     Q_PROPERTY(QString selectedVehicleId READ selectedVehicleId NOTIFY viewChanged)
@@ -50,10 +51,19 @@ public:
         return result;
     }
     QString statusFilter() const {return m_filter;}
+    QString searchText() const {return m_search;}
     QString selectedVehicleId() const {return m_selectedId;}
     bool passes(const FleetVehicleSummary &r) const {
-        return m_filter=="All" || (m_filter=="Available" && r.available) ||
+        const bool statusMatches=m_filter=="All" ||
+            (m_filter=="Available" && r.available) ||
             (m_filter=="Unavailable" && !r.available);
+        if(!statusMatches)return false;
+        // Only verified C++ DTO values participate; no SQL reaches QML.
+        return m_search.isEmpty() ||
+            r.id.contains(m_search,Qt::CaseInsensitive) ||
+            r.displayName().contains(m_search,Qt::CaseInsensitive) ||
+            r.type.contains(m_search,Qt::CaseInsensitive) ||
+            r.details.contains(m_search,Qt::CaseInsensitive);
     }
     QVariantList visibleVehicles() const {
         QVariantList result;
@@ -78,6 +88,13 @@ public:
         if(filter!="All" && filter!="Available" && filter!="Unavailable")return;
         if(m_filter==filter)return;
         m_filter=filter;
+        if(selectedVehicle().isEmpty())m_selectedId.clear();
+        emit viewChanged();
+    }
+    Q_INVOKABLE void setSearchText(const QString &text) {
+        const QString query=text.trimmed();
+        if(query.size()>80 || m_search==query)return;
+        m_search=query;
         if(selectedVehicle().isEmpty())m_selectedId.clear();
         emit viewChanged();
     }
@@ -133,6 +150,7 @@ private:
     bool m_available=false;
     QList<FleetVehicleSummary> m_rows;
     QString m_filter="All";
+    QString m_search;
     QString m_selectedId;
 };
 } // namespace p7fiction
