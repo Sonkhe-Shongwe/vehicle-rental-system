@@ -8,6 +8,8 @@ Repository: [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Sho
 
 ## Implemented product and exact evidence
 
+**Latest source-verified P7-S:** [`062ee985`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/062ee985b879208de9b561a9298940df754f7c6c), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827219), [native Qt Linux GCC / hosted Windows MSVC 115/115 each PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827186). [P7-S shared QML cards and two-row explorers](P7_S_REUSABLE_QML_EXPLORER_NATIVE_VERIFIED_2026-11-02.md); no new test count. Compiled-source SHA is distinct from later docs-only commits. D1 fictional-only, commercial D2–D8 unapproved, formal 28/74 weighted 40.6% unchanged; physical owner Windows checks remain open.
+
 **P7-R exact-source verified:** [corrected `de47e0f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/de47e0f2f0355750f429f929f4997b63d23b2495), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775107), [native Qt Linux/hosted Windows 115/115 EACH](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775180), Windows packaged checks PASS. [P7-R engineering report](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md). [P7-Q search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) was independently verified at `260794b`. Generated-fictional D1 only, D2–D8 open, no physical owner MinGW/scaling/Narrator acceptance, formal **28/74 and weighted 40.6% unchanged**.
 
 - **Overview, Fleet and Rentals Qt Quick UI:** guided fictional quote/confirm/return/history/archive, complete-Fleet Gallery/Table/search/filter, original generic vehicle silhouette artwork, selected Inspector, clarified Fleet occupancy and quote **NOT A PAYMENT**, action hierarchy and no-results handling. [P6-P polished UI evidence](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md): P6 source bfb591c, Linux/Windows native **74/74 each**. Current P7 source includes the same polished app.
@@ -39,6 +41,8 @@ Repository: [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Sho
 | P9 | 0/8 | Release QA not started |
 
 ## Hard prohibitions and immediate next meaningful work
+
+**Owner product-quality objective:** “Commercial-grade” describes the desired professional standard of the Windows desktop experience, feature completeness, reliability, maintainability and accessibility. It **does not imply an imminent sale, public release, real customer-data onboarding or a production database cutover**. Fictional-data quality improvements are the current priority; release/distribution and real-data policy gates remain a separate future track. Formal P0–P9 acceptance weighting is not a product-quality score.
 
 No real customer data, licence imports, destructive commercial history deletion, arbitrary filesystem open/import, live SQLite cutover, release packaging/install or merging without explicit owner approval. Protected fictional QSaveFile runtime remains the normal app path. P7 normalized candidate has **no customer contact fields** and is compiled only by opt-in tests. Owner physical Qt Creator **6.10.2 MinGW**, supported OS 100/125/150% scale and Narrator, current application keyboard/UX and P5/P6 signoff remain unverified. Owner's earlier Windows screenshots establish partial static UI observations only.
 

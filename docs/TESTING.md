@@ -8,6 +8,8 @@
 
 ## Current exact source baseline
 
+**Latest source-verified P7-S:** [`062ee985`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/062ee985b879208de9b561a9298940df754f7c6c), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827219), [native Qt Linux GCC / hosted Windows MSVC 115/115 each PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827186). [P7-S shared QML cards and two-row explorers](P7_S_REUSABLE_QML_EXPLORER_NATIVE_VERIFIED_2026-11-02.md); no new test count. Compiled-source SHA is distinct from later docs-only commits. D1 fictional-only, commercial D2–D8 unapproved, formal 28/74 weighted 40.6% unchanged; physical owner Windows checks remain open.
+
 **P7-R exact-source verified:** [corrected `de47e0f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/de47e0f2f0355750f429f929f4997b63d23b2495), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775107), [native Qt Linux/hosted Windows 115/115 EACH](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775180), Windows packaged checks PASS. [P7-R engineering report](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md). [P7-Q search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) was independently verified at `260794b`. Generated-fictional D1 only, D2–D8 open, no physical owner MinGW/scaling/Narrator acceptance, formal **28/74 and weighted 40.6% unchanged**.
 
 | Evidence | Result | Boundary |

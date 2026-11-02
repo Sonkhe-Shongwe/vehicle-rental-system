@@ -2,6 +2,10 @@
 
 **Current reconciliation: 2 November 2026.** This is a navigation page, not a second acceptance ledger.
 
+**Latest source-verified P7-S:** [`062ee985`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/062ee985b879208de9b561a9298940df754f7c6c), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827219), [native Qt Linux GCC / hosted Windows MSVC 115/115 each PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827186). [P7-S shared QML cards and two-row explorers](P7_S_REUSABLE_QML_EXPLORER_NATIVE_VERIFIED_2026-11-02.md); no new test count. Compiled-source SHA is distinct from later docs-only commits. D1 fictional-only, commercial D2–D8 unapproved, formal 28/74 weighted 40.6% unchanged; physical owner Windows checks remain open.
+
+**Owner product-quality objective:** “Commercial-grade” describes the desired professional standard of the Windows desktop experience, feature completeness, reliability, maintainability and accessibility. It **does not imply an imminent sale, public release, real customer-data onboarding or a production database cutover**. Fictional-data quality improvements are the current priority; release/distribution and real-data policy gates remain a separate future track. Formal P0–P9 acceptance weighting is not a product-quality score.
+
 - [2 NOVEMBER FULL DOCUMENT / GITHUB AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md): inventory of 90 current + 15 archive Markdown documents, drift, links, CI/source, accepted criteria and corrections.
 - [LATEST CHECKPOINT](LATEST_CHECKPOINT.md): one-page current branch, exact tested source and gates.
 - [CANONICAL STATE](PROJECT_STATE_CANONICAL.md): reliable current business, architecture, permissions and governance boundary.
