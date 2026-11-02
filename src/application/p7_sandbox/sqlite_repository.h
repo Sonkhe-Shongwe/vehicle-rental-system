@@ -14,6 +14,8 @@
 #include <QVariant>
 #include <limits>
 #include <optional>
+#include <functional>
+#include <utility>
 
 namespace p7fiction {
 enum class Status { Ok, Invalid, Unavailable, Stale, Failed };
@@ -38,6 +40,12 @@ struct RentalRow {
     QDate start, expected, actual;
     int days=0;
     qint64 dailyCents=0, totalCents=0;
+};
+// Fleet occupancy must be built from one consistent SQLite read transaction,
+// not vehicle rows and rental rows observed across separate commits.
+struct FleetRows {
+    QList<VehicleRow> vehicles;
+    QList<RentalRow> rentals;
 };
 class Repository final {
     QString m_root, m_connection;
@@ -309,6 +317,27 @@ public:
             rows.append(r);
         }
         return rows;
+    }
+    std::optional<FleetRows> fleetRows(
+        const std::function<void()> &betweenReadsForTest = {}) const {
+        if(!live)return {};
+        // BEGIN DEFERRED takes one snapshot on the first SELECT. This is a
+        // read-only transaction and never reserves the database writer slot.
+        QSqlQuery transaction(db);
+        if(!transaction.exec("BEGIN"))return {};
+        auto vehicles=vehicleRows();
+        if(vehicles && betweenReadsForTest)
+            betweenReadsForTest(); // Fixed sandbox regression hook only.
+        auto rentals=vehicles ? rentalRows() : std::optional<QList<RentalRow>>{};
+        if(!vehicles || !rentals) {
+            transaction.exec("ROLLBACK");
+            return {};
+        }
+        if(!transaction.exec("COMMIT")) {
+            transaction.exec("ROLLBACK");
+            return {};
+        }
+        return FleetRows{std::move(*vehicles),std::move(*rentals)};
     }
     void failNextCommitForTest(){rejectNext=true;}
 };

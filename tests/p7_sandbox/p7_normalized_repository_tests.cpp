@@ -77,6 +77,38 @@ bool numbers(){
     r.reset();r=t.open();
     return ok(r->ready()&&r->next("C")==3,"ID high-water across reboot");
 }
+bool fleet_snapshot(){
+    Temp t;
+    auto r=t.open();
+    if(!seed(*r))return false;
+    auto clean=r->fleetRows();
+    if(!ok(clean&&clean->vehicles.size()==2&&clean->rentals.isEmpty(),
+           "single transaction empty fleet"))return false;
+    auto q=r->quote("C001",1,day);
+    if(!ok(q&&r->book(*q,day).status==Status::Ok,
+           "seed an active fictional rental"))return false;
+    auto competing=t.open();
+    if(!ok(competing->ready(),"second independent connection"))return false;
+    Status attempted=Status::Ok;
+    // The second connection attempts to commit a return BETWEEN the Fleet
+    // vehicle and rental SELECTs; it must not produce a mixed-time view.
+    auto stable=r->fleetRows([&] {
+        attempted=competing->returnRental("R001",day,day);
+    });
+    if(!ok(stable && stable->vehicles.size()==2 &&
+           stable->rentals.size()==1 &&
+           stable->rentals.front().status=="ACTIVE" &&
+           attempted==Status::Failed,
+           "concurrent write blocked until consistent Fleet read ends"))
+        return false;
+    if(!ok(r->rental("R001")->status=="ACTIVE" &&
+           competing->returnRental("R001",day,day)==Status::Ok,
+           "writer retries after read release"))return false;
+    auto after=r->fleetRows();
+    return ok(after && after->rentals.size()==1 &&
+              after->rentals.front().status=="RETURNED",
+              "new Fleet snapshot reflects later committed return");
+}
 bool future(){
     Temp t;auto r=t.open();if(!seed(*r))return false;r.reset();
     const QString name="p7h-"+QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -113,7 +145,7 @@ int main(int argc,char**argv){
     const QString mode=app.arguments()[1];
     bool pass=mode=="lifecycle"?lifecycle():mode=="rollback"?rollback():
        mode=="money_ids"?numbers():mode=="future_schema"?future():
-       mode=="contention"?contention():false;
+       mode=="contention"?contention():mode=="fleet_snapshot"?fleet_snapshot():false;
     if(pass)qInfo()<<"P7-H normalized fictional-only repository PASS"<<mode;
     return pass?0:1;
 }

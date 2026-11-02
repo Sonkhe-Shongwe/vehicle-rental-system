@@ -12,15 +12,14 @@ class ReadProjection final {
 public:
     explicit ReadProjection(const Repository &repo):m_repo(repo){}
     std::optional<QList<FleetVehicleSummary>> fleet() const {
-        auto vehicles=m_repo.vehicleRows();
-        auto rentals=m_repo.rentalRows();
-        if(!vehicles || !rentals)return {};
+        auto snapshot=m_repo.fleetRows();
+        if(!snapshot)return {};
         QSet<QString> occupied;
-        for(const auto &r:*rentals) {
+        for(const auto &r:snapshot->rentals) {
             if(r.status=="ACTIVE")occupied.insert(r.vehicleId.toUpper());
         }
         QList<FleetVehicleSummary> out;
-        for(const auto &v:*vehicles) {
+        for(const auto &v:snapshot->vehicles) {
             FleetVehicleSummary row;
             row.id=v.id;row.brand=v.brand;row.model=v.model;row.type=v.kind;
             row.details=v.kind=="Car"?QString("%1 doors").arg(v.spec):

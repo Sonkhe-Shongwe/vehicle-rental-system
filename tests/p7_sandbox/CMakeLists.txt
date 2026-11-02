@@ -109,10 +109,12 @@ add_test(NAME rental_studio_p7_normalized_rollback COMMAND rental_studio_p7_norm
 add_test(NAME rental_studio_p7_normalized_money_ids COMMAND rental_studio_p7_normalized_repository money_ids)
 add_test(NAME rental_studio_p7_normalized_future_schema COMMAND rental_studio_p7_normalized_repository future_schema)
 add_test(NAME rental_studio_p7_normalized_contention COMMAND rental_studio_p7_normalized_repository contention)
+add_test(NAME rental_studio_p7_normalized_fleet_snapshot COMMAND rental_studio_p7_normalized_repository fleet_snapshot)
 set_tests_properties(
     rental_studio_p7_normalized_lifecycle rental_studio_p7_normalized_rollback
     rental_studio_p7_normalized_money_ids rental_studio_p7_normalized_future_schema
-    rental_studio_p7_normalized_contention PROPERTIES TIMEOUT 45)
+    rental_studio_p7_normalized_contention rental_studio_p7_normalized_fleet_snapshot
+    PROPERTIES TIMEOUT 45)
 
 # P7-I: real Qt Quick UI -> QObject command facade -> P7-H normalized SQLite.
 # Opt-in ONLY via BUILD_P7_SQLITE_SANDBOX, independent preview executable,
