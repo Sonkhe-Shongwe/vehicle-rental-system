@@ -3634,6 +3634,13 @@ int main(int argc, char *argv[]) {
                     qCritical()<<"P6-M process 2 QML return/occupancy failed";
                     app.exit(491);return;
                 }
+                // The active-only return lookup intentionally hides returned
+                // records after commit. Reveal the now-historical ID using the
+                // existing read-only, privacy-safe generic rental lookup.
+                if(!rentalModel.locateById("R003")) {
+                    qCritical()<<"P6-M historical record not found after return";
+                    app.exit(492);return;
+                }
                 const QVariantMap returned=rentalModel.selectedContract();
                 if(returned.value("rentalId").toString()!="R003" ||
                    returned.value("status").toString()!="Returned" ||
@@ -3723,7 +3730,9 @@ int main(int argc, char *argv[]) {
             }
             window->setProperty("workspace",1);
             QTest::qWait(135);
-            if(!fleet.selectById("C002") ||
+            fleet.selectById("C002");
+            QCoreApplication::processEvents();
+            if(fleet.selectedId()!="C002" ||
                fleetRemove.canRemoveVehicle("C002") ||
                !system.hasRentalHistoryForVehicle("C001")) {
                 qCritical()<<"P6-M final Fleet rented/historic reference guards absent";
