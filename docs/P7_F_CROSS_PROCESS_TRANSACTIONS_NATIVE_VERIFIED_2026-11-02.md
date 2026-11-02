@@ -4,7 +4,7 @@
 ## Implementation and isolation
 - Added independent `tests/p7_sandbox/p7_sqlite_process_tests.cpp` and five CTests registered in `tests/p7_sandbox/CMakeLists.txt`, behind existing default-**OFF** `BUILD_P7_SQLITE_SANDBOX`. No changes to C++ domain, Qt Quick, legacy Qt Widgets or application production storage.
 - Tests spawn genuine child executables using `QProcess` against a `QTemporaryDir` generated SQLite v1 synthetic database. Child access is restricted to a named temp-root pattern with a matching fictional-only marker token; parent uses fixed cases, no UI import or customer path. No PII, driver's-licence, commercial data or payment records.
-- Demo rows: fictional Car C001, exact 45000 cents daily rate, R001 two/three-day unrelated test snapshot total 135000 cents, high-water R counter 1 before booking and 2 after. Value is test booked contract amount, **not revenue/cash**. Foreign keys, active-rental uniqueness, fail-closed schema version and bounded SQLite writes remain in test scope.
+- Synthetic rows: fictional Car C001, illustrative 45000-cent rate, active rental R001 with booked total 135000 cents, and an R identifier counter that advances from 1 to 2 only on successful commit. This simplified schema does not model booking duration or return dates. Value is test booked contract amount, **not revenue/cash**. Foreign keys, active-rental uniqueness, fail-closed schema version and bounded SQLite writes remain in test scope.
 
 ## Five actual independent process CTests
 | Test | Mechanism | Verified |
