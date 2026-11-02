@@ -550,8 +550,31 @@ int main(int argc, char *argv[]) {
             expectedV<<"Car|C004|Demo Motors|Orion|420.00|1|4";
             expectedR<<QStringLiteral("Rental|R003|Fictional Journey|0000000000|C004|%1|%2||2|420.00|840.00|0|0")
                         .arg(today,due);
-            if(lines(vbytes)!=expectedV || lines(rbytes)!=expectedR) {
-                qCritical()<<"P6-M booked stage refused unexpected record structure";
+            const QStringList actualV=lines(vbytes);
+            const QStringList actualR=lines(rbytes);
+            if(actualV!=expectedV || actualR!=expectedR) {
+                // No arbitrary fixture text or contacts are printed. The
+                // hashes pinpoint which exact allowlist field differs.
+                const auto diagnose=[](const QStringList &actual,
+                                       const QStringList &expected,
+                                       const char *kind) {
+                    qCritical()<<"P6-M allowlist" <<kind
+                               <<"rows"<<actual.size()<<expected.size();
+                    const int count=std::max(actual.size(),expected.size());
+                    for(int i=0;i<count;++i) {
+                        const QByteArray a=i<actual.size()?actual.at(i).toUtf8():QByteArray{};
+                        const QByteArray e=i<expected.size()?expected.at(i).toUtf8():QByteArray{};
+                        if(a!=e)
+                            qCritical()<<"P6-M row mismatch"<<kind<<i
+                                       <<"lengths"<<a.size()<<e.size()
+                                       <<"sha12"<<QCryptographicHash::hash(
+                                           a,QCryptographicHash::Sha256).toHex().left(12)
+                                       <<QCryptographicHash::hash(
+                                           e,QCryptographicHash::Sha256).toHex().left(12);
+                    }
+                };
+                diagnose(actualV,expectedV,"fleet");
+                diagnose(actualR,expectedR,"rentals");
                 return 477;
             }
         } else {
