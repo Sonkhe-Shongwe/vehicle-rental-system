@@ -4,9 +4,9 @@
 
 ## What is already true
 
-Active P7 draft PR #17 on feature/p7-sqlite-sandbox-20261102 remains stacked on P6 #14, P5 #12 and P4 #10, all draft/unmerged; main untouched. Latest exactly compiled source is [P7-I b2edee6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b2edee62f94a1283c6750451348ed4acbf11c47a), with [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363812) and [Linux/Windows native 110/110 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800), packaged Windows PS7/PS5.1 PASS. Documentation-only heads are not fresh source builds.
+Active P7 draft PR #17 on feature/p7-sqlite-sandbox-20261102 remains stacked over P6 #14, P5 #12, P4 #10, all unmerged, main untouched. Latest **compiled** source [P7-J 6224a0f](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6224a0fcdf7c879f64d677472e073d3037bcd7a8): [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471605002), [Linux and hosted Windows native 111/111 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730), Windows packaged PS7/PS5.1 PASS.
 
-Normal Qt Quick app retains polished Overview/Fleet/Rentals and fictional QSaveFile storage. P5 original eight expectations representative-tested (formal 0/8); P6 full lifecycle source-tested (formal 0/9). P7-G is real C++ domain/SQLite blob transport, P7-H is a separate normalized SQLite C++ repository, and [P7-I Qt Quick/normalized SQL preview](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) is a distinct opt-in Qt Quick/C++/SQLite fictional preview with UI-driven booking/return/archive/retire and rollback verification. **The normal `Main.qml` does not use P7-H/I; real-data policies and P7 approval remain open.**
+Normal Qt Quick app retains polished Overview/Fleet/Rentals and fictional QSaveFile storage. P7-G is domain C++/SQL blob, P7-H typed normalized SQL, P7-I real opt-in Qt Quick commands and [P7-J shared read-model verification](P7_J_SHARED_RENTALS_READ_MODEL_QT_SQL_NATIVE_VERIFIED_2026-11-02.md) the **existing Rentals read model** over validated SQL snapshots, with commit-only refresh and KPI/selection parity. No actual `Main.qml` SQL storage, no real PII or migrations, and no formal P5/P6/P7 acceptance.
 
 ## Do not conflate
 

@@ -10,11 +10,11 @@ The current portable Qt build runs with **generated fictional files only**. It i
 
 ## GitHub review and latest verified source
 
-Source development remains on [draft P7 PR #17](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/17), stacked over [P6 #14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14), [P5 #12](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/12) and [P4 #10](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/10); all unmerged, main unchanged. Latest compiled source [P7-I b2edee6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b2edee62f94a1283c6750451348ed4acbf11c47a) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363812) and [Qt 6.8.3 Linux/Windows native 110/110 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800) plus Windows package checks.
+Source development remains on [draft P7 PR #17](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/17), stacked over P6 #14, P5 #12 and P4 #10, all unmerged with main unchanged. Latest compiled source [P7-J 6224a0f](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6224a0fcdf7c879f64d677472e073d3037bcd7a8) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471605002) and [Qt 6.8.3 Linux/Windows native 111/111 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730); Windows package checks also passed.
 
 ### Storage boundary
 
-The default app uses C++ RentalSystem and protected fictional QSaveFile ledgers. P7-G exercises real C++ business services through test-only SQLite blob transport; P7-H is a separate normalized SQLite repository; [P7-I Qt Quick/normalized SQL preview](docs/P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) provides a distinct opt-in **real Qt Quick** workflow wired through C++ to the normalized repository, with no real contacts. None is the actual normal Rental Studio `Main.qml` storage path or authorized commercial data import.
+The default app still uses protected fictional `RentalSystem` + QSaveFile text storage. P7-G verifies a SQL blob transport for real services, P7-H normalized typed SQLite, P7-I a separate QML/SQLite command preview, and [P7-J shared read model](docs/P7_J_SHARED_RENTALS_READ_MODEL_QT_SQL_NATIVE_VERIFIED_2026-11-02.md) the **existing RentalListModel** on validated SQLite snapshots with post-commit refresh. All P7 SQL remains in opt-in synthetic test code; **no commercial contact/import paths** or normal application SQL cutover.
 
 ## Evidence and remaining gates
 

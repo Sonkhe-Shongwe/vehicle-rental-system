@@ -15,6 +15,7 @@
 | P7-G on 2 Nov | [Real C++ services / synthetic SQL blob adapter](P7_G_CPP_DOMAIN_SQLITE_TRANSPORT_NATIVE_VERIFIED_2026-11-02.md), native Linux/Windows 103/103 | Relational commercial implementation |
 | P7-H on 2 Nov | [Normalized fictional SQL repository](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622337), [Linux/Windows native 108/108](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622338), source 74fb9b3 | Actual Qt Quick integration, personal data, license/contact policy or P7 acceptance |
 | P7-I on 2 Nov | [P7-I Qt Quick/normalized SQL preview](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) source b2edee6, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363812), [native Linux/Windows 110/110 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800); new distinct QML preview operates normalized SQL via QObject, validates committed UI receipts, returns/archive/retire, rollback and reopen | Not actual main app SQLite cutover or commercial data authorization |
+| P7-J on 2 Nov | [P7-J shared read-model verification](P7_J_SHARED_RENTALS_READ_MODEL_QT_SQL_NATIVE_VERIFIED_2026-11-02.md), [source 6224a0f](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6224a0fcdf7c879f64d677472e073d3037bcd7a8), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471605002), [Linux and Windows 111/111 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730); same real RentalListModel consumes opt-in SQL via typed value DTOs, actual QML KPI/contract refresh on COMMIT only | Not main runtime SQLite or customer data approval |
 | P8/P9 | Not started | No offline installer or owner-approved release |
 
 ## Owner decisions and operational guardrails
@@ -23,6 +24,6 @@
 - Continue deferring repetitive manual screenshots until one consolidated physical Windows/MinGW, 100/125/150% scaling, keyboard, Narrator and operator acceptance session. Earlier user screenshots proved two static Fleet filter and summary states only.
 - No real customer/phone/driving-licence data, no unapproved production file imports, privacy/retention policy, general commercial storage, installation/release, merge or tag. P7 ADR and P6 rubric stay owner gated.
 - Use only verified exact source CI results; docs-only heads have scope-only green and skipped expensive build jobs. Never convert 108/108 tests into a fictitious accepted criterion.
-- **28/74 formally accepted, 40.6% weighted evidence; latest compiled source P7-I; all relevant drafts unmerged.**
+- **28/74 formally accepted, 40.6% weighted evidence; latest compiled source P7-J; all drafts unmerged.**
 
 See [current road map](ROADMAP.md) and [testing](TESTING.md) for forward gates.

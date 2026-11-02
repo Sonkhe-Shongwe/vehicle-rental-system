@@ -10,14 +10,15 @@
 
 | Evidence | Result | Boundary |
 |---|---|---|
-| Source [P7-I b2edee6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b2edee62f94a1283c6750451348ed4acbf11c47a) | [Core Qt/C++ **13/13 PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363812) | Existing historical Qt Widgets/domain regressions |
-| Same source | [Qt 6.8.3 Linux GCC **110/110 native CTests PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800) | Includes compiled real QML P7-I new UI click tests and prior P5/P6/P7 suites |
-| Same source | [Hosted Windows Qt 6.8.3 MSVC **110/110 native CTests PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800) | Native-QPA GUI, not owner Qt Creator MinGW |
+| Source [P7-J 6224a0f](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6224a0fcdf7c879f64d677472e073d3037bcd7a8) | [Core C++ **13/13 PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471605002) | Existing historical/domain regression |
+| Same source | [Qt 6.8.3 Linux GCC **111/111 native CTests PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730) | Real QML and shared `RentalListModel` plus prior suites |
+| Same source | [Hosted Windows Qt 6.8.3 MSVC **111/111 native CTests PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730) | Real Windows QPA; not physical owner MinGW |
 | Same Windows native run | Packaged PowerShell 7 and Windows PowerShell 5.1 verification **PASS** | Disposable hosted kit, not an installed commercial product |
 | [P6-P final Qt UI](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) | Earlier P6 source bfb591c: **74/74 native per OS**, compiled 1500×860 and 1280×720 screenshots inspected | One consolidated owner OS/device acceptance remains open |
 | [P7-G](P7_G_CPP_DOMAIN_SQLITE_TRANSPORT_NATIVE_VERIFIED_2026-11-02.md) | Three test cases #101–103 verify real C++ quote/book/return/archive through a generated-fictional SQLite blob adapter | Does not run in Qt Quick runtime |
 | [P7-H](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md) | Five tests #104–108 verify normalized typed rows, rollback, money/IDs, future schema, writer contention | OFF-by-default test target, no commercial contact records or application cutover |
 | [P7-I Qt Quick/normalized SQL preview](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) | Two new genuine Qt Quick UI CTests #109–110: fictional full lifecycle + rollback/no false receipt/reopen | Separate OFF-by-default test executable; not the normal Overview/Fleet/Rentals application |
+| [P7-J shared read-model verification](P7_J_SHARED_RENTALS_READ_MODEL_QT_SQL_NATIVE_VERIFIED_2026-11-02.md) | Expanded #109–110 and new native #111 verify the existing RentalListModel's active/history KPIs, selected contract, post-commit signals, filtered history and a retired Fleet projection | Only opt-in fictional SQL preview, not normal Runtime |
 
 The P7 test suite is opt-in via **BUILD_P7_SQLITE_SANDBOX=ON**. Its repository implementation is under src/application/p7_sandbox for future adaptation, but it is **only compiled and linked in the test target** today. The normal Qt Quick executable does not link QtSql or use the candidate normalized repository.
 

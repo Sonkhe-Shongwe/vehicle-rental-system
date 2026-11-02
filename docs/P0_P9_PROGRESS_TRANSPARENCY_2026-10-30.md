@@ -18,7 +18,7 @@
 | P4 | Shared native QML components and navigation | 12% | 5/7 | 8.6% | Partial; owner physical focus/Narrator |
 | P5 | Genuine persisted Corolla rental vertical slice | 16% | 0/8 | 0% | **IN PROGRESS**; 8/8 expectations representative automation-covered, operator signoff open |
 | P6 | Fleet/Rental full lifecycle and safe negative paths | 14% | 0/9 | 0% | **IN PROGRESS**; 8/9 provisional groups covered, ninth connected path integrated-tested, owner rubric/physical review open |
-| P7 | IDs, exact money, transactions, backup/migration | 9% | 0/8 | 0% | **IN PROGRESS**; P7-A–I fictional-only storage work and separate Qt Quick ↔ normalized SQLite preview, **normal app not switched** |
+| P7 | IDs, exact money, transactions, backup/migration | 9% | 0/8 | 0% | **IN PROGRESS**; P7-A–J synthetic SQL, QML preview and shared Rentals read model; **no real application backend cutover** |
 | P8 | Offline Windows installer, privacy/rights | 5% | 0/6 | 0% | Not started |
 | P9 | Final native QA and release authorization | 5% | 0/8 | 0% | Not started |
 | **TOTAL** | **74 fixed criterion units** | **100%** | **28/74** | **40.6%** | **NOT RELEASED** |
@@ -30,7 +30,7 @@
 - [P5 eight-criterion crosswalk](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md): original business outcomes have native representative tests, but **formal P5 0/8**.
 - [P6-N owner review](P6_N_ACCEPTANCE_CLOSURE_DECISION_RECORD_2026-11-02.md), [P6-O bounded rubric and Fleet decision](P6_O_RESEARCH_REVISED_ACCEPTANCE_AND_FLEET_2026-11-02.md), [P6-P polished native UI](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md): source substantially implemented, **formal P6 0/9**.
 - [P7-A candidate eight-group rubric](P7_A_MIGRATION_AND_TEST_CONTRACT_2026-11-02.md) has not been owner-ratified. [P7-G actual domain/SQL blob test](P7_G_CPP_DOMAIN_SQLITE_TRANSPORT_NATIVE_VERIFIED_2026-11-02.md) is separate from [P7-H normalized SQL candidate](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md); neither is the normal application storage. **Formal P7 0/8**.
-- Latest **compiled** code [P7-I b2edee6](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/b2edee62f94a1283c6750451348ed4acbf11c47a) passed [core **13/13**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363812) and [Qt 6.8.3 Linux/Windows native **110/110 each**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41466363800), Windows package checks PASS. The new QML preview is opt-in, fictional-only and not commercial main-app storage.
+- Latest **compiled** source [P7-J 6224a0f](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6224a0fcdf7c879f64d677472e073d3037bcd7a8): [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471605002), [native Qt Linux/Windows **111/111 each**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41471604730), Windows package checks PASS. Includes opt-in fictional SQL Shared RentalListModel tests. No additional formal acceptance granted.
 - P1/P2/P4 remaining owner/device tests, plus P5/P6 operator acceptance, remain untested or formally open. P8/P9 require genuine offline installer and final release QA respectively.
 
 ## Historical P3/P4 checkpoints, reproduced as dated evidence
