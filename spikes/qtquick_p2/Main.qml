@@ -29,6 +29,8 @@ ApplicationWindow {
     property string bookingReceiptNotice: ""
     // Cancellation is a separate informational outcome, never a receipt.
     property string bookingCancelledNotice: ""
+    property string rentalLookupFeedback: ""
+    property string returnLookupFeedback: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -133,13 +135,60 @@ ApplicationWindow {
         event.accepted = true
     }
 
+    // A deliberate lookup can reveal an ID hidden by the current filter.
+    // Domain history and financial data are never modified by this route.
+    function findRentalById() {
+        const id = rentalLookupField.text.trim()
+        if (id === "") {
+            window.rentalLookupFeedback = "Enter a rental ID."
+            return
+        }
+        if (!rentalsModel.locateById(id)) {
+            window.rentalLookupFeedback = "Rental ID not found."
+            return
+        }
+        window.rentalLookupFeedback = "Selected " + rentalsModel.selectedRentalId
+        Qt.callLater(function() {
+            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                rentalList.currentIndex = rentalsModel.selectedRow
+                rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                rentalList.forceActiveFocus(Qt.TabFocusReason)
+            }
+        })
+    }
+
+    // Legacy operator parity without auto-return: an ID resolves to one
+    // ACTIVE record only, then the existing separate confirmation is required.
+    function findActiveReturn() {
+        const id = returnLookupField.text.trim()
+        if (!rentalsModel.locateActiveReturn(id)) {
+            window.returnLookupFeedback = id === ""
+                ? "Enter an active rental or vehicle ID."
+                : "No active rental matches that ID."
+            return
+        }
+        window.returnLookupFeedback =
+            "Ready to review return for " + rentalsModel.selectedRentalId
+        Qt.callLater(function() {
+            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                rentalList.currentIndex = rentalsModel.selectedRow
+                rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                if (returnSelectedButton.enabled)
+                    returnSelectedButton.forceActiveFocus(Qt.TabFocusReason)
+            }
+        })
+    }
+
     function syncCurrentRental() {
         rentalList.currentIndex = rentalsModel.selectedRow
     }
 
     Connections {
         target: rentalsModel
-        function onSelectionChanged() { Qt.callLater(window.syncCurrentRental) }
+        function onSelectionChanged() {
+            window.returnLookupFeedback = ""
+            Qt.callLater(window.syncCurrentRental)
+        }
         function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
     }
 
@@ -167,7 +216,9 @@ ApplicationWindow {
         // The topmost modal owns Escape; selection clearing happens afterward.
         enabled: window.canDismissSelection &&
                  !bookingDialog.visible &&
-                 !returnConfirmation.visible && !archiveConfirmation.visible
+                 !returnConfirmation.visible && !archiveConfirmation.visible &&
+                 !archivedDeleteDialog.visible &&
+                 !fleetAddDialog.visible && !fleetRemoveDialog.visible
         onActivated: {
             if (window.workspace === 1) fleet.clearSelection()
             else if (window.workspace === 2) rentalsModel.clearSelection()
@@ -238,7 +289,19 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 currentIndex: window.workspace
 
-                ColumnLayout {
+                Flickable {
+                    id: overviewScroll
+                    objectName: "overviewScroll"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    contentWidth: width
+                    contentHeight: overviewContent.implicitHeight
+                    boundsBehavior: Flickable.StopAtBounds
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    ColumnLayout {
+                    id: overviewContent
+                    width: overviewScroll.width
                     spacing: 16
                     Label {
                         text: "Operations at a glance"
@@ -255,6 +318,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewAvailableCard"
                             metricLabel: "Available vehicles"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(fleet.availableCount)
                             note: "Of " + fleet.totalCount + " in Fleet"
                             accent: teal
@@ -262,6 +326,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewActiveCard"
                             metricLabel: "Active rentals"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.activeCount)
                             note: "Confirmed rental contracts"
                             accent: navy
@@ -269,6 +334,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewOverdueCard"
                             metricLabel: "Overdue rentals"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.overdueCount)
                             note: "From current C++ due-state"
                             accent: rentalsModel.overdueCount > 0 ? "#B45309" : teal
@@ -276,6 +342,7 @@ ApplicationWindow {
                         OverviewMetricCard {
                             objectName: "overviewValueCard"
                             metricLabel: "Active booked value"
+                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
                             note: "Contract totals, not payments"
                             accent: navy
@@ -327,7 +394,24 @@ ApplicationWindow {
                                     id: overviewOverdueAction
                                     objectName: "overviewReviewOverdue"
                                     text: "Review overdue"
+                                    Layout.minimumHeight: 44
                                     enabled: rentalsModel.oldestOverdueRentalId !== ""
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: overviewOverdueAction.enabled
+                                            ? (overviewOverdueAction.hovered ? mint : "#FFFFFF")
+                                            : "#E6EAEE"
+                                        border.color: overviewOverdueAction.activeFocus ? navy : teal
+                                        border.width: overviewOverdueAction.activeFocus ? 3 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: overviewOverdueAction.text
+                                        color: overviewOverdueAction.enabled ? teal : ink
+                                        font.bold: true
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
                                     activeFocusOnTab: true
                                     Accessible.name: "Review oldest overdue rental"
                                     Accessible.description: "Select the oldest overdue active rental without changing its record"
@@ -354,6 +438,22 @@ ApplicationWindow {
                             id: overviewActiveButton
                             objectName: "overviewOpenActive"
                             text: "Review active rentals"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewActiveButton.down || overviewActiveButton.hovered
+                                    ? "#0C625C" : teal
+                                border.color: navy
+                                border.width: overviewActiveButton.activeFocus ? 3 : 0
+                            }
+                            contentItem: Text {
+                                text: overviewActiveButton.text
+                                color: "#FFFFFF"
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Review active rentals"
                             onClicked: {
@@ -362,8 +462,23 @@ ApplicationWindow {
                             }
                         }
                         Button {
+                            id: overviewFleetButton
                             objectName: "overviewOpenFleet"
                             text: "Open Fleet"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewFleetButton.hovered ? ice : "#FFFFFF"
+                                border.color: overviewFleetButton.activeFocus ? navy : designTokens.border
+                                border.width: overviewFleetButton.activeFocus ? 3 : 1
+                            }
+                            contentItem: Text {
+                                text: overviewFleetButton.text
+                                color: navy
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Open Fleet"
                             onClicked: window.workspace = 1
@@ -374,7 +489,100 @@ ApplicationWindow {
                         text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }
-                    Item { Layout.fillHeight: true }
+                    Rectangle {
+                        objectName: "overviewRecentPanel"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: recentContent.implicitHeight + 28
+                        radius: 12
+                        color: "white"
+                        border.color: designTokens.border
+                        ColumnLayout {
+                            id: recentContent
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 7
+                            Label {
+                                text: "Recent rental contracts"
+                                font.pixelSize: 17
+                                font.bold: true
+                                color: navy
+                            }
+                            Label {
+                                text: "Latest contract start dates. Not an activity log or payments."
+                                font.pixelSize: 11
+                                color: ink
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                            }
+                            Label {
+                                objectName: "overviewRecentEmpty"
+                                visible: rentalsModel.recentActivities.length === 0
+                                text: "No rental contracts yet."
+                                color: ink
+                                Accessible.name: text
+                            }
+                            Repeater {
+                                model: rentalsModel.recentActivities
+                                delegate: Button {
+                                    required property var modelData
+                                    required property int index
+                                    objectName: "overviewRecentRow" + index
+                                    activeFocusOnTab: true
+                                    Layout.fillWidth: true
+                                    Layout.minimumHeight: 44
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: parent.activeFocus ? mint :
+                                               parent.hovered ? ice : "#FFFFFF"
+                                        border.color: parent.activeFocus ? navy : designTokens.border
+                                        border.width: parent.activeFocus ? 2 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.pixelSize: 12
+                                        leftPadding: 12
+                                        horizontalAlignment: Text.AlignLeft
+                                        verticalAlignment: Text.AlignVCenter
+                                        elide: Text.ElideRight
+                                    }
+                                    text: modelData.rentalId + "  ·  " + modelData.vehicleId +
+                                          "  ·  " + modelData.startDate + "  ·  " + modelData.status +
+                                          "  ·  R " + Number(modelData.total).toFixed(2)
+                                    Accessible.name: "Review rental " + modelData.rentalId +
+                                                     ", vehicle " + modelData.vehicleId +
+                                                     ", started " + modelData.startDate +
+                                                     ", " + modelData.status +
+                                                     ", booked value R " +
+                                                     Number(modelData.total).toFixed(2)
+                                    Accessible.description: "View contract in Rentals without changing it"
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) {
+                                            const top = mapToItem(overviewContent, 0, 0).y
+                                            overviewScroll.contentY = Math.max(0,
+                                                Math.min(top - 18,
+                                                    overviewScroll.contentHeight - overviewScroll.height))
+                                        }
+                                    }
+                                    onClicked: {
+                                        if (!rentalsModel.locateById(modelData.rentalId))
+                                            return
+                                        window.workspace = 2
+                                        Qt.callLater(function() {
+                                            if (window.workspace === 2 && rentalsModel.selectedRow >= 0) {
+                                                rentalList.currentIndex = rentalsModel.selectedRow
+                                                rentalList.positionViewAtIndex(rentalsModel.selectedRow,
+                                                                               ListView.Contain)
+                                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
                 }
 
                 RowLayout {
@@ -395,6 +603,13 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 150
                                     placeholderText: "Search model or vehicle ID"
+                                    leftPadding: 12
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: search.activeFocus ? navy : designTokens.border
+                                        border.width: search.activeFocus ? 2 : 1
+                                    }
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
                                 }
@@ -403,6 +618,13 @@ ApplicationWindow {
                                     objectName: "fleetStatusCombo"
                                     activeFocusOnTab: true
                                     Layout.preferredWidth: 138
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetStatusCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetStatusCombo.activeFocus ? 2 : 1
+                                    }
                                     model: ["All", "Available", "Rented"]
                                     Accessible.name: "Filter fleet status"
                                     onActivated: fleet.status = currentText
@@ -412,6 +634,13 @@ ApplicationWindow {
                                     objectName: "fleetSortCombo"
                                     activeFocusOnTab: true
                                     Layout.preferredWidth: 116
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetSortCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetSortCombo.activeFocus ? 2 : 1
+                                    }
                                     model: ["Name", "Rate"]
                                     Accessible.name: "Sort fleet"
                                     onActivated: fleet.sortBy = currentText
@@ -424,10 +653,33 @@ ApplicationWindow {
                                     color: ink
                                     font.pixelSize: 12
                                 }
+                                Label {
+                                    objectName: "fleetShownCount"
+                                    text: "(" + (window.gallery ? galleryView.count : tableView.count) + " shown)"
+                                    color: ink
+                                    font.pixelSize: 12
+                                }
                                 Item { Layout.fillWidth: true }
                                 Button {
                                     objectName: "fleetGalleryToggle"
                                     text: "Gallery"
+                                    property bool visuallySelected: window.gallery
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 102
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        border.width: window.gallery || parent.activeFocus ? 2 : 1
+                                        border.color: parent.activeFocus ? navy : window.gallery ? teal : designTokens.border
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.bold: window.gallery
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     onClicked: {
                                         window.gallery = true
                                         galleryView.forceActiveFocus(Qt.OtherFocusReason)
@@ -441,6 +693,23 @@ ApplicationWindow {
                                 Button {
                                     objectName: "fleetTableToggle"
                                     text: "Table"
+                                    property bool visuallySelected: !window.gallery
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 94
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        border.width: !window.gallery || parent.activeFocus ? 2 : 1
+                                        border.color: parent.activeFocus ? navy : !window.gallery ? teal : designTokens.border
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.bold: !window.gallery
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     onClicked: {
                                         window.gallery = false
                                         tableView.forceActiveFocus(Qt.OtherFocusReason)
@@ -451,6 +720,58 @@ ApplicationWindow {
                                     Accessible.checked: !window.gallery
                                     Accessible.description: "Choose the vehicle table presentation"
                                 }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: fleetAddButton
+                                    objectName: "fleetAddButton"
+                                    text: "Add vehicle"
+                                    Layout.minimumHeight: 44
+                                    Layout.preferredWidth: 124
+                                    hoverEnabled: true
+                                    enabled: fleetAdmin.canAdd
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !fleetAddButton.enabled ? "#E6EAEE" :
+                                               fleetAddButton.down ? "#0C625C" :
+                                               fleetAddButton.hovered ? "#0C625C" : teal
+                                        border.width: fleetAddButton.activeFocus ? 3 : 0
+                                        border.color: navy
+                                    }
+                                    contentItem: Text {
+                                        text: fleetAddButton.text
+                                        font.bold: true
+                                        color: fleetAddButton.enabled ? "#FFFFFF" : ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Add a fictional car or motorcycle"
+                                    Accessible.description: fleetAdmin.canAdd
+                                        ? "Opens the temporary demo fleet form"
+                                        : "Cannot change the fixed persistent fictional fleet"
+                                    onClicked: fleetAddDialog.open()
+                                }
+                            }
+                            Label {
+                                objectName: "fleetSnapshotSummary"
+                                Layout.fillWidth: true
+                                color: ink
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 2
+                                elide: Text.ElideRight
+                                text: fleet.totalCount === 0
+                                    ? "No fleet vehicles"
+                                    : "Fleet snapshot: " + fleet.carCount + " cars · " +
+                                      fleet.motorcycleCount + " motorcycles · " +
+                                      fleet.rentedCount + " of " + fleet.totalCount +
+                                      " currently rented"
+                                Accessible.name: text
+                                Accessible.description: "Current rental occupancy, not historical fleet utilisation or collected revenue"
+                            }
+                            DomainMessage {
+                                objectName: "fleetAddMessage"
+                                text: fleetAdmin.lastMessage
                             }
                         }
 
@@ -474,8 +795,46 @@ ApplicationWindow {
                                 }
                                 model: fleet.visibleModel
                                 cellWidth: width < 790 ? width / 2 : width / 3
-                                cellHeight: 215
+                                cellHeight: 192
                                 ScrollBar.vertical: ScrollBar {}
+                                Column {
+                                    objectName: "fleetGalleryEmpty"
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 28, 420)
+                                    spacing: 12
+                                    visible: galleryView.count === 0
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0 ? "No fleet vehicles yet" :
+                                              "No vehicles match this search"
+                                        color: navy
+                                        font.pixelSize: 19
+                                        font.bold: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0
+                                            ? "Add a fictional vehicle to begin managing the fleet."
+                                            : "Try another name or show all availability states."
+                                        color: ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Button {
+                                        objectName: "fleetClearGalleryFilters"
+                                        visible: fleet.totalCount > 0
+                                        text: "Clear search and filters"
+                                        activeFocusOnTab: true
+                                        onClicked: {
+                                            fleet.query = ""
+                                            fleet.status = "All"
+                                            fleetStatusCombo.currentIndex = 0
+                                            search.forceActiveFocus(Qt.OtherFocusReason)
+                                        }
+                                    }
+                                }
                                 delegate: Button {
                                     id: vehicleCard
                                     required property int index
@@ -485,7 +844,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 195
+                                    height: 176
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -502,24 +861,49 @@ ApplicationWindow {
                                         selected: fleet.selectedId === vehicleCard.vehicleId
                                     }
                                     contentItem: ColumnLayout {
-                                        anchors.margins: 12
-                                        Label {
-                                            text: "◇"
-                                            font.pixelSize: 45; color: teal
-                                            Layout.alignment: Qt.AlignHCenter
+                                        spacing: 4
+                                        anchors.margins: 10
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 76
+                                            color: window.ice
+                                            radius: 9
+                                            VehicleSilhouette {
+                                                id: vehicleArt
+                                                objectName: "vehicleCardArt"
+                                                anchors.centerIn: parent
+                                                vehicleType: vehicleCard.vehicleType
+                                                width: 164
+                                                height: 74
+                                            }
                                         }
                                         Label {
                                             text: vehicleCard.displayName
+                                            font.pixelSize: 15
                                             font.bold: true; color: navy
                                             elide: Text.ElideRight
                                             Layout.fillWidth: true
                                         }
-                                        Label { text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType; color: ink }
                                         Label {
-                                            text: (vehicleCard.available ? "Available" : "Rented") +
-                                                  "   ·   R " + vehicleCard.dailyRate.toFixed(2) + "/day"
-                                            color: vehicleCard.available ? teal : navy
+                                            text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType
+                                            color: ink
                                             font.pixelSize: 12
+                                        }
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 8
+                                            Label {
+                                                text: vehicleCard.available ? "Available" : "Rented"
+                                                font.bold: true
+                                                color: vehicleCard.available ? teal : navy
+                                                font.pixelSize: 12
+                                            }
+                                            Item { Layout.fillWidth: true }
+                                            Label {
+                                                text: "R " + vehicleCard.dailyRate.toFixed(2) + "/day"
+                                                color: navy
+                                                font.pixelSize: 12
+                                            }
                                         }
                                     }
                                 }
@@ -542,6 +926,44 @@ ApplicationWindow {
                                 model: fleet.visibleModel
                                 spacing: 6
                                 ScrollBar.vertical: ScrollBar {}
+                                Column {
+                                    objectName: "fleetTableEmpty"
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 28, 420)
+                                    spacing: 12
+                                    visible: tableView.count === 0
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0 ? "No fleet vehicles yet" :
+                                              "No vehicles match this search"
+                                        color: navy
+                                        font.pixelSize: 19
+                                        font.bold: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0
+                                            ? "Add a fictional vehicle to begin managing the fleet."
+                                            : "Try another name or show all availability states."
+                                        color: ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Button {
+                                        objectName: "fleetClearTableFilters"
+                                        visible: fleet.totalCount > 0
+                                        text: "Clear search and filters"
+                                        activeFocusOnTab: true
+                                        onClicked: {
+                                            fleet.query = ""
+                                            fleet.status = "All"
+                                            fleetStatusCombo.currentIndex = 0
+                                            search.forceActiveFocus(Qt.OtherFocusReason)
+                                        }
+                                    }
+                                }
                                 delegate: Button {
                                     id: vehicleRow
                                     objectName: "fleetTableRow"
@@ -618,15 +1040,39 @@ ApplicationWindow {
                                     onClicked: fleet.clearSelection()
                                 }
                             }
+                            Rectangle {
+                                objectName: "fleetInspectorEmptyArt"
+                                visible: fleet.selectedId === ""
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 128
+                                color: ice
+                                radius: 10
+                                VehicleSilhouette {
+                                    anchors.centerIn: parent
+                                    vehicleType: "Car"
+                                }
+                            }
+                            Rectangle {
+                                objectName: "fleetInspectorSelectedArt"
+                                visible: fleet.selectedId !== ""
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: window.height < 800 ? 76 : 104
+                                color: ice
+                                radius: 10
+                                VehicleSilhouette {
+                                    anchors.centerIn: parent
+                                    vehicleType: fleet.selectedType
+                                }
+                            }
                             Label {
-                                text: fleet.selectedId === "" ? "Select a vehicle" : fleet.selectedName
+                                text: fleet.selectedId === "" ? "Ready to explore" : fleet.selectedName
                                 color: navy; font.pixelSize: 21; font.bold: true
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                             }
                             Label {
                                 text: fleet.selectedId === "" ?
-                                    "Select a Gallery card or Table row to inspect the same C++ vehicle record." :
+                                    "Choose a Gallery card or Table row to see verified vehicle details." :
                                     fleet.selectedId + " · " + fleet.selectedType
                                 color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap
                             }
@@ -645,6 +1091,7 @@ ApplicationWindow {
                                     (fleet.selectedAvailable ? "Available" : "Rented")
                                 color: fleet.selectedAvailable ? teal : navy
                             }
+                            Item { Layout.fillHeight: true }
                             Label {
                                 objectName: "inspectorHint"
                                 text: fleet.selectedId === ""
@@ -658,7 +1105,24 @@ ApplicationWindow {
                                 id: bookSelectedFleetButton
                                 objectName: "fleetBookSelectedButton"
                                 Layout.fillWidth: true
+                                Layout.minimumHeight: 44
                                 text: "Book selected vehicle"
+                                hoverEnabled: true
+                                background: Rectangle {
+                                    radius: 8
+                                    color: !bookSelectedFleetButton.enabled ? "#E6EAEE" :
+                                           bookSelectedFleetButton.down ? "#0C625C" :
+                                           bookSelectedFleetButton.hovered ? "#0C625C" : teal
+                                    border.width: bookSelectedFleetButton.activeFocus ? 3 : 0
+                                    border.color: navy
+                                }
+                                contentItem: Text {
+                                    text: bookSelectedFleetButton.text
+                                    font.bold: true
+                                    color: bookSelectedFleetButton.enabled ? "#FFFFFF" : ink
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 enabled: fleet.selectedId !== "" && fleet.selectedAvailable
                                 activeFocusOnTab: true
                                 Accessible.name: "Create rental for selected available vehicle"
@@ -669,8 +1133,63 @@ ApplicationWindow {
                                       : "This vehicle is currently rented"
                                 onClicked: window.bookSelectedFleetVehicle()
                             }
-                            Item { Layout.fillHeight: true }
+                            Button {
+                                id: removeSelectedFleetButton
+                                objectName: "fleetRemoveSelectedButton"
+                                Layout.fillWidth: true
+                                Layout.minimumHeight: 44
+                                text: "Remove selected vehicle"
+                                activeFocusOnTab: true
+                                enabled: fleet.selectedId !== "" &&
+                                         fleet.selectedAvailable &&
+                                         fleetRemove.canRemoveVehicle(fleet.selectedId)
+                                Accessible.name: "Remove selected available fictional vehicle"
+                                Accessible.description: !fleetRemove.canRemove
+                                    ? "Unavailable in persistent fictional-only mode"
+                                    : !fleet.selectedAvailable
+                                      ? "Return the active rental before vehicle removal"
+                                      : fleetRemove.hasRentalHistory(fleet.selectedId)
+                                        ? "Historical rental records reference this vehicle. Removal is blocked."
+                                        : "Requires exact vehicle ID confirmation"
+                                onClicked: {
+                                    fleetRemove.clearMessage()
+                                    fleetRemoveDialog.targetId = fleet.selectedId
+                                    fleetRemoveDialog.targetName = fleet.selectedName
+                                    fleetRemoveDialog.open()
+                                }
+                            }
+                            Label {
+                                objectName: "fleetRentalHistoryHint"
+                                visible: fleet.selectedId !== "" &&
+                                         fleet.selectedAvailable &&
+                                         fleetRemove.hasRentalHistory(fleet.selectedId)
+                                text: "Removal blocked: rental history still references this vehicle."
+                                color: ink
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: 12
+                                Layout.fillWidth: true
+                                Accessible.name: text
+                            }
+                            DomainMessage {
+                                objectName: "fleetRemoveMessage"
+                                text: fleetRemove.lastMessage
+                            }
                         }
+                    }
+                    FleetAddDialog {
+                        id: fleetAddDialog
+                        objectName: "fleetAddDialog"
+                        anchors.centerIn: parent
+                        command: fleetAdmin
+                        focusReturn: fleetAddButton
+                    }
+                    FleetRemoveDialog {
+                        id: fleetRemoveDialog
+                        objectName: "fleetRemoveDialog"
+                        anchors.centerIn: parent
+                        command: fleetRemove
+                        focusReturn: removeSelectedFleetButton
+                        fallbackFocusReturn: fleetAddButton
                     }
                 }
 
@@ -701,6 +1220,22 @@ ApplicationWindow {
                             id: newBookingButton
                             objectName: "rentalNewBookingButton"
                             text: "New rental"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: newBookingButton.hovered || newBookingButton.down
+                                    ? "#0C625C" : teal
+                                border.width: newBookingButton.activeFocus ? 3 : 0
+                                border.color: navy
+                            }
+                            contentItem: Text {
+                                text: newBookingButton.text
+                                font.bold: true
+                                color: "#FFFFFF"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Create a new fictional rental"
                             onClicked: {
@@ -750,6 +1285,13 @@ ApplicationWindow {
                         contentItem: ColumnLayout {
                             spacing: 10
                             Label {
+                                text: "VEHICLE  ·  CUSTOMER  ·  REVIEW"
+                                color: teal
+                                font.pixelSize: 12
+                                font.bold: true
+                                Accessible.name: "Vehicle, Customer, Review"
+                            }
+                            Label {
                                 text: "Demo only. No booking occurs until Confirm booking succeeds."
                                 color: ink; wrapMode: Text.WordWrap
                             }
@@ -777,6 +1319,21 @@ ApplicationWindow {
                                 id: bookingPreviewButton
                                 objectName: "bookingPreviewButton"
                                 text: bookingActions.needsFreshQuote ? "Refresh quote" : "Preview C++ quote"
+                                Layout.minimumHeight: 44
+                                hoverEnabled: true
+                                background: Rectangle {
+                                    radius: 8
+                                    color: bookingPreviewButton.hovered ? mint : "#FFFFFF"
+                                    border.color: bookingPreviewButton.activeFocus ? navy : teal
+                                    border.width: bookingPreviewButton.activeFocus ? 3 : 1
+                                }
+                                contentItem: Text {
+                                    text: bookingPreviewButton.text
+                                    color: teal
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 activeFocusOnTab: true
                                 Accessible.name: bookingActions.needsFreshQuote
                                     ? "Refresh outdated rental quote" : "Preview current C++ rental quote"
@@ -785,10 +1342,32 @@ ApplicationWindow {
                                     : "Review a current domain quote before enabling Confirm booking"
                                 onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
                             }
-                            DomainMessage {
-                                objectName: "bookingQuoteSummary"
-                                emphasized: bookingActions.canConfirm
-                                text: bookingActions.quoteSummary
+                            Rectangle {
+                                objectName: "bookingQuotePanel"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(76, quotePanelContent.implicitHeight + 24)
+                                color: mint
+                                border.color: designTokens.border
+                                radius: 10
+                                ColumnLayout {
+                                    id: quotePanelContent
+                                    anchors.fill: parent
+                                    anchors.margins: 12
+                                    spacing: 6
+                                    Label {
+                                        text: "LIVE QUOTE · NOT A PAYMENT"
+                                        color: teal
+                                        font.bold: true
+                                        font.pixelSize: 12
+                                    }
+                                    DomainMessage {
+                                        objectName: "bookingQuoteSummary"
+                                        emphasized: bookingActions.canConfirm
+                                        text: bookingActions.quoteSummary !== ""
+                                            ? bookingActions.quoteSummary
+                                            : "Enter a vehicle and duration, then preview the current quote."
+                                    }
+                                }
                             }
                             // A declined confirmation must be explained inside
                             // the still-open dialog, not behind its modal shade.
@@ -821,16 +1400,49 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Button {
+                                    id: bookingCancelButton
                                     objectName: "bookingCancelButton"
                                     text: "Cancel"
+                                    Layout.minimumHeight: 44
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: bookingCancelButton.hovered ? ice : "#FFFFFF"
+                                        border.color: bookingCancelButton.activeFocus ? navy : designTokens.border
+                                        border.width: bookingCancelButton.activeFocus ? 3 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: bookingCancelButton.text
+                                        color: navy
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     activeFocusOnTab: true
                                     onClicked: bookingDialog.close()
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {
+                                    id: bookingConfirmButton
                                     objectName: "bookingConfirmButton"
                                     text: "Confirm booking"
+                                    Layout.minimumHeight: 44
                                     enabled: bookingActions.canConfirm
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !bookingConfirmButton.enabled ? "#E6EAEE" :
+                                               bookingConfirmButton.hovered || bookingConfirmButton.down
+                                               ? "#0C625C" : teal
+                                        border.color: navy
+                                        border.width: bookingConfirmButton.activeFocus ? 3 : 0
+                                    }
+                                    contentItem: Text {
+                                        text: bookingConfirmButton.text
+                                        font.bold: true
+                                        color: bookingConfirmButton.enabled ? "#FFFFFF" : ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     activeFocusOnTab: true
                                     onClicked: {
                                         if (bookingActions.confirm(
@@ -874,9 +1486,67 @@ ApplicationWindow {
                             Accessible.name: "Archive selected returned rental"
                             onClicked: archiveConfirmation.open()
                         }
+                        Button {
+                            id: deleteArchivedButton
+                            objectName: "rentalDeleteArchivedButton"
+                            text: "Delete archived"
+                            activeFocusOnTab: true
+                            enabled: archivedDelete.canDeleteSelected
+                            Accessible.name: "Permanently delete selected archived fictional rental"
+                            Accessible.description: archivedDelete.canDeleteSelected
+                                ? "Requires exact DELETE rental ID confirmation"
+                                : "Select an archived rental in a disposable fictional demo"
+                            onClicked: {
+                                archivedDelete.clearMessage()
+                                archivedDeleteDialog.targetId = rentalsModel.selectedRentalId
+                                archivedDeleteDialog.open()
+                            }
+                        }
                         DomainMessage {
                             objectName: "rentalReturnMessage"
                             text: rentalActions.lastReturnMessage
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Label {
+                            text: "Return lookup"
+                            color: navy
+                            font.pixelSize: 12
+                        }
+                        AccessibleTextField {
+                            id: returnLookupField
+                            objectName: "returnLookupField"
+                            fieldPurpose: "Find active rental to return by rental ID or vehicle ID"
+                            placeholderText: "Rental ID or vehicle ID"
+                            Layout.preferredWidth: 195
+                            onTextEdited: {
+                                // Editing a new target must never leave the
+                                // previous contract eligible for confirmation.
+                                rentalsModel.clearSelection()
+                                window.returnLookupFeedback = ""
+                            }
+                            onAccepted: window.findActiveReturn()
+                        }
+                        Button {
+                            id: returnLookupButton
+                            objectName: "returnLookupButton"
+                            text: "Locate return"
+                            activeFocusOnTab: true
+                            Layout.minimumHeight: 36
+                            Accessible.name: "Locate active rental for return"
+                            Accessible.description: "Select only. Opens no confirmation and writes nothing."
+                            onClicked: window.findActiveReturn()
+                        }
+                        Label {
+                            objectName: "returnLookupFeedback"
+                            Layout.fillWidth: true
+                            text: window.returnLookupFeedback
+                            color: ink
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                            Accessible.name: text
                         }
                     }
                     ConfirmActionDialog {
@@ -908,6 +1578,18 @@ ApplicationWindow {
                         fallbackFocusTo: rentalList
                         onConfirmed: archiveActions.archiveSelected()
                     }
+                    P6ArchivedDeleteDialog {
+                        id: archivedDeleteDialog
+                        objectName: "rentalDeleteArchivedDialog"
+                        anchors.centerIn: parent
+                        command: archivedDelete
+                        focusReturn: deleteArchivedButton
+                        fallbackFocusReturn: rentalList
+                    }
+                    DomainMessage {
+                        objectName: "rentalDeleteMessage"
+                        text: archivedDelete.lastMessage
+                    }
                     DomainMessage {
                         objectName: "rentalArchiveMessage"
                         text: archiveActions.lastArchiveMessage
@@ -916,12 +1598,19 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         spacing: 8
                         Repeater {
-                            model: ["All", "Active", "History"]
+                            // Retain combined History for previous keyboard
+                            // workflows; Returned and Archived are separate
+                            // read-only C++ lifecycle views.
+                            model: ["All", "Active", "Returned", "Archived", "History"]
                             delegate: Button {
                                 required property string modelData
                                 objectName: "rentalFilter" + modelData
                                 text: modelData
                                 activeFocusOnTab: true
+                                // Native defaults were only 26 px high.
+                                // Give all lifecycle filter targets a comfortably
+                                // sized keyboard/mouse interaction surface.
+                                Layout.minimumHeight: 36
                                 Accessible.role: Accessible.RadioButton
                                 Accessible.name: modelData + " rentals"
                                 Accessible.checkable: true
@@ -941,7 +1630,32 @@ ApplicationWindow {
                                 }
                             }
                         }
+                        Label {
+                            objectName: "rentalLookupFeedback"
+                            text: window.rentalLookupFeedback
+                            color: ink
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                            Layout.preferredWidth: 165
+                            Accessible.name: text
+                        }
                         Item { Layout.fillWidth: true }
+                        AccessibleTextField {
+                            id: rentalLookupField
+                            objectName: "rentalLookupField"
+                            fieldPurpose: "Find rental by ID"
+                            placeholderText: "Rental ID, e.g. R001"
+                            Layout.preferredWidth: 180
+                            onTextEdited: window.rentalLookupFeedback = ""
+                            onAccepted: window.findRentalById()
+                        }
+                        Button {
+                            objectName: "rentalLookupButton"
+                            text: "Find rental"
+                            activeFocusOnTab: true
+                            Accessible.name: "Find rental by ID"
+                            onClicked: window.findRentalById()
+                        }
                     }
                     Rectangle {
                         Layout.fillWidth: true
@@ -1031,13 +1745,116 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    objectName: "rentalSelectionText"
+                                    text: rentalsModel.selectedRentalId === "" ?
+                                          "No rental selected" :
+                                          "Selected rental: " + rentalsModel.selectedRentalId
+                                    color: navy; font.pixelSize: 12
+                                    Accessible.name: text
+                                    Layout.fillWidth: true
+                                }
+                                Button {
+                                    id: showContractDetailsButton
+                                    objectName: "rentalDetailsButton"
+                                    text: "View contract details"
+                                    Layout.minimumHeight: 36
+                                    activeFocusOnTab: true
+                                    enabled: rentalsModel.selectedContract.rentalId !== undefined
+                                    Accessible.name: "View selected rental contract details"
+                                    Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
+                                    onClicked: contractDetailsDialog.open()
+                                }
+                            }
+                        }
+                    }
+                    Dialog {
+                        id: contractDetailsDialog
+                        objectName: "rentalContractDetailsDialog"
+                        title: "Rental contract details"
+                        width: Math.min(540, window.width - 64)
+                        anchors.centerIn: parent
+                        modal: true
+                        focus: true
+                        closePolicy: Popup.CloseOnEscape
+                        standardButtons: Dialog.NoButton
+                        onOpened: Qt.callLater(function() {
+                            if (contractDetailsDialog.visible)
+                                detailsCloseButton.forceActiveFocus(Qt.TabFocusReason)
+                        })
+                        onClosed: Qt.callLater(function() {
+                            if (showContractDetailsButton.visible && showContractDetailsButton.enabled)
+                                showContractDetailsButton.forceActiveFocus(Qt.TabFocusReason)
+                            else if (rentalList.visible)
+                                rentalList.forceActiveFocus(Qt.TabFocusReason)
+                        })
+                        contentItem: ColumnLayout {
+                            spacing: 10
                             Label {
-                                objectName: "rentalSelectionText"
-                                text: rentalsModel.selectedRentalId === "" ?
-                                      "No rental selected" :
-                                      "Selected rental: " + rentalsModel.selectedRentalId
-                                color: navy; font.pixelSize: 12
+                                text: "Read-only contract data from C++. No customer contact or payment details."
+                                color: ink
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                            }
+                            Label {
+                                objectName: "rentalDetailIdentity"
+                                text: "Rental: " + (rentalsModel.selectedContract.rentalId || "None") +
+                                      "  ·  Vehicle: " + (rentalsModel.selectedContract.vehicleId || "None")
+                                color: navy; font.bold: true
                                 Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailStatus"
+                                text: "Status: " + (rentalsModel.selectedContract.status || "Not selected") +
+                                      "  ·  Due: " + (rentalsModel.selectedContract.dueState || "Unknown")
+                                color: navy
+                                Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailStart"
+                                text: "Start date: " + (rentalsModel.selectedContract.startDate || "Not recorded")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailExpected"
+                                text: "Expected return: " + (rentalsModel.selectedContract.expectedReturnDate || "Not recorded")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailActual"
+                                text: "Actual return: " + (rentalsModel.selectedContract.actualReturnDate || "Not returned")
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailDuration"
+                                text: "Rental days: " + (rentalsModel.selectedContract.days || 0)
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailRate"
+                                text: "Daily rate: R " + Number(rentalsModel.selectedContract.dailyRate || 0).toFixed(2)
+                                color: ink; Accessible.name: text
+                            }
+                            Label {
+                                objectName: "rentalDetailTotal"
+                                text: "Booked contract total: R " + Number(rentalsModel.selectedContract.total || 0).toFixed(2)
+                                color: navy; font.bold: true
+                                Accessible.name: text
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    id: detailsCloseButton
+                                    objectName: "rentalDetailsClose"
+                                    text: "Close"
+                                    Layout.minimumHeight: 36
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Close rental contract details"
+                                    onClicked: contractDetailsDialog.close()
+                                }
                             }
                         }
                     }

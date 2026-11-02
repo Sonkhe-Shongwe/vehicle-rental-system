@@ -3,6 +3,9 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
     p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
+    fleet_add_controller.h fleet_add_controller.cpp
+    fleet_remove_controller.h fleet_remove_controller.cpp
+    p6_archived_delete_controller.h p6_archived_delete_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
@@ -14,7 +17,8 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_booking_controller.h
     ${PROJECT_SOURCE_DIR}/src/application/rental_booking_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.h
-    ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp)
+    ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_admin_commands.cpp)
 target_link_libraries(rental_studio_qtquick_spike
     PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
 if(WIN32)
@@ -40,7 +44,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml WorkspaceNavButton.qml
+    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml VehicleSilhouette.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml)
 if(BUILD_TESTING)
@@ -110,6 +114,47 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p2_focus_edges PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software"
         TIMEOUT 40)
+    add_test(NAME rental_studio_p6_fleet_add_wide COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke)
+    add_test(NAME rental_studio_p6_fleet_add_compact COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke --compact)
+    set_tests_properties(rental_studio_p6_fleet_add_wide rental_studio_p6_fleet_add_compact PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # P6-B: real native keyboard-driven confirmation, cancel/Escape,
+    # rented-vehicle refusal, failed atomic writer rollback and reopen.
+    add_test(NAME rental_studio_p6_fleet_remove_wide
+        COMMAND rental_studio_qtquick_spike --p6-fleet-remove-smoke)
+    add_test(NAME rental_studio_p6_fleet_remove_compact
+        COMMAND rental_studio_qtquick_spike --p6-fleet-remove-smoke --compact)
+    set_tests_properties(rental_studio_p6_fleet_remove_wide
+        rental_studio_p6_fleet_remove_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 70)
+    # P6-C: real Qt keyboard archive -> exact-confirmed permanent deletion.
+    # Tests include Cancel/Escape, invalid phrase, active/returned refusal,
+    # rejected storage commit rollback, fixed synthetic mode denial and restart.
+    add_test(NAME rental_studio_p6_archived_delete_wide
+        COMMAND rental_studio_qtquick_spike --p6-archived-delete-smoke)
+    add_test(NAME rental_studio_p6_archived_delete_compact
+        COMMAND rental_studio_qtquick_spike --p6-archived-delete-smoke --compact)
+    set_tests_properties(rental_studio_p6_archived_delete_wide
+        rental_studio_p6_archived_delete_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 75)
+    # P6-M: full Qt operator journey across three independent executables,
+    # exact stage-allowlisted fictional files, positive and refusal paths.
+    add_test(NAME rental_studio_p6_integrated_wide
+        COMMAND rental_studio_qtquick_spike --p6-integrated-flow)
+    add_test(NAME rental_studio_p6_integrated_compact
+        COMMAND rental_studio_qtquick_spike --p6-integrated-flow --compact)
+    set_tests_properties(rental_studio_p6_integrated_wide
+        rental_studio_p6_integrated_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 155)
+    # P6-E: each CTest itself launches three genuinely independent native
+    # Qt GUI processes within a unique parent-owned disposable synthetic root.
+    # Original fixture hashes and strict child allowlisting protect all inputs.
+    add_test(NAME rental_studio_p6_cross_process_wide
+        COMMAND rental_studio_qtquick_spike --p6-restart-flow)
+    add_test(NAME rental_studio_p6_cross_process_compact
+        COMMAND rental_studio_qtquick_spike --p6-restart-flow --compact)
+    set_tests_properties(rental_studio_p6_cross_process_wide
+        rental_studio_p6_cross_process_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 150)
     # P3-F: genuine QQuickWindow and delegate-backed Rentals state, selection
     # and refresh after a committed C++ fictional-domain operation.
     add_test(NAME rental_studio_p3_rentals_qml_wide
@@ -186,6 +231,26 @@ if(BUILD_TESTING)
         rental_studio_p5_fleet_booking_wide
         rental_studio_p5_fleet_booking_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P6-K: purpose-limited native contract detail dialog, true actual dates,
+    # hidden-selection guards, modal Escape/focus and no accidental writes.
+    add_test(NAME rental_studio_p6_contract_detail_wide
+        COMMAND rental_studio_qtquick_spike --p6-contract-detail-smoke)
+    add_test(NAME rental_studio_p6_contract_detail_compact
+        COMMAND rental_studio_qtquick_spike --p6-contract-detail-smoke --compact)
+    set_tests_properties(
+        rental_studio_p6_contract_detail_wide
+        rental_studio_p6_contract_detail_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # P6-J: genuine Qt window recent-contract read model and hidden-history
+    # read-only routing at two sizes with source byte nonmutation.
+    add_test(NAME rental_studio_p6_recent_activity_wide
+        COMMAND rental_studio_qtquick_spike --p6-recent-activity-smoke)
+    add_test(NAME rental_studio_p6_recent_activity_compact
+        COMMAND rental_studio_qtquick_spike --p6-recent-activity-smoke --compact)
+    set_tests_properties(
+        rental_studio_p6_recent_activity_wide
+        rental_studio_p6_recent_activity_compact
+        PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
     # P5 scoped operational Overview: C++-owned KPIs, post-commit refresh,
     # real wide/compact QQuickWindow and selection-independent totals.
     add_test(NAME rental_studio_p5_overview_wide

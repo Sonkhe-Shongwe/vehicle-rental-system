@@ -1,6 +1,8 @@
 #include "src/application/rental_list_model.h"
 
 #include <QVariant>
+#include <QVariantMap>
+#include <algorithm>
 #include <utility>
 
 namespace {
@@ -77,6 +79,54 @@ QString RentalListModel::oldestOverdueRentalId() const {
     return oldest ? oldest->rentalId : QString{};
 }
 
+QVariantList RentalListModel::recentActivities() const {
+    // This is latest *contract start date*, not an event/audit log. Do not
+    // treat return/archive state changes as a new chronological event.
+    QList<RentalRecordSummary> ordered=m_allItems;
+    std::sort(ordered.begin(),ordered.end(),
+        [](const RentalRecordSummary &a,const RentalRecordSummary &b) {
+            if(a.startDate!=b.startDate) return a.startDate>b.startDate;
+            return a.rentalId>b.rentalId; // Stable deterministic same-day tie.
+        });
+    QVariantList rows;
+    const int count=std::min(4,static_cast<int>(ordered.size()));
+    for(int i=0;i<count;++i) {
+        const auto &record=ordered.at(i);
+        QVariantMap row;
+        row.insert(QStringLiteral("rentalId"),record.rentalId);
+        row.insert(QStringLiteral("vehicleId"),record.vehicleId);
+        row.insert(QStringLiteral("startDate"),record.startDate.toString(Qt::ISODate));
+        row.insert(QStringLiteral("status"),statusText(record.status));
+        row.insert(QStringLiteral("total"),record.legacyTotal);
+        rows.append(row);
+    }
+    return rows;
+}
+
+QVariantMap RentalListModel::selectedContract() const {
+    if (m_selectedRentalId.isEmpty() || rowForId(m_selectedRentalId) < 0)
+        return {}; // Never disclose stale or hidden rental selection.
+    for (const auto &record : m_allItems) {
+        if (record.rentalId != m_selectedRentalId)
+            continue;
+        // Explicit purpose-limited allowlist; no customer, phone, payments.
+        return {
+            {QStringLiteral("rentalId"),record.rentalId},
+            {QStringLiteral("vehicleId"),record.vehicleId},
+            {QStringLiteral("startDate"),record.startDate.toString(Qt::ISODate)},
+            {QStringLiteral("expectedReturnDate"),record.expectedReturnDate.toString(Qt::ISODate)},
+            {QStringLiteral("actualReturnDate"),record.actualReturnDate.isValid()
+                ? record.actualReturnDate.toString(Qt::ISODate) : QString{}},
+            {QStringLiteral("days"),record.rentalDays},
+            {QStringLiteral("dailyRate"),record.legacyDailyRate},
+            {QStringLiteral("total"),record.legacyTotal},
+            {QStringLiteral("status"),statusText(record.status)},
+            {QStringLiteral("dueState"),dueStateText(record.dueState)}
+        };
+    }
+    return {};
+}
+
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
     : QAbstractListModel(parent), m_service(service),
       m_allItems(service.records()), m_items(m_allItems) {}
@@ -130,6 +180,10 @@ QList<RentalRecordSummary> RentalListModel::filtered(
     for (const auto &item : all) {
         const bool active = item.status == RentalRecordStatus::Active;
         if ((m_statusFilter == QStringLiteral("Active") && active) ||
+            (m_statusFilter == QStringLiteral("Returned") &&
+             item.status == RentalRecordStatus::Returned) ||
+            (m_statusFilter == QStringLiteral("Archived") &&
+             item.status == RentalRecordStatus::Archived) ||
             (m_statusFilter == QStringLiteral("History") && !active))
             result.append(item);
     }
@@ -140,6 +194,8 @@ void RentalListModel::setStatusFilter(const QString &filter) {
     // The C++ model, never QML, determines which lifecycle flags are history.
     if (filter != QStringLiteral("All") &&
         filter != QStringLiteral("Active") &&
+        filter != QStringLiteral("Returned") &&
+        filter != QStringLiteral("Archived") &&
         filter != QStringLiteral("History"))
         return;
     if (filter == m_statusFilter)
@@ -157,8 +213,10 @@ void RentalListModel::setStatusFilter(const QString &filter) {
     emit statusFilterChanged();
     if (m_items.size() != oldCount)
         emit countChanged();
-    if (oldId != m_selectedRentalId || oldRow != selectedRow())
+    if (oldId != m_selectedRentalId || oldRow != selectedRow()) {
         emit selectionChanged();
+        emit selectedContractChanged();
+    }
 }
 
 bool RentalListModel::selectVisibleRow(int row) {
@@ -199,8 +257,56 @@ bool RentalListModel::selectById(const QString &id) {
     if (canonicalId != m_selectedRentalId) {
         m_selectedRentalId = canonicalId;
         emit selectionChanged();
+        emit selectedContractChanged();
     }
     return true;
+}
+
+bool RentalListModel::locateById(const QString &rentalId) {
+    const QString requested = rentalId.trimmed();
+    if (requested.isEmpty())
+        return false;
+    QString canonical;
+    for (const auto &item : m_allItems) {
+        if (item.rentalId.compare(requested, Qt::CaseInsensitive) == 0) {
+            canonical = item.rentalId;
+            break;
+        }
+    }
+    if (canonical.isEmpty())
+        return false; // Failed lookup preserves both filter and selection.
+    // Existing operators can find any rental ID, even when currently viewing
+    // Active or History. Only an explicit successful lookup resets the filter.
+    if (rowForId(canonical) < 0)
+        setStatusFilter(QStringLiteral("All"));
+    return selectById(canonical);
+}
+
+bool RentalListModel::locateActiveReturn(const QString &identifier) {
+    const QString id = identifier.trimmed();
+    QString matchedRental;
+    int matchCount = 0;
+    if (!id.isEmpty()) {
+        for (const auto &item : m_allItems) {
+            if (item.status != RentalRecordStatus::Active)
+                continue;
+            if (item.rentalId.compare(id, Qt::CaseInsensitive) == 0 ||
+                item.vehicleId.compare(id, Qt::CaseInsensitive) == 0) {
+                matchedRental = item.rentalId;
+                ++matchCount;
+                if (matchCount > 1)
+                    break; // Refuse ambiguous or inconsistent active records.
+            }
+        }
+    }
+    if (matchCount != 1) {
+        clearSelection(); // Explicitly disarm a previously eligible return.
+        return false;     // Failed lookup cannot mutate filter or storage.
+    }
+    // A successful explicit return lookup reveals only active contracts;
+    // the separate RentalReturnService revalidates before any commit.
+    setStatusFilter(QStringLiteral("Active"));
+    return selectById(matchedRental);
 }
 
 void RentalListModel::clearSelection() {
@@ -208,6 +314,7 @@ void RentalListModel::clearSelection() {
         return;
     m_selectedRentalId.clear();
     emit selectionChanged();
+    emit selectedContractChanged();
 }
 
 void RentalListModel::refresh() {
@@ -231,6 +338,9 @@ void RentalListModel::refresh() {
         emit countChanged();
     if (priorId != m_selectedRentalId || selectedRow() != priorRow)
         emit selectionChanged();
+    // Lifecycle/dates can change while the selected rental ID stays the same.
+    // Force the separate contract view to rebind after authoritative refresh.
+    emit selectedContractChanged();
     // Emitted only after the caller's authoritative persisted transaction
     // requests refresh(). Filters and unconfirmed previews never alter KPIs.
     emit metricsChanged();

@@ -62,6 +62,8 @@ void testFullLifecycle()
         check(!reloaded.completeRental("R001", QDate::currentDate()), "second return rejected");
         check(!reloaded.deleteArchivedRental("R001"), "unarchived returned rental cannot be deleted");
         check(reloaded.getActiveRentals().isEmpty(), "return clears active list");
+        check(reloaded.hasRentalHistoryForVehicle(" c001 "), "returned rental still references canonical vehicle");
+        check(!reloaded.removeVehicle("C001"), "returned vehicle remains protected by historical rental");
         check(reloaded.archiveRental("R001"), "returned rental archived");
         check(!reloaded.archiveRental("R001"), "duplicate archive rejected");
     }
@@ -69,8 +71,11 @@ void testFullLifecycle()
         RentalSystem reloaded(temp.path());
         check(reloaded.findRentalById("R001") != nullptr, "archive persists");
         check(reloaded.findRentalById("R001")->getIsArchived(), "archived state persists");
-        check(reloaded.removeVehicle("C001"), "returned vehicle removable");
+        check(reloaded.hasRentalHistoryForVehicle("c001"), "archived reference persists through restart");
+        check(!reloaded.removeVehicle("C001"), "archived rental prevents orphaned vehicle reference");
         check(reloaded.deleteArchivedRental("R001"), "archived rental deletable");
+        check(!reloaded.hasRentalHistoryForVehicle("C001"), "removed historical record releases deletion guard");
+        check(reloaded.removeVehicle("C001"), "vehicle removable after archived references explicitly deleted");
         check(reloaded.findRentalById("R001") == nullptr, "deleted record removed from memory");
     }
     {

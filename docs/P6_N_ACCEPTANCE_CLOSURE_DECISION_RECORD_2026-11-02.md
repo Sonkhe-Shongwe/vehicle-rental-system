@@ -1,0 +1,65 @@
+# P6-N | Evidence-based acceptance closure decision record
+
+**Prepared:** 2 November 2026. **Status:** **TECHNICAL EVIDENCE RECONCILED, OWNER ACCEPTANCE OPEN.** This is a decision record and no new product acceptance, test result, or production release authorization.
+
+**Source branch:** `feature/p6-fleet-create-disposable-20261101`, [Draft PR #14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14) stacked on [Draft #12](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/12) and [Draft #10](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/10). **Last exact implementation/test source:** [`94f3a0d`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/94f3a0d5977884d28c9d2e003177dd282968dd0d) with [core **13/13 PASS**](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41368485927) and [Linux **74/74**, Windows hosted **74/74** native Qt 6.8.3 CTests PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41368486004). [Final P6-M three-process verification](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md) is connected evidence, not automatic acceptance. Later docs-only heads `a03e768`, `7ba616a`, `d712eed` and this doc have no new native feature tests.
+
+## 1. Strict scoring and decision rules
+
+The [original programme acceptance matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) assigns **nine** P6 criteria and **14%** phase weight but describes them as *one unnumbered feature statement*. The [nine-row provisional reconciliation](P5_P6_ACCEPTANCE_RECONCILIATION_2026-11-01.md) and [P6-L review pack](P6_L_NINE_CRITERION_ACCEPTANCE_REVIEW_PACK_2026-11-02.md) are **candidate interpretations**. Neither a reviewer nor automation is authorized to silently renumber them or award credit. Keep the exact existing formal acceptance ledger **P4 5/7, P5 0/8, P6 0/9, total 28/74 accepted, 40.6% weighted** unchanged until a real, dated criterion approval and independent supporting evidence are recorded. **The 40.6% is evidence-weighted formal acceptance, not total feature completion.**
+
+**Status vocabulary for this record:**
+- `AUTOMATED COVERED`: named real tests exist and passed on exact source; scope is fictional only, not owner UX acceptance.
+- `INTEGRATED TESTED, FULL SCOPE OPEN`: a substantial connected end-to-end test passed, but a broader owner signoff/parity question remains.
+- `OWNER DECISION NEEDED`: a human must choose a design or accept a specific criterion; absence of choice is **not** permission to implement or accept it.
+- `PRODUCTION DEFERRED`: legitimate data handling, non-destructive records-retention rules and P7-P9 release requirements must not be smuggled into fictional P6 criteria.
+- `NOT TESTED PHYSICALLY`: hosted Windows CI and synthetic DPI do not count as the owner's actual Windows OS scaling/Narrator evidence.
+
+## 2. Source-faithful candidate nine-check disposition
+
+| Candidate | Exact source scope, not a new mandate | Best representative checked evidence | Current technical finding | Remaining P6 decision/gate |
+|---|---|---|---|---|
+| **P6-01** | Add Car and Motorcycle | [P6-A](P6_A_FLEET_CREATE_NATIVE_VERIFIED_2026-11-01.md); `rental_studio_p6_fleet_add_wide/compact`; [P6-E](P6_E_THREE_PROCESS_NATIVE_RESTART_VERIFIED_2026-11-01.md) | **AUTOMATED COVERED**, native C++/QML create and reopen | Accept full owner input/invalid-state UX; commercial ID policy P7 |
+| **P6-02** | Search/filter/sort and selected ID stable in Gallery/Table | `rental_studio_p2_qml_*`, `rental_studio_p2_focus_edges`, `rental_studio_p2_arrows_focus` | **AUTOMATED COVERED** | Owner inspect real keyboard/zoom/scroll, no-clipped selection |
+| **P6-03** | Fleet deletion guard | [P6-B](P6_B_NATIVE_FLEET_REMOVAL_VERIFIED_2026-11-01.md); [P6-D](P6_D_HISTORICAL_VEHICLE_REFERENCES_VERIFIED_2026-11-01.md); `rental_studio_p6_fleet_remove_*` | **AUTOMATED COVERED**, refuses any surviving active/returned/archived vehicle reference | Approve fictional destructive dialog; **commercial retire vs hard-delete policy deferred to P7** |
+| **P6-04** | Active/overdue state and navigation | [P5-J](P5_J_ACTIONABLE_OVERDUE_OVERVIEW_VERIFIED_2026-11-01.md); `rental_studio_p5_overview_*` | **AUTOMATED COVERED**, read-only actual due-date metrics/overdue route | Owner inspect current date, actions and truthful empty/error states |
+| **P6-05** | Return/repeated refusal | [P6-H](P6_H_RETURN_LOOKUP_NATIVE_VERIFIED_2026-11-01.md); `rental_studio_p3_return_qml_*`; [P6-M](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md) | **AUTOMATED COVERED**, ID or vehicle-ID return and separate confirm, repeat/invalid refusal | Operator approval of full confirmation and error language |
+| **P6-06** | Archive and allowed-state archived deletion | [P6-C](P6_C_ARCHIVED_DELETE_NATIVE_VERIFIED_2026-11-01.md), `rental_studio_p3_archive_qml_*`, `rental_studio_p6_archived_delete_*`, P6-M | **AUTOMATED COVERED**, restricted to explicitly confirmed fictional disposable records | Owner approval of irreversible actions; **no commercial history deletion** |
+| **P6-07** | Cancel/decline/invalid operations do not mutate | [P5-G](P5_G_BOOKING_CANCELLATION_VERIFIED_2026-11-01.md), P6-B/C cancellation tests, [P5-F](P5_F_STALE_QUOTE_RETRY_VERIFIED_2026-11-01.md), P6-M wrong phrase | **AUTOMATED COVERED**, actual byte-stable no-success paths | Consolidated keyboard/Escape/error-state owner check |
+| **P6-08** | Restart/reconstruction after domain operations | [P6-E](P6_E_THREE_PROCESS_NATIVE_RESTART_VERIFIED_2026-11-01.md), [P6-M](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md), `rental_studio_p6_cross_process_*`, `rental_studio_p6_integrated_*` | **AUTOMATED COVERED**, multiple genuine native processes on both platforms | Confirm restricted synthetic modes are appropriate for P6; P7 commercial recoverability remains separate |
+| **P6-09** | Full Qt Quick lifecycle parity vs legacy | [22-row P6-I capability audit](P6_I_LIFECYCLE_PARITY_AUDIT_2026-11-01.md); [P6-J Overview recent contracts](P6_J_RECENT_CONTRACTS_NATIVE_VERIFIED_2026-11-01.md), [P6-K contract detail](P6_K_CONTRACT_DETAIL_NATIVE_VERIFIED_2026-11-02.md), P6-M 3-process full operator journey | **INTEGRATED TESTED, FULL SCOPE OPEN**. Connected lifecycle now covered, but physical owner review, intentional design differences and exhaustive negative-state classification not approved | Owner must explicitly disposition legacy utilisation/type difference, intentionally omitted contact/phone role, review-screen composition, and decide whether tested parity meets the rubric. Do not mark accepted on passing 74/74 alone |
+
+**Automated summary:** Eight original capability themes have representative passed tests. The ninth now has a genuine full connected scenario plus a source audit, **but remains OPEN as an approved full-parity criterion**. This is more technical evidence than the previous “not yet end-to-end tested” status, **not an automatic 9/9**.
+
+## 3. P6-I parity audit discrepancies after P6-J/K/M
+
+| Gap | Current disposition | Owner signoff question |
+|---|---|---|
+| Legacy recent rental transactions on Dashboard | **P6-J implemented** read-only bounded **recent contracts by start date**, not return/archive event timeline; source verified | Are four recent *contracts* sufficient for this P6 rebuild? Actual event timeline would require a new domain audit model |
+| Legacy utilization/Car/Motorcycle counts on dashboard | **NOT IMPLEMENTED/OWNER OPEN** by design; [P6-L proposal](P6_L_OVERVIEW_FLEET_METRICS_DECISION_2026-11-02.md) recommends optional compact, full-C++-snapshot Fleet secondary line rather than extra large Overview cards | Choose **A Fleet summary**, **B quiet Overview line**, or **C omit**. Until selection, no widget/score |
+| Legacy customer name/phone visible in rental history | **INTENTIONALLY RESTRICTED**; current QML uses no-contact roles. [P6-K](P6_K_CONTRACT_DETAIL_NATIVE_VERIFIED_2026-11-02.md) added contract dates, days and amounts **without contacts** | Accept privacy-safe fictional P6 presentation now, or request explicit design review; any real contact visibility/retention belongs to separately approved P7 privacy plan |
+| Guided booking Review composition | Actual native modal has C++ authoritative preview and Confirm/Cancel, with contact fields only for fictional current booking | Owner inspect whole screen against selected [navy/teal direction](../design/r1/OWNER_THEME_DIRECTION_2026-10-30.md); don't invent draft persistence or Pending status |
+| Real Windows/Narrator/OS scaling | **NOT TESTED PHYSICALLY** by hosted CI; synthetic 125/150 tests cannot substitute | Use [physical Windows checklist](../spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md) and [P2 physical pack](../spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md), record actual device observations |
+
+These are not all code bugs. Avoid overriding a deliberate privacy boundary or adding noise to the accepted task-first visual architecture just to imitate old Widgets layouts.
+
+## 4. Smallest defensible owner decision and physical acceptance sequence
+
+A single consolidated review can cover the remaining P4/P5/P6 **without repeating the full automated suite manually**. Use the [P6-L ten-step complete synthetic operator runbook](P6_L_NINE_CRITERION_ACCEPTANCE_REVIEW_PACK_2026-11-02.md), existing physical Windows documents, and authentic screenshot artifacts on [native CI 41368486004](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41368486004). Artifacts available at audit: `p2-qtquick-windows-screenshots`, `p2-qtquick-linux-screenshots`, and `p2-windows-physical-acceptance-kit`. Their presence establishes **downloadable evidence**, not review/approval of their contents.
+
+**Review sequence and evidence fields:**
+1. **Design choice and rubric first:** explicitly approve/amend P6-01…09 grouping, and A/B/C metric placement. Mark intended non-contact detail as **accepted for fictional P6** or **review needed**, without authorizing production PII.
+2. **Use only fictional input:** launch from controlled native Windows kit. Record Qt Creator kit/compiler, binary exact SHA, Windows version and real display-scale setting (100/125/150%). Don't upload private files or enter real customers.
+3. **One joint operator walk-through:** inspect Overview, Fleet Gallery/Table, Add Car/Motorcycle, quote/Confirm, Active/History, selected contract details, return by rental or vehicle ID, archive/delete guard, third-process final state and safety disclosures. Check available/active/overdue/booked value consistency and zero/empty/error states; do not call booked value paid revenue.
+4. **Keyboard and a11y:** Tab/Shift+Tab between groups, arrows in list, Space on actions, modal Escape/focus restoration, checked/selected radio state, Narrator announcements and actual 100/125/150% scale. Mark every unsupported or skipped physical check **NOT TESTED**.
+5. **Record approvals one by one:** each of P6-01…09 gets a genuine dated owner disposition `ACCEPTED`, `REVIEW_NEEDED` or `REJECTED`, plus exact evidence links. P5 01…08 remains a separately named owner review, not silently awarded by overlap.
+
+**Decision capture, not prefilled approval:** Owner name/role: **PENDING**. Exact accepted rubric: **PENDING**. Metrics A/B/C: **PENDING**. Privacy-safe P6 detail: **PENDING**. Actual physical Windows 100%: **NOT TESTED**, 125%: **NOT TESTED**, 150%: **NOT TESTED**; Narrator: **NOT TESTED**. P6-01…09 formal dispositions: **PENDING**. New formal acceptance count: **NOT AUTHORIZED**. Keep P6 **0/9** and overall **28/74** until real decisions are recorded.
+
+## 5. Engineering and P7 handoff boundary
+
+There is **no source-backed need to write another generic Fleet/Booking/Return feature for P6** merely to inflate coverage. P6-M resolves the missing connected-sequence test, while P6-I/J/K cover audited UI differences; the unresolved items above are owner decisions and real-device acceptance. If physical review reveals a reproducible defect, fix it narrowly on the P6 draft branch and rerun exact test source.
+
+**P7 may begin as design/discovery in parallel with owner P6 signoff, but NOT as general data enablement:** propose and explicitly approve non-destructive retired vehicle lifecycle with referenced historical ledger, stable nonreusable IDs, integer-cents money, durable transaction ownership, corruption detection and backup/migration policy. Do not turn on real contacts, arbitrary data directories, live SQLite, unlicensed imagery, a production installer or hard-delete historical business records based on this document. P8 deployment/licensing and P9 final QA/release remain separate gates.
+
+**State on completion of this source audit:** documentation only; Draft PR #14/#12/#10 unmerged, stable `main` untouched. **P6 formal 0/9, P5 formal 0/8, programme 28/74 accepted and weighted 40.6% unchanged.**

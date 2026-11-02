@@ -6,6 +6,8 @@
 #include <QAbstractListModel>
 #include <QList>
 #include <QString>
+#include <QVariantList>
+#include <QVariantMap>
 
 // Native Qt read-only model. The service and its owning RentalSystem must
 // outlive this adapter. No Rental* or customer PII is exposed through roles.
@@ -24,6 +26,12 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(int dueTodayCount READ dueTodayCount NOTIFY metricsChanged)
     Q_PROPERTY(double activeBookedValue READ activeBookedValue NOTIFY metricsChanged)
     Q_PROPERTY(QString oldestOverdueRentalId READ oldestOverdueRentalId NOTIFY metricsChanged)
+    // At most four latest rental START dates, then ID descending. Purpose-
+    // limited maps: no customer/contact details, payment or event timestamps.
+    Q_PROPERTY(QVariantList recentActivities READ recentActivities NOTIFY metricsChanged)
+    // Only the current selected C++ rental summary. Never customer/phone.
+    // Notified separately on selection AND domain-backed lifecycle refresh.
+    Q_PROPERTY(QVariantMap selectedContract READ selectedContract NOTIFY selectedContractChanged)
 public:
     enum Role {
         RentalIdRole = Qt::UserRole + 1,
@@ -52,6 +60,8 @@ public:
     int dueTodayCount() const;
     double activeBookedValue() const;
     QString oldestOverdueRentalId() const;
+    QVariantList recentActivities() const;
+    QVariantMap selectedContract() const;
     QString statusFilter() const { return m_statusFilter; }
     void setStatusFilter(const QString &filter);
     QString selectedRentalId() const { return m_selectedRentalId; }
@@ -59,6 +69,13 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool selectById(const QString &rentalId);
+    // Explicit, read-only operator lookup across lifecycle filters. An
+    // existing hidden match is revealed before selection; misses do nothing.
+    Q_INVOKABLE bool locateById(const QString &rentalId);
+    // Only selects a uniquely matched ACTIVE rental, identified by rental
+    // ID or vehicle ID. Failed lookups disarm any previous return selection.
+    // Never completes a return, reads contact details, or writes any file.
+    Q_INVOKABLE bool locateActiveReturn(const QString &rentalOrVehicleId);
     Q_INVOKABLE bool selectVisibleRow(int row);
     // Navigate the oldest overdue active contract from the complete C++ snapshot.
     // Read/selection only: no booking, return, archive, or disk write.
@@ -70,6 +87,7 @@ signals:
     void countChanged();
     void statusFilterChanged();
     void metricsChanged();
+    void selectedContractChanged();
 
 private:
     int rowForId(const QString &rentalId) const;

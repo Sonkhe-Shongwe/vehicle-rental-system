@@ -23,6 +23,7 @@ on:
       - feature/p3-rental-confirm-20261030
       # P5-A operational dashboard is stacked on the still-unmerged P4 draft.
       - feature/p4-shared-shell-focus-20261030
+      - feature/p5-operational-overview-20261101
     paths:
       - CMakeLists.txt
       - 'src/application/**'
@@ -82,6 +83,7 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-persistent-*.png
             build-p2/spikes/qtquick_p2/p5-qt-fleet-booking-receipt-*.png
             build-p2/spikes/qtquick_p2/p5-qt-cancel-outcome-*.png
+            build-p2/spikes/qtquick_p2/p6-qt-archived-delete-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -198,5 +200,6 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-persistent-*.png
             build-p2/spikes/qtquick_p2/p5-qt-fleet-booking-receipt-*.png
             build-p2/spikes/qtquick_p2/p5-qt-cancel-outcome-*.png
+            build-p2/spikes/qtquick_p2/p6-qt-archived-delete-*.png
           if-no-files-found: ignore
           retention-days: 7

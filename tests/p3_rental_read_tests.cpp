@@ -145,16 +145,19 @@ int main(int argc, char **argv) {
               history.recordsByStatus(RentalRecordStatus::Returned).size() == 2 &&
               history.recordsByStatus(RentalRecordStatus::Archived).size() == 1,
               "all states reconstructed after actual domain restart");
-        check(reloaded.removeVehicle("M001"), "removed vehicle after successful return");
-        const QByteArray afterRemoval = readBytes(fleetPath);
+        const QByteArray beforeHistoryFleet = readBytes(fleetPath);
         const QByteArray beforeHistoryRead = readBytes(ledgerPath);
+        check(reloaded.hasRentalHistoryForVehicle(" m001 ") &&
+              !reloaded.removeVehicle("M001") &&
+              reloaded.findVehicleById("M001") != nullptr,
+              "returned historical rental prevents orphaning the referenced vehicle");
         const auto historical = history.recordById("r003");
         check(historical && historical->vehicleId == "M001" &&
               historical->status == RentalRecordStatus::Returned,
-              "historical rental accessible with no corresponding fleet vehicle");
-        check(readBytes(fleetPath) == afterRemoval &&
+              "historical rental remains accessible with existing vehicle");
+        check(readBytes(fleetPath) == beforeHistoryFleet &&
               readBytes(ledgerPath) == beforeHistoryRead,
-              "history read never recreates vehicle or changes storage");
+              "read and protected failed removal never change either ledger");
     }
     std::cout << "P3 read-only typed Rentals states and restart PASS\n";
     return EXIT_SUCCESS;

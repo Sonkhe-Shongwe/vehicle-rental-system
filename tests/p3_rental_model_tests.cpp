@@ -115,6 +115,59 @@ int main(int argc, char **argv) {
               "overdue routing is read-only");
 
 
+        // P6 operator parity: explicit ID lookup must reveal filtered-out
+        // records but never change selection, filter, or disk on a miss.
+        RentalListModel lookup(service);
+        lookup.setStatusFilter("History");
+        check(lookup.count() == 0 && !lookup.locateById(" ") &&
+              !lookup.locateById("R999") &&
+              lookup.statusFilter() == "History" &&
+              lookup.selectedRentalId().isEmpty(),
+              "blank/unknown lookup preserves hidden History filter");
+        check(lookup.locateById("  r002  ") &&
+              lookup.statusFilter() == "All" &&
+              lookup.selectedRentalId() == "R002" &&
+              lookup.selectedRow() == 1,
+              "case-insensitive lookup reveals and selects hidden rental");
+        lookup.setStatusFilter("Active");
+        check(lookup.locateById("R003") &&
+              lookup.statusFilter() == "Active" &&
+              lookup.selectedRentalId() == "R003" &&
+              lookup.selectedRow() == 2,
+              "visible lookup preserves the current filter");
+        check(!lookup.locateById("R999") &&
+              lookup.selectedRentalId() == "R003" &&
+              lookup.statusFilter() == "Active" &&
+              readBytes(vehiclesPath) == fleetBefore &&
+              readBytes(rentalsPath) == rentalsBefore,
+              "failed/read-only lookups preserve selection and storage");
+
+        // P6-H: return search is a read-only active-only navigation step.
+        // An unknown, empty or historical ID disarms a stale selection.
+        RentalListModel returnRoute(service);
+        returnRoute.setStatusFilter("History");
+        check(returnRoute.locateActiveReturn("  c002  ") &&
+              returnRoute.statusFilter()=="Active" &&
+              returnRoute.selectedRentalId()=="R002" &&
+              returnRoute.selectedRow()==1,
+              "vehicle-ID return lookup reveals matching active rental");
+        check(returnRoute.locateActiveReturn("r003") &&
+              returnRoute.selectedRentalId()=="R003" &&
+              returnRoute.statusFilter()=="Active",
+              "rental-ID lookup selects canonical active record");
+        check(!returnRoute.locateActiveReturn("C999") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              returnRoute.selectedRow()==-1 &&
+              returnRoute.statusFilter()=="Active",
+              "unknown vehicle ID disarms previously eligible return");
+        check(returnRoute.locateActiveReturn("M001") &&
+              !returnRoute.locateActiveReturn("  ") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              returnRoute.activeCount()==3 &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "blank lookup disarms stale return without writing or changing KPIs");
+
         const QModelIndex first = model.index(0, 0);
         const QModelIndex second = model.index(1, 0);
         const QModelIndex third = model.index(2, 0);
@@ -151,6 +204,20 @@ int main(int argc, char **argv) {
               "unavailable ID does not discard existing selection");
         check(system.completeRental("R002", today),
               "return an independently persisted rental");
+        // Until a successful domain commit is followed by refresh, the
+        // previously captured list deliberately remains unchanged.
+        returnRoute.refresh();
+        const QByteArray afterReturnFleet=readBytes(vehiclesPath);
+        const QByteArray afterReturnLedger=readBytes(rentalsPath);
+        check(returnRoute.locateActiveReturn("C001") &&
+              returnRoute.selectedRentalId()=="R001" &&
+              !returnRoute.locateActiveReturn("C002") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              !returnRoute.locateActiveReturn("r002") &&
+              returnRoute.selectedRentalId().isEmpty() &&
+              readBytes(vehiclesPath)==afterReturnFleet &&
+              readBytes(rentalsPath)==afterReturnLedger,
+              "returned vehicle/rental IDs refused, no second return or mutation");
         check(model.data(second, RentalListModel::StatusRole).toString() == "Active",
               "model does not optimistically apply domain change");
         model.refresh();
@@ -193,13 +260,18 @@ int main(int argc, char **argv) {
               model.data(model.index(0, 0), RentalListModel::ActualReturnDateRole)
                   .toDate() == today,
               "selected record remains canonical after return");
-        check(system.removeVehicle("C001"), "remove returned vehicle");
         const QByteArray beforeHistoryRead = readBytes(rentalsPath);
+        const QByteArray beforeHistoryFleet = readBytes(vehiclesPath);
+        check(!system.removeVehicle("C001") &&
+              system.hasRentalHistoryForVehicle("C001") &&
+              system.findVehicleById("C001") != nullptr &&
+              readBytes(vehiclesPath) == beforeHistoryFleet,
+              "returned rental preserves its referenced vehicle in Fleet");
         model.refresh();
         check(model.data(model.index(0, 0), RentalListModel::VehicleIdRole)
                   .toString() == "C001" &&
               readBytes(rentalsPath) == beforeHistoryRead,
-              "historical rental persists without the original fleet vehicle");
+              "historical rental and existing vehicle survive read refresh");
 
         check(system.completeRental("R003", today), "return last active rental");
         check(system.archiveRental("R003"), "archive last returned rental");
@@ -231,6 +303,101 @@ int main(int argc, char **argv) {
         check(readBytes(vehiclesPath) == lastFleet &&
               readBytes(rentalsPath) == lastRental,
               "final refresh cannot write any operational data");
+    }
+
+    // P6-J: the Overview's deliberately small read-only contract history
+    // comes from the complete C++ snapshot, not the selected Rentals filter.
+    {
+        QTemporaryDir recentDir;
+        check(recentDir.isValid(), "isolated bounded recent ledger");
+        RentalSystem recentSystem(recentDir.path());
+        RentalReadService recentRead(recentSystem);
+        RentalListModel recent(recentRead);
+        check(recent.recentActivities().isEmpty(),
+              "empty recent panel derives no synthetic or placeholder rows");
+        for(int number=1;number<=6;++number) {
+            const QString vehicle=QString("C%1").arg(number,3,10,QLatin1Char('0'));
+            const QString rental=QString("R%1").arg(number,3,10,QLatin1Char('0'));
+            check(recentSystem.addVehicle(new Car(vehicle,"Fictional","Car",450,4)),
+                  "create isolated vehicle for recent sorting");
+            book(recentSystem,rental,vehicle,number,450);
+        }
+        const QByteArray vehicleBytes=readBytes(recentDir.filePath("vehicles.txt"));
+        const QByteArray ledgerBytes=readBytes(recentDir.filePath("rentals.txt"));
+        recent.refresh();
+        const QVariantList latest=recent.recentActivities();
+        check(latest.size()==4 &&
+              latest.at(0).toMap().value("rentalId").toString()=="R006" &&
+              latest.at(3).toMap().value("rentalId").toString()=="R003" &&
+              latest.at(0).toMap().value("startDate").toString()==today.toString(Qt::ISODate) &&
+              latest.at(0).toMap().value("status").toString()=="Active" &&
+              latest.at(0).toMap().keys()==QStringList({"rentalId","startDate","status","total","vehicleId"}),
+              "bounded four recent contracts with stable same-day order and no contact keys");
+        recent.setStatusFilter("Archived");
+        check(recent.count()==0 && recent.recentActivities()==latest &&
+              recent.activeCount()==6 &&
+              readBytes(recentDir.filePath("vehicles.txt"))==vehicleBytes &&
+              readBytes(recentDir.filePath("rentals.txt"))==ledgerBytes,
+              "read-only recent panel ignores status filter and never writes");
+        check(recentSystem.completeRental("R006",today),
+              "return isolated recent contract");
+        const QVariantList stale=recent.recentActivities();
+        check(stale.at(0).toMap().value("status").toString()=="Active",
+              "recent panel does not optimistically change before domain refresh");
+        recent.refresh();
+        check(recent.recentActivities().at(0).toMap().value("status").toString()=="Returned" &&
+              recent.recentActivities().size()==4 &&
+              recent.activeCount()==5,
+              "recent rows rehydrate lifecycle state after authoritative commit");
+        // P6-K: typed selected-contract projection must be narrow, update on
+        // selection and after lifecycle refresh, and drop hidden/stale IDs.
+        int detailNotifications=0;
+        QObject::connect(&recent,&RentalListModel::selectedContractChanged,
+                         [&detailNotifications]{ ++detailNotifications; });
+        check(recent.selectedContract().isEmpty(),
+              "no selected rental has no contract detail or contact data");
+        recent.setStatusFilter("All");
+        check(recent.selectById("R006") && detailNotifications==1,
+              "selected contract change notified exactly once");
+        const QVariantMap detail=recent.selectedContract();
+        check(detail.value("rentalId").toString()=="R006" &&
+              detail.value("vehicleId").toString()=="C006" &&
+              detail.value("startDate").toString()==today.toString(Qt::ISODate) &&
+              detail.value("expectedReturnDate").toString()==today.addDays(6).toString(Qt::ISODate) &&
+              detail.value("actualReturnDate").toString()==today.toString(Qt::ISODate) &&
+              detail.value("days").toInt()==6 &&
+              detail.value("dailyRate").toDouble()==450.0 &&
+              detail.value("total").toDouble()==2700.0 &&
+              detail.value("status").toString()=="Returned" &&
+              detail.keys()==QStringList({"actualReturnDate","dailyRate","days","dueState",
+                                           "expectedReturnDate","rentalId","startDate","status",
+                                           "total","vehicleId"}),
+              "selected contract contains verified dates and exact no-contact keys");
+        const int beforeSelect=detailNotifications;
+        check(!recent.selectById("R999") && detailNotifications==beforeSelect &&
+              recent.selectedContract()==detail,
+              "unknown selection neither exposes another record nor changes details");
+        recent.setStatusFilter("Active");
+        check(recent.selectedRentalId().isEmpty() &&
+              recent.selectedContract().isEmpty() &&
+              detailNotifications==beforeSelect+1,
+              "filtered-out history clears details and notification");
+        recent.setStatusFilter("All");
+        check(recent.selectById("R006"),"reselect returned contract for archived refresh");
+        const int beforeArchive=detailNotifications;
+        check(recentSystem.archiveRental("R006"),"archive returned fixture for selected-detail refresh");
+        check(recent.selectedContract().value("status").toString()=="Returned",
+              "details never optimistically update before C++ refresh");
+        recent.refresh();
+        check(recent.selectedContract().value("status").toString()=="Archived" &&
+              detailNotifications==beforeArchive+1,
+              "details rebind when selected record status changes but ID is stable");
+        check(recentSystem.deleteArchivedRental("R006"),
+              "delete archived fictional selection for stale-detail test");
+        recent.refresh();
+        check(recent.selectedContract().isEmpty() &&
+              recent.selectedRentalId().isEmpty(),
+              "deleted selected rental revokes details after authoritative refresh");
     }
 
     {

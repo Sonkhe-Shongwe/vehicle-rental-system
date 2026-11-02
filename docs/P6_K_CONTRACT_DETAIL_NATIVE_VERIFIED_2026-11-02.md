@@ -1,0 +1,36 @@
+# P6-K | Purpose-limited native rental contract detail: source-verified
+
+**Audit date:** 2 November 2026 (Africa/Johannesburg). **Product:** Rental Studio 2.0. **Exact fully verified source:** [`fae183bb334d227bcc313cc89c8de670c7de66f2`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/fae183bb334d227bcc313cc89c8de670c7de66f2) (initial source [`e472014`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/e4720143968c31bc4ddf175c299b25baa309f87e), test-only correction `fae183b`). **Branch:** `feature/p6-fleet-create-disposable-20261101`, [Draft PR #14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14), stacked on open Draft #12/#10; main unchanged and unmerged.
+
+## Why P6-K and what changed
+
+The [P6-I source audit](P6_I_LIFECYCLE_PARITY_AUDIT_2026-11-01.md) identified that legacy Qt Widgets rental records showed important date and contract details not yet accessible in the Qt Quick Rentals operator interface. P6-K adds an explicit **View contract details** action next to the existing stable C++ selected rental summary. A separate, read-only native modal displays **rental ID, vehicle ID, lifecycle status and derived due state, actual start date, expected return date, actual return date when recorded, duration in days, daily rate and booked contract total**. Empty actual-return date says **Not returned**. No payment, deposit or realized revenue claims.
+
+The source is the existing `RentalReadService` → `RentalListModel` value snapshot, not a QML duplicate of business rules or a new writer. New `QVariantMap selectedContract` has an **explicit ten-field allowlist**: `rentalId`, `vehicleId`, `status`, `dueState`, `startDate`, `expectedReturnDate`, `actualReturnDate`, `days`, `dailyRate`, `total`. **No customer name, phone, contact, ID card, address, payment information, authorization bypass or general-purpose sensitive read role**. Date strings use unambiguous ISO format. A separate `selectedContractChanged` signal covers selection changes, filter hiding, clear and actual persisted-domain refresh when a record's status changes but selected ID stays constant. Selection of a hidden/unknown/deleted record returns an empty summary. Existing `selectionChanged` counts, KPI filter independence and command controllers stay intact.
+
+The dialog is deliberately **on demand** rather than a permanently expanded details panel, so the existing booking, return, archive, delete, lookup, keyboard list and compact 1280×720 composition are not displaced. It has native Close/Escape, a minimum-height keyboard Close action, accessible field labels/names and safe focus restoration to **View contract details** or the rental list. Opening/closing never persists anything or turns a record into a payment.
+
+## Tests and concrete failure/correction
+
+**First source `e472014`:** [Ubuntu Core run 41363026846](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363026846) **13/13 PASS**; [native run 41363026883](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363026883) was **Linux 70/72**, with only the new wide/compact tests failing as `P6-K active modal dates/rate/keyboard focus missing`. The actual test used a `QQuickItem` child-tree search for the `Dialog` itself, which is a Qt popup **QObject**, not a visual `QQuickItem`. This was **a test-lookup defect**, not proof the application dialog had missing fields. No production code changes or relaxed expectations were made for this correction.
+
+**Exact test-only correction `fae183b`:** find the native QML Dialog as `window->findChild<QObject*>(...)`, matching the pre-existing P3 return modal smoke approach. Added explicit field/focus diagnostics while retaining every original assertion.
+
+| Gate | Genuine full rerun at `fae183b` |
+|---|---|
+| [Ubuntu Core 41363457853](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457853) | **13/13 PASS**; includes selected-contract/no-contact unit regressions |
+| [Qt6.8.3 Linux GCC 41363457990](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457990) | **72/72 PASS**, including native `rental_studio_p6_contract_detail_wide` and `_compact` |
+| [Qt6.8.3 Windows Server 2022 MSVC 41363457990](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457990) | **72/72 PASS**, both real QtQuick sizes **1500×860** and **1280×720** |
+| Windows package acceptance scripts in same native workflow | **PASS**, PowerShell 7 and Windows PowerShell 5.1. Explicitly **NOT** physical owner Windows scaling or Narrator validation |
+
+**Core checks:** initially empty selected detail, allowed keys and exact start/expected/actual dates, duration/legacy rate and booked amount, no customer/phone fields, unknown ID preserves selection, hidden filter disarms detail, returned → archived after actual C++ transaction and refresh updates same-ID detail, archived record deletion clears stale selection/detail. Original source bytes remain safe; these are synthetic-only test records.
+
+**Real native Qt tests:** button disabled when no selected ID; historical/filter-hidden R001 can be found and its current contract opened; dated Active contract shows blank actual-return date as "Not returned"; keyboard Space opens dialog, Close receives focus, Escape dismisses and restores focus/selection; rendered screenshot saved at both native sizes; Returned R002 shows its actual 2026-10-22 date; keyboard Close restores focus; opening/filtering/closing leaves SHA-pinned original and disposable storage bytes unchanged and operational counts stable. Other 70 tests still pass per platform.
+
+## Boundaries and next decision
+
+This resolves the **non-sensitive contract/date display** aspect of [P6-I L18](P6_I_LIFECYCLE_PARITY_AUDIT_2026-11-01.md). It **does not** authorize exposing customer names/phone or production contact persistence. Such a purpose-limited sensitive-detail view needs explicit owner privacy, access and retention rules, likely P7, not an automatic parity copy. A separate unresolved owner/product choice is whether displaying legacy **vehicle-type counts and utilisation** on the Overview would improve or clutter the selected operational-first hierarchy. True return/archive event timestamps are not currently recorded; the P6-J panel is **recent contracts** by start date only.
+
+**Acceptance stays frozen:** the source P6 nine-point grouping remains unratified: 8 automated-covered, 0 partial, 1 full-domain-lifecycle-parity still open. Formal P4 **5/7**, P5 **0/8**, P6 **0/9**, total **28/74** accepted and **40.6% evidence-weighted**, neither software completion nor commercial release. P1/P2 owner physical QML 6.10.2 MinGW Windows/100-125-150% scaling/Narrator and design, P7 storage/retirement/history policy, P8 installer/licensing and P9 physical release remain open. Draft stacked PRs unmerged, `main` untouched.
+
+**Next recommended safe action:** P6-L evidence-backed **Overview utilisation/vehicle-type information architecture decision** plus the full P6-nine-criterion rubric and sequential operator acceptance plan. Prefer a small data-backed presentation proposal, **not a speculative dashboard feature**, until the owner chooses where (or whether) those figures belong.
