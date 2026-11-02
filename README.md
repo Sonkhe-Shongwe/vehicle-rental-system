@@ -14,7 +14,7 @@ Source development remains on [draft P7 PR #17](https://github.com/Sonkhe-Shongw
 
 ### Storage boundary
 
-The default app uses C++ RentalSystem and protected fictional QSaveFile ledgers. P7-G exercises real C++ business services through test-only SQLite blob transport; P7-H is a separate normalized SQLite repository; [P7-I Qt Quick/normalized SQL preview](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) provides a distinct opt-in **real Qt Quick** workflow wired through C++ to the normalized repository, with no real contacts. None is the actual normal Rental Studio `Main.qml` storage path or authorized commercial data import.
+The default app uses C++ RentalSystem and protected fictional QSaveFile ledgers. P7-G exercises real C++ business services through test-only SQLite blob transport; P7-H is a separate normalized SQLite repository; [P7-I Qt Quick/normalized SQL preview](docs/P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) provides a distinct opt-in **real Qt Quick** workflow wired through C++ to the normalized repository, with no real contacts. None is the actual normal Rental Studio `Main.qml` storage path or authorized commercial data import.
 
 ## Evidence and remaining gates
 
