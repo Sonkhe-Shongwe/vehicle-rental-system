@@ -547,7 +547,10 @@ int main(int argc, char *argv[]) {
             // form before RentalSystem can load it, including domain dates.
             const QString today=QDate::currentDate().toString(Qt::ISODate);
             const QString due=QDate::currentDate().addDays(2).toString(Qt::ISODate);
-            expectedV<<"Car|C004|Demo Motors|Orion|420.00|1|4";
+            // Booking persists the new rental record; vehicle occupancy
+            // is reconstructed from the rental ledger at process startup.
+            // The Fleet inventory file keeps its original available flag.
+            expectedV<<"Car|C004|Demo Motors|Orion|420.00|0|4";
             expectedR<<QStringLiteral("Rental|R003|Fictional Journey|0000000000|C004|%1|%2||2|420.00|840.00|0|0")
                         .arg(today,due);
             const QStringList actualV=lines(vbytes);
