@@ -1,31 +1,24 @@
-# Rental Studio 2.0 | Architecture, Actual Source and Decision Boundary
+# Rental Studio 2.0 | Current architecture
 
-**30 October 2026.** [Canonical current state](PROJECT_STATE_CANONICAL.md) · [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) · [Research masterplan](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md).
+**Audited 2 November 2026.** [Canonical status](PROJECT_STATE_CANONICAL.md) | [Full documentation audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [P7 storage ADR, PROPOSED](P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md).
 
-## Existing software is two different things
+## Running application boundary
 
-**Historical C++17 Qt Widgets code:** working domain/GUI with `RentalSystem`, `Vehicle`, `Car`, `Motorcycle`, 1–365 day immediate rentals, validation, returns, archive and current text persistence. Domain and GUI tests exist. Its aesthetics are rejected. Structural risks: large MainWindow, source-relative files, per-ledger individual QSaveFile atomicity (not joint transaction), floating `double` money, potential ID reuse and weak malformed-row warnings. The rewrite must preserve rules, data protection and rollback.
+- **Qt Quick / QML presentation:** Overview operational cards, Fleet Gallery/Table/Inspector, Rentals guided quote/confirm/return/history, shared focus/controls. Product styling is owner-selected navy, teal and light surfaces. Scoped displays were inspected in hosted Windows screenshots, but owner physical scaling/Narrator approval is pending.
+- **Application C++ services:** typed Fleet reads/writes, Rental Quote and Confirm, return/archive and controller callbacks. C++ RentalSystem is authoritative and refuses uncommitted success, stale quote, double booking and unsafe fictional destructive actions.
+- **Current active runtime persistence:** synthetic-only vehicle and rental UTF-8 text ledgers under a protected temporary or pinned fictional workspace using the existing RentalStorage/QSaveFile interface. Separate file writes are not joint transactions; money still uses double; existing live IDs can be reused after historical deletion. These risks are **not** solved in the running app.
+- **Physical OS boundary:** packaged hosted Windows Qt 6.8.3 MSVC checks are green; no verified on-owner-machine Qt Creator 6.10.2 MinGW release validation, monitor-scale/Narrator or offline installer.
 
-**P2 source `spike/p2-qtquick-fleet-20261030`:** real, compiled and locally launched **Qt 6 Quick/QML** Fleet proof; optional OFF-by-default CMake target. C++ `QAbstractListModel` reads actual domain records, `QSortFilterProxyModel` shares filters/sort, one selected vehicle ID drives Gallery/Table and Inspector. Only fake, SHA-256-pinned demo files copied into `QTemporaryDir` are loaded. The P2 UI is intentionally read-only, no real new rental save, migration or production images. Hosted Qt6.8.3 8/8 PASS Linux/Windows; user physically ran Qt Creator Qt6.10.2 MinGW Debug and verified Fleet interactions. Formal toolkit choice and full OS DPI acceptance still open.
+## Separate P7 prototypes, not interchangeable
 
-## Approved interaction design architecture (UX-CTRL-001)
+| Source | Mechanism | Demonstrated | Excluded |
+|---|---|---|---|
+| [P7-G proof](P7_G_CPP_DOMAIN_SQLITE_TRANSPORT_NATIVE_VERIFIED_2026-11-02.md) | Test-only synthetic SQL storage implementing existing byte-oriented RentalStorage | Real C++ quote/confirm/return/archive service integration | Normalized transactional commercial model |
+| [P7-H candidate](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md) | Typed C++ Repository under src/application/p7_sandbox, linked **only** to opt-in Qt Core/Sql CTest; SQLite vehicles/rentals/counters | int64 cents; transaction-scoped issued IDs; occupancy uniqueness; return/archive/retire; future-schema/lock/rollback checks | Actual Qt Quick RentalSystem adapter; customer name/phone/licence fields; real files/import; production backup/restore |
+| [P7-A ADR](P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md) | Proposed local SQLite via Qt SQL production architecture | Policy and implementation plan | Owner ratification, lawful contact/retention or final schema approval |
 
-[Keyboard, Focus and Interaction Contract](KEYBOARD_FOCUS_INTERACTION_CONTRACT.md) is owner-approved. It provides behaviour rules, **not a new framework or business layer**: Qt Quick FocusScopes/Control focus policies and GridView/ListView handle local keyboard navigation; Tab/Shift+Tab moves among meaningful groups; the C++ model owns authoritative vehicle IDs and commands; keyboard focus, collection currentIndex and selected vehicle ID stay distinct. Esc dismisses the topmost popup before nonmodal selection. Text fields and ComboBoxes retain native keys. P2 currently implements only Fleet proof, P3 preserves typed state boundaries, P4 extracts minimal repeated UI focus controls, and P5/P6 add rules as real transactional screens exist. No global nearest-element engine, business commands on focus, or speculative action registry.
+**Exact test evidence:** [P7-H code 74fb9b3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/74fb9b39086215390dabe32ce4c422d5bffb6285), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622337), [native Linux/Windows 108/108 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622338), Windows packaged PS7/PS5.1 PASS. All SQL work is compiled only when the P7 sandbox CMake option is explicitly enabled; the normal Qt Quick app has no QtSql dependency.
 
-## Conditional target architecture
+## Gated next layer
 
-```text
-Qt Quick/QML presentations (visuals, accessibility, navigation only)
-     |
-Typed C++ application/view-model layer (commands, results, state)
-     |
-C++ fleet, price, availability and rental domain rules
-     |
-Repository abstraction (initial safe legacy adapter)
-     |
-Persisted data (versioned; SQLite only if separately justified/approved)
-```
-
-Do not put pricing or availability truth into QML; do not build one huge QML page/controller. P3 introduces independently testable typed boundaries, P4 unified native components with Tab and group-local arrows, P5 complete persisted Corolla quote/confirmation/cancel/restart/error, P6 full parity, P7 isolated money/ID/storage decision. Same-day-only current business behaviour is retained until scope explicitly changes. Never infer `Pending`, draft-saving, payments, authenticated multiuser, REST, AI/cloud or installation as existing.
-
-**Approval requirement:** Finish P2 physical Windows/keyboard/Qt Creator evidence and owner go/no-go before major architecture migration; retain separate P1 aesthetic/imagery/accessibility gate. Stable main and all draft PRs unmerged until explicit owner consent.
+Before P7 commercial runtime linking, ratify monetary caps, nonreusable C/M/R IDs and legacy ID conflict treatment, vehicle retirement/history deletion and retention, legal processing and authorized customer-contact/old licence data, local database permissions, versioned migration and backup/restore. Connect typed repository to actual application domain and QML in a **fictional-only controlled mode** after decision, prove whole-lifecycle parity and recovery, then separately authorize live data. P8 offline packaging and P9 final owner/OS/accessibility release approval follow. No in-progress draft is merged or released.

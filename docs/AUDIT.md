@@ -1,13 +1,14 @@
-# Current Audit Index | Rental Studio 2.0
+# Rental Studio 2.0 | Current audit index
 
-**Audited: 30 October 2026.**
+**Current reconciliation: 2 November 2026.** This is a navigation page, not a second acceptance ledger.
 
-- [CANONICAL CURRENT STATE](PROJECT_STATE_CANONICAL.md): authoritative short factual state, owner decisions, exact evidence and gate status.
-- [FULL DOCUMENT AUDIT AND CONTINUITY](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md): detailed review of docs, risks, discrepancies, historical-to-current reconciliation, and next-action decision tree.
-- [GENERAL-PURPOSE CONTINUATION PROMPT](AI_CONTINUATION_PROMPT.md): copy-ready, task-neutral instruction to recover and verify the above.
-- [P0–P9 PLAN](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): 74 checks, weighted criteria and current verified percentage.
-- [WINDOWS ACCEPTANCE](WINDOWS_ACCEPTANCE.md): actual user physical P2 evidence and remaining exact tests.
+- [2 NOVEMBER FULL DOCUMENT / GITHUB AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md): inventory of 90 current + 15 archive Markdown documents, drift, links, CI/source, accepted criteria and corrections.
+- [LATEST CHECKPOINT](LATEST_CHECKPOINT.md): one-page current branch, exact tested source and gates.
+- [CANONICAL STATE](PROJECT_STATE_CANONICAL.md): reliable current business, architecture, permissions and governance boundary.
+- [ROADMAP](ROADMAP.md): status of all P0–P9 stages and next deliverable.
+- [FROZEN ACCEPTANCE MATRIX](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): 74 criteria, 100% weighted planned programme.
+- [TESTING POLICY](TESTING.md): exact Linux/Windows source evidence and limits.
+- [HANDOFF](AI_HANDOFF_CURRENT.md), [CONTINUITY](CONTINUITY.md), [ARCHITECTURE](ARCHITECTURE.md), [EVERGREEN PROMPT](AI_CONTINUATION_PROMPT.md): continuity without stale P2-only instructions.
+- [HISTORICAL 30 OCT AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) and [archived files](archive/README.md): dated historical evidence, NOT current status.
 
-**Current reality:** Native P2 C++/QML Fleet spike **built and ran** both in hosted Qt CI and owner's Windows Qt Creator; P1 final design approval and P2 physical scaling/keyboard/toolkit go-no-go remain open. **P0 5/5; P1 7/10; P2 3/6; weighted 18.4%; NOT RELEASED.**
-
-The prior [29 Oct master audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md), [masterplan](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md) and [historical archive](archive/README.md) preserve research and earlier status snapshots, not competing current truth. GitHub branches, PRs and workflows must be freshly inspected in future sessions.
+**Latest exact source:** [P7-H 74fb9b3](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/74fb9b39086215390dabe32ce4c422d5bffb6285), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622337), [Linux and Windows native 108/108 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622338). P5 0/8, P6 0/9, P7 0/8 formally; **28/74 accepted, 40.6% weighted**. Commercial SQLite is *not* wired to the normal Qt Quick runtime; all draft PRs remain unmerged, main untouched, no installer or release.
