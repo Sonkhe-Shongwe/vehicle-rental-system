@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QSignalSpy>
 #include "src/application/p7_sandbox/sqlite_read_projection.h"
+#include "src/application/p7_sandbox/fictional_fleet_snapshot.h"
 #include "src/application/rental_list_model.h"
 #include "src/application/p7_sandbox/repository_preview_controller.h"
 
@@ -32,6 +33,14 @@ int main(int argc,char **argv) {
     p7fiction::PreviewController preview;
     if(!preview.ready() || !preview.committedStateConsistent())return 3;
     bool refuseReads=false;
+    bool refuseFleet=false;
+    p7fiction::FictionalFleetSnapshot fleetModel(
+        [&preview,&refuseFleet]() -> std::optional<QList<FleetVehicleSummary>> {
+            if(refuseFleet)return {};
+            const auto *repo=preview.testOnlyReadRepository();
+            if(!repo)return {};
+            return p7fiction::ReadProjection(*repo).fleet();
+        });
     RentalListModel readModel(
         [&preview,&refuseReads]() -> std::optional<QList<RentalRecordSummary>> {
             if(refuseReads)return {}; // Fixed harness fault, no file tampering.
@@ -41,6 +50,11 @@ int main(int argc,char **argv) {
         });
     QObject::connect(&preview,&p7fiction::PreviewController::committed,
                      &readModel,&RentalListModel::refresh);
+    QObject::connect(&preview,&p7fiction::PreviewController::committed,
+                     &fleetModel,&p7fiction::FictionalFleetSnapshot::refresh);
+    if(!fleetModel.snapshotAvailable() || fleetModel.totalCount()!=1 ||
+       fleetModel.availableCount()!=1)return 16;
+    QSignalSpy fleetUpdates(&fleetModel,&p7fiction::FictionalFleetSnapshot::snapshotChanged);
     if(!readModel.snapshotAvailable() || readModel.count()!=0 ||
        readModel.activeCount()!=0 || readModel.historyCount()!=0)return 11;
     QSignalSpy metrics(&readModel,&RentalListModel::metricsChanged);
@@ -48,19 +62,22 @@ int main(int argc,char **argv) {
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("previewController",&preview);
     engine.rootContext()->setContextProperty("sharedRentals",&readModel);
+    engine.rootContext()->setContextProperty("fleetSnapshot",&fleetModel);
     engine.load(QUrl("qrc:/p7/p7_fictional_preview.qml"));
     auto *window=engine.rootObjects().isEmpty()?nullptr:
         qobject_cast<QQuickWindow*>(engine.rootObjects().first());
     if(!window){qCritical()<<"Qt Quick preview failed to load";return 4;}
-    window->resize(880,640);
+    window->resize(880,720);
     QTimer::singleShot(800,&app,[&] {
         auto *root=window->contentItem();
         auto *quote=find(root,"p7QuoteLabel");
         auto *receipt=find(root,"p7ReceiptLabel");
         auto *state=find(root,"p7StateLabel");
         auto *shared=find(root,"p7SharedMetrics");
-        if(!quote||!receipt||!state||!shared ||
-           !shared->property("text").toString().contains("Active rentals: 0")){
+        auto *fleetLabel=find(root,"p7FleetMetrics");
+        if(!quote||!receipt||!state||!shared||!fleetLabel ||
+           !shared->property("text").toString().contains("Active rentals: 0") ||
+           !fleetLabel->property("text").toString().contains("1 available")){
             app.exit(5);return;
         }
         const auto click=[&](const QString &name)->bool {
@@ -78,7 +95,8 @@ int main(int argc,char **argv) {
            !click("p7PreviewButton") ||
            !quote->property("text").toString().contains("R 1350.00") ||
            !preview.committedStateConsistent() ||
-           metrics.count()!=0 || readModel.activeCount()!=0){
+           metrics.count()!=0 || readModel.activeCount()!=0 ||
+           fleetUpdates.count()!=0 || fleetModel.availableCount()!=1){
             qCritical()<<"P7-J uncommitted quote incorrectly refreshed shared RentalListModel";
             app.exit(6);return;
         }
@@ -89,6 +107,7 @@ int main(int argc,char **argv) {
                preview.rentalId()!="" ||
                !receipt->property("text").toString().contains("not issued") ||
                metrics.count()!=0 || readModel.count()!=0 ||
+               fleetUpdates.count()!=0 || fleetModel.availableCount()!=1 ||
                !click("p7ConfirmButton")) {
                 qCritical()<<"P7-I rejected transaction issued false UI receipt";
                 app.exit(7);return;
@@ -103,7 +122,9 @@ int main(int argc,char **argv) {
            !preview.independentReopen() ||
            readModel.activeCount()!=1 || readModel.historyCount()!=0 ||
            readModel.count()!=1 || readModel.activeBookedValue()!=1350.0 ||
-           metrics.count()!=1 ||
+           metrics.count()!=1 || fleetUpdates.count()!=1 ||
+           fleetModel.availableCount()!=0 ||
+           !fleetLabel->property("text").toString().contains("0 available") ||
            !shared->property("text").toString().contains("Active rentals: 1") ||
            !readModel.selectById("r001") ||
            readModel.selectedContract().value("status").toString()!="Active"){
@@ -113,10 +134,12 @@ int main(int argc,char **argv) {
         if(!click("p7ReturnButton") || !preview.committedStateConsistent() ||
            readModel.activeCount()!=0 || readModel.historyCount()!=1 ||
            readModel.selectedContract().value("status").toString()!="Returned" ||
+           fleetModel.availableCount()!=1 || fleetUpdates.count()!=2 ||
            !click("p7ArchiveButton") || !preview.committedStateConsistent() ||
            readModel.selectedContract().value("status").toString()!="Archived" ||
            !click("p7RetireButton") || !preview.committedStateConsistent() ||
            !state->property("text").toString().contains("RETIRED") ||
+           fleetUpdates.count()!=4 || fleetModel.availableCount()!=0 ||
            !preview.independentReopen() ||
            readModel.historyCount()!=1 || readModel.activeCount()!=0 ||
            metrics.count()!=4 ||
@@ -138,6 +161,33 @@ int main(int argc,char **argv) {
                fleet->front().details!="4 doors") {
                 qCritical()<<"P7-J read-only Fleet mapping ignored retired occupancy";
                 app.exit(13);return;
+            }
+            // P7-N: Fleet is a native C++/SQL projection wired to actual QML.
+            // Corruption or provider failure must NOT publish stale figures,
+            // pretend a COMMIT happened, or erase the last confirmed rows.
+            QSignalSpy fleetAvailable(&fleetModel,
+                &p7fiction::FictionalFleetSnapshot::snapshotAvailabilityChanged);
+            const int fleetBefore=fleetUpdates.count();
+            const auto retained=fleetModel.vehicles();
+            refuseFleet=true;
+            fleetModel.refresh();
+            auto *fleetRetry=find(root,"p7RetryFleetButton");
+            if(fleetModel.snapshotAvailable() ||
+               fleetModel.totalCount()!=1 || fleetModel.availableCount()!=0 ||
+               fleetModel.vehicles()!=retained ||
+               fleetUpdates.count()!=fleetBefore || fleetAvailable.count()!=1 ||
+               !fleetLabel->property("text").toString().contains("Fleet read unavailable") ||
+               !fleetRetry || !fleetRetry->isVisible()) {
+                qCritical()<<"P7-N failed Fleet read showed stale availability";
+                app.exit(17);return;
+            }
+            refuseFleet=false;
+            if(!click("p7RetryFleetButton") || !fleetModel.snapshotAvailable() ||
+               fleetUpdates.count()!=fleetBefore+1 || fleetAvailable.count()!=2 ||
+               !fleetLabel->property("text").toString().contains("0 available") ||
+               fleetRetry->isVisible()) {
+                qCritical()<<"P7-N Fleet retry failed to show verified availability";
+                app.exit(18);return;
             }
             // P7-K: a failed provider read is visible and never presents old
             // figures as current, resets selection, or triggers false KPIs.

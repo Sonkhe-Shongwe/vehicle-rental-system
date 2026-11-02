@@ -5,7 +5,7 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: window
     width: 880
-    height: 640
+    height: 720
     visible: true
     title: "Rental Studio | Synthetic SQLite Review"
     color: "#F6F8FA"
@@ -44,7 +44,11 @@ ApplicationWindow {
                 anchors.margins: 18
                 spacing: 7
                 Label {
-                    text: "C001  ·  Toyota Corolla  ·  R 450.00/day"
+                    text: fleetSnapshot.snapshotAvailable && fleetSnapshot.vehicles.length > 0 ?
+                          fleetSnapshot.vehicles[0].id + "  ·  " +
+                          fleetSnapshot.vehicles[0].displayName + "  ·  R " +
+                          Number(fleetSnapshot.vehicles[0].dailyRate).toFixed(2) + "/day" :
+                          "Fleet asset details unavailable"
                     color: navy; font.pixelSize: 20; font.bold: true
                     Layout.fillWidth: true
                 }
@@ -124,14 +128,14 @@ ApplicationWindow {
         }
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 90
+            Layout.preferredHeight: 165
             radius: 10
             color: ice
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 12
                 Label {
-                    text: "SHARED RENTALS READ MODEL · AUTHORITATIVE C++ SNAPSHOT"
+                    text: "SHARED FLEET & RENTALS · AUTHORITATIVE C++ SNAPSHOTS"
                     color: teal; font.bold: true
                 }
                 Label {
@@ -150,6 +154,24 @@ ApplicationWindow {
                     text: "Retry Rentals read"
                     visible: !sharedRentals.snapshotAvailable
                     onClicked: sharedRentals.refresh()
+                    Accessible.name: text
+                }
+                Label {
+                    objectName: "p7FleetMetrics"
+                    text: fleetSnapshot.snapshotAvailable ?
+                          "Fleet: " + fleetSnapshot.totalCount + " total  |  " +
+                          fleetSnapshot.availableCount + " available  |  " +
+                          (fleetSnapshot.vehicles.length > 0 &&
+                           fleetSnapshot.vehicles[0].available ? "C001 AVAILABLE" : "C001 NOT AVAILABLE") :
+                          "Fleet read unavailable. Figures hidden until verified."
+                    color: navy; font.bold: true
+                    Accessible.name: text
+                }
+                Button {
+                    objectName: "p7RetryFleetButton"
+                    text: "Retry Fleet read"
+                    visible: !fleetSnapshot.snapshotAvailable
+                    onClicked: fleetSnapshot.refresh()
                     Accessible.name: text
                 }
             }

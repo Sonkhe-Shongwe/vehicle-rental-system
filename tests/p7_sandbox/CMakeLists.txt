@@ -125,6 +125,7 @@ add_executable(rental_studio_p7_qml_preview
     p7_qml_preview_tests.cpp
     ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h
     ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_read_projection.h
+    ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/fictional_fleet_snapshot.h
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.h
     ${PROJECT_SOURCE_DIR}/src/application/rental_list_model.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_read_service.cpp
