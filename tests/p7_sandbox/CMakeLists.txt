@@ -97,3 +97,19 @@ set_tests_properties(
     rental_studio_p7_bridge_lifecycle
     rental_studio_p7_bridge_failure
     PROPERTIES TIMEOUT 40)
+
+# P7-H: normalized typed repository using exact cents + atomic IDs in one
+# transaction. OFF by default with P7 sandbox, no GUI / PII / data import.
+add_executable(rental_studio_p7_normalized_repository
+    p7_normalized_repository_tests.cpp)
+target_include_directories(rental_studio_p7_normalized_repository PRIVATE ${PROJECT_SOURCE_DIR})
+target_link_libraries(rental_studio_p7_normalized_repository PRIVATE Qt6::Core Qt6::Sql)
+add_test(NAME rental_studio_p7_normalized_lifecycle COMMAND rental_studio_p7_normalized_repository lifecycle)
+add_test(NAME rental_studio_p7_normalized_rollback COMMAND rental_studio_p7_normalized_repository rollback)
+add_test(NAME rental_studio_p7_normalized_money_ids COMMAND rental_studio_p7_normalized_repository money_ids)
+add_test(NAME rental_studio_p7_normalized_future_schema COMMAND rental_studio_p7_normalized_repository future_schema)
+add_test(NAME rental_studio_p7_normalized_contention COMMAND rental_studio_p7_normalized_repository contention)
+set_tests_properties(
+    rental_studio_p7_normalized_lifecycle rental_studio_p7_normalized_rollback
+    rental_studio_p7_normalized_money_ids rental_studio_p7_normalized_future_schema
+    rental_studio_p7_normalized_contention PROPERTIES TIMEOUT 45)
