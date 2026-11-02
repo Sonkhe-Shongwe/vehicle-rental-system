@@ -50,6 +50,7 @@ public:
             if(m_available) {
                 m_available=false;
                 emit snapshotAvailabilityChanged();
+                emit viewChanged();
             }
             return;
         }

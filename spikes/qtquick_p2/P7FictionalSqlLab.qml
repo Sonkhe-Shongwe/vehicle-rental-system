@@ -5,9 +5,18 @@ import QtQuick.Layouts
 // P7 owner-approved D1 *fictional-only* integration into the actual Qt Quick
 // executable. This workspace has its own generated QTemporaryDir SQLite DB.
 // There is no production path, customer/contact input, or legacy migration.
-ColumnLayout {
+Flickable {
     id: lab
     objectName: "p7AppSqlLab"
+    clip: true
+    contentWidth: width
+    contentHeight: contents.implicitHeight
+    boundsBehavior: Flickable.StopAtBounds
+    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+    ColumnLayout {
+    id: contents
+    width: lab.width
     spacing: 16
 
     Rectangle {
@@ -195,6 +204,144 @@ ColumnLayout {
             onClicked: p7SqlController.retireAsset()
         }
     }
+
+    // This explorer is deliberately READ ONLY: status and selection are
+    // computed by typed C++ DTO models; no SQL, PII or lifecycle writes here.
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 218
+        radius: 12
+        color: "white"
+        border.color: "#D6E0E7"
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 15
+            spacing: 14
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 7
+                Label {
+                    text: "FLEET RECORD EXPLORER · READ ONLY"
+                    color: "#0F766E"
+                    font.bold: true
+                    Accessible.name: text
+                }
+                ComboBox {
+                    objectName: "p7AppFleetFilter"
+                    Layout.fillWidth: true
+                    model: ["All", "Available", "Unavailable"]
+                    enabled: p7SqlFleet.snapshotAvailable
+                    onActivated: p7SqlFleet.setStatusFilter(currentText)
+                    Accessible.name: "Filter fictional SQLite Fleet by availability"
+                }
+                ListView {
+                    objectName: "p7AppFleetList"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 55
+                    clip: true
+                    visible: p7SqlFleet.snapshotAvailable
+                    model: p7SqlFleet.visibleVehicles
+                    delegate: Button {
+                        required property var modelData
+                        objectName: "p7AppFleetRow" + modelData.id
+                        width: ListView.view.width
+                        height: 38
+                        text: modelData.id + " · " + modelData.displayName +
+                              (modelData.available ? " · Available" : " · Unavailable")
+                        onClicked: p7SqlFleet.selectById(modelData.id)
+                        Accessible.name: "Inspect generated fictional vehicle " + modelData.id
+                    }
+                }
+                Label {
+                    objectName: "p7AppFleetSelected"
+                    Layout.fillWidth: true
+                    text: !p7SqlFleet.snapshotAvailable ?
+                          "Fleet snapshot unavailable, details hidden" :
+                          p7SqlFleet.selectedVehicleId === "" ?
+                          "Select a vehicle to inspect" :
+                          p7SqlFleet.selectedVehicle.id + " · " +
+                          p7SqlFleet.selectedVehicle.details +
+                          " · R " + Number(p7SqlFleet.selectedVehicle.dailyRate).toFixed(2) + "/day"
+                    color: "#17324D"
+                    wrapMode: Text.WordWrap
+                    Accessible.name: text
+                }
+                Label {
+                    objectName: "p7AppFleetVisibleCount"
+                    text: p7SqlFleet.snapshotAvailable ?
+                          p7SqlFleet.visibleCount + " matching vehicle(s)" :
+                          "Unverified"
+                    color: "#556576"
+                    Accessible.name: text
+                }
+            }
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                color: "#D6E0E7"
+            }
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 7
+                Label {
+                    text: "RENTAL CONTRACTS · READ ONLY"
+                    color: "#0F766E"
+                    font.bold: true
+                    Accessible.name: text
+                }
+                ComboBox {
+                    objectName: "p7AppRentalFilter"
+                    Layout.fillWidth: true
+                    model: ["All", "Active", "History"]
+                    enabled: p7SqlRentals.snapshotAvailable
+                    onActivated: p7SqlRentals.setStatusFilter(currentText)
+                    Accessible.name: "Filter fictional SQLite rental contracts by status"
+                }
+                ListView {
+                    objectName: "p7AppRentalList"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 55
+                    clip: true
+                    visible: p7SqlRentals.snapshotAvailable
+                    model: p7SqlRentals
+                    delegate: Button {
+                        objectName: "p7AppRentalRow" + rentalId
+                        width: ListView.view.width
+                        height: 38
+                        text: rentalId + " · " + vehicleId + " · " + status
+                        onClicked: p7SqlRentals.selectVisibleRow(index)
+                        Accessible.name: "Inspect generated fictional contract " + rentalId
+                    }
+                }
+                Label {
+                    objectName: "p7AppRentalSelected"
+                    Layout.fillWidth: true
+                    text: !p7SqlRentals.snapshotAvailable ?
+                          "Rental snapshot unavailable, details hidden" :
+                          p7SqlRentals.selectedRentalId === "" ?
+                          "Select a contract to inspect" :
+                          p7SqlRentals.selectedContract.rentalId + " · " +
+                          p7SqlRentals.selectedContract.status +
+                          " · booked R " +
+                          Number(p7SqlRentals.selectedContract.total).toFixed(2) +
+                          " (NOT collected revenue)"
+                    color: "#17324D"
+                    wrapMode: Text.WordWrap
+                    Accessible.name: text
+                }
+                Label {
+                    objectName: "p7AppRentalVisibleCount"
+                    text: p7SqlRentals.snapshotAvailable ?
+                          p7SqlRentals.count + " visible contract(s)" : "Unverified"
+                    color: "#556576"
+                    Accessible.name: text
+                }
+            }
+        }
+    }
     Label {
         objectName: "p7AppMessage"
         Layout.fillWidth: true
@@ -203,7 +350,6 @@ ColumnLayout {
         wrapMode: Text.WordWrap
         Accessible.name: text
     }
-    Item { Layout.fillHeight: true }
     Label {
         Layout.fillWidth: true
         text: "EXPERIMENTAL AND ISOLATED · This is not production persistence or a commercial booking workflow."
@@ -212,4 +358,5 @@ ColumnLayout {
         wrapMode: Text.WordWrap
         Accessible.name: text
     }
+}
 }
