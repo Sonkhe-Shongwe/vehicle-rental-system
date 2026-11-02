@@ -113,3 +113,21 @@ set_tests_properties(
     rental_studio_p7_normalized_lifecycle rental_studio_p7_normalized_rollback
     rental_studio_p7_normalized_money_ids rental_studio_p7_normalized_future_schema
     rental_studio_p7_normalized_contention PROPERTIES TIMEOUT 45)
+
+# P7-I: real Qt Quick UI -> QObject command facade -> P7-H normalized SQLite.
+# Opt-in ONLY via BUILD_P7_SQLITE_SANDBOX, independent preview executable,
+# unique generated temporary fictional database; NOT normal Rental Studio.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Gui Qml Quick QuickControls2 Test)
+add_executable(rental_studio_p7_qml_preview
+    p7_qml_preview_tests.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h)
+target_include_directories(rental_studio_p7_qml_preview PRIVATE ${PROJECT_SOURCE_DIR})
+target_link_libraries(rental_studio_p7_qml_preview PRIVATE
+    Qt6::Core Qt6::Sql Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+qt_add_resources(rental_studio_p7_qml_preview p7_fictional_qml
+    PREFIX "/p7" FILES p7_fictional_preview.qml)
+add_test(NAME rental_studio_p7_qml_journey COMMAND rental_studio_p7_qml_preview journey)
+add_test(NAME rental_studio_p7_qml_rollback COMMAND rental_studio_p7_qml_preview rollback)
+set_tests_properties(
+    rental_studio_p7_qml_journey rental_studio_p7_qml_rollback
+    PROPERTIES TIMEOUT 40)
