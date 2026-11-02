@@ -1,5 +1,7 @@
 # P7-A | Commercial storage architecture ADR, DRAFT / NO IMPLEMENTATION AUTHORIZATION
 
+**Status update, 2 November 2026:** [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) approves the D1 SQLite choice **for generated-fictional integration into the actual Qt Quick app only**. [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md) implements this in a fourth opt-in workspace with 115/115 Linux/Windows native CI. This ADR's remaining business/PII/retention/backup/migration/cutover decisions remain **PROPOSED**; older wording below is preserved as the prior design evaluation, not the current complete technical status.
+
 **Current context added after later engineering, 2 November 2026:** [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [P7-H exact-source normalized repository tests](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md). This document's original narrative below describes an earlier evaluation date and **is not a claim that subsequent work is owner-accepted**. The latest application remains fictional-only, not a Qt Quick commercial SQLite runtime. Formal P5/P6/P7 scores remain 0/8, 0/9, 0/8.
 
 

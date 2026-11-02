@@ -16,7 +16,7 @@ Public repo [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Sho
 
 **P7 candidate, not activated:** P7-G proves existing domain service calls over fictional SQLite blob transport; P7-H proves a separate normalized typed SQLite repository; [P7-I](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) proves real opt-in QML buttons and normalized SQL commands; [P7-J shared read-model verification](P7_J_SHARED_RENTALS_READ_MODEL_QT_SQL_NATIVE_VERIFIED_2026-11-02.md) reuses the **existing RentalListModel** and value-only Fleet/Rental summary contracts for fictional SQL snapshots, with post-commit model refresh. P7-K [P7-K native verified report](P7_K_SNAPSHOT_FAILURE_VISIBLE_NATIVE_VERIFIED_2026-11-02.md) adds read availability and genuine Qt Quick retry for failed fictional SQL snapshots; no false metrics signals. P7-L [P7-L consistent Fleet SQLite snapshot](P7_L_FLEET_SNAPSHOT_NATIVE_VERIFIED_2026-11-02.md) uses a single transaction for consistent Fleet occupancy under competing SQLite writers. The normal `Main.qml` and `RentalSystem` still use **QSaveFile text**, without a commercial migration/backup/contact policy.
 
-**Latest compiled exact source CI:** [P7-N `739f1d2`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/739f1d27e09df08010d4d41d4d8f9f73f7f55128); [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41486126096); [native Qt Linux/hosted Windows 113/113 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41486126451); Windows PS7/PS5.1 checks PASS. [P7-N real QML Fleet SQL projection](P7_N_REAL_QML_FLEET_SQL_PROJECTION_NATIVE_VERIFIED_2026-11-02.md) binds genuine isolated Qt Quick Fleet values/availability to typed fictional SQLite, with commit-only refresh and failed-read Retry. [P7 owner decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) is still an unapproved proposal. Hosted automation is not physical MinGW acceptance. No owner physical MinGW, Narrator or OS-scaling acceptance.
+**Latest compiled exact source CI:** [P7-O `4c63b6a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/4c63b6a34240c2c762f14976b928f5fb7b54078b); [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41491428956); [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41491428682); hosted Windows PowerShell 7/5.1 checks PASS. [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) authorizes intended SQLite engine with **generated-fictional integration only**. [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md) adds an optional fourth Lab within actual `Main.qml`, preserving the prior three QSaveFile workspaces. D2–D8 remain open; hosted native success is not physical owner MinGW acceptance.
 
 ## Fixed accepted programme ledger
 
@@ -29,7 +29,7 @@ Public repo [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Sho
 | P4 | 12% | 5/7 | Owner physical accessibility |
 | P5 | 16% | 0/8 | 8 source/automation-covered expectations, not signed |
 | P6 | 14% | 0/9 | Bounded nine-group review, not signed |
-| P7 | 9% | 0/8 | Test-only candidate; owner policy/actual integration open |
+| P7 | 9% | 0/8 | D1 fictional-only integration approved and implemented as optional real-app SQL Lab; commercial policies D2–D8 and full storage swap still open |
 | P8 | 5% | 0/6 | Installer not started |
 | P9 | 5% | 0/8 | Release QA not started |
 
