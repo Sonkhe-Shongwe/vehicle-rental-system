@@ -1,6 +1,7 @@
 #pragma once
-// P7-N: fixed-fictional, opt-in Qt Quick Fleet read surface.
-// Never linked to the ordinary Rental Studio executable or authorized for PII.
+// P7-P: generated-fictional Fleet read/selection model. Linked into the
+// actual Qt Quick executable ONLY under the OFF-by-default SQLite Lab build;
+// it never authorizes real customer data, migration or commercial cutover.
 #include <QObject>
 #include <QVariantList>
 #include <QVariantMap>

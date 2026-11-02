@@ -297,7 +297,7 @@ Flickable {
                     Layout.fillWidth: true
                     model: ["All", "Active", "History"]
                     enabled: p7SqlRentals.snapshotAvailable
-                    onActivated: p7SqlRentals.setStatusFilter(currentText)
+                    onActivated: p7SqlRentals.statusFilter = currentText
                     Accessible.name: "Filter fictional SQLite rental contracts by status"
                 }
                 ListView {
