@@ -24,7 +24,7 @@ public:
         if(!demand(QSqlDatabase::isDriverAvailable("QSQLITE"),"driver"))return false;
         conn=QSqlDatabase::addDatabase("QSQLITE",name);conn.setDatabaseName(path);
         return demand(conn.open(),"connect")&&exec("PRAGMA busy_timeout=0")&&
-          exec("PRAGMA foreign_keys=ON")&&exec("PRAGMA journal_mode=DELETE")&&
+          exec("PRAGMA foreign_keys=ON")&&
           exec("PRAGMA synchronous=FULL")&&demand(val("PRAGMA foreign_keys").toInt()==1,"FK enabled");
     }
     bool valid(){
@@ -33,7 +33,7 @@ public:
         QSqlQuery q(conn);return q.exec("PRAGMA foreign_key_check")&&!q.next();
     }
     bool seed(){
-        if(!exec("BEGIN IMMEDIATE"))return false;
+        if(!exec("PRAGMA journal_mode=DELETE")||!exec("BEGIN IMMEDIATE"))return false;
         const QStringList a={
           "CREATE TABLE issued(kind TEXT PRIMARY KEY,next_id INTEGER NOT NULL CHECK(next_id>0))",
           "INSERT INTO issued VALUES('C',2),('R',1)",
@@ -61,10 +61,11 @@ static bool authorized(const QString &root,const QString &token){
 }
 static int child(QString action,const QString &root,const QString &token){
     if(!authorized(root,token))return 20;
-    Db x;if(!x.open(QDir(root).filePath("synthetic.sqlite"))||!x.valid())return 21;
+    Db x;if(!x.open(QDir(root).filePath("synthetic.sqlite")))return 21;
     if(action=="inspect")return x.booked()?0:22;
     if(action!="book"&&action!="pending")return 23;
     if(!x.exec("BEGIN IMMEDIATE"))return 10;
+    if(!x.valid()){x.exec("ROLLBACK");return 21;}
     if(x.val("SELECT count(*) FROM rentals WHERE status='ACTIVE'").toInt()!=0){
        x.exec("ROLLBACK");return 11;
     }
