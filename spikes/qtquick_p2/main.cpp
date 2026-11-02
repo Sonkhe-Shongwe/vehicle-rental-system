@@ -69,6 +69,13 @@ public:
         for (const auto &v : m_vehicles) count += v.available;
         return count;
     }
+    // Count the whole committed domain snapshot, never the search/status proxy.
+    int countType(const QString &type) const {
+        int count = 0;
+        for (const auto &v : m_vehicles)
+            count += v.type.compare(type, Qt::CaseInsensitive) == 0;
+        return count;
+    }
     int rowCount(const QModelIndex &parent = QModelIndex()) const override {
         return parent.isValid() ? 0 : m_vehicles.size();
     }
@@ -162,6 +169,9 @@ class FleetController final : public QObject {
     Q_PROPERTY(bool selectedAvailable READ selectedAvailable NOTIFY selectionChanged)
     Q_PROPERTY(int totalCount READ totalCount NOTIFY fleetChanged)
     Q_PROPERTY(int availableCount READ availableCount NOTIFY fleetChanged)
+    Q_PROPERTY(int carCount READ carCount NOTIFY fleetChanged)
+    Q_PROPERTY(int motorcycleCount READ motorcycleCount NOTIFY fleetChanged)
+    Q_PROPERTY(int rentedCount READ rentedCount NOTIFY fleetChanged)
 public:
     explicit FleetController(RentalSystem &system, QObject *parent = nullptr)
         : QObject(parent), m_readService(system), m_source(m_readService, this), m_proxy(this) {
@@ -217,6 +227,9 @@ public:
     }
     int totalCount() const { return m_source.rowCount(); }
     int availableCount() const { return m_source.availableCount(); }
+    int carCount() const { return m_source.countType(QStringLiteral("Car")); }
+    int motorcycleCount() const { return m_source.countType(QStringLiteral("Motorcycle")); }
+    int rentedCount() const { return totalCount() - availableCount(); }
 
     // An application command, NOT a QML Button, should call this after a
     // successful domain commit. Refresh both Fleet and Rentals in the same
@@ -919,16 +932,22 @@ int main(int argc, char *argv[]) {
         return 4;
     }
         bool ok = fleet.totalCount() == 5 && fleet.availableCount() == 4
+               && fleet.carCount() == 3 && fleet.motorcycleCount() == 2
+               && fleet.rentedCount() == 1
                && qFuzzyCompare(1.0 + corolla->getPricePerDay(), 451.0);
         fleet.setQuery("Honda");
-        ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1;
+        ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1
+                && fleet.carCount() == 3 && fleet.motorcycleCount() == 2
+                && fleet.rentedCount() == 1;
         fleet.selectById("M001");
         ok = ok && fleet.selectedId() == "M001";
         fleet.setQuery("");
         fleet.setStatus("Rented");
         // A hidden vehicle must no longer remain in the visible Inspector.
         ok = ok && static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() == 1
-                && fleet.selectedId().isEmpty();
+                && fleet.selectedId().isEmpty()
+                && fleet.carCount() == 3 && fleet.motorcycleCount() == 2
+                && fleet.rentedCount() == 1;
         fleet.setSortBy("Rate");
         fleet.setStatus("All");
         fleet.selectById("M001");
@@ -1144,8 +1163,13 @@ int main(int argc, char *argv[]) {
         }
         auto *gallery = window->findChild<QQuickItem*>("fleetGallery");
         auto *table = window->findChild<QQuickItem*>("fleetTable");
-        if (!gallery || !table || fleet.totalCount() != 5 ||
-            fleet.availableCount() != 4) {
+        auto *snapshot = window->findChild<QQuickItem*>("fleetSnapshotSummary");
+        if (!gallery || !table || !snapshot ||
+            fleet.totalCount() != 5 || fleet.availableCount() != 4 ||
+            fleet.carCount() != 3 || fleet.motorcycleCount() != 2 ||
+            fleet.rentedCount() != 1 ||
+            !snapshot->property("text").toString().contains(
+                QStringLiteral("1 of 5 currently rented"))) {
             qCritical() << "P2 native QML view objects or demo domain data missing";
             return 7;
         }
@@ -1179,7 +1203,12 @@ int main(int argc, char *argv[]) {
             QTimer::singleShot(450, &app, [&, suffix] {
                 if (gallery->isVisible() || !table->isVisible() ||
                     fleet.selectedId() != "M001" ||
-                    static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() != 1) {
+                    static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() != 1 ||
+                    !snapshot->property("text").toString().contains(
+                        QStringLiteral("3 cars")) ||
+                    !snapshot->property("text").toString().contains(
+                        QStringLiteral("2 motorcycles")) ||
+                    fleet.rentedCount() != 1) {
                     qCritical() << "QML Gallery/Table visibility or C++ model parity failed";
                     app.exit(10); return;
                 }

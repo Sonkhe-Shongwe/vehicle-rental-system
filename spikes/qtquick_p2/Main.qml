@@ -608,6 +608,23 @@ ApplicationWindow {
                                     onClicked: fleetAddDialog.open()
                                 }
                             }
+                            Label {
+                                objectName: "fleetSnapshotSummary"
+                                Layout.fillWidth: true
+                                color: ink
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                maximumLineCount: 2
+                                elide: Text.ElideRight
+                                text: fleet.totalCount === 0
+                                    ? "No fleet vehicles"
+                                    : "Fleet snapshot: " + fleet.carCount + " cars · " +
+                                      fleet.motorcycleCount + " motorcycles · " +
+                                      fleet.rentedCount + " of " + fleet.totalCount +
+                                      " currently rented"
+                                Accessible.name: text
+                                Accessible.description: "Current rental occupancy, not historical fleet utilisation or collected revenue"
+                            }
                             DomainMessage {
                                 objectName: "fleetAddMessage"
                                 text: fleetAdmin.lastMessage
