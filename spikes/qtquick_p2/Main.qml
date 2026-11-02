@@ -1690,11 +1690,15 @@ ApplicationWindow {
                                 text: rentalsModel.count + " rental records"
                                 color: navy; font.bold: true
                             }
+                            Item {
+                                // The actual list retains its size and keyboard behavior.
+                                // A zero-result filter must never look like an app failure.
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
                             ListView {
                                 id: rentalList
                                 objectName: "rentalList"
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
+                                anchors.fill: parent
                                 clip: true
                                 spacing: 7
                                 activeFocusOnTab: true
@@ -1762,6 +1766,39 @@ ApplicationWindow {
                                             text: "R " + Number(rentalRow.total).toFixed(2)
                                             color: navy; font.bold: true
                                         }
+                                    }
+                                }
+                            }
+
+                                ColumnLayout {
+                                    objectName: "rentalEmptyState"
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 32, 420)
+                                    spacing: 10
+                                    visible: rentalsModel.count === 0
+                                    Label {
+                                        objectName: "rentalEmptyMessage"
+                                        Layout.fillWidth: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                        color: ink
+                                        font.pixelSize: 14
+                                        text: rentalsModel.statusFilter === "All" ?
+                                              "No fictional rentals yet. Use New rental to create the first contract." :
+                                              "No " + rentalsModel.statusFilter + " rental records in this view. Show all rentals to see other contracts."
+                                        Accessible.name: text
+                                    }
+                                    Button {
+                                        objectName: "rentalEmptyReset"
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: "Show all rentals"
+                                        visible: rentalsModel.statusFilter !== "All"
+                                        enabled: rentalsModel.count === 0
+                                        activeFocusOnTab: true
+                                        Layout.minimumHeight: 44
+                                        Accessible.name: "Show all rental records"
+                                        Accessible.description: "Clear only the current rental lifecycle filter. No records are changed."
+                                        onClicked: rentalsModel.statusFilter = "All"
                                     }
                                 }
                             }

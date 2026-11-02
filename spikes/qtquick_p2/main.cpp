@@ -2002,9 +2002,14 @@ int main(int argc, char *argv[]) {
                                               "rentalFilterArchived");
             auto *allButton = findVisual(findVisual, window->contentItem(),
                                           "rentalFilterAll");
+            auto *emptyState=window->findChild<QQuickItem*>("rentalEmptyState");
+            auto *emptyMessage=window->findChild<QQuickItem*>("rentalEmptyMessage");
+            auto *emptyReset=window->findChild<QQuickItem*>("rentalEmptyReset");
             if (!list || !list->isVisible() || !selected ||
                 !activeButton || !historyButton || !allButton ||
                 !returnedButton || !archivedButton ||
+                !emptyState || !emptyMessage || !emptyReset ||
+                emptyState->isVisible() || emptyReset->isVisible() ||
                 rentalModel.count()!=2 || list->property("count").toInt()!=2) {
                 qCritical() << "P3-H real filter/list QML controls absent";
                 app.exit(101); return;
@@ -2058,9 +2063,22 @@ int main(int argc, char *argv[]) {
             if(rentalModel.statusFilter()!="Archived" ||
                rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
                !rentalModel.selectedRentalId().isEmpty() ||
-               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
+               !emptyState->isVisible() || !emptyReset->isVisible() ||
+               !emptyReset->isEnabled() ||
+               !emptyMessage->property("text").toString().contains("Archived")) {
                 qCritical()<<"P6-G Archived empty-state must not include Returned";
                 app.exit(119);return;
+            }
+            // Clear a filter-only empty result via the real keyboard button.
+            // No archived/returned record, value or selected ID may mutate.
+            press(emptyReset);
+            if(rentalModel.statusFilter()!="All" ||
+               rentalModel.count()!=2 || list->property("count").toInt()!=2 ||
+               emptyState->isVisible() || emptyReset->isVisible() ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"P6-G Rentals empty-state reset failed";
+                app.exit(619);return;
             }
             press(historyButton);
             if (rentalModel.statusFilter()!="History" || rentalModel.count()!=1 ||
@@ -2122,7 +2140,9 @@ int main(int argc, char *argv[]) {
             press(returnedButton);
             if(rentalModel.statusFilter()!="Returned" ||
                rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
-               !rentalModel.selectedRentalId().isEmpty()) {
+               !rentalModel.selectedRentalId().isEmpty() ||
+               !emptyState->isVisible() ||
+               !emptyMessage->property("text").toString().contains("Returned")) {
                 qCritical()<<"P6-G Returned view retained archived selection";
                 app.exit(122);return;
             }
