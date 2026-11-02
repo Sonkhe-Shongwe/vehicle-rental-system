@@ -1259,10 +1259,19 @@ int main(int argc, char *argv[]) {
             p7RefuseFleetReads=false;
             p7RefuseRentalReads=false;
             p7RefuseOperationsReads=false;
+            // The Overview panel sits below the always-accessible
+            // booking controls on compact windows. Scroll as a real
+            // operator would to retry the failed read, then return to
+            // the top for the existing Fleet/Rentals retry controls.
+            lab->setProperty("contentY",230.0);
+            QCoreApplication::processEvents();
+            if(!click("p7AppRetryOverview")) {
+                qCritical()<<"P7 actual-app Overview retry control inaccessible";
+                app.exit(617);return;
+            }
             lab->setProperty("contentY",0.0);
             QCoreApplication::processEvents();
-            if(!click("p7AppRetryOverview") ||
-               !click("p7AppRetryFleet") || !click("p7AppRetryRentals") ||
+            if(!click("p7AppRetryFleet") || !click("p7AppRetryRentals") ||
                !p7SqlFleet->snapshotAvailable() ||
                !p7SqlRentals->snapshotAvailable() ||
                !p7SqlOverview->snapshotAvailable() ||

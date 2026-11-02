@@ -47,62 +47,6 @@ Flickable {
         }
     }
 
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 145
-        radius: 12
-        color: "white"
-        border.color: "#D6E0E7"
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 15
-            spacing: 5
-            Label {
-                text: "SQLITE OPERATIONAL OVERVIEW · ONE CONSISTENT C++ SNAPSHOT"
-                color: "#0F766E"
-                font.bold: true
-                Accessible.name: text
-            }
-            Label {
-                objectName: "p7AppOverviewFleet"
-                Layout.fillWidth: true
-                text: p7SqlOverview.snapshotAvailable ?
-                      "Fleet: " + p7SqlOverview.totalVehicles + " total · " +
-                      p7SqlOverview.availableVehicles + " available" :
-                      "Overview unavailable. Fleet counts hidden."
-                color: "#17324D"
-                Accessible.name: text
-            }
-            Label {
-                objectName: "p7AppOverviewRentals"
-                Layout.fillWidth: true
-                text: p7SqlOverview.snapshotAvailable ?
-                      "Contracts: " + p7SqlOverview.activeRentals + " active · " +
-                      p7SqlOverview.historyRentals + " returned or archived" :
-                      "Overview unavailable. Contract counts hidden."
-                color: "#17324D"
-                Accessible.name: text
-            }
-            Label {
-                objectName: "p7AppOverviewValue"
-                Layout.fillWidth: true
-                text: p7SqlOverview.snapshotAvailable ?
-                      "Active booked value: " + p7SqlOverview.activeBookedLabel +
-                      " · NOT collected revenue or payment" :
-                      "Overview unavailable. Booked value hidden."
-                color: "#17324D"
-                Accessible.name: text
-            }
-            Button {
-                objectName: "p7AppRetryOverview"
-                text: "Retry Overview read"
-                visible: !p7SqlOverview.snapshotAvailable
-                onClicked: p7SqlOverview.refresh()
-                Accessible.name: text
-            }
-        }
-    }
-
     RowLayout {
         Layout.fillWidth: true
         spacing: 14
@@ -258,6 +202,64 @@ Flickable {
             text: "Retire fictional vehicle"
             enabled: p7SqlController.canRetire
             onClicked: p7SqlController.retireAsset()
+        }
+    }
+
+    // Keep compact-height booking and return actions above the optional
+    // read-only Overview panel so operators do not lose the action row.
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 145
+        radius: 12
+        color: "white"
+        border.color: "#D6E0E7"
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 15
+            spacing: 5
+            Label {
+                text: "SQLITE OPERATIONAL OVERVIEW · ONE CONSISTENT C++ SNAPSHOT"
+                color: "#0F766E"
+                font.bold: true
+                Accessible.name: text
+            }
+            Label {
+                objectName: "p7AppOverviewFleet"
+                Layout.fillWidth: true
+                text: p7SqlOverview.snapshotAvailable ?
+                      "Fleet: " + p7SqlOverview.totalVehicles + " total · " +
+                      p7SqlOverview.availableVehicles + " available" :
+                      "Overview unavailable. Fleet counts hidden."
+                color: "#17324D"
+                Accessible.name: text
+            }
+            Label {
+                objectName: "p7AppOverviewRentals"
+                Layout.fillWidth: true
+                text: p7SqlOverview.snapshotAvailable ?
+                      "Contracts: " + p7SqlOverview.activeRentals + " active · " +
+                      p7SqlOverview.historyRentals + " returned or archived" :
+                      "Overview unavailable. Contract counts hidden."
+                color: "#17324D"
+                Accessible.name: text
+            }
+            Label {
+                objectName: "p7AppOverviewValue"
+                Layout.fillWidth: true
+                text: p7SqlOverview.snapshotAvailable ?
+                      "Active booked value: " + p7SqlOverview.activeBookedLabel +
+                      " · NOT collected revenue or payment" :
+                      "Overview unavailable. Booked value hidden."
+                color: "#17324D"
+                Accessible.name: text
+            }
+            Button {
+                objectName: "p7AppRetryOverview"
+                text: "Retry Overview read"
+                visible: !p7SqlOverview.snapshotAvailable
+                onClicked: p7SqlOverview.refresh()
+                Accessible.name: text
+            }
         }
     }
 
