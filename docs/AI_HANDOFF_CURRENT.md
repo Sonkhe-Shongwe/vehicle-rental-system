@@ -4,9 +4,9 @@
 
 ## What is already true
 
-Active P7 draft PR #17 remains stacked over draft P6 #14, P5 #12 and P4 #10, all unmerged with main unchanged. Latest **compiled** source [P7-O `4c63b6a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/4c63b6a34240c2c762f14976b928f5fb7b54078b): [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41491428956), [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41491428682), Windows packaged PS7/PS5.1 PASS. The normal application's three fictional QSaveFile workspaces remain unchanged; SQL is available only in a separately activated fourth generated-fictional Lab when the P7 build option is ON.
+Active P7 draft PR #17 remains stacked on P6 #14, P5 #12 and P4 #10, all unmerged, main unchanged. Latest **compiled** source [P7-P `31d1ce3`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/31d1ce3120629861ed5979faee3828c1be02d801): [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869038), [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869095), hosted Windows PowerShell 7/5.1 PASS. D1 approves **generated-fictional SQLite integration only**, with the isolated fourth Lab enabled under an explicit opt-in build and special launch switch; the original three workspaces remain QSaveFile.
 
-Normal Qt Quick still retains polished Overview/Fleet/Rentals, fictional QSaveFile and all P5/P6 commands. P7-A–N established typed SQLite, C++/QML domain commands, shared RentalListModel, transactional Fleet and fail-closed retry in an isolated preview. **P7-O [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md) now integrates those generated-fictional SQL capabilities inside the actual app's optional fourth SQLite Lab, never the default three workspaces.** [P7 D1 owner approval](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) covers D1 fictional-only authorization only; D2–D8 and commercial data, real PII, migrations and formal P5/P6/P7 acceptance remain unapproved.
+Normal Qt Quick Overview/Fleet/Rentals still use protected fictional QSaveFile domain and P5/P6 commands. P7-A–O established typed normalized SQL, safe model reads, commit-only refresh and real-application Lab lifecycle. **P7-P [P7-P real-app SQLite record explorer](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md) now adds real filtered Fleet/Rentals record explorers and selection, hide-on-read-failure, actual QML row clicks and retry at both sizes**. D2–D8, customer PII/imports, commercial cutover and formal P7/P6/P5 acceptance remain open.
 
 ## Do not conflate
 
@@ -19,7 +19,7 @@ Normal Qt Quick still retains polished Overview/Fleet/Rentals, fictional QSaveFi
 
 ## Current decisions needed
 
-Review [P7 owner decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) and the underlying provisional [P7-A storage ADR](P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md) for SQLite selection, exact cents and owner-set caps, lifetime C/M/R IDs, retirement/history retention, contacts/old licence policy, filesystem path, protected backups and fail-closed migration. Do not activate P7 data use without approval. Continue toward an actual application-facing typed repository in a fictional-only gated mode once policies are settled. Batch the P4/P5/P6 physical review rather than request manual screenshots after each incremental commit. P8 and P9 remain unstarted.
+Review [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and the [P7 D2–D8 decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) for pricing ceilings, historic ID and retention, customer privacy, backup, migration and approval. Next engineering work should integrate only **fictional-only** C++ model parity into actual UI, not silently switch default storage. Batch physical owner MinGW/scaling/Narrator/P5/P6 review later; P8/P9 not started.
 
 ## Collaborative safety and maintenance
 
