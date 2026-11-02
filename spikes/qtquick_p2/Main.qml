@@ -394,7 +394,24 @@ ApplicationWindow {
                                     id: overviewOverdueAction
                                     objectName: "overviewReviewOverdue"
                                     text: "Review overdue"
+                                    Layout.minimumHeight: 44
                                     enabled: rentalsModel.oldestOverdueRentalId !== ""
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: overviewOverdueAction.enabled
+                                            ? (overviewOverdueAction.hovered ? mint : "#FFFFFF")
+                                            : "#E6EAEE"
+                                        border.color: overviewOverdueAction.activeFocus ? navy : teal
+                                        border.width: overviewOverdueAction.activeFocus ? 3 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: overviewOverdueAction.text
+                                        color: overviewOverdueAction.enabled ? teal : ink
+                                        font.bold: true
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
                                     activeFocusOnTab: true
                                     Accessible.name: "Review oldest overdue rental"
                                     Accessible.description: "Select the oldest overdue active rental without changing its record"
@@ -421,6 +438,22 @@ ApplicationWindow {
                             id: overviewActiveButton
                             objectName: "overviewOpenActive"
                             text: "Review active rentals"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewActiveButton.down || overviewActiveButton.hovered
+                                    ? "#0C625C" : teal
+                                border.color: navy
+                                border.width: overviewActiveButton.activeFocus ? 3 : 0
+                            }
+                            contentItem: Text {
+                                text: overviewActiveButton.text
+                                color: "#FFFFFF"
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Review active rentals"
                             onClicked: {
@@ -429,8 +462,23 @@ ApplicationWindow {
                             }
                         }
                         Button {
+                            id: overviewFleetButton
                             objectName: "overviewOpenFleet"
                             text: "Open Fleet"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewFleetButton.hovered ? ice : "#FFFFFF"
+                                border.color: overviewFleetButton.activeFocus ? navy : designTokens.border
+                                border.width: overviewFleetButton.activeFocus ? 3 : 1
+                            }
+                            contentItem: Text {
+                                text: overviewFleetButton.text
+                                color: navy
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Open Fleet"
                             onClicked: window.workspace = 1
@@ -481,7 +529,24 @@ ApplicationWindow {
                                     objectName: "overviewRecentRow" + index
                                     activeFocusOnTab: true
                                     Layout.fillWidth: true
-                                    Layout.minimumHeight: 36
+                                    Layout.minimumHeight: 44
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: parent.activeFocus ? mint :
+                                               parent.hovered ? ice : "#FFFFFF"
+                                        border.color: parent.activeFocus ? navy : designTokens.border
+                                        border.width: parent.activeFocus ? 2 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: navy
+                                        font.pixelSize: 12
+                                        leftPadding: 12
+                                        horizontalAlignment: Text.AlignLeft
+                                        verticalAlignment: Text.AlignVCenter
+                                        elide: Text.ElideRight
+                                    }
                                     text: modelData.rentalId + "  ·  " + modelData.vehicleId +
                                           "  ·  " + modelData.startDate + "  ·  " + modelData.status +
                                           "  ·  R " + Number(modelData.total).toFixed(2)
@@ -1155,6 +1220,22 @@ ApplicationWindow {
                             id: newBookingButton
                             objectName: "rentalNewBookingButton"
                             text: "New rental"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: newBookingButton.hovered || newBookingButton.down
+                                    ? "#0C625C" : teal
+                                border.width: newBookingButton.activeFocus ? 3 : 0
+                                border.color: navy
+                            }
+                            contentItem: Text {
+                                text: newBookingButton.text
+                                font.bold: true
+                                color: "#FFFFFF"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             activeFocusOnTab: true
                             Accessible.name: "Create a new fictional rental"
                             onClicked: {
@@ -1204,6 +1285,13 @@ ApplicationWindow {
                         contentItem: ColumnLayout {
                             spacing: 10
                             Label {
+                                text: "VEHICLE  ·  CUSTOMER  ·  REVIEW"
+                                color: teal
+                                font.pixelSize: 12
+                                font.bold: true
+                                Accessible.name: "Vehicle, Customer, Review"
+                            }
+                            Label {
                                 text: "Demo only. No booking occurs until Confirm booking succeeds."
                                 color: ink; wrapMode: Text.WordWrap
                             }
@@ -1231,6 +1319,21 @@ ApplicationWindow {
                                 id: bookingPreviewButton
                                 objectName: "bookingPreviewButton"
                                 text: bookingActions.needsFreshQuote ? "Refresh quote" : "Preview C++ quote"
+                                Layout.minimumHeight: 44
+                                hoverEnabled: true
+                                background: Rectangle {
+                                    radius: 8
+                                    color: bookingPreviewButton.hovered ? mint : "#FFFFFF"
+                                    border.color: bookingPreviewButton.activeFocus ? navy : teal
+                                    border.width: bookingPreviewButton.activeFocus ? 3 : 1
+                                }
+                                contentItem: Text {
+                                    text: bookingPreviewButton.text
+                                    color: teal
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 activeFocusOnTab: true
                                 Accessible.name: bookingActions.needsFreshQuote
                                     ? "Refresh outdated rental quote" : "Preview current C++ rental quote"
@@ -1239,10 +1342,32 @@ ApplicationWindow {
                                     : "Review a current domain quote before enabling Confirm booking"
                                 onClicked: bookingActions.preview(bookingVehicleId.text, bookingDays.value)
                             }
-                            DomainMessage {
-                                objectName: "bookingQuoteSummary"
-                                emphasized: bookingActions.canConfirm
-                                text: bookingActions.quoteSummary
+                            Rectangle {
+                                objectName: "bookingQuotePanel"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.max(76, quotePanelContent.implicitHeight + 24)
+                                color: mint
+                                border.color: designTokens.border
+                                radius: 10
+                                ColumnLayout {
+                                    id: quotePanelContent
+                                    anchors.fill: parent
+                                    anchors.margins: 12
+                                    spacing: 6
+                                    Label {
+                                        text: "LIVE QUOTE · NOT A PAYMENT"
+                                        color: teal
+                                        font.bold: true
+                                        font.pixelSize: 12
+                                    }
+                                    DomainMessage {
+                                        objectName: "bookingQuoteSummary"
+                                        emphasized: bookingActions.canConfirm
+                                        text: bookingActions.quoteSummary !== ""
+                                            ? bookingActions.quoteSummary
+                                            : "Enter a vehicle and duration, then preview the current quote."
+                                    }
+                                }
                             }
                             // A declined confirmation must be explained inside
                             // the still-open dialog, not behind its modal shade.
@@ -1275,16 +1400,49 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Button {
+                                    id: bookingCancelButton
                                     objectName: "bookingCancelButton"
                                     text: "Cancel"
+                                    Layout.minimumHeight: 44
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: bookingCancelButton.hovered ? ice : "#FFFFFF"
+                                        border.color: bookingCancelButton.activeFocus ? navy : designTokens.border
+                                        border.width: bookingCancelButton.activeFocus ? 3 : 1
+                                    }
+                                    contentItem: Text {
+                                        text: bookingCancelButton.text
+                                        color: navy
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     activeFocusOnTab: true
                                     onClicked: bookingDialog.close()
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {
+                                    id: bookingConfirmButton
                                     objectName: "bookingConfirmButton"
                                     text: "Confirm booking"
+                                    Layout.minimumHeight: 44
                                     enabled: bookingActions.canConfirm
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !bookingConfirmButton.enabled ? "#E6EAEE" :
+                                               bookingConfirmButton.hovered || bookingConfirmButton.down
+                                               ? "#0C625C" : teal
+                                        border.color: navy
+                                        border.width: bookingConfirmButton.activeFocus ? 3 : 0
+                                    }
+                                    contentItem: Text {
+                                        text: bookingConfirmButton.text
+                                        font.bold: true
+                                        color: bookingConfirmButton.enabled ? "#FFFFFF" : ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                     activeFocusOnTab: true
                                     onClicked: {
                                         if (bookingActions.confirm(
