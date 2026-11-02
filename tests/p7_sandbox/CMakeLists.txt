@@ -72,3 +72,28 @@ set_tests_properties(
     rental_studio_p7_process_duplicate
     rental_studio_p7_process_future_schema
     PROPERTIES TIMEOUT 55)
+
+# P7-G: direct, opt-in, real RentalSystem / RentalConfirmService / SQLite
+# adapter seam. Strictly generated fictional local temp roots; NO Qt GUI,
+# commercial persistence migration, real customer data, or app QtSql linkage.
+add_executable(rental_studio_p7_domain_bridge
+    p7_domain_bridge_tests.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_confirm_service.cpp
+    ${PROJECT_SOURCE_DIR}/src/application/rental_quote_service.cpp
+    ${PROJECT_SOURCE_DIR}/rentalsystem.cpp
+    ${PROJECT_SOURCE_DIR}/rental.cpp
+    ${PROJECT_SOURCE_DIR}/vehicle.cpp
+    ${PROJECT_SOURCE_DIR}/car.cpp
+    ${PROJECT_SOURCE_DIR}/motorcycle.cpp)
+target_include_directories(rental_studio_p7_domain_bridge
+    PRIVATE ${PROJECT_SOURCE_DIR})
+target_link_libraries(rental_studio_p7_domain_bridge PRIVATE Qt6::Core Qt6::Sql)
+foreach(CASE IN ITEMS booking lifecycle failure)
+    add_test(NAME rental_studio_p7_bridge_${CASE}
+        COMMAND rental_studio_p7_domain_bridge ${CASE})
+endforeach()
+set_tests_properties(
+    rental_studio_p7_bridge_booking
+    rental_studio_p7_bridge_lifecycle
+    rental_studio_p7_bridge_failure
+    PROPERTIES TIMEOUT 40)
