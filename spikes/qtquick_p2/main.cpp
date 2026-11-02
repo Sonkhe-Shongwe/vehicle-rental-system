@@ -2005,7 +2005,13 @@ int main(int argc, char *argv[]) {
             auto *emptyState=window->findChild<QQuickItem*>("rentalEmptyState");
             auto *emptyMessage=window->findChild<QQuickItem*>("rentalEmptyMessage");
             auto *emptyReset=window->findChild<QQuickItem*>("rentalEmptyReset");
+            auto *statusRow=findVisual(findVisual,window->contentItem(),"rentalStatusRow");
+            auto *lookupRow=findVisual(findVisual,window->contentItem(),"rentalLookupRow");
+            auto *lookupField=findVisual(findVisual,window->contentItem(),"rentalLookupField");
+            auto *lookupButton=findVisual(findVisual,window->contentItem(),"rentalLookupButton");
+            auto *visibleCount=findVisual(findVisual,window->contentItem(),"rentalVisibleCount");
             if (!list || !list->isVisible() || !selected ||
+                !statusRow || !lookupRow || !lookupField || !lookupButton || !visibleCount ||
                 !activeButton || !historyButton || !allButton ||
                 !returnedButton || !archivedButton ||
                 !emptyState || !emptyMessage || !emptyReset ||
@@ -2041,6 +2047,31 @@ int main(int argc, char *argv[]) {
                     app.exit(116);return;
                 }
             }
+            // Both screen sizes must present two genuinely distinct rows:
+            // no overlapping filters, hidden lookup field or clipped submit.
+            const QPointF statusPos=statusRow->mapToScene(QPointF(0,0));
+            const QPointF lookupPos=lookupRow->mapToScene(QPointF(0,0));
+            const QPointF fieldPos=lookupField->mapToScene(QPointF(0,0));
+            const QPointF buttonPos=lookupButton->mapToScene(QPointF(0,0));
+            const auto withinViewport=[window](QQuickItem *item,const QPointF &pos) {
+                return pos.x()>=0 && pos.y()>=0 &&
+                    pos.x()+item->width()<=window->width() &&
+                    pos.y()+item->height()<=window->height();
+            };
+            if(statusPos.y()<0 ||
+               lookupPos.y()+1<statusPos.y()+statusRow->height() ||
+               !withinViewport(statusRow,statusPos) ||
+               !withinViewport(lookupRow,lookupPos) ||
+               !withinViewport(lookupField,fieldPos) ||
+               !withinViewport(lookupButton,buttonPos) ||
+               lookupField->width()<150 || lookupButton->height()<36 ||
+               list->height()<65 ||
+               !visibleCount->property("text").toString().contains("2 matching")) {
+                qCritical()<<"UX-Q2 compact Rentals toolbar overlaps or clips"
+                           <<statusPos<<lookupPos<<fieldPos<<buttonPos
+                           <<list->height();
+                app.exit(620);return;
+            }
             const QString suffix=compact?"1280x720":"1500x860";
             press(returnedButton);
             if(rentalModel.statusFilter()!="Returned" ||
@@ -2048,7 +2079,8 @@ int main(int argc, char *argv[]) {
                rentalModel.selectedRentalId()!="" ||
                rentalModel.data(rentalModel.index(0,0),
                                 RentalListModel::StatusRole).toString()!="Returned" ||
-               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
+               !visibleCount->property("text").toString().contains("1 matching")) {
                 qCritical()<<"P6-G Returned view must show only returned records";
                 app.exit(117);return;
             }
@@ -2066,7 +2098,8 @@ int main(int argc, char *argv[]) {
                rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
                !emptyState->isVisible() || !emptyReset->isVisible() ||
                !emptyReset->isEnabled() ||
-               !emptyMessage->property("text").toString().contains("Archived")) {
+               !emptyMessage->property("text").toString().contains("Archived") ||
+               !visibleCount->property("text").toString().contains("0 matching")) {
                 qCritical()<<"P6-G Archived empty-state must not include Returned";
                 app.exit(119);return;
             }

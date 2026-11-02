@@ -1614,67 +1614,100 @@ ApplicationWindow {
                         objectName: "rentalArchiveMessage"
                         text: archiveActions.lastArchiveMessage
                     }
-                    RowLayout {
+                    // Quality-first compact desktop layout: filters and
+                    // rental ID lookup have separate, predictable rows.
+                    // This is presentation only. C++ still owns all filters,
+                    // record selection, persisted operations and validation.
+                    ColumnLayout {
+                        objectName: "rentalToolbar"
                         Layout.fillWidth: true
                         spacing: 8
-                        Repeater {
-                            // Retain combined History for previous keyboard
-                            // workflows; Returned and Archived are separate
-                            // read-only C++ lifecycle views.
-                            model: ["All", "Active", "Returned", "Archived", "History"]
-                            delegate: Button {
-                                required property string modelData
-                                objectName: "rentalFilter" + modelData
-                                text: modelData
-                                activeFocusOnTab: true
-                                // Native defaults were only 26 px high.
-                                // Give all lifecycle filter targets a comfortably
-                                // sized keyboard/mouse interaction surface.
-                                Layout.minimumHeight: 36
-                                Accessible.role: Accessible.RadioButton
-                                Accessible.name: modelData + " rentals"
-                                Accessible.checkable: true
-                                Accessible.checked: rentalsModel.statusFilter === modelData
-                                Accessible.description: "Filter fictional rentals by lifecycle status"
-                                onClicked: rentalsModel.statusFilter = modelData
-                                background: Rectangle {
-                                    radius: 8
-                                    color: rentalsModel.statusFilter === parent.modelData ? navy : ice
-                                }
-                                contentItem: Text {
-                                    text: parent.text
-                                    color: rentalsModel.statusFilter === parent.modelData ? "white" : navy
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                    font.bold: rentalsModel.statusFilter === parent.modelData
+                        RowLayout {
+                            objectName: "rentalStatusRow"
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Label {
+                                text: "Status"
+                                color: ink
+                                font.pixelSize: 12
+                                Accessible.name: "Filter rentals by status"
+                            }
+                            Repeater {
+                                // History remains a combined view; Returned
+                                // and Archived have distinct C++ lifecycle filters.
+                                model: ["All", "Active", "Returned", "Archived", "History"]
+                                delegate: Button {
+                                    required property string modelData
+                                    objectName: "rentalFilter" + modelData
+                                    text: modelData
+                                    activeFocusOnTab: true
+                                    Layout.minimumHeight: 36
+                                    Accessible.role: Accessible.RadioButton
+                                    Accessible.name: modelData + " rentals"
+                                    Accessible.checkable: true
+                                    Accessible.checked: rentalsModel.statusFilter === modelData
+                                    Accessible.description: "Filter fictional rentals by lifecycle status"
+                                    onClicked: rentalsModel.statusFilter = modelData
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: rentalsModel.statusFilter === parent.modelData ? navy : ice
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: rentalsModel.statusFilter === parent.modelData ? "white" : navy
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        font.bold: rentalsModel.statusFilter === parent.modelData
+                                    }
                                 }
                             }
+                            Item { Layout.fillWidth: true }
+                            Label {
+                                objectName: "rentalVisibleCount"
+                                text: rentalsModel.count + (rentalsModel.count === 1
+                                      ? " matching contract" : " matching contracts")
+                                color: ink
+                                font.pixelSize: 12
+                                Accessible.name: text
+                            }
                         }
-                        Label {
-                            objectName: "rentalLookupFeedback"
-                            text: window.rentalLookupFeedback
-                            color: ink
-                            font.pixelSize: 12
-                            elide: Text.ElideRight
-                            Layout.preferredWidth: 165
-                            Accessible.name: text
-                        }
-                        Item { Layout.fillWidth: true }
-                        AccessibleTextField {
-                            id: rentalLookupField
-                            objectName: "rentalLookupField"
-                            fieldPurpose: "Find rental by ID"
-                            placeholderText: "Rental ID, e.g. R001"
-                            Layout.preferredWidth: 180
-                            onTextEdited: window.rentalLookupFeedback = ""
-                            onAccepted: window.findRentalById()
-                        }
-                        Button {
-                            objectName: "rentalLookupButton"
-                            text: "Find rental"
-                            activeFocusOnTab: true
-                            Accessible.name: "Find rental by ID"
-                            onClicked: window.findRentalById()
+                        RowLayout {
+                            objectName: "rentalLookupRow"
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Label {
+                                text: "Find rental"
+                                color: ink
+                                font.pixelSize: 12
+                                Accessible.name: "Find rental by its ID"
+                            }
+                            AccessibleTextField {
+                                id: rentalLookupField
+                                objectName: "rentalLookupField"
+                                fieldPurpose: "Find rental by ID"
+                                placeholderText: "Rental ID, e.g. R001"
+                                Layout.preferredWidth: 220
+                                Layout.minimumWidth: 150
+                                onTextEdited: window.rentalLookupFeedback = ""
+                                onAccepted: window.findRentalById()
+                            }
+                            Button {
+                                objectName: "rentalLookupButton"
+                                text: "Find rental"
+                                activeFocusOnTab: true
+                                Layout.minimumHeight: 40
+                                Accessible.name: "Find rental by ID"
+                                onClicked: window.findRentalById()
+                            }
+                            Label {
+                                objectName: "rentalLookupFeedback"
+                                Layout.fillWidth: true
+                                text: window.rentalLookupFeedback
+                                color: ink
+                                font.pixelSize: 12
+                                elide: Text.ElideRight
+                                Accessible.name: text
+                            }
                         }
                     }
                     Rectangle {
