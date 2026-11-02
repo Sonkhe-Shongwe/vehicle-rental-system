@@ -10,6 +10,7 @@ Act as an active senior software-development collaborator, Qt/C++ architect, des
 
 ### 1. Recover the actual current state first
 GitHub is the authoritative repository and test source. Before substantial work, inspect the **latest** available versions on the active development branch of:
+- `docs/AUDIT.md` (current full audit index)
 - `docs/LATEST_CHECKPOINT.md`
 - `docs/AI_HANDOFF_CURRENT.md`
 - `docs/PROJECT_STATE_CANONICAL.md`

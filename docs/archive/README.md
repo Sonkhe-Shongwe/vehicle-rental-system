@@ -4,7 +4,9 @@ This folder preserves the **exact previous content** of documents that described
 
 **Important:** Historical successful builds and application tests are real evidence for the legacy Qt Widgets source; they **do not certify the new light-first design, Qt Quick/QML feasibility or future functionality**. The user's rejection of old aesthetics supersedes any implication that these screenshots are aesthetically approved.
 
-Current decisions: [Master Product Rebuild Audit](../PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) · [New Roadmap](../ROADMAP.md) · [Current Handoff](../AI_HANDOFF_CURRENT.md) · [Experience Spec](../../design/DESIGN_SPEC.md).
+**Current status:** [2 November 2026 full audit](../FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) and [latest checkpoint](../LATEST_CHECKPOINT.md). Archived content is deliberately left unchanged, including legacy links that may no longer resolve relative to this relocated folder.
+
+Historical decisions: [Master Product Rebuild Audit](../PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md) · [New Roadmap](../ROADMAP.md) · [Current Handoff](../AI_HANDOFF_CURRENT.md) · [Experience Spec](../../design/DESIGN_SPEC.md).
 
 ## Archived documents
 
