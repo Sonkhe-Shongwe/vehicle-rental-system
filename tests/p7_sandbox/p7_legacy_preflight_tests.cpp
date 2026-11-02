@@ -422,8 +422,9 @@ bool manifestBlocked(){
        !bytes.contains("555-MOCK") && !bytes.contains("R003") &&
        !bytes.contains("C002"),"no contact or record IDs leak in output"))
        return false;
-    const auto obj=json.object(),issues=obj.value("issues").toArray(),
-               reconciliation=obj.value("reconciliation").toObject();
+    const QJsonObject obj=json.object();
+    const QJsonArray issues=obj.value("issues").toArray();
+    const QJsonObject reconciliation=obj.value("reconciliation").toObject();
     if(!assertCase(obj.value("status")=="BLOCKED" &&
         issues.size()==3 &&
         reconciliation.value("complete").toBool() &&
