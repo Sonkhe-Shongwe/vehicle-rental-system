@@ -108,12 +108,14 @@ static bool backup(Database &source, const QString &destination) {
         return false;
     }
     vacuum.finish();
+    bool validStage = false;
     {
         Database staged;
-        if (!staged.open(staging) || !staged.integrity()) {
-            QFile::remove(staging);
-            return false;
-        }
+        validStage = staged.open(staging) && staged.integrity();
+    }
+    if (!validStage) {
+        QFile::remove(staging);
+        return false;
     }
     // QFile::rename refuses an existing destination. Never remove it.
     QFile file(staging);
