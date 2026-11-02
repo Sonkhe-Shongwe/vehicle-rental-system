@@ -13,7 +13,7 @@ The **planned weights and criterion denominators remain frozen**. Source impleme
 | P4 Shared native UI/focus | 12% | 5/7 | Components/motion tested | Owner physical keyboard/Narrator/accessibility |
 | P5 Booking vertical slice | 16% | 0/8 | All 8 original expectations have representative automated evidence | Consolidated operator signoff of original eight |
 | P6 Full Fleet/Rentals lifecycle | 14% | 0/9 | Polished interface, 8 scoped groups covered, 9th integrated path tested | Ratify bounded nine-point rubric and operator/physical parity review |
-| P7 Reliable commercial storage | 9% | 0/8 | Synthetic P7-A–H completed; normalized candidate tested, no runtime cutover | Business+privacy ADR, contact/retention, migrate/backup and actual app integration |
+| P7 Reliable commercial storage | 9% | 0/8 | Synthetic P7-A–I completed; real opt-in Qt Quick ↔ typed SQLite preview tested, **normal runtime still text** | Owner business/privacy ADR, actual app controllers, contact/retention, protected backup/migration |
 | P8 Offline Windows installer | 5% | 0/6 | Not started; CI portable kit is NOT installer | Build/run/uninstall/update/rights/privacy tests on clean offline Windows |
 | P9 Final product QA/release | 5% | 0/8 | Not started | Final real device 100/125/150%/Narrator/performance, security/data policy, exact-SHA CI, owner release authorization |
 
@@ -22,7 +22,7 @@ The **planned weights and criterion denominators remain frozen**. Source impleme
 ## Immediate delivery order
 
 1. **Decision gate:** consolidate [P7 storage ADR draft](P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md) and [candidate eight criteria](P7_A_MIGRATION_AND_TEST_CONTRACT_2026-11-02.md). Approve data protection, exact money and lifecycle semantics before commercial runtime integration.
-2. **Real product integration:** adapt normalized typed P7-H repository to actual C++ booking/read/return commands using only generated fictional data and an explicitly safe experiment; keep legacy normal app path unchanged until authorized.
+2. **Real product integration:** [P7-I Qt Quick/normalized SQL preview](P7_I_QTQUICK_NORMALIZED_REPOSITORY_PREVIEW_NATIVE_VERIFIED_2026-11-02.md) now verifies a **separate fictional-only Qt Quick command preview**. After explicit owner business/privacy decisions, adapt P7-H to the **actual** Overview/Fleet/Rentals services and prove dual-read parity, backup/cutover and no data-loss behavior. Keep normal runtime unmodified until authorized.
 3. **Operator acceptance batch:** one substantial physical Windows/P1/P2/P4/P5/P6 review once the application candidate is sufficiently polished; preserve PASS/FAIL/NOT TESTED for each item.
 4. **Distribution then release:** P8 genuine installer and clean-offline deployment tests, P9 final physical, privacy/licensing, robustness and owner approval.
 5. Resolve draft PR stack (#10, #12, #14, #17) only by explicit authorized review; no force push or direct main merge during development.
