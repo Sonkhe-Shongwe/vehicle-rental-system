@@ -8,9 +8,11 @@
 
 ## Current exact source baseline
 
+**P7-R exact-source verified:** [corrected `de47e0f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/de47e0f2f0355750f429f929f4997b63d23b2495), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775107), [native Qt Linux/hosted Windows 115/115 EACH](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775180), Windows packaged checks PASS. [P7-R engineering report](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md). [P7-Q search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) was independently verified at `260794b`. Generated-fictional D1 only, D2–D8 open, no physical owner MinGW/scaling/Narrator acceptance, formal **28/74 and weighted 40.6% unchanged**.
+
 | Evidence | Result | Boundary |
 |---|---|---|
-| [P7-P `31d1ce3`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/31d1ce3120629861ed5979faee3828c1be02d801) | [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869038) PASS | Exact source Linux C++ core regression |
+| [Earlier P7-P `31d1ce3`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/31d1ce3120629861ed5979faee3828c1be02d801) | [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869038) PASS | Exact source Linux C++ core regression |
 | Same source | [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869095) PASS, Qt 6.8.3 Linux GCC | 115/115, actual-app wide/compact SQLite Lab explorer and all prior regressions |
 | Same source | [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869095) PASS, Qt 6.8.3 hosted Windows MSVC | 115/115 real Qt QPA; does not replace owner physical MinGW/scaling/Narrator |
 | Same Windows native run | Packaged PowerShell 7 and Windows PowerShell 5.1 verification **PASS** | Disposable hosted kit, not an installed commercial product |
@@ -26,6 +28,8 @@
 | [P7-N real QML Fleet SQL projection](P7_N_REAL_QML_FLEET_SQL_PROJECTION_NATIVE_VERIFIED_2026-11-02.md) | Strengthens existing real QML journey/rollback/read-model native tests; Fleet now displays transactional C++ SQL-derived availability and hides/retries failed reads | Only isolated generated-fictional test executable; no normal app SQL cutover |
 
 | [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md) | New `rental_studio_p7_actual_app_lab_wide` and `_compact` native CTests on actual Qt Quick executable prove fictional SQL, rejected COMMIT, post-COMMIT UI, independent reopen and byte-identical legacy files | Limited D1 owner-approved, isolated fourth workspace only |
+| [P7-Q Fleet search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) | Source `260794b`, core 13/13, native 115/115 each Linux/Windows | Fixed fictional Lab only |
+| [P7-R Overview](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md) | Corrected source `de47e0f`, core 13/13, native 115/115 each Linux/Windows | Exact cents, failed-read conceal/retry, native compact real app |
 | [P7-P real-app SQLite record explorer](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md) | Strengthened existing `rental_studio_p7_actual_app_lab_wide/compact` native QML tests now exercise C++ Fleet/Rentals filtered record inspection, hidden selections, explicit read faults and retry | Only fourth generated-fictional SQL Lab; no default QSaveFile cutover or real customer data |
 The P7 integration is compiled only with **BUILD_P7_SQLITE_SANDBOX=ON** (OFF by default). Under that explicit build, the actual Qt Quick executable can link QtSql, but its temporary SQLite Lab is activated only with `--p7-fictional-sql-lab` or a dedicated CI-only test switch. Ordinary launches use the exact prior QSaveFile-backed Overview/Fleet/Rentals workspaces. No customer data, import or commercial database path is enabled.
 

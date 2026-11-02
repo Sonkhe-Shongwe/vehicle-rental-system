@@ -1,6 +1,6 @@
 # P7-Q | Fictional SQLite Fleet search in actual Qt Quick Lab
 
-**Engineering source:** [`6259155671041b40d43d2cb118613680d6890dab`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6259155671041b40d43d2cb118613680d6890dab). **Date:** 2 November 2026. **Status:** Implemented, core regression PASS; native Qt Linux/Windows result PENDING at this checkpoint. This report must not be read as formal owner acceptance.
+**Final P7-Q verified source:** [260794b](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/260794bdc33dd4d3807dc9e953527ad4732a8ee9), 2 November 2026. Automated native verification complete, owner acceptance still pending.
 
 ## Bounded source change
 
@@ -11,8 +11,8 @@
 
 ## Exact-source test status
 
-- **Core:** [run 41503684951](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41503684951), Linux C++ **13/13 PASS**, confirmed from test job logs at source `6259155`.
-- **Native Qt 6.8.3:** [run 41503684810](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41503684810), Linux GCC and hosted Windows MSVC: **PENDING** at report creation. Do not inherit the preceding P7-P 115/115 result. Inspect final build and CTest logs and correct any actual failures before declaring P7-Q native verified.
+- **Core:** [run 41504648730](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41504648730), Linux C++ **13/13 PASS**, confirmed from test job logs at final source `260794b`.
+- **Native Qt 6.8.3:** [P7-Q final run 41504648806](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41504648806), **115/115 PASS each on Linux GCC and hosted Windows MSVC** at exact final source `260794b`. Packaged Windows P4 PowerShell 7/5.1 checks PASS; not physical owner signoff.
 - **Earlier native verified baseline:** [P7-P source `31d1ce3`](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md): 115/115 each Linux and Windows, not evidence for this later search implementation.
 
 ## Authorization and remaining gates
