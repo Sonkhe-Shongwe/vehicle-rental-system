@@ -209,7 +209,7 @@ Flickable {
     // computed by typed C++ DTO models; no SQL, PII or lifecycle writes here.
     Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 266
+        Layout.preferredHeight: 292
         radius: 12
         color: "white"
         border.color: "#D6E0E7"
@@ -262,6 +262,15 @@ Flickable {
                         onClicked: p7SqlFleet.selectById(modelData.id)
                         Accessible.name: "Inspect generated fictional vehicle " + modelData.id
                     }
+                }
+                Label {
+                    objectName: "p7AppFleetEmpty"
+                    Layout.fillWidth: true
+                    visible: p7SqlFleet.snapshotAvailable && p7SqlFleet.visibleCount === 0
+                    text: "No matching fictional vehicles. Change the search or availability filter."
+                    color: "#556576"
+                    wrapMode: Text.WordWrap
+                    Accessible.name: text
                 }
                 Label {
                     objectName: "p7AppFleetSelected"

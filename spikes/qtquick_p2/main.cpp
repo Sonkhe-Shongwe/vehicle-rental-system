@@ -1180,7 +1180,8 @@ int main(int argc, char *argv[]) {
                !p7SqlFleet->selectedVehicleId().isEmpty() ||
                p7SqlFleet->totalCount()!=1 ||
                p7SqlFleet->selectById("C001") ||
-               !fleetVisible->property("text").toString().contains("0 matching")) {
+               !fleetVisible->property("text").toString().contains("0 matching") ||
+               !find(find,root,"p7AppFleetEmpty")) {
                 qCritical()<<"P7 Fleet search exposed hidden fictional record";
                 app.exit(614);return;
             }
@@ -1190,7 +1191,8 @@ int main(int argc, char *argv[]) {
                !p7SqlFleet->selectById("c001") ||
                p7SqlFleet->selectedVehicleId()!="C001" ||
                !fleetSelection->property("text").toString().contains("4 doors") ||
-               !fleetVisible->property("text").toString().contains("1 matching")) {
+               !fleetVisible->property("text").toString().contains("1 matching") ||
+               find(find,root,"p7AppFleetEmpty")) {
                 qCritical()<<"P7 case-insensitive Fleet search did not restore visible match";
                 app.exit(615);return;
             }
