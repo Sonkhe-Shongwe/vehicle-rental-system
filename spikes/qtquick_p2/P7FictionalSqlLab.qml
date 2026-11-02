@@ -209,7 +209,7 @@ Flickable {
     // computed by typed C++ DTO models; no SQL, PII or lifecycle writes here.
     Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 218
+        Layout.preferredHeight: 266
         radius: 12
         color: "white"
         border.color: "#D6E0E7"
@@ -235,6 +235,15 @@ Flickable {
                     enabled: p7SqlFleet.snapshotAvailable
                     onActivated: p7SqlFleet.setStatusFilter(currentText)
                     Accessible.name: "Filter fictional SQLite Fleet by availability"
+                }
+                TextField {
+                    objectName: "p7AppFleetSearch"
+                    Layout.fillWidth: true
+                    enabled: p7SqlFleet.snapshotAvailable
+                    placeholderText: "Search vehicle ID, model or details"
+                    maximumLength: 80
+                    onTextChanged: p7SqlFleet.setSearchText(text)
+                    Accessible.name: "Search verified fictional Fleet records"
                 }
                 ListView {
                     objectName: "p7AppFleetList"
