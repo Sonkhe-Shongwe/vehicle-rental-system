@@ -1167,8 +1167,11 @@ int main(int argc, char *argv[]) {
         auto *galleryToggle = window->findChild<QQuickItem*>("fleetGalleryToggle");
         auto *tableToggle = window->findChild<QQuickItem*>("fleetTableToggle");
         auto *emptyArt = window->findChild<QQuickItem*>("fleetInspectorEmptyArt");
+        auto *shown = window->findChild<QQuickItem*>("fleetShownCount");
+        auto *emptyTable = window->findChild<QQuickItem*>("fleetTableEmpty");
         if (!gallery || !table || !snapshot || !galleryToggle || !tableToggle ||
-            !emptyArt || !emptyArt->isVisible() ||
+            !shown || !emptyTable || !emptyArt || !emptyArt->isVisible() ||
+            shown->property("text").toString() != "(5 shown)" ||
             !galleryToggle->property("visuallySelected").toBool() ||
             tableToggle->property("visuallySelected").toBool() ||
             fleet.totalCount() != 5 || fleet.availableCount() != 4 ||
@@ -1216,7 +1219,8 @@ int main(int argc, char *argv[]) {
                         QStringLiteral("2 motorcycles")) ||
                     fleet.rentedCount() != 1 ||
                     galleryToggle->property("visuallySelected").toBool() ||
-                    !tableToggle->property("visuallySelected").toBool()) {
+                    !tableToggle->property("visuallySelected").toBool() ||
+                    shown->property("text").toString() != "(1 shown)") {
                     qCritical() << "QML Gallery/Table visibility or C++ model parity failed";
                     app.exit(10); return;
                 }
@@ -1232,8 +1236,24 @@ int main(int argc, char *argv[]) {
                     qCritical() << "Cannot capture actual QML Table";
                     app.exit(11); return;
                 }
+                fleet.setQuery("no-such-vehicle-000");
+                QCoreApplication::processEvents();
+                if (static_cast<FleetProxy*>(fleet.visibleModel())->rowCount() != 0 ||
+                    !emptyTable->isVisible() ||
+                    shown->property("text").toString() != "(0 shown)" ||
+                    fleet.carCount() != 3 || fleet.motorcycleCount() != 2) {
+                    qCritical() << "P6 Fleet no-results state / full-snapshot count mismatch";
+                    app.exit(14); return;
+                }
+                fleet.setQuery("");
+                QCoreApplication::processEvents();
+                if (emptyTable->isVisible() ||
+                    shown->property("text").toString() != "(5 shown)") {
+                    qCritical() << "P6 Fleet no-results reset did not restore Table";
+                    app.exit(15); return;
+                }
                 qInfo() << "P2 native Qt Quick UI smoke PASS:" << suffix
-                        << "Gallery, Table, selected ID, filtered domain model";
+                        << "Gallery, Table, selected ID, filtered/empty snapshot";
                 app.exit(0);
             });
         });
