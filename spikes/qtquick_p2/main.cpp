@@ -1085,11 +1085,12 @@ int main(int argc, char *argv[]) {
             auto *receipt=find(find,root,"p7AppReceipt");
             auto *lab=find(find,root,"p7AppSqlLab");
             auto *fleetSelection=find(find,root,"p7AppFleetSelected");
+            auto *fleetSearch=find(find,root,"p7AppFleetSearch");
             auto *rentalSelection=find(find,root,"p7AppRentalSelected");
             auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
             auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
             if(!nav||!fleetText||!rentalsText||!receipt||!lab||
-               !fleetSelection||!rentalSelection||!fleetVisible||!rentalVisible||
+               !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
                !fleetText->property("text").toString().contains("1 available") ||
                !rentalsText->property("text").toString().contains("Active: 0") ||
                p7SqlFleet->totalCount()!=1 || p7SqlRentals->activeCount()!=0 ||
@@ -1170,6 +1171,30 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P7 SQL C++ read-only history/status filter mismatch";
                 app.exit(611);return;
             }
+            // Actual QML search filters verified C++ Fleet DTOs in conjunction
+            // with availability; hidden selection never leaks through.
+            fleetSearch->setProperty("text",QStringLiteral("not-a-fictional-car"));
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->searchText()!="not-a-fictional-car" ||
+               p7SqlFleet->visibleCount()!=0 ||
+               !p7SqlFleet->selectedVehicleId().isEmpty() ||
+               p7SqlFleet->totalCount()!=1 ||
+               p7SqlFleet->selectById("C001") ||
+               !fleetVisible->property("text").toString().contains("0 matching")) {
+                qCritical()<<"P7 Fleet search exposed hidden fictional record";
+                app.exit(614);return;
+            }
+            fleetSearch->setProperty("text",QStringLiteral("corOLLa"));
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->visibleCount()!=1 ||
+               !p7SqlFleet->selectById("c001") ||
+               p7SqlFleet->selectedVehicleId()!="C001" ||
+               !fleetSelection->property("text").toString().contains("4 doors") ||
+               !fleetVisible->property("text").toString().contains("1 matching")) {
+                qCritical()<<"P7 case-insensitive Fleet search did not restore visible match";
+                app.exit(615);return;
+            }
+            // Search remains active across a failed read and recovery.
             // Explicit provider failure must retain known-good C++ records
             // but HIDE every unverifiable row and selected contract in QML.
             p7RefuseFleetReads=true;
