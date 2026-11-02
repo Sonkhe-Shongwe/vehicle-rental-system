@@ -27,3 +27,15 @@ set_tests_properties(
     rental_studio_p7_preflight_malformed
     rental_studio_p7_preflight_encoding
     PROPERTIES TIMEOUT 35)
+
+# P7-D: machine-readable deterministic issue/aggregate evidence, generated-only.
+foreach(CASE IN ITEMS manifest_clean manifest_blocked manifest_incomplete manifest_overflow)
+    add_test(NAME rental_studio_p7_report_${CASE}
+        COMMAND rental_studio_p7_legacy_preflight ${CASE})
+endforeach()
+set_tests_properties(
+    rental_studio_p7_report_manifest_clean
+    rental_studio_p7_report_manifest_blocked
+    rental_studio_p7_report_manifest_incomplete
+    rental_studio_p7_report_manifest_overflow
+    PROPERTIES TIMEOUT 35)
