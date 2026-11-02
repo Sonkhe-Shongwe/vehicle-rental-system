@@ -1,0 +1,12 @@
+# Opt-in TEST-ONLY QtSql experiment, never linked to production.
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Sql)
+add_executable(rental_studio_p7_sqlite_sandbox p7_sqlite_sandbox_tests.cpp)
+target_link_libraries(rental_studio_p7_sqlite_sandbox PRIVATE Qt6::Core Qt6::Sql)
+add_test(NAME rental_studio_p7_sqlite_money COMMAND rental_studio_p7_sqlite_sandbox money)
+add_test(NAME rental_studio_p7_sqlite_constraints COMMAND rental_studio_p7_sqlite_sandbox constraints)
+add_test(NAME rental_studio_p7_sqlite_rollback COMMAND rental_studio_p7_sqlite_sandbox rollback)
+add_test(NAME rental_studio_p7_sqlite_restart COMMAND rental_studio_p7_sqlite_sandbox restart)
+add_test(NAME rental_studio_p7_sqlite_corrupt COMMAND rental_studio_p7_sqlite_sandbox corrupt)
+set_tests_properties(rental_studio_p7_sqlite_money rental_studio_p7_sqlite_constraints
+    rental_studio_p7_sqlite_rollback rental_studio_p7_sqlite_restart
+    rental_studio_p7_sqlite_corrupt PROPERTIES TIMEOUT 35)
