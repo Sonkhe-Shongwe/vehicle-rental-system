@@ -294,3 +294,13 @@ if(BUILD_QTQUICK_P2_SPIKE)
     endif()
     add_subdirectory(spikes/qtquick_p2)
 endif()
+
+# P7-B: separate opt-in SQLite/QtSql proof using exclusively generated
+# synthetic records. Not linked to the Widget app or Qt Quick executable.
+option(BUILD_P7_SQLITE_SANDBOX "Build isolated P7-B QSQLITE CTests" OFF)
+if(BUILD_P7_SQLITE_SANDBOX)
+    if(NOT QT_VERSION_MAJOR EQUAL 6 OR NOT BUILD_TESTING)
+        message(FATAL_ERROR "P7 sandbox requires Qt6 and BUILD_TESTING=ON")
+    endif()
+    add_subdirectory(tests/p7_sandbox)
+endif()
