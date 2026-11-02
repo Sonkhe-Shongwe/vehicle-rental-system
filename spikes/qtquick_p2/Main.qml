@@ -538,6 +538,13 @@ ApplicationWindow {
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 150
                                     placeholderText: "Search model or vehicle ID"
+                                    leftPadding: 12
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: search.activeFocus ? navy : designTokens.border
+                                        border.width: search.activeFocus ? 2 : 1
+                                    }
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
                                 }
@@ -546,6 +553,13 @@ ApplicationWindow {
                                     objectName: "fleetStatusCombo"
                                     activeFocusOnTab: true
                                     Layout.preferredWidth: 138
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetStatusCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetStatusCombo.activeFocus ? 2 : 1
+                                    }
                                     model: ["All", "Available", "Rented"]
                                     Accessible.name: "Filter fleet status"
                                     onActivated: fleet.status = currentText
@@ -555,6 +569,13 @@ ApplicationWindow {
                                     objectName: "fleetSortCombo"
                                     activeFocusOnTab: true
                                     Layout.preferredWidth: 116
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetSortCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetSortCombo.activeFocus ? 2 : 1
+                                    }
                                     model: ["Name", "Rate"]
                                     Accessible.name: "Sort fleet"
                                     onActivated: fleet.sortBy = currentText
@@ -564,6 +585,12 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Label {
                                     text: window.gallery ? "Vehicle gallery" : "Vehicle table"
+                                    color: ink
+                                    font.pixelSize: 12
+                                }
+                                Label {
+                                    objectName: "fleetShownCount"
+                                    text: "(" + (window.gallery ? galleryView.count : tableView.count) + " shown)"
                                     color: ink
                                     font.pixelSize: 12
                                 }
@@ -705,6 +732,44 @@ ApplicationWindow {
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 cellHeight: 192
                                 ScrollBar.vertical: ScrollBar {}
+                                Column {
+                                    objectName: "fleetGalleryEmpty"
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 28, 420)
+                                    spacing: 12
+                                    visible: galleryView.count === 0
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0 ? "No fleet vehicles yet" :
+                                              "No vehicles match this search"
+                                        color: navy
+                                        font.pixelSize: 19
+                                        font.bold: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0
+                                            ? "Add a fictional vehicle to begin managing the fleet."
+                                            : "Try another name or show all availability states."
+                                        color: ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Button {
+                                        objectName: "fleetClearGalleryFilters"
+                                        visible: fleet.totalCount > 0
+                                        text: "Clear search and filters"
+                                        activeFocusOnTab: true
+                                        onClicked: {
+                                            fleet.query = ""
+                                            fleet.status = "All"
+                                            fleetStatusCombo.currentIndex = 0
+                                            search.forceActiveFocus(Qt.OtherFocusReason)
+                                        }
+                                    }
+                                }
                                 delegate: Button {
                                     id: vehicleCard
                                     required property int index
@@ -796,6 +861,44 @@ ApplicationWindow {
                                 model: fleet.visibleModel
                                 spacing: 6
                                 ScrollBar.vertical: ScrollBar {}
+                                Column {
+                                    objectName: "fleetTableEmpty"
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - 28, 420)
+                                    spacing: 12
+                                    visible: tableView.count === 0
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0 ? "No fleet vehicles yet" :
+                                              "No vehicles match this search"
+                                        color: navy
+                                        font.pixelSize: 19
+                                        font.bold: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Label {
+                                        width: parent.width
+                                        text: fleet.totalCount === 0
+                                            ? "Add a fictional vehicle to begin managing the fleet."
+                                            : "Try another name or show all availability states."
+                                        color: ink
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.WordWrap
+                                    }
+                                    Button {
+                                        objectName: "fleetClearTableFilters"
+                                        visible: fleet.totalCount > 0
+                                        text: "Clear search and filters"
+                                        activeFocusOnTab: true
+                                        onClicked: {
+                                            fleet.query = ""
+                                            fleet.status = "All"
+                                            fleetStatusCombo.currentIndex = 0
+                                            search.forceActiveFocus(Qt.OtherFocusReason)
+                                        }
+                                    }
+                                }
                                 delegate: Button {
                                     id: vehicleRow
                                     objectName: "fleetTableRow"
@@ -882,6 +985,18 @@ ApplicationWindow {
                                 VehicleSilhouette {
                                     anchors.centerIn: parent
                                     vehicleType: "Car"
+                                }
+                            }
+                            Rectangle {
+                                objectName: "fleetInspectorSelectedArt"
+                                visible: fleet.selectedId !== ""
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: window.height < 800 ? 76 : 104
+                                color: ice
+                                radius: 10
+                                VehicleSilhouette {
+                                    anchors.centerIn: parent
+                                    vehicleType: fleet.selectedType
                                 }
                             }
                             Label {
