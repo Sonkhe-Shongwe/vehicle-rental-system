@@ -2007,11 +2007,11 @@ int main(int argc, char *argv[]) {
             auto *emptyReset=window->findChild<QQuickItem*>("rentalEmptyReset");
             auto *statusRow=findVisual(findVisual,window->contentItem(),"rentalStatusRow");
             auto *lookupRow=findVisual(findVisual,window->contentItem(),"rentalLookupRow");
-            auto *lookupField=findVisual(findVisual,window->contentItem(),"rentalLookupField");
-            auto *lookupButton=findVisual(findVisual,window->contentItem(),"rentalLookupButton");
+            auto *toolbarLookupField=findVisual(findVisual,window->contentItem(),"rentalLookupField");
+            auto *toolbarLookupButton=findVisual(findVisual,window->contentItem(),"rentalLookupButton");
             auto *visibleCount=findVisual(findVisual,window->contentItem(),"rentalVisibleCount");
             if (!list || !list->isVisible() || !selected ||
-                !statusRow || !lookupRow || !lookupField || !lookupButton || !visibleCount ||
+                !statusRow || !lookupRow || !toolbarLookupField || !toolbarLookupButton || !visibleCount ||
                 !activeButton || !historyButton || !allButton ||
                 !returnedButton || !archivedButton ||
                 !emptyState || !emptyMessage || !emptyReset ||
@@ -2051,8 +2051,8 @@ int main(int argc, char *argv[]) {
             // no overlapping filters, hidden lookup field or clipped submit.
             const QPointF statusPos=statusRow->mapToScene(QPointF(0,0));
             const QPointF lookupPos=lookupRow->mapToScene(QPointF(0,0));
-            const QPointF fieldPos=lookupField->mapToScene(QPointF(0,0));
-            const QPointF buttonPos=lookupButton->mapToScene(QPointF(0,0));
+            const QPointF fieldPos=toolbarLookupField->mapToScene(QPointF(0,0));
+            const QPointF buttonPos=toolbarLookupButton->mapToScene(QPointF(0,0));
             const auto withinViewport=[window](QQuickItem *item,const QPointF &pos) {
                 return pos.x()>=0 && pos.y()>=0 &&
                     pos.x()+item->width()<=window->width() &&
@@ -2062,9 +2062,9 @@ int main(int argc, char *argv[]) {
                lookupPos.y()+1<statusPos.y()+statusRow->height() ||
                !withinViewport(statusRow,statusPos) ||
                !withinViewport(lookupRow,lookupPos) ||
-               !withinViewport(lookupField,fieldPos) ||
-               !withinViewport(lookupButton,buttonPos) ||
-               lookupField->width()<150 || lookupButton->height()<36 ||
+               !withinViewport(toolbarLookupField,fieldPos) ||
+               !withinViewport(toolbarLookupButton,buttonPos) ||
+               toolbarLookupField->width()<150 || toolbarLookupButton->height()<36 ||
                list->height()<65 ||
                !visibleCount->property("text").toString().contains("2 matching")) {
                 qCritical()<<"UX-Q2 compact Rentals toolbar overlaps or clips"
