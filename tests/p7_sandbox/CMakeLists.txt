@@ -56,3 +56,19 @@ set_tests_properties(
     rental_studio_p7_backup_refuse_overwrite
     rental_studio_p7_backup_locked
     PROPERTIES TIMEOUT 45)
+
+# P7-F: real separate-process crash, writer lock, restart and schema refusal;
+# independent Qt Core/Sql test binary, protected by OFF-by-default P7 option.
+add_executable(rental_studio_p7_sqlite_process p7_sqlite_process_tests.cpp)
+target_link_libraries(rental_studio_p7_sqlite_process PRIVATE Qt6::Core Qt6::Sql)
+foreach(CASE IN ITEMS recovery contention restart duplicate future_schema)
+    add_test(NAME rental_studio_p7_process_${CASE}
+        COMMAND rental_studio_p7_sqlite_process ${CASE})
+endforeach()
+set_tests_properties(
+    rental_studio_p7_process_recovery
+    rental_studio_p7_process_contention
+    rental_studio_p7_process_restart
+    rental_studio_p7_process_duplicate
+    rental_studio_p7_process_future_schema
+    PROPERTIES TIMEOUT 55)
