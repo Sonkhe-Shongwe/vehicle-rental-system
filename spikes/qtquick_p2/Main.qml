@@ -7,7 +7,8 @@ ApplicationWindow {
     width: 1500; height: 860
     minimumWidth: 1024; minimumHeight: 660
     visible: true
-    title: persistentFictionalDemo
+    title: p7SqlLabEnabled ? "Rental Studio 2.0 · isolated fictional SQLite Lab" :
+           persistentFictionalDemo
            ? "Rental Studio 2.0 · persistent fictional-only demo"
            : "Rental Studio 2.0 · operational overview · fictional demo"
 
@@ -260,7 +261,9 @@ ApplicationWindow {
                 }
                 Repeater {
                     id: workspaceItems
-                    model: ["Overview", "Fleet", "Rentals"]
+                    model: p7SqlLabEnabled ?
+                               ["Overview", "Fleet", "Rentals", "SQLite Lab"] :
+                               ["Overview", "Fleet", "Rentals"]
                     delegate: WorkspaceNavButton {
                         currentWorkspace: window.workspace === index
                         workspaceItems: workspaceItems
@@ -292,7 +295,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Label {
                     text: window.workspace === 0 ? "Overview" :
-                          window.workspace === 1 ? "Fleet management" : "Rentals"
+                          window.workspace === 1 ? "Fleet management" :
+                          window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
                     font.pixelSize: 30; font.bold: true; color: navy
                 }
                 Item { Layout.fillWidth: true }
@@ -1874,6 +1878,16 @@ ApplicationWindow {
                             }
                         }
                     }
+                }
+                // Slot 4 loads ONLY for the explicit fictional-only SQL
+                // mode. The three legacy workspaces retain their exact data
+                // services, operational commands and default indices.
+                Loader {
+                    objectName: "p7SqlLabLoader"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    active: p7SqlLabEnabled
+                    sourceComponent: Component { P7FictionalSqlLab {} }
                 }
             }
         }

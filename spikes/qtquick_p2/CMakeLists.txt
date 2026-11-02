@@ -24,6 +24,18 @@ target_link_libraries(rental_studio_qtquick_spike
 if(WIN32)
     target_link_libraries(rental_studio_qtquick_spike PRIVATE user32)
 endif()
+# Explicit fictional-only integration into this REAL Qt Quick executable.
+# NOT the default workspace, not commercial storage and not a Widgets change.
+if(BUILD_P7_SQLITE_SANDBOX)
+    find_package(Qt6 6.5 REQUIRED COMPONENTS Sql)
+    target_link_libraries(rental_studio_qtquick_spike PRIVATE Qt6::Sql)
+    target_compile_definitions(rental_studio_qtquick_spike PRIVATE RENTAL_STUDIO_P7_SQL_LAB=1)
+    target_sources(rental_studio_qtquick_spike PRIVATE
+        ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_repository.h
+        ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/sqlite_read_projection.h
+        ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/fictional_fleet_snapshot.h
+        ${PROJECT_SOURCE_DIR}/src/application/p7_sandbox/repository_preview_controller.h)
+endif()
 # Compile the SHA-256 of the exact fictional fixtures into the executable.
 # Neither a portable kit nor Qt Creator may ingest arbitrary operational records.
 file(SHA256 "${PROJECT_SOURCE_DIR}/demo/vehicles.txt" P2_VEHICLES_SHA256)
@@ -46,8 +58,20 @@ qt_add_qml_module(rental_studio_qtquick_spike
     VERSION 1.0
     QML_FILES Main.qml DesignTokens.qml FocusFrame.qml VehicleSilhouette.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
-              ConfirmActionDialog.qml OverviewMetricCard.qml)
+              ConfirmActionDialog.qml OverviewMetricCard.qml P7FictionalSqlLab.qml)
 if(BUILD_TESTING)
+    if(BUILD_P7_SQLITE_SANDBOX)
+        foreach(SIZE wide compact)
+            set(P7_ARGS --p7-fictional-sql-app-smoke)
+            if(SIZE STREQUAL "compact")
+                list(APPEND P7_ARGS --compact)
+            endif()
+            add_test(NAME rental_studio_p7_actual_app_lab_${SIZE}
+                COMMAND rental_studio_qtquick_spike ${P7_ARGS})
+            set_tests_properties(rental_studio_p7_actual_app_lab_${SIZE}
+                PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+        endforeach()
+    endif()
     # Real separate executable processes, opt-in fixed Qt TEST location.
     # Cleanup has its own fixture so CTest also runs it after failures.
     add_test(NAME rental_studio_p5_session_seed

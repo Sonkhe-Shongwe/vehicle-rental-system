@@ -37,6 +37,11 @@
 #include "fleet_add_controller.h"
 #include "fleet_remove_controller.h"
 #include "motion_policy.h"
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+#include "src/application/p7_sandbox/repository_preview_controller.h"
+#include "src/application/p7_sandbox/sqlite_read_projection.h"
+#include "src/application/p7_sandbox/fictional_fleet_snapshot.h"
+#endif
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
 // values from disposable fictional fixtures. No Vehicle* reaches QML.
@@ -371,7 +376,22 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-a11y-smoke", "Check live Qt accessibility names, roles and mutually exclusive states on fictional controls."});
     parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
     parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    parser.addOption({"p7-fictional-sql-lab", "Explicit isolated generated-fictional SQLite Lab inside real Qt Quick app. No commercial data."});
+    parser.addOption({"p7-fictional-sql-app-smoke", "CI-only native test of the real app's isolated fictional SQLite Lab."});
+#endif
     parser.process(app);
+    bool p7SqlLabEnabled=false;
+    bool p7SqlLabSmoke=false;
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    p7SqlLabSmoke=parser.isSet("p7-fictional-sql-app-smoke");
+    p7SqlLabEnabled=p7SqlLabSmoke || parser.isSet("p7-fictional-sql-lab");
+    if(p7SqlLabEnabled &&
+       (parser.optionNames().size()!=(p7SqlLabSmoke && parser.isSet("compact")?2:1))) {
+        qCritical()<<"P7 fictional Lab cannot be combined with other options";
+        return 600;
+    }
+#endif
     const bool p6Parent=parser.isSet("p6-restart-flow");
     const bool p6Seed=parser.isSet("p6-restart-child-seed");
     const bool p6Update=parser.isSet("p6-restart-child-update");
@@ -791,6 +811,39 @@ int main(int argc, char *argv[]) {
     bookingActions.setPersistentFictionalOnly(persistentDemo);
     RentalArchiveController archiveActions(system, rentalRead, rentalModel);
     P6ArchivedDeleteController archivedDelete(system,rentalRead,rentalModel,!persistentDemo);
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    // D1 owner authorization is limited to a separate fixed-fictional
+    // SQLite workspace in this actual Qt Quick executable. The other three
+    // workspaces remain QSaveFile-backed and are NEVER pointed at this repo.
+    std::unique_ptr<p7fiction::PreviewController> p7SqlController;
+    std::unique_ptr<p7fiction::FictionalFleetSnapshot> p7SqlFleet;
+    std::unique_ptr<RentalListModel> p7SqlRentals;
+    if(p7SqlLabEnabled) {
+        p7SqlController=std::make_unique<p7fiction::PreviewController>();
+        if(!p7SqlController->ready()) {
+            qCritical()<<"P7 generated-fictional SQL Lab unavailable";
+            return 601;
+        }
+        auto *controller=p7SqlController.get();
+        p7SqlFleet=std::make_unique<p7fiction::FictionalFleetSnapshot>(
+            [controller]() -> std::optional<QList<FleetVehicleSummary>> {
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?p7fiction::ReadProjection(*repo).fleet():std::nullopt;
+            });
+        p7SqlRentals=std::make_unique<RentalListModel>(
+            [controller]() -> std::optional<QList<RentalRecordSummary>> {
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?p7fiction::ReadProjection(*repo).rentals(QDate(2026,11,2)):
+                            std::nullopt;
+            });
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlFleet.get(),&p7fiction::FictionalFleetSnapshot::refresh);
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlRentals.get(),&RentalListModel::refresh);
+        if(!p7SqlFleet->snapshotAvailable() ||
+           !p7SqlRentals->snapshotAvailable())return 602;
+    }
+#endif
     if(sessionTest) {
         const QString ledger=QDir(dataDirectory).filePath("rentals.txt");
         if(seedTest) {
@@ -989,11 +1042,103 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("bookingActions", &bookingActions);
     engine.rootContext()->setContextProperty("archiveActions", &archiveActions);
     engine.rootContext()->setContextProperty("archivedDelete", &archivedDelete);
+    engine.rootContext()->setContextProperty("p7SqlLabEnabled",p7SqlLabEnabled);
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    engine.rootContext()->setContextProperty("p7SqlController",
+                                              p7SqlController.get());
+    engine.rootContext()->setContextProperty("p7SqlFleet",p7SqlFleet.get());
+    engine.rootContext()->setContextProperty("p7SqlRentals",p7SqlRentals.get());
+#else
+    engine.rootContext()->setContextProperty("p7SqlController",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlFleet",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlRentals",static_cast<QObject*>(nullptr));
+#endif
     engine.loadFromModule("RentalStudioSpike", "Main");
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
     }
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    if(p7SqlLabSmoke) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 603;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",3);
+        QTimer::singleShot(1150,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *nav=find(find,root,"workspaceNavSQLite Lab");
+            auto *fleetText=find(find,root,"p7AppFleetMetrics");
+            auto *rentalsText=find(find,root,"p7AppRentalsMetrics");
+            auto *receipt=find(find,root,"p7AppReceipt");
+            if(!nav||!fleetText||!rentalsText||!receipt||
+               !fleetText->property("text").toString().contains("1 available") ||
+               !rentalsText->property("text").toString().contains("Active: 0") ||
+               p7SqlFleet->totalCount()!=1 || p7SqlRentals->activeCount()!=0) {
+                qCritical()<<"P7 real app fictional Lab failed to load isolated read models";
+                app.exit(604);return;
+            }
+            const auto click=[&](const QString &name) {
+                auto *target=find(find,root,name);
+                if(!target||!target->isEnabled()||target->width()<10||
+                   target->height()<10)return false;
+                const auto scene=target->mapToScene(
+                    QPointF(target->width()/2.0,target->height()/2.0));
+                QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,scene.toPoint());
+                QCoreApplication::processEvents();
+                return true;
+            };
+            if(!click("p7AppPreview")||!p7SqlController->canConfirm()||
+               p7SqlFleet->availableCount()!=1||p7SqlRentals->activeCount()!=0||
+               !p7SqlController->rejectNextBookingForTest() ||
+               !click("p7AppConfirm")||p7SqlController->rentalId()!=""||
+               p7SqlFleet->availableCount()!=1||p7SqlRentals->activeCount()!=0||
+               !receipt->property("text").toString().contains("not issued")) {
+                qCritical()<<"P7 real app leaked uncommitted/rejected SQL booking";
+                app.exit(605);return;
+            }
+            if(!click("p7AppConfirm") || p7SqlController->rentalId()!="R001"||
+               p7SqlFleet->availableCount()!=0||p7SqlRentals->activeCount()!=1||
+               !fleetText->property("text").toString().contains("0 available")||
+               !rentalsText->property("text").toString().contains("Active: 1")||
+               !click("p7AppReturn")||p7SqlFleet->availableCount()!=1||
+               !click("p7AppArchive")||p7SqlRentals->historyCount()!=1||
+               !click("p7AppRetire")||p7SqlFleet->availableCount()!=0||
+               !p7SqlController->independentReopen()||
+               !p7SqlRentals->snapshotAvailable()||
+               !p7SqlFleet->snapshotAvailable()) {
+                qCritical()<<"P7 real app SQL commit and QML availability parity FAILED";
+                app.exit(606);return;
+            }
+            // Main app's other three workspaces remain a distinct protected
+            // fictional text demo; SQL actions must not mutate their source.
+            QByteArray vafter,rafter;
+            if(!readFile(vehicles,&vafter)||!readFile(rentals,&rafter)||
+               vafter!=beforeVehicles||rafter!=beforeRentals||
+               rentalModel.activeCount()!=1||fleet.availableCount()!=4) {
+                qCritical()<<"P7 SQL Lab modified baseline Qt Quick demo";
+                app.exit(607);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            if(window->grabWindow().isNull()||
+               !window->grabWindow().save("p7-real-app-fictional-sql-lab-"+size+".png","PNG")) {
+                qCritical()<<"P7 real app fictional Lab capture failed";
+                app.exit(608);return;
+            }
+            qInfo()<<"P7 actual Qt Quick fictional SQL Lab PASS"
+                   <<size<<"separate engine, exact cents, committed UI, no source mutation";
+            app.exit(0);
+        });
+    }
+#endif
     if (uiSeedTest || uiReopenTest || failureTest) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window) return 323;

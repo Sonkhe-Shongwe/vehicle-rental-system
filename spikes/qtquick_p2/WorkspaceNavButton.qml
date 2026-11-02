@@ -28,7 +28,8 @@ Button {
         let target = -1
         if (event.key === Qt.Key_Up && nav.index > 0)
             target = nav.index - 1
-        else if (event.key === Qt.Key_Down && nav.index < 2)
+        else if (event.key === Qt.Key_Down &&
+                 nav.index < (nav.workspaceItems ? nav.workspaceItems.count - 1 : 2))
             target = nav.index + 1
         else if (event.key === Qt.Key_Right && nav.index === 1) {
             nav.enterContent()
