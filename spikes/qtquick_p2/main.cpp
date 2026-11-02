@@ -2727,11 +2727,39 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 Booking initial vehicle field focus failed";
                 app.exit(247);return;
             }
+            // Ctrl+F must never steal focus from an open booking modal.
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(65);
+            if(window->property("workspace").toInt()!=2 ||
+               !vehicle->hasActiveFocus()) {
+                qCritical()<<"P4 Ctrl+F escaped the active booking dialog";
+                app.exit(258);return;
+            }
             QTest::keyClick(window,Qt::Key_Escape);
             QTest::qWait(120);
             if(!booking->hasActiveFocus()||bookingActions.canConfirm()){
                 qCritical()<<"P4 booking Escape did not cancel preview/restore";
                 app.exit(248);return;
+            }
+            // Real cross-workspace Fleet search accelerator should give a
+            // visible keyboard focus target, without changing any records.
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(90);
+            if(window->property("workspace").toInt()!=1 ||
+               !search->hasActiveFocus() || !search->isVisible()) {
+                qCritical()<<"P4 Ctrl+F did not route to visible Fleet search";
+                app.exit(259);return;
+            }
+            // Repeat from Overview, preserving the source's usual search
+            // navigation and the prior selection/draft safety rules.
+            window->setProperty("workspace",0);
+            QCoreApplication::processEvents();
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(90);
+            if(window->property("workspace").toInt()!=1 ||
+               !search->hasActiveFocus()) {
+                qCritical()<<"P4 Ctrl+F from Overview failed Fleet focus";
+                app.exit(260);return;
             }
             QByteArray sourceFleet,sourceRental,tempRental;
             if(!readFile(vehicles,&sourceFleet) ||

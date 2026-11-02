@@ -211,6 +211,22 @@ ApplicationWindow {
     readonly property bool canDismissSelection:
         (window.workspace === 1 && fleet.selectedId !== "") ||
         (window.workspace === 2 && rentalsModel.selectedRentalId !== "")
+    // Windows-standard search route: useful from Overview and Rentals without
+    // requiring pointer navigation. Never steal keyboard input from a modal.
+    Shortcut {
+        sequence: "Ctrl+F"
+        enabled: !bookingDialog.visible &&
+                 !returnConfirmation.visible && !archiveConfirmation.visible &&
+                 !archivedDeleteDialog.visible && !contractDetailsDialog.visible &&
+                 !fleetAddDialog.visible && !fleetRemoveDialog.visible
+        onActivated: {
+            window.workspace = 1
+            Qt.callLater(function() {
+                if (window.workspace === 1 && search.visible)
+                    search.forceActiveFocus(Qt.ShortcutFocusReason)
+            })
+        }
+    }
     Shortcut {
         sequence: "Escape"
         // The topmost modal owns Escape; selection clearing happens afterward.
