@@ -1,3 +1,5 @@
+> **P7-E native-verified (2 Nov 2026):** six fixed-case Qt6 Core/Sql backup tests (snapshot, readers, uncommitted, damaged, refuse_overwrite, locked) added under the same OFF-by-default sandbox flag. Full [exact-source Linux/Windows 95/95 and core 13/13 report](../../docs/P7_E_SQLITE_BACKUP_RECOVERY_NATIVE_VERIFIED_2026-11-02.md). No real records, commercial database adapter, production backup or migration.
+
 > **P7-D CROSS-PLATFORM-VERIFIED GENERATED-ONLY REPORT (2 NOV 2026):** [Exact source `fca2616`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/fca261607d61af708a5f976960b06e8044262f68) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41407613482) and [Linux native 89/89 + Windows native 89/89](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41407613556), plus Windows PS7/PS5.1 packaged checks. [P7-D schema, deterministic issue ordering, exact cents and failure/repair report](P7_D_DETERMINISTIC_MIGRATION_REPORT_NATIVE_VERIFIED_2026-11-02.md). Machine-readable JSON exists **in memory in the test-only executable**, with masked issue codes+line numbers, synthetic counts, string-valued booked total cents; no exported customer file, general UI import, real contact storage, production database or migration. P7-B/C continue tested, P7-D adds four CTests; formal P7 0/8, total 28/74 accepted and 40.6% evidence-weighted unchanged. Owner/privacy/retention/migration/physical Windows approval remain open. Next safe P7-E backup and restore synthetic-only feasibility.
 
 # P7-B/P7-C disposable storage research tests
@@ -7,10 +9,10 @@
 ```sh
 cmake -S . -B build-p7 -DBUILD_TESTING=ON -DBUILD_P7_SQLITE_SANDBOX=ON
 cmake --build build-p7 --parallel 2
-ctest --test-dir build-p7 -R 'rental_studio_p7_(sqlite|preflight)_' --output-on-failure
+ctest --test-dir build-p7 -R 'rental_studio_p7_(sqlite|preflight|report|backup)_' --output-on-failure
 ```
 
-For multi-config Windows Visual Studio builds, use `cmake --build build-p7 --config Release` and `ctest --test-dir build-p7 -C Release -R 'rental_studio_p7_(sqlite|preflight)_' --output-on-failure`. Actual QtSQL/QSQLITE must be present in the opted-in kit.
+For multi-config Windows Visual Studio builds, use `cmake --build build-p7 --config Release` and `ctest --test-dir build-p7 -C Release -R 'rental_studio_p7_(sqlite|preflight|report|backup)_' --output-on-failure`. Actual QtSQL/QSQLITE must be present in the opted-in kit.
 
 - **P7-B:** `rental_studio_p7_sqlite_sandbox` links Qt6 Core/Sql, only creates generated temporary SQLite files and runs five constrained transaction/constraint/money/reopen/error tests.
 - **P7-C:** `rental_studio_p7_legacy_preflight` links Qt6 Core only, creates invented legacy text under a private `QTemporaryDir` and runs six fixed checks for raw-byte framing, row validation, duplicates, historical anomalies, strict cents, dates and protected source nonmutation. It has **no file-path arguments and no import operation**.
