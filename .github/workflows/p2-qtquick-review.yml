@@ -11,7 +11,9 @@ on:
       - 'spikes/qtquick_p2/**'
       - '.github/workflows/p2-qtquick-review.yml'
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
+      - main
       - docs/product-rebuild-reset-20261029
       # P3 is reviewed independently against the unmerged P2 source branch.
       - spike/p2-qtquick-fleet-20261030
@@ -26,15 +28,6 @@ on:
       - feature/p5-operational-overview-20261101
       # P7-B isolated storage review is stacked above the still-draft P6.
       - feature/p6-fleet-create-disposable-20261101
-    paths:
-      - CMakeLists.txt
-      - 'src/application/**'
-      - 'tests/p3_fleet_read_tests.cpp'
-      - 'tests/p3_rental_quote_tests.cpp'
-      - 'tests/p3_rental_confirm_tests.cpp'
-      - 'spikes/qtquick_p2/**'
-      - 'tests/p7_sandbox/**'
-      - '.github/workflows/p2-qtquick-review.yml'
   workflow_dispatch:
 
 permissions:
@@ -42,10 +35,33 @@ permissions:
 
 concurrency:
   group: p2-qtquick-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+  # A later documentation-only update must not cancel an in-flight code validation.
+  cancel-in-progress: false
 
 jobs:
+  scope:
+    name: Inspect changed paths
+    runs-on: ubuntu-24.04
+    outputs:
+      run_full: ${{ steps.paths.outputs.run_full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate and classify PR head delta
+        id: paths
+        env:
+          CI_EVENT_NAME: ${{ github.event_name }}
+          CI_EVENT_ACTION: ${{ github.event.action }}
+          CI_BEFORE: ${{ github.event.before }}
+          CI_AFTER: ${{ github.event.after }}
+        run: |
+          python3 tests/ci_change_scope.py --self-test
+          python3 tests/ci_change_scope.py --emit
+
   linux:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
     name: Qt 6.8.3 / Linux GCC / real QML smoke
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -91,6 +107,8 @@ jobs:
           retention-days: 7
 
   windows:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
     name: Qt 6.8.3 / Windows MSVC / real QML smoke
     runs-on: windows-2022
     timeout-minutes: 25
