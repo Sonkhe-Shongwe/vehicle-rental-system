@@ -1,15 +1,16 @@
-# P7-B fictional-only SQLite test sandbox
+# P7-B/P7-C disposable storage research tests
 
-This is **not** Rental Studio's storage backend. It is a separate, opt-in C++17 Qt6 Core/Sql executable linked only into a test target; it never loads existing demo files or customer details.
-
-Run with a Qt6 kit that includes QSQLITE:
+**TEST-ONLY.** This target is `BUILD_P7_SQLITE_SANDBOX=OFF` by default. It is not wired into the Qt Quick app, legacy Qt Widgets app or real storage.
 
 ```sh
 cmake -S . -B build-p7 -DBUILD_TESTING=ON -DBUILD_P7_SQLITE_SANDBOX=ON
 cmake --build build-p7 --parallel 2
-ctest --test-dir build-p7 -R rental_studio_p7_sqlite_ --output-on-failure
+ctest --test-dir build-p7 -R 'rental_studio_p7_(sqlite|preflight)_' --output-on-failure
 ```
 
-For Windows multi-config Visual Studio use `cmake --build build-p7 --config Release` and `ctest --test-dir build-p7 -C Release -R rental_studio_p7_sqlite_ --output-on-failure`. This target is **OFF** in the normal app build. Its five cases use only their own `QTemporaryDir` and a fixed case argument. The native Linux/Windows PR workflow runs the full P5/P6 suite with this option ON.
+For multi-config Windows Visual Studio builds, use `cmake --build build-p7 --config Release` and `ctest --test-dir build-p7 -C Release -R 'rental_studio_p7_(sqlite|preflight)_' --output-on-failure`. Actual QtSQL/QSQLITE must be present in the opted-in kit.
 
-Review [P7-B source evidence](../../docs/P7_B_SQLITE_SANDBOX_NATIVE_VERIFIED_2026-11-02.md) and [P7-A draft architecture](../../docs/P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md). Do not substitute this sandbox for production storage, migration, real contact records or backups. P7 formal 0/8 until authorized owner acceptance.
+- **P7-B:** `rental_studio_p7_sqlite_sandbox` links Qt6 Core/Sql, only creates generated temporary SQLite files and runs five constrained transaction/constraint/money/reopen/error tests.
+- **P7-C:** `rental_studio_p7_legacy_preflight` links Qt6 Core only, creates invented legacy text under a private `QTemporaryDir` and runs six fixed checks for raw-byte framing, row validation, duplicates, historical anomalies, strict cents, dates and protected source nonmutation. It has **no file-path arguments and no import operation**.
+
+[Verified P7-B evidence](../../docs/P7_B_SQLITE_SANDBOX_NATIVE_VERIFIED_2026-11-02.md), [verified P7-C evidence](../../docs/P7_C_READ_ONLY_LEGACY_PREFLIGHT_NATIVE_VERIFIED_2026-11-02.md), [storage architecture proposal](../../docs/P7_A_STORAGE_ARCHITECTURE_ADR_DRAFT_2026-11-02.md). No real PII, external file imports, production DB cutover or migration authorization. P7 formal acceptance 0/8.
