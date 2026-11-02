@@ -311,6 +311,7 @@ public:
                r.expected!=r.start.addDays(r.days) ||
                r.days<1 || r.days>365 ||
                (r.status=="ACTIVE"?r.actual.isValid():!r.actual.isValid()) ||
+               (r.actual.isValid() && r.actual<r.start) ||
                r.dailyCents<=0 || r.totalCents<=0 ||
                r.dailyCents>std::numeric_limits<qint64>::max()/r.days ||
                r.dailyCents*r.days!=r.totalCents)return {};

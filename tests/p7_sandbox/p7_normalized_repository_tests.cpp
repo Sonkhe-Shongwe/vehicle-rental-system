@@ -77,6 +77,38 @@ bool numbers(){
     r.reset();r=t.open();
     return ok(r->ready()&&r->next("C")==3,"ID high-water across reboot");
 }
+bool invalid_return_date(){
+    Temp t;
+    auto r=t.open();
+    if(!seed(*r))return false;
+    auto q=r->quote("C001",3,day);
+    if(!ok(q&&r->book(*q,day).status==Status::Ok&&
+           r->returnRental("R001",day,day)==Status::Ok,
+           "seed valid returned fictional contract"))return false;
+    if(!ok(r->rentalRows().has_value()&&r->fleetRows().has_value(),
+           "valid return visible before malformed row"))return false;
+    // The v1 database CHECK only requires a returned row to have an actual
+    // date; a manually corrupted earlier-than-start date can therefore exist
+    // without failing SQLite integrity_check. Do not expose it in a read DTO.
+    const QString name="p7m-"+QUuid::createUuid().toString(QUuid::WithoutBraces);
+    bool changed=false;
+    {
+        auto db=QSqlDatabase::addDatabase("QSQLITE",name);
+        db.setDatabaseName(t.dir.filePath("fictional.sqlite"));
+        if(db.open()){
+            QSqlQuery edit(db);
+            changed=edit.exec("UPDATE rentals SET actual_date='2026-11-01' "
+                              "WHERE id='R001' AND status='RETURNED'");
+            db.close();
+        }
+    }
+    QSqlDatabase::removeDatabase(name);
+    if(!ok(changed,"inject fixed impossible synthetic return date"))
+        return false;
+    return ok(r->integrity()&&!r->rentalRows().has_value()&&
+              !r->fleetRows().has_value(),
+              "reject impossible dates without showing partial Fleet/Rentals");
+}
 bool fleet_snapshot(){
     Temp t;
     auto r=t.open();
@@ -145,7 +177,8 @@ int main(int argc,char**argv){
     const QString mode=app.arguments()[1];
     bool pass=mode=="lifecycle"?lifecycle():mode=="rollback"?rollback():
        mode=="money_ids"?numbers():mode=="future_schema"?future():
-       mode=="contention"?contention():mode=="fleet_snapshot"?fleet_snapshot():false;
+       mode=="contention"?contention():mode=="fleet_snapshot"?fleet_snapshot():
+       mode=="invalid_return_date"?invalid_return_date():false;
     if(pass)qInfo()<<"P7-H normalized fictional-only repository PASS"<<mode;
     return pass?0:1;
 }
