@@ -136,11 +136,20 @@ ApplicationWindow {
                 }
                 Label {
                     objectName: "p7SharedMetrics"
-                    text: "Active rentals: " + sharedRentals.activeCount +
+                    text: sharedRentals.snapshotAvailable ?
+                          "Active rentals: " + sharedRentals.activeCount +
                           "  |  History: " + sharedRentals.historyCount +
                           "  |  Booked value: R " +
-                          sharedRentals.activeBookedValue.toFixed(2)
+                          sharedRentals.activeBookedValue.toFixed(2) :
+                          "Read unavailable. Figures hidden until a verified refresh."
                     color: navy; font.bold: true
+                    Accessible.name: text
+                }
+                Button {
+                    objectName: "p7RetryReadButton"
+                    text: "Retry Rentals read"
+                    visible: !sharedRentals.snapshotAvailable
+                    onClicked: sharedRentals.refresh()
                     Accessible.name: text
                 }
             }

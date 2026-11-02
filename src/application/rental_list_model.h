@@ -20,6 +20,8 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(QString selectedRentalId READ selectedRentalId NOTIFY selectionChanged)
     Q_PROPERTY(int selectedRow READ selectedRow NOTIFY selectionChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    // False means the last provider read failed; retained figures may be stale.
+    Q_PROPERTY(bool snapshotAvailable READ snapshotAvailable NOTIFY snapshotAvailabilityChanged)
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
     // Derived from the complete C++ snapshot, never the filtered Rentals view.
     Q_PROPERTY(int activeCount READ activeCount NOTIFY metricsChanged)
@@ -61,6 +63,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_items.size(); }
+    bool snapshotAvailable() const { return m_snapshotAvailable; }
     int activeCount() const;
     int historyCount() const;
     int overdueCount() const;
@@ -94,6 +97,7 @@ signals:
     void countChanged();
     void statusFilterChanged();
     void metricsChanged();
+    void snapshotAvailabilityChanged();
     void selectedContractChanged();
 
 private:
@@ -101,6 +105,7 @@ private:
     QList<RentalRecordSummary> filtered(const QList<RentalRecordSummary> &all) const;
 
     SnapshotProvider m_recordsProvider;
+    bool m_snapshotAvailable = false;
     QList<RentalRecordSummary> m_allItems;
     QList<RentalRecordSummary> m_items;
     QString m_statusFilter = QStringLiteral("All");

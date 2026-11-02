@@ -31,16 +31,18 @@ int main(int argc,char **argv) {
     }
     p7fiction::PreviewController preview;
     if(!preview.ready() || !preview.committedStateConsistent())return 3;
+    bool refuseReads=false;
     RentalListModel readModel(
-        [&preview]() -> std::optional<QList<RentalRecordSummary>> {
+        [&preview,&refuseReads]() -> std::optional<QList<RentalRecordSummary>> {
+            if(refuseReads)return {}; // Fixed harness fault, no file tampering.
             const auto *repo=preview.testOnlyReadRepository();
             if(!repo)return {};
             return p7fiction::ReadProjection(*repo).rentals(QDate(2026,11,2));
         });
     QObject::connect(&preview,&p7fiction::PreviewController::committed,
                      &readModel,&RentalListModel::refresh);
-    if(readModel.count()!=0||readModel.activeCount()!=0||
-       readModel.historyCount()!=0)return 11;
+    if(!readModel.snapshotAvailable() || readModel.count()!=0 ||
+       readModel.activeCount()!=0 || readModel.historyCount()!=0)return 11;
     QSignalSpy metrics(&readModel,&RentalListModel::metricsChanged);
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
@@ -136,6 +138,30 @@ int main(int argc,char **argv) {
                fleet->front().details!="4 doors") {
                 qCritical()<<"P7-J read-only Fleet mapping ignored retired occupancy";
                 app.exit(13);return;
+            }
+            // P7-K: a failed provider read is visible and never presents old
+            // figures as current, resets selection, or triggers false KPIs.
+            QSignalSpy availability(&readModel,&RentalListModel::snapshotAvailabilityChanged);
+            const int priorMetrics=metrics.count();
+            const QString chosen=readModel.selectedRentalId();
+            refuseReads=true;
+            readModel.refresh();
+            auto *retry=find(root,"p7RetryReadButton");
+            if(readModel.snapshotAvailable() || readModel.count()!=1 ||
+               readModel.historyCount()!=1 || readModel.selectedRentalId()!=chosen ||
+               metrics.count()!=priorMetrics || availability.count()!=1 ||
+               !shared->property("text").toString().contains("Read unavailable") ||
+               !retry || !retry->isVisible()) {
+                qCritical()<<"P7-K failed read exposed stale figures as current";
+                app.exit(14);return;
+            }
+            refuseReads=false;
+            if(!click("p7RetryReadButton") || !readModel.snapshotAvailable() ||
+               metrics.count()!=priorMetrics+1 || availability.count()!=2 ||
+               !shared->property("text").toString().contains("History: 1") ||
+               retry->isVisible()) {
+                qCritical()<<"P7-K successful retry failed to restore verified KPIs";
+                app.exit(15);return;
             }
         }
         qInfo()<<"P7-J existing shared Rentals read model / native QML PASS"
