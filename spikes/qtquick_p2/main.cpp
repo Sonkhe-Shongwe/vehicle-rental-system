@@ -348,6 +348,10 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p6-restart-child-seed", "CI-only first native P6 process, synthetic test working directory."});
     parser.addOption({"p6-restart-child-update", "CI-only second native P6 process, synthetic test working directory."});
     parser.addOption({"p6-restart-child-final", "CI-only third native P6 process, synthetic test working directory."});
+    parser.addOption({"p6-integrated-flow", "CI-only genuine three-process native synthetic rental journey."});
+    parser.addOption({"p6-integrated-child-seed", "CI-only native synthetic create-and-book stage."});
+    parser.addOption({"p6-integrated-child-finish", "CI-only native synthetic return/archive/delete/remove stage."});
+    parser.addOption({"p6-integrated-child-verify", "CI-only native synthetic final independent restart stage."});
     parser.addOption({"p4-shell-smoke", "Verify shared Qt Quick focus and keyboard/modal shell at wide/compact sizes."});
     parser.addOption({"p4-components-smoke", "Drive reusable rental fields, status and safe shared confirmation dialogs."});
     parser.addOption({"p4-tab-smoke", "Test Qt-native Fleet tab order and bounded modal Tab/Shift+Tab across workspaces."});
@@ -360,6 +364,19 @@ int main(int argc, char *argv[]) {
     const bool p6Update=parser.isSet("p6-restart-child-update");
     const bool p6Final=parser.isSet("p6-restart-child-final");
     const bool p6Child=p6Seed||p6Update||p6Final;
+    const bool p6JourneyParent=parser.isSet("p6-integrated-flow");
+    const bool p6JourneySeed=parser.isSet("p6-integrated-child-seed");
+    const bool p6JourneyFinish=parser.isSet("p6-integrated-child-finish");
+    const bool p6JourneyVerify=parser.isSet("p6-integrated-child-verify");
+    const bool p6JourneyChild=p6JourneySeed||p6JourneyFinish||p6JourneyVerify;
+    if(int(p6JourneyParent)+int(p6JourneySeed)+int(p6JourneyFinish)+
+           int(p6JourneyVerify)+int(p6Parent)+int(p6Seed)+
+           int(p6Update)+int(p6Final)>1 ||
+       ((p6JourneyParent||p6JourneyChild) &&
+           parser.optionNames().size()!=(parser.isSet("compact")?2:1))) {
+        qCritical()<<"P6 integrated flow switches may not be combined";
+        return 470;
+    }
     if(int(p6Parent)+int(p6Seed)+int(p6Update)+int(p6Final)>1 ||
        ((p6Parent||p6Child) &&
         parser.optionNames().size()!=(parser.isSet("compact")?2:1))) {
@@ -434,6 +451,116 @@ int main(int argc, char *argv[]) {
     // child processes may only use that exact synthetic test working folder.
     const QByteArray p6Marker=QByteArray("RENTAL_STUDIO_P6_PROCESS_TEST_ONLY_V1\\n")+
                               vehicleHash+"\\n"+rentalHash+"\\n";
+
+    // P6-M is a separate allowlisted integration journey, never a general
+    // data-directory option and never a mutation of committed fake fixtures.
+    const QByteArray journeyMarker=QByteArray(
+        "RENTAL_STUDIO_P6_INTEGRATED_TEST_ONLY_V1\n")+
+        vehicleHash+"\n"+rentalHash+"\n";
+    if(p6JourneyParent) {
+        QTemporaryDir run(QDir(QDir::tempPath()).filePath(
+            QStringLiteral("rental-studio-p6-integrated-XXXXXX")));
+        if(!run.isValid() ||
+           !QFile::copy(vehicles,run.filePath("vehicles.txt")) ||
+           !QFile::copy(rentals,run.filePath("rentals.txt"))) {
+            qCritical()<<"P6-M parent could not isolate fictional source";
+            return 471;
+        }
+        QFile token(run.filePath("p6-integrated.marker"));
+        if(!token.open(QIODevice::WriteOnly) ||
+           token.write(journeyMarker)!=journeyMarker.size())return 472;
+        token.close();
+        const QStringList stages={
+            QStringLiteral("--p6-integrated-child-seed"),
+            QStringLiteral("--p6-integrated-child-finish"),
+            QStringLiteral("--p6-integrated-child-verify")};
+        for(const QString &stage:stages) {
+            QProcess child;
+            child.setProgram(QCoreApplication::applicationFilePath());
+            child.setWorkingDirectory(run.path());
+            QStringList args{stage};
+            if(parser.isSet("compact"))args<<"--compact";
+            child.setArguments(args);
+            child.start();
+            if(!child.waitForStarted(10000) ||
+               !child.waitForFinished(45000) ||
+               child.exitStatus()!=QProcess::NormalExit ||
+               child.exitCode()!=0) {
+                if(child.state()!=QProcess::NotRunning) {
+                    child.kill();child.waitForFinished(3000);
+                }
+                qCritical()<<"P6-M independent native stage FAILED"<<stage
+                           <<child.errorString()<<child.readAllStandardError()
+                           <<child.readAllStandardOutput();
+                return 473;
+            }
+            qInfo()<<"P6-M separate native stage PASS"<<stage
+                   <<child.readAllStandardOutput()<<child.readAllStandardError();
+        }
+        QByteArray unchangedV,unchangedR;
+        if(!readFile(vehicles,&unchangedV)||unchangedV!=beforeVehicles ||
+           !readFile(rentals,&unchangedR)||unchangedR!=beforeRentals)
+            return 474;
+        qInfo()<<"P6-M real three-process synthetic lifecycle integration PASS"
+               <<(parser.isSet("compact")?"1280x720":"1500x860");
+        return 0;
+    }
+    if(p6JourneyChild) {
+        // Never load any child-provided records before validating the exact
+        // synthetic workspace marker, names and stage-specific record allowlist.
+        const QDir root(QDir::currentPath());
+        const QFileInfo folder(root.absolutePath());
+        const QStringList names=root.entryList(
+            QDir::AllEntries|QDir::Hidden|QDir::NoDotAndDotDot,QDir::Name);
+        const QFileInfo mark(root.filePath("p6-integrated.marker"));
+        const QFileInfo fv(root.filePath("vehicles.txt"));
+        const QFileInfo fr(root.filePath("rentals.txt"));
+        QByteArray marker,vbytes,rbytes;
+        if(!folder.fileName().startsWith("rental-studio-p6-integrated-") ||
+           !folder.isDir()||folder.isSymLink() ||
+           names!=QStringList({"p6-integrated.marker","rentals.txt","vehicles.txt"}) ||
+           !mark.isFile()||mark.isSymLink()||
+           !fv.isFile()||fv.isSymLink()||
+           !fr.isFile()||fr.isSymLink()||
+           !readFile(mark.filePath(),&marker)||marker!=journeyMarker||
+           !readFile(fv.filePath(),&vbytes)||
+           !readFile(fr.filePath(),&rbytes)||
+           vbytes.size()>8192||rbytes.size()>8192) {
+            qCritical()<<"P6-M child rejected unsafe or non-fictional workspace";
+            return 475;
+        }
+        const auto lines=[](QByteArray bytes) {
+            QString s=QString::fromUtf8(bytes);
+            s.replace(QStringLiteral("\r\n"),QStringLiteral("\n"));
+            return s.split(QLatin1Char('\n'),Qt::SkipEmptyParts);
+        };
+        QStringList expectedV=lines(beforeVehicles);
+        QStringList expectedR=lines(beforeRentals);
+        if(p6JourneySeed) {
+            if(vbytes!=beforeVehicles||rbytes!=beforeRentals) {
+                qCritical()<<"P6-M seed not exact protected demo copy";
+                return 476;
+            }
+        } else if(p6JourneyFinish) {
+            // The new record must contain only the exact fictional contact
+            // approved by this CI-only test. Verify its complete serialized
+            // form before RentalSystem can load it, including domain dates.
+            const QString today=QDate::currentDate().toString(Qt::ISODate);
+            const QString due=QDate::currentDate().addDays(2).toString(Qt::ISODate);
+            expectedV<<"Car|C004|Demo Motors|Orion|420.00|1|4";
+            expectedR<<QStringLiteral("Rental|R003|Fictional Journey|0000000000|C004|%1|%2||2|420.00|840.00|0|0")
+                        .arg(today,due);
+            if(lines(vbytes)!=expectedV || lines(rbytes)!=expectedR) {
+                qCritical()<<"P6-M booked stage refused unexpected record structure";
+                return 477;
+            }
+        } else {
+            if(lines(vbytes)!=expectedV||lines(rbytes)!=expectedR) {
+                qCritical()<<"P6-M final state differs from original fictional seed";
+                return 478;
+            }
+        }
+    }
     if(p6Parent) {
         QTemporaryDir run(QDir(QDir::tempPath()).filePath(
             QStringLiteral("rental-studio-p6-restart-XXXXXX")));
@@ -592,12 +719,12 @@ int main(int argc, char *argv[]) {
             return 380;
         }
         dataDirectory=P5SyntheticSession::location();
-    } else if(!p6Child &&
+    } else if(!p6Child && !p6JourneyChild &&
               (!QFile::copy(vehicles, disposable.filePath("vehicles.txt")) ||
                !QFile::copy(rentals, disposable.filePath("rentals.txt")))) {
         qCritical()<<"Cannot create disposable demo copies"; return 3;
     }
-    if(p6Child)dataDirectory=QDir::currentPath();
+    if(p6Child||p6JourneyChild)dataDirectory=QDir::currentPath();
     RentalSystem system(
         dataDirectory,
         failureTest ? std::static_pointer_cast<RentalStorage>(
@@ -3395,6 +3522,229 @@ int main(int argc, char *argv[]) {
             }
             qInfo()<<"P5 operational overview/reconstruction PASS"<<size
                    <<"C++ committed booking/return, disk rehydration, duplicate refusal, safe demo";
+            app.exit(0);
+        });
+    }
+
+    if(p6JourneyChild) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 480;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",p6JourneySeed?1:(p6JourneyFinish?2:0));
+        QTimer::singleShot(1250,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *x=self(self,child,name))return x;
+                return nullptr;
+            };
+            const auto press=[&](QQuickItem *target)->bool {
+                if(!target||!target->isVisible()||!target->isEnabled())return false;
+                target->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(155);
+                return true;
+            };
+            auto *root=window->contentItem();
+            const QString vehicleLedger=QDir(dataDirectory).filePath("vehicles.txt");
+            const QString rentalLedger=QDir(dataDirectory).filePath("rentals.txt");
+            QByteArray initialV,initialR;
+            if(!readFile(vehicleLedger,&initialV)||
+               !readFile(rentalLedger,&initialR)) {app.exit(481);return;}
+            if(p6JourneySeed) {
+                if(fleet.totalCount()!=5||fleet.availableCount()!=4 ||
+                   rentalModel.activeCount()!=1||rentalModel.historyCount()!=1 ||
+                   !press(find(find,root,"fleetAddButton"))) {
+                    qCritical()<<"P6-M seed initial Fleet/add unavailable";
+                    app.exit(482);return;
+                }
+                auto *brand=find(find,root,"fleetAddBrand");
+                auto *model=find(find,root,"fleetAddModel");
+                auto *rate=find(find,root,"fleetAddRate");
+                auto *confirm=find(find,root,"fleetAddConfirm");
+                if(!brand||!model||!rate||!confirm) {app.exit(483);return;}
+                brand->setProperty("text",QStringLiteral("Demo Motors"));
+                model->setProperty("text",QStringLiteral("Orion"));
+                rate->setProperty("text",QStringLiteral("420"));
+                if(!press(confirm)||fleet.selectedId()!="C004"||
+                   fleet.totalCount()!=6||fleet.availableCount()!=5||
+                   !press(find(find,root,"fleetBookSelectedButton"))) {
+                    qCritical()<<"P6-M seed Fleet Car/create-to-book handoff failed";
+                    app.exit(484);return;
+                }
+                auto *days=find(find,root,"bookingDays");
+                auto *vehicle=find(find,root,"bookingVehicleId");
+                auto *preview=find(find,root,"bookingPreviewButton");
+                auto *customer=find(find,root,"bookingCustomer");
+                auto *phone=find(find,root,"bookingPhone");
+                auto *save=find(find,root,"bookingConfirmButton");
+                if(!days||!vehicle||!preview||!customer||!phone||!save||
+                   vehicle->property("text").toString()!="C004") {
+                    qCritical()<<"P6-M seeded vehicle was not prefilled";
+                    app.exit(485);return;
+                }
+                days->setProperty("value",2);
+                if(!press(preview)||!save->isEnabled()||
+                   !bookingActions.quoteSummary().contains("Total R 840.00")) {
+                    qCritical()<<"P6-M authoritative QML quote absent";
+                    app.exit(486);return;
+                }
+                customer->setProperty("text",QStringLiteral("Fictional Journey"));
+                phone->setProperty("text",QStringLiteral("0000000000"));
+                if(!press(save)||bookingActions.lastRentalId()!="R003"||
+                   rentalModel.activeCount()!=2||fleet.availableCount()!=4||
+                   !system.findRentalById("R003")||
+                   !system.findVehicleById("C004")->getIsRented() ||
+                   bookingActions.preview("C004",2) ||
+                   bookingActions.canConfirm()) {
+                    qCritical()<<"P6-M QML booking/duplicate refusal failed";
+                    app.exit(487);return;
+                }
+                QByteArray v,r;
+                if(!readFile(vehicleLedger,&v)||!readFile(rentalLedger,&r)||
+                   v==initialV||r==initialR) {
+                    qCritical()<<"P6-M new contract and occupancy not durable";
+                    app.exit(488);return;
+                }
+                qInfo()<<"P6-M process 1 UI create + quote + confirm + reject duplicate PASS";
+                app.exit(0);return;
+            }
+            if(p6JourneyFinish) {
+                if(fleet.totalCount()!=6||fleet.availableCount()!=4||
+                   rentalModel.activeCount()!=2||
+                   !system.findRentalById("R003")||
+                   !system.findVehicleById("C004")->getIsRented()) {
+                    qCritical()<<"P6-M process 2 did not reconstruct confirmed booking";
+                    app.exit(489);return;
+                }
+                auto *lookup=find(find,root,"returnLookupField");
+                auto *locate=find(find,root,"returnLookupButton");
+                if(!lookup||!locate) {app.exit(490);return;}
+                lookup->setProperty("text",QStringLiteral("c004"));
+                if(!press(locate)||rentalModel.selectedRentalId()!="R003" ||
+                   rentalModel.statusFilter()!="Active" ||
+                   !press(find(find,root,"rentalReturnButton")) ||
+                   !press(find(find,root,"rentalReturnConfirm"))||
+                   !system.findRentalById("R003")->getIsReturned()||
+                   fleet.availableCount()!=5 || rentalModel.activeCount()!=1) {
+                    qCritical()<<"P6-M process 2 QML return/occupancy failed";
+                    app.exit(491);return;
+                }
+                const QVariantMap returned=rentalModel.selectedContract();
+                if(returned.value("rentalId").toString()!="R003" ||
+                   returned.value("status").toString()!="Returned" ||
+                   returned.value("actualReturnDate").toString()!=
+                       QDate::currentDate().toString(Qt::ISODate) ||
+                   fleetRemove.canRemoveVehicle("C004")) {
+                    qCritical()<<"P6-M returned rental detail/reference guard missing";
+                    app.exit(492);return;
+                }
+                if(!press(find(find,root,"rentalArchiveButton")) ||
+                   !press(find(find,root,"rentalArchiveConfirm")) ||
+                   !system.findRentalById("R003")->getIsArchived()) {
+                    qCritical()<<"P6-M process 2 archive failed";
+                    app.exit(493);return;
+                }
+                if(!press(find(find,root,"rentalDeleteArchivedButton"))) {
+                    qCritical()<<"P6-M archive deletion action absent";
+                    app.exit(494);return;
+                }
+                auto *phrase=find(find,root,"rentalDeletePhrase");
+                auto *deleteButton=find(find,root,"rentalDeleteConfirm");
+                if(!phrase||!deleteButton) {app.exit(495);return;}
+                phrase->setProperty("text",QStringLiteral("DELETE R001"));
+                QByteArray beforeReject,afterReject;
+                if(!readFile(rentalLedger,&beforeReject)) {app.exit(496);return;}
+                press(deleteButton); // invalid target remains protected
+                if(!readFile(rentalLedger,&afterReject)||afterReject!=beforeReject ||
+                   !system.findRentalById("R003")) {
+                    qCritical()<<"P6-M invalid historical deletion mutated data";
+                    app.exit(497);return;
+                }
+                phrase->setProperty("text",QStringLiteral("DELETE R003"));
+                if(!press(deleteButton)||system.findRentalById("R003")||
+                   rentalModel.historyCount()!=1 ||
+                   !fleetRemove.canRemoveVehicle("C004")) {
+                    qCritical()<<"P6-M archived deletion or history release failed";
+                    app.exit(498);return;
+                }
+                window->setProperty("workspace",1);
+                QTest::qWait(185);
+                fleet.selectById("C004");
+                QCoreApplication::processEvents();
+                if(!press(find(find,root,"fleetRemoveSelectedButton"))) {
+                    qCritical()<<"P6-M unreferenced Fleet delete disabled";
+                    app.exit(499);return;
+                }
+                auto *fleetPhrase=find(find,root,"fleetRemoveConfirmation");
+                auto *fleetConfirm=find(find,root,"fleetRemoveConfirm");
+                if(!fleetPhrase||!fleetConfirm) {app.exit(500);return;}
+                fleetPhrase->setProperty("text",QStringLiteral("REMOVE C004"));
+                if(!press(fleetConfirm)||system.findVehicleById("C004")||
+                   fleet.totalCount()!=5||fleet.availableCount()!=4) {
+                    qCritical()<<"P6-M final Fleet removal failed";
+                    app.exit(501);return;
+                }
+                qInfo()<<"P6-M process 2 UI return/archive/exact-delete/vehicle-remove PASS";
+                app.exit(0);return;
+            }
+            if(!p6JourneyVerify || fleet.totalCount()!=5||
+               fleet.availableCount()!=4 || rentalModel.activeCount()!=1 ||
+               rentalModel.historyCount()!=1 ||
+               system.findVehicleById("C004")||system.findRentalById("R003") ||
+               rentalModel.recentActivities().size()!=2) {
+                qCritical()<<"P6-M independent process 3 final reconstruction failed";
+                app.exit(502);return;
+            }
+            auto *available=find(find,root,"overviewAvailableCard");
+            auto *active=find(find,root,"overviewActiveCard");
+            auto *recent=find(find,root,"overviewRecentRow0");
+            if(!available||!active||!recent ||
+               available->property("value").toString()!="4"||
+               active->property("value").toString()!="1"||
+               !recent->property("text").toString().contains("R001")) {
+                qCritical()<<"P6-M final QML Overview inconsistent with disk";
+                app.exit(503);return;
+            }
+            window->setProperty("workspace",2);
+            QCoreApplication::processEvents();
+            QTest::qWait(150);
+            auto *history=find(find,root,"rentalFilterHistory");
+            if(!press(history)||rentalModel.count()!=1 ||
+               !rentalModel.locateById("R002")||
+               rentalModel.selectedContract().value("status").toString()!="Returned" ||
+               !find(find,root,"rentalDetailsButton")) {
+                qCritical()<<"P6-M third process Rentals history/detail UI wrong";
+                app.exit(504);return;
+            }
+            window->setProperty("workspace",1);
+            QTest::qWait(135);
+            if(!fleet.selectById("C002") ||
+               fleetRemove.canRemoveVehicle("C002") ||
+               !system.hasRentalHistoryForVehicle("C001")) {
+                qCritical()<<"P6-M final Fleet rented/historic reference guards absent";
+                app.exit(505);return;
+            }
+            QByteArray nowV,nowR,originalV,originalR;
+            if(!readFile(vehicleLedger,&nowV)||!readFile(rentalLedger,&nowR)||
+               !readFile(vehicles,&originalV)||!readFile(rentals,&originalR)||
+               originalV!=beforeVehicles||originalR!=beforeRentals||
+               nowV!=beforeVehicles||nowR!=beforeRentals) {
+                qCritical()<<"P6-M final test fixtures altered or not restored";
+                app.exit(506);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage image=window->grabWindow();
+            if(image.isNull()||image.size()!=QSize(compact?1280:1500,compact?720:860)||
+               !image.save("p6-qt-integrated-lifecycle-"+size+".png","PNG")) {
+                qCritical()<<"P6-M final screenshot missing";
+                app.exit(507);return;
+            }
+            qInfo()<<"P6-M process 3 reconstructed Overview/Fleet/Rentals PASS"<<size;
             app.exit(0);
         });
     }

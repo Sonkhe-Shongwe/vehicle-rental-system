@@ -136,6 +136,15 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p6_archived_delete_wide
         rental_studio_p6_archived_delete_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 75)
+    # P6-M: full Qt operator journey across three independent executables,
+    # exact stage-allowlisted fictional files, positive and refusal paths.
+    add_test(NAME rental_studio_p6_integrated_wide
+        COMMAND rental_studio_qtquick_spike --p6-integrated-flow)
+    add_test(NAME rental_studio_p6_integrated_compact
+        COMMAND rental_studio_qtquick_spike --p6-integrated-flow --compact)
+    set_tests_properties(rental_studio_p6_integrated_wide
+        rental_studio_p6_integrated_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 155)
     # P6-E: each CTest itself launches three genuinely independent native
     # Qt GUI processes within a unique parent-owned disposable synthetic root.
     # Original fixture hashes and strict child allowlisting protect all inputs.
