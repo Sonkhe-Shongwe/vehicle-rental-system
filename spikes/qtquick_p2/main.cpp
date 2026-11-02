@@ -1097,6 +1097,8 @@ int main(int argc, char *argv[]) {
             auto *overviewFleet=find(find,root,"p7AppOverviewFleet");
             auto *overviewRentals=find(find,root,"p7AppOverviewRentals");
             auto *overviewValue=find(find,root,"p7AppOverviewValue");
+            auto *fleetCard=find(find,root,"p7AppFleetSnapshotCard");
+            auto *rentalsCard=find(find,root,"p7AppRentalsSnapshotCard");
             auto *fleetText=find(find,root,"p7AppFleetMetrics");
             auto *rentalsText=find(find,root,"p7AppRentalsMetrics");
             auto *receipt=find(find,root,"p7AppReceipt");
@@ -1106,7 +1108,8 @@ int main(int argc, char *argv[]) {
             auto *rentalSelection=find(find,root,"p7AppRentalSelected");
             auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
             auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
-            if(!nav||!overviewFleet||!overviewRentals||!overviewValue||
+            if(!nav||!fleetCard||!rentalsCard||
+               !overviewFleet||!overviewRentals||!overviewValue||
                !fleetText||!rentalsText||!receipt||!lab||
                !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
                !fleetText->property("text").toString().contains("1 available") ||
@@ -1174,6 +1177,13 @@ int main(int argc, char *argv[]) {
             // while the fictional SQL Fleet adapter owns availability filtering.
             lab->setProperty("contentY",420.0);
             QCoreApplication::processEvents();
+            auto *fleetList=find(find,root,"p7AppFleetList");
+            auto *rentalList=find(find,root,"p7AppRentalList");
+            if(!fleetList || !rentalList ||
+               fleetList->height()<90.0 || rentalList->height()<90.0) {
+                qCritical()<<"P7 reusable record explorer list rows are too cramped";
+                app.exit(618);return;
+            }
             if(!click("p7AppFleetRowC001") ||
                p7SqlFleet->selectedVehicleId()!="C001" ||
                !fleetSelection->property("text").toString().contains("4 doors") ||

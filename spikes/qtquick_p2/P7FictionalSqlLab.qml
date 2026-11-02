@@ -50,77 +50,31 @@ Flickable {
     RowLayout {
         Layout.fillWidth: true
         spacing: 14
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 115
-            radius: 12
-            color: "white"
-            border.color: "#D6E0E7"
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 15
-                spacing: 8
-                Label {
-                    text: "SQLITE FLEET · VERIFIED C++ SNAPSHOT"
-                    color: "#0F766E"
-                    font.bold: true
-                }
-                Label {
-                    objectName: "p7AppFleetMetrics"
-                    Layout.fillWidth: true
-                    text: p7SqlFleet.snapshotAvailable ?
-                          p7SqlFleet.totalCount + " vehicle  |  " +
-                          p7SqlFleet.availableCount + " available" :
-                          "Fleet read unavailable. Counts hidden."
-                    color: "#17324D"
-                    font.pixelSize: 18
-                    font.bold: true
-                    Accessible.name: text
-                }
-                Button {
-                    objectName: "p7AppRetryFleet"
-                    text: "Retry Fleet read"
-                    visible: !p7SqlFleet.snapshotAvailable
-                    onClicked: p7SqlFleet.refresh()
-                    Accessible.name: text
-                }
-            }
+        P7LabSnapshotCard {
+            objectName: "p7AppFleetSnapshotCard"
+            heading: "SQLITE FLEET · VERIFIED C++ SNAPSHOT"
+            snapshotAvailable: p7SqlFleet.snapshotAvailable
+            summary: p7SqlFleet.snapshotAvailable ?
+                     p7SqlFleet.totalCount + " vehicle  |  " +
+                     p7SqlFleet.availableCount + " available" :
+                     "Fleet read unavailable. Counts hidden."
+            metricObjectName: "p7AppFleetMetrics"
+            retryObjectName: "p7AppRetryFleet"
+            retryLabel: "Retry Fleet read"
+            onRetryRequested: p7SqlFleet.refresh()
         }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 115
-            radius: 12
-            color: "white"
-            border.color: "#D6E0E7"
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 15
-                spacing: 8
-                Label {
-                    text: "SQLITE RENTALS · VERIFIED C++ SNAPSHOT"
-                    color: "#0F766E"
-                    font.bold: true
-                }
-                Label {
-                    objectName: "p7AppRentalsMetrics"
-                    Layout.fillWidth: true
-                    text: p7SqlRentals.snapshotAvailable ?
-                          "Active: " + p7SqlRentals.activeCount +
-                          "  |  History: " + p7SqlRentals.historyCount :
-                          "Rentals read unavailable. Counts hidden."
-                    color: "#17324D"
-                    font.pixelSize: 18
-                    font.bold: true
-                    Accessible.name: text
-                }
-                Button {
-                    objectName: "p7AppRetryRentals"
-                    text: "Retry Rentals read"
-                    visible: !p7SqlRentals.snapshotAvailable
-                    onClicked: p7SqlRentals.refresh()
-                    Accessible.name: text
-                }
-            }
+        P7LabSnapshotCard {
+            objectName: "p7AppRentalsSnapshotCard"
+            heading: "SQLITE RENTALS · VERIFIED C++ SNAPSHOT"
+            snapshotAvailable: p7SqlRentals.snapshotAvailable
+            summary: p7SqlRentals.snapshotAvailable ?
+                     "Active: " + p7SqlRentals.activeCount +
+                     "  |  History: " + p7SqlRentals.historyCount :
+                     "Rentals read unavailable. Counts hidden."
+            metricObjectName: "p7AppRentalsMetrics"
+            retryObjectName: "p7AppRetryRentals"
+            retryLabel: "Retry Rentals read"
+            onRetryRequested: p7SqlRentals.refresh()
         }
     }
 
@@ -267,7 +221,7 @@ Flickable {
     // computed by typed C++ DTO models; no SQL, PII or lifecycle writes here.
     Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 292
+        Layout.preferredHeight: 338
         radius: 12
         color: "white"
         border.color: "#D6E0E7"
@@ -306,7 +260,7 @@ Flickable {
                 ListView {
                     objectName: "p7AppFleetList"
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 55
+                    Layout.preferredHeight: 96
                     clip: true
                     visible: p7SqlFleet.snapshotAvailable
                     model: p7SqlFleet.visibleVehicles
@@ -379,7 +333,7 @@ Flickable {
                 ListView {
                     objectName: "p7AppRentalList"
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 55
+                    Layout.preferredHeight: 96
                     clip: true
                     visible: p7SqlRentals.snapshotAvailable
                     model: p7SqlRentals
