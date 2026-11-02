@@ -130,3 +130,12 @@ P1 separately requires licensed model-correct images, owner whole-product aesthe
 ## Test governance
 
 Use fictional-only disposable fixtures and rollback plans. Keep exact-source independent Linux/Windows CI and local CMake/CTest where feasible, with controlled runner budget but never hidden failures or fabricated test counts. No source change of C++/QML occurred in this documentation audit, so **no new compile pass is attributed to these docs**. [P0–P9 acceptance matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): P2 3/6, overall weighted 18.4% until a required criterion genuinely clears.
+
+
+## PR CI efficiency: verify current head update, not cumulative stacked PR diff (2 Nov 2026)
+
+The P7 draft PR already contains C++ modifications, so GitHub's ordinary PR `paths` filtering considers the full cumulative PR diff and retriggers expensive builds even for a documentation-only head update. Both `.github/workflows/ci.yml` and `.github/workflows/p2-qtquick-review.yml` therefore use a small `Inspect changed paths` job, which runs the Python standard-library-only `tests/ci_change_scope.py` check on a full-history checkout. For PR `synchronize`, it compares the event's **previous head to new head**, with rename detection disabled so removed source paths are visible. If **all** changed paths are in `docs/` or are `.md` files, native/core compile jobs are skipped. The inspection job still succeeds, so a code check is not represented as having run. Any CMake, C++, Qt Quick, workflow YAML, Python, runtime or mixed change runs the full suites.
+
+Initial PR/reopened PRs, `main` pushes, manual workflow dispatch, missing/unavailable Git history, invalid/missing revision IDs, or an empty/ambiguous diff **fail closed and run full suites**. The classifier includes self-checks and prints the reason. Native workflow concurrency does not cancel an already-running source validation just because a later documentation-only commit arrives. Protected `main`, production data and technical acceptance are unaffected.
+
+Core command: `python3 tests/ci_change_scope.py --self-test`. The `--emit` mode is for the Actions job and writes `run_full=true|false` to `GITHUB_OUTPUT`. CI optimizes expensive *execution*, not required engineering coverage. Continue full Linux and Windows regression checks for actual functional changes, and perform independent physical owner Windows/Qt Creator checks only at agreed acceptance milestones.
