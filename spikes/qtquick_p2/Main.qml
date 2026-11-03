@@ -2128,7 +2128,7 @@ ApplicationWindow {
                         title: "Confirm rental return"
                         question: "Mark " + returnConfirmation.targetId + " as returned today?" +
                                   (returnConfirmation.reviewInvalidated
-                                      ? "\\nSelection changed. Close and reopen to review this return."
+                                      ? "\nSelection changed. Close and reopen to review this return."
                                       : "")
                         acceptText: "Confirm return"
                         acceptName: "rentalReturnConfirm"
@@ -2152,7 +2152,7 @@ ApplicationWindow {
                         question: "Move " + archiveConfirmation.targetId +
                                   " to archived history? The record will not be deleted." +
                                   (archiveConfirmation.reviewInvalidated
-                                      ? "\\nSelection changed. Close and reopen to review this archive."
+                                      ? "\nSelection changed. Close and reopen to review this archive."
                                       : "")
                         acceptText: "Confirm archive"
                         acceptName: "rentalArchiveConfirm"
