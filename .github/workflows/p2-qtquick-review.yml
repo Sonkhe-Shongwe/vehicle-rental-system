@@ -11,6 +11,10 @@ on:
     paths:
       - CMakeLists.txt
       - 'spikes/qtquick_p2/**'
+      # Safety and recovery work in the opt-in SQLite test target also needs
+      # native Windows/Linux checks, even when Qt Quick source is unchanged.
+      - 'src/application/p7_sandbox/**'
+      - 'tests/p7_sandbox/**'
       - '.github/workflows/p2-qtquick-review.yml'
   pull_request:
     types: [opened, synchronize, reopened]
