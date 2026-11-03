@@ -449,19 +449,44 @@ ApplicationWindow {
         rentalList.currentIndex = rentalsModel.selectedRow
     }
 
+    // An existing modal review is no longer current after C++ replaces its
+    // authoritative rental snapshot, even if the selected ID survives.
+    // Capture only the FIRST invalidation reason for an open review.
+    function invalidateOpenRentalReviews(reason) {
+        if (returnConfirmation.visible && !returnConfirmation.reviewInvalidated) {
+            returnConfirmation.reviewInvalidated = true
+            returnConfirmation.reviewInvalidationReason = reason
+        }
+        if (archiveConfirmation.visible && !archiveConfirmation.reviewInvalidated) {
+            archiveConfirmation.reviewInvalidated = true
+            archiveConfirmation.reviewInvalidationReason = reason
+        }
+    }
+
     Connections {
         target: rentalsModel
         function onSelectionChanged() {
             window.returnLookupFeedback = ""
-            // Consent applies to one continuously selected contract. Once
-            // the modal's target is lost, selecting it again must NOT silently
-            // re-enable the old confirmation. A fresh dialog is required.
+            // A temporary selection switch cannot revive previous consent,
+            // even when it returns to the original rental ID.
             if (returnConfirmation.visible &&
-                    rentalsModel.selectedRentalId !== returnConfirmation.targetId)
+                    rentalsModel.selectedRentalId !== returnConfirmation.targetId &&
+                    !returnConfirmation.reviewInvalidated) {
                 returnConfirmation.reviewInvalidated = true
+                returnConfirmation.reviewInvalidationReason = "Selection changed."
+            }
             if (archiveConfirmation.visible &&
-                    rentalsModel.selectedRentalId !== archiveConfirmation.targetId)
+                    rentalsModel.selectedRentalId !== archiveConfirmation.targetId &&
+                    !archiveConfirmation.reviewInvalidated) {
                 archiveConfirmation.reviewInvalidated = true
+                archiveConfirmation.reviewInvalidationReason = "Selection changed."
+            }
+            Qt.callLater(window.syncCurrentRental)
+        }
+        // A clock rollover or any authoritative model refresh can alter the
+        // visible contract details without emitting selectionChanged.
+        function onModelReset() {
+            window.invalidateOpenRentalReviews("Rental data refreshed.")
             Qt.callLater(window.syncCurrentRental)
         }
         function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
@@ -2037,6 +2062,7 @@ ApplicationWindow {
                             onClicked: {
                                 returnConfirmation.targetId = rentalsModel.selectedRentalId
                                 returnConfirmation.reviewInvalidated = false
+                                returnConfirmation.reviewInvalidationReason = ""
                                 returnConfirmation.open()
                             }
                         }
@@ -2050,6 +2076,7 @@ ApplicationWindow {
                             onClicked: {
                                 archiveConfirmation.targetId = rentalsModel.selectedRentalId
                                 archiveConfirmation.reviewInvalidated = false
+                                archiveConfirmation.reviewInvalidationReason = ""
                                 archiveConfirmation.open()
                             }
                         }
@@ -2123,12 +2150,14 @@ ApplicationWindow {
                         // in this modal. The C++ controller repeats the ID guard.
                         property string targetId: ""
                         property bool reviewInvalidated: false
+                        property string reviewInvalidationReason: ""
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Confirm rental return"
                         question: "Mark " + returnConfirmation.targetId + " as returned today?" +
                                   (returnConfirmation.reviewInvalidated
-                                      ? "\nSelection changed. Close and reopen to review this return."
+                                      ? "\n" + returnConfirmation.reviewInvalidationReason +
+                                        " Close and reopen to review this return."
                                       : "")
                         acceptText: "Confirm return"
                         acceptName: "rentalReturnConfirm"
@@ -2146,13 +2175,15 @@ ApplicationWindow {
                         objectName: "rentalArchiveDialog"
                         property string targetId: ""
                         property bool reviewInvalidated: false
+                        property string reviewInvalidationReason: ""
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Archive returned rental"
                         question: "Move " + archiveConfirmation.targetId +
                                   " to archived history? The record will not be deleted." +
                                   (archiveConfirmation.reviewInvalidated
-                                      ? "\nSelection changed. Close and reopen to review this archive."
+                                      ? "\n" + archiveConfirmation.reviewInvalidationReason +
+                                        " Close and reopen to review this archive."
                                       : "")
                         acceptText: "Confirm archive"
                         acceptName: "rentalArchiveConfirm"

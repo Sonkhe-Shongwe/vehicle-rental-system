@@ -3794,6 +3794,32 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"UX-S8 fresh return confirmation failed to re-arm";
                 app.exit(828);return;
             }
+            // UX-S9: a C++ model reset (including after calendar rollover)
+            // can change the contract snapshot without changing selected ID.
+            // Even a same-data refresh invalidates the in-progress review.
+            rentalModel.refresh();
+            QCoreApplication::processEvents();
+            if(returnConfirm->isEnabled() ||
+               !returnDialog->property("reviewInvalidated").toBool() ||
+               returnDialog->property("reviewInvalidationReason").toString()
+                  !="Rental data refreshed." ||
+               !returnDialog->property("question").toString().contains(
+                   "Rental data refreshed. Close and reopen to review this return.") ||
+               rentalModel.selectedRentalId()!="R001" ||
+               !rentalActions.canReturnSelected()) {
+                qCritical()<<"UX-S9 return modal did not invalidate on model reset";
+                app.exit(833);return;
+            }
+            press(returnCancel);
+            QTest::qWait(90);
+            press(returnButton);
+            QTest::qWait(60);
+            if(!returnConfirm->isEnabled() ||
+               returnDialog->property("reviewInvalidated").toBool() ||
+               !returnDialog->property("reviewInvalidationReason").toString().isEmpty()) {
+                qCritical()<<"UX-S9 fresh return review after reset not armed";
+                app.exit(834);return;
+            }
             press(returnCancel);
             QTest::qWait(90);
             if(system.findRentalById("R001")->getIsReturned()) {
@@ -3851,6 +3877,29 @@ int main(int argc, char *argv[]) {
                !archiveDialog->property("question").toString().contains("R002")) {
                 qCritical()<<"UX-S8 fresh archive confirmation failed to re-arm";
                 app.exit(831);return;
+            }
+            rentalModel.refresh();
+            QCoreApplication::processEvents();
+            if(archiveConfirm->isEnabled() ||
+               !archiveDialog->property("reviewInvalidated").toBool() ||
+               archiveDialog->property("reviewInvalidationReason").toString()
+                  !="Rental data refreshed." ||
+               !archiveDialog->property("question").toString().contains(
+                   "Rental data refreshed. Close and reopen to review this archive.") ||
+               rentalModel.selectedRentalId()!="R002" ||
+               !archiveActions.canArchiveSelected()) {
+                qCritical()<<"UX-S9 archive modal did not invalidate on model reset";
+                app.exit(835);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(90);
+            press(archiveButton);
+            QTest::qWait(60);
+            if(!archiveConfirm->isEnabled() ||
+               archiveDialog->property("reviewInvalidated").toBool() ||
+               !archiveDialog->property("reviewInvalidationReason").toString().isEmpty()) {
+                qCritical()<<"UX-S9 fresh archive review after reset not armed";
+                app.exit(836);return;
             }
             QTest::keyClick(window,Qt::Key_Escape);
             QTest::qWait(110);
