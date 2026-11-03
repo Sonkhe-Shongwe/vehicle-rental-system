@@ -13,7 +13,7 @@
 
 ## Actually implemented vs not approved
 
-**Implemented and native-tested (bounded scope):** C++-backed Fleet and Rentals lifecycle, Overview, photo-safe rendering/focus, generated-fictional SQL Lab experiments, negative/rollback/keyboard scenarios. Exact compiled source, OS and run are in [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md).
+**Implemented and native-tested (bounded scope):** C++-backed Fleet and Rentals lifecycle, Overview, photo-safe rendering/focus and explicit Gallery/Inspector reference-image versus illustration labels (UX-Q6), generated-fictional SQL Lab experiments, negative/rollback/keyboard scenarios. Exact compiled source, OS and run are in [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md).
 
 **Not demonstrated by that evidence:** owner physical Qt Creator/MinGW on the current source, real OS 100/125/150% scaling, Narrator acceptance, P1 final imagery quality/licence approval, commercial privacy/retention/migrations/backups, offline distributable installer, signed release or full customer-data readiness.
 

@@ -15,6 +15,8 @@
 | P8 Offline Windows installer/privacy/rights | **0/6** | No certified installer; packaging, licences, clean offline install/update and uninstall need future authorization and tests. |
 | P9 Final QA and release approval | **0/8** | Full Windows hardware/a11y/performance/data safety, independent exact-source regression and explicit owner release authorization. |
 
+**Latest verified usability increment:** [UX-Q6 Gallery/Inspector media-state labels](UX_Q6_FLEET_MEDIA_STATE_NATIVE_VERIFIED_2026-11-03.md), at [compiled source `087c923`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/087c923fcde13f8a5515c22e53e7883a15b6d5b4), [native run 41637857962](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962) 117/117 CTests EACH on Linux GCC and hosted Windows MSVC Qt 6.8.3, improves truthful visual provenance for the current fictional photo/fallback library. This does **not** solve P1's real licensed five-model photography, physical owner Windows review, or P7–P9 gates, and does not change formal acceptance.
+
 **Formal accepted coverage:** **45/74, weighted 70.6%**. This is *not* a product-completeness or launch-readiness percentage. Criteria and weights may change only under explicit governance, not because tests were added.
 
 ## Ranked next work

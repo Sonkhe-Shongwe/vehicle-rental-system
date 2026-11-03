@@ -6,16 +6,18 @@
 
 | Field | Verified observation |
 |---|---|
-| Executable source commit | [`8f1d8cc0afa00af2feb8930ab5f02d2d1cde76ea`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8f1d8cc0afa00af2feb8930ab5f02d2d1cde76ea) |
-| GitHub Actions | [run 41632213416](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41632213416), completed |
+| Executable source commit | [`087c923fcde13f8a5515c22e53e7883a15b6d5b4`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/087c923fcde13f8a5515c22e53e7883a15b6d5b4) |
+| GitHub Actions | [run 41637857962](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962), completed successfully |
 | Linux | Ubuntu 24.04 / GCC / Qt 6.8.3, **117/117 CTests passed**, 0 failed; genuine Qt GUI/screenshot jobs completed |
 | Hosted Windows | Windows Server 2022 / MSVC / Qt 6.8.3, **117/117 CTests passed**, 0 failed; actual QML test screenshots |
 | Windows portable verification | PowerShell 7 and Windows PowerShell 5.1 checks passed in hosted workflow |
-| UI layouts captured | 1500 x 860 wide and 1280 x 720 compact, including selected motorcycle fallback screens |
-| Later branch docs-only HEAD | [`22fd403`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/22fd40375ecc68c464e2bbb6a12e197a35e9a376) did not create a newly compiled Qt result |
+| UI layouts captured | 1500 x 860 wide and 1280 x 720 compact, including real Gallery/Inspector and motorcycle fallback; media-label assertions PASS |
+| Previous source evidence | [PHOTO-P1-C `8f1d8cc`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8f1d8cc0afa00af2feb8930ab5f02d2d1cde76ea) / [run 41632213416](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41632213416) were compiled and passed earlier; do not substitute their outcome for the latest source |
 | Hard limitations | No physical owner's Windows 6.10.2 MinGW/Qt Creator build, actual 100/125/150% OS scaling, Narrator, production data, clean offline installer or release |
 
-Both 117/117 outputs and checkout of the **exact** `8f1d8cc` SHA were checked in the Linux and Windows job logs. Do not infer an extra 117 tests beyond each OS run or a separate source result from subsequent documentation.
+Both 117/117 outputs and checkout of the **exact** `087c923fcde13f8a5515c22e53e7883a15b6d5b4` SHA were checked in the Linux and Windows job logs, including wide and compact `rental_studio_fleet_photo_*` PASS. [Linux screenshots](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962/artifacts/13232086999) and [Windows screenshots](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962/artifacts/13232021763) were uploaded, but were not independently pixel-reviewed in this session. Documentation-only follow-ups are not compiled-source results.
+
+**Latest feature-specific report:** [UX-Q6 native media-state labels](UX_Q6_FLEET_MEDIA_STATE_NATIVE_VERIFIED_2026-11-03.md). The tests assert truthful Gallery/Inspector labels on seeded pictures, motorcycle illustrations, oversized/corrupt image fallback and later valid-media recovery, while preserving the fixture-byte checks. No formal acceptance increment.
 
 ## Independently failed work
 
