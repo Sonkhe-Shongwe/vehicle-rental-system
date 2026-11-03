@@ -165,6 +165,8 @@ jobs:
           Copy-Item "demo/rentals.txt" "$dest/demo/rentals.txt"
           Copy-Item "spikes/qtquick_p2/Verify-P2-Windows.ps1" "$dest/Verify-P2-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md" "$dest/WINDOWS_PHYSICAL_ACCEPTANCE.md"
+          Copy-Item "spikes/qtquick_p2/Launch-Rental-Studio.cmd" "$dest/Launch-Rental-Studio.cmd"
+          Copy-Item "spikes/qtquick_p2/START_HERE_FUNCTIONAL_DEMO.md" "$dest/START_HERE_FUNCTIONAL_DEMO.md"
           Copy-Item "spikes/qtquick_p2/Verify-P4-Windows.ps1" "$dest/Verify-P4-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md" "$dest/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md"
           Set-Content -Path "$dest/SOURCE_COMMIT.txt" -NoNewline -Value "$env:GITHUB_SHA"
@@ -185,6 +187,10 @@ jobs:
           } finally {
             [System.IO.File]::WriteAllBytes((Resolve-Path "$dest/demo/vehicles.txt").Path, $original)
           }
+          # The same one-click manual launcher must also work in a safe
+          # non-GUI --verify mode against packaged, SHA-pinned fixture bytes.
+          & "$dest/Launch-Rental-Studio.cmd" --verify
+          if ($LASTEXITCODE -ne 0) { throw "Packaged fictional launcher verification failed: $LASTEXITCODE" }
           & "$dest/Verify-P2-Windows.ps1" -VerifyOnly
           if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P2 verification failed" }
           # Run P4 accessibility/focus/motion checks against the relocated

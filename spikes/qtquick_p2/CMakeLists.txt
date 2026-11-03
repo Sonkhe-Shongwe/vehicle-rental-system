@@ -362,6 +362,12 @@ if(BUILD_TESTING)
                 PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
         endforeach()
     endforeach()
+    # FUNC-D1: the real operator startup window auto-sizes within QScreen's
+    # available logical work area instead of opening at 1500x860 off-screen.
+    add_test(NAME rental_studio_functional_startup_fit
+        COMMAND rental_studio_qtquick_spike --startup-fit-smoke)
+    set_tests_properties(rental_studio_functional_startup_fit PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 30)
     add_test(NAME rental_studio_p2_synthetic_125 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     add_test(NAME rental_studio_p2_synthetic_150 COMMAND rental_studio_qtquick_spike --dpi-smoke)
     set_tests_properties(rental_studio_p2_synthetic_125 PROPERTIES

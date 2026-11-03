@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QScreen>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
@@ -25,6 +26,7 @@
 #include "p5_synthetic_session.h"
 #include <QVariant>
 #include <cmath>
+#include <algorithm>
 #include "rentalsystem.h"
 #include "src/application/fleet_read_service.h"
 #include "src/application/rental_read_service.h"
@@ -336,6 +338,7 @@ int main(int argc, char *argv[]) {
     parser.addHelpOption();
     parser.addOption({"self-test", "Test model, filtering, selection, and fixture integrity without a GUI."});
     parser.addOption({"ui-smoke", "Load the native QML scene and capture actual Gallery/Table views."});
+    parser.addOption({"startup-fit-smoke", "Verify default real Qt window fits the available desktop without changing OS scaling."});
     parser.addOption({"compact", "Use the compact 1280x720 viewport for the UI smoke."});
     parser.addOption({"input-smoke", "Drive actual QML buttons with keyboard events and test live resize."});
     parser.addOption({"arrows-smoke", "Exercise native QML Gallery/Table arrow navigation, focus, and filter parity."});
@@ -1101,6 +1104,55 @@ int main(int argc, char *argv[]) {
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
+    }
+    // FUNC-D1: keep a genuine operator launch usable at Windows display
+    // scaling. QScreen availableGeometry is in logical Qt pixels and excludes
+    // the taskbar. Preserve QML's 1024x660 minimum for tiny/unusable screens;
+    // this does NOT claim physical Windows 100/125/150% acceptance.
+    auto *startupWindow=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+    if(!startupWindow || !startupWindow->screen()) {
+        qCritical()<<"No native screen for Rental Studio desktop window";
+        return 600;
+    }
+    const QRect startupArea=startupWindow->screen()->availableGeometry();
+    const int startupW=std::clamp(startupArea.width()-24,1024,1500);
+    const int startupH=std::clamp(startupArea.height()-12,660,860);
+    startupWindow->resize(startupW,startupH);
+    // Center only inside the actual Qt available desktop rect, including
+    // multi-monitor offsets and platform/taskbar work-area reservations.
+    startupWindow->setPosition(startupArea.x()+
+            std::max(0,(startupArea.width()-startupW)/2),
+        startupArea.y()+std::max(0,(startupArea.height()-startupH)/2));
+    if(parser.isSet("startup-fit-smoke")) {
+        QTimer::singleShot(300,&app,[&,startupWindow] {
+            if(!startupWindow->isVisible() ||
+               !startupWindow->screen() ||
+               startupWindow->width()!=startupW ||
+               startupWindow->height()!=startupH ||
+               startupWindow->width()<1024 || startupWindow->height()<660 ||
+               startupWindow->width()>1500 || startupWindow->height()>860 ||
+               (startupArea.width()>=1024 &&
+                   startupWindow->width()>startupArea.width()) ||
+               (startupArea.height()>=660 &&
+                   startupWindow->height()>startupArea.height()) ||
+               !startupArea.contains(startupWindow->position())) {
+                qCritical()<<"Native startup viewport did not fit available desktop"
+                           <<startupArea<<startupWindow->geometry()
+                           <<startupW<<startupH;
+                app.exit(601);return;
+            }
+            // Product shell must be navigable without artificial CTest
+            // manual resizing or a screenshot-only mock.
+            if(!startupWindow->contentItem() ||
+               startupWindow->contentItem()->childItems().isEmpty()) {
+                qCritical()<<"Startup Qt Quick operator shell is empty";
+                app.exit(602);return;
+            }
+            qInfo()<<"FUNC-D1 native desktop-fit startup PASS"
+                   <<startupArea<<startupWindow->geometry();
+            app.exit(0);
+        });
+        return app.exec();
     }
     // Actual Qt Quick Gallery, Inspector and Add Vehicle photo paths.
     // Every source is a pinned resource or a deliberately chosen local file
