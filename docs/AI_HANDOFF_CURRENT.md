@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current AI/project handoff
 
+**3 NOV 2026 — newest SOURCE, verification distinction.** The active draft P7 branch now includes fictional Fleet photo sidecar hardening [`7dbd34a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/7dbd34a41fb079d57378b4ad3d77b3d4d68d7cb6), a real-Qt oversized-sidecar/recovery smoke extension [`ce285bd`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/ce285bd0c69ece631e41731f87ed2f45a54d3316), and a scoped push-to-CI fallback [`0aacdc5`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/0aacdc53a362b3a2eb2cfac9ba1979f23758e48f). New native [exact-source workflow 41601317152](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41601317152) was registered; **a registered/queued job is not a PASS**. Inspect actual final Linux/Windows job outcomes before changing source verification claims. P1 visual/photography approval remains open, P5 8/8 + P6 9/9 owner accepted, overall **45/74 weighted 70.6%**, no physical Qt Creator/MinGW/Narrator, real-data approval, PR merge or release. The older `8a7a1ed` 115/115 results remain valid historical exact-source evidence, not a test of new photo code.
+
 **3 November 2026.** Read [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md), [CANONICAL STATE](PROJECT_STATE_CANONICAL.md), [2 Nov FULL AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [ROADMAP](ROADMAP.md) and [TESTING](TESTING.md) first. [Evergreen reusable prompt](AI_CONTINUATION_PROMPT.md) is deliberately date-neutral.
 
 ## What is already true
