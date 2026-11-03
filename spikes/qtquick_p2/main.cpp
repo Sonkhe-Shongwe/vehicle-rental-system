@@ -1125,6 +1125,15 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet seeded photo / generic motorcycle fallback failed";
                 app.exit(711);return;
             }
+            // Verify photo-led gallery proportions in the actual native
+            // scene, not only the existence of a provider URL.
+            auto *galleryPhoto=find(find,window->contentItem(),
+                                    "vehicleCardPhoto");
+            if(!galleryPhoto || galleryPhoto->height()<108 ||
+               galleryPhoto->property("status").toInt()!=1) {
+                qCritical()<<"Fleet Gallery photo crop area too small or unreadable";
+                app.exit(724);return;
+            }
             fleet.selectById("C001");
             QTest::qWait(180);
             auto *photo=find(find,window->contentItem(),"fleetInspectorPhoto");

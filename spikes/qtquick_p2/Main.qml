@@ -831,7 +831,9 @@ ApplicationWindow {
                                 }
                                 model: fleet.visibleModel
                                 cellWidth: width < 790 ? width / 2 : width / 3
-                                cellHeight: 192
+                                // Photo-led cards need enough vertical room to retain
+                                // recognisable vehicle framing at compact widths.
+                                cellHeight: 230
                                 ScrollBar.vertical: ScrollBar {}
                                 Column {
                                     objectName: "fleetGalleryEmpty"
@@ -880,7 +882,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 176
+                                    height: 214
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -901,9 +903,10 @@ ApplicationWindow {
                                         anchors.margins: 10
                                         Rectangle {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 76
+                                            Layout.preferredHeight: 112
                                             color: window.ice
                                             radius: 9
+                                            clip: true
                                             Image {
                                                 id: cardPhoto
                                                 objectName: "vehicleCardPhoto"
