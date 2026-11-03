@@ -1,0 +1,163 @@
+{
+  "purpose": "PHOTO-P1-B source-page candidate shortlist, not image binary download or licence/legal approval",
+  "date": "2026-11-03",
+  "approval": "NONE: visual shortlist unapproved; do not bundle images",
+  "baseline_source": "f0332a81a75849fd5013ce89cc302dee110772f9",
+  "retrieved_binaries": 0,
+  "derived_images": 0,
+  "candidates": [
+    {
+      "model": "Toyota Corolla",
+      "id": "corolla_2022",
+      "file": "2019-2022 Toyota Corolla.jpg",
+      "author": "TTTNIS",
+      "license": "CC0 1.0",
+      "dimensions": [
+        5696,
+        2393
+      ],
+      "status": "Primary source-page candidate; panoramic crop needs review",
+      "url": "https://commons.wikimedia.org/wiki/File:2019-2022_Toyota_Corolla.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Toyota Corolla",
+      "id": "corolla_alternate",
+      "file": "2022 Toyota Corolla L in Classic Silver Metallic, Front Right, 03-20-2022.jpg",
+      "author": "Elise240SX",
+      "license": "CC BY-SA 4.0",
+      "dimensions": [
+        4236,
+        2340
+      ],
+      "status": "Alternate front-right sedan; licence adaptation obligations",
+      "url": "https://commons.wikimedia.org/wiki/File:2022_Toyota_Corolla_L_in_Classic_Silver_Metallic,_Front_Right,_03-20-2022.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Ford Ranger",
+      "id": "ranger_harvey",
+      "file": "2024 Ford Ranger Wildtrak X EcoBlue 4x4 - 1996cc 2.0 (205PS) Diesel - Blue Lightning - 02-2025, Front.jpg",
+      "author": "Harvey Bold",
+      "license": "CC0 1.0",
+      "dimensions": [
+        4693,
+        2865
+      ],
+      "status": "Primary modern-model alternative; trim and environment require visual inspection",
+      "url": "https://commons.wikimedia.org/wiki/File:2024_Ford_Ranger_Wildtrak_X_EcoBlue_4x4_-_1996cc_2.0_(205PS)_Diesel_-_Blue_Lightning_-_02-2025,_Front.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Ford Ranger",
+      "id": "ranger_hyins",
+      "file": "2nd Gen 2025 Ford Ranger T6 RA XLT 4WD P789 China Front Three Quarter View.jpg",
+      "author": "Hyins",
+      "license": "CC0 1.0",
+      "dimensions": [
+        4032,
+        2268
+      ],
+      "status": "Existing candidate; busy showroom, region-specific plate/trim; likely replace",
+      "url": "https://commons.wikimedia.org/wiki/File:2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Hyundai i20",
+      "id": "i20_calreyn",
+      "file": "2022 Hyundai i20.jpg",
+      "author": "Calreyn88",
+      "license": "CC BY-SA 4.0",
+      "dimensions": [
+        3477,
+        2552
+      ],
+      "status": "Primary newer standard i20 candidate; review full-car framing",
+      "url": "https://commons.wikimedia.org/wiki/File:2022_Hyundai_i20.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Hyundai i20",
+      "id": "i20_trop86_coupe",
+      "file": "Hyundai i20 123725.jpg",
+      "author": "Trop86",
+      "license": "CC0 1.0",
+      "dimensions": [
+        1672,
+        1252
+      ],
+      "status": "Secondary only: i20 Coupe body variant may be inappropriate for generic i20",
+      "url": "https://commons.wikimedia.org/wiki/File:Hyundai_i20_123725.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Honda CB500F",
+      "id": "honda_chanokchon",
+      "file": "2021 Honda CB500F.jpg",
+      "author": "Chanokchon",
+      "license": "CC BY-SA 4.0",
+      "dimensions": [
+        1288,
+        1055
+      ],
+      "status": "Primary accurate modern CB500F, dealer background and near-square crop risk",
+      "url": "https://commons.wikimedia.org/wiki/File:2021_Honda_CB500F.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Yamaha MT-07",
+      "id": "yamaha_packmeceng",
+      "file": "2021 Black Yamaha MT-07.jpg",
+      "author": "PackMecEng",
+      "license": "CC BY-SA 4.0",
+      "dimensions": [
+        3031,
+        1903
+      ],
+      "status": "Primary newer MT-07, dark paint exposure and background need review",
+      "url": "https://commons.wikimedia.org/wiki/File:2021_Black_Yamaha_MT-07.jpg",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    },
+    {
+      "model": "Yamaha MT-07",
+      "id": "yamaha_cc0",
+      "file": "YAMAHA MT-07.JPG",
+      "author": "Tokumeigakarinoaoshima",
+      "license": "CC0 1.0",
+      "dimensions": [
+        2464,
+        1784
+      ],
+      "status": "Alternative true MT-07, 2014 generation; aesthetic age mismatch risk",
+      "url": "https://commons.wikimedia.org/wiki/File:YAMAHA_MT-07.JPG",
+      "model_year_confirmed_for_demo": false,
+      "final_photo_approved": false,
+      "original_sha256": null,
+      "derivative_sha256": null
+    }
+  ]
+}

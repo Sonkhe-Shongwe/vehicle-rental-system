@@ -35,6 +35,8 @@
 
 Research basis, not a source of image rights: [Auto Trader's listing photo suggestions](https://help.autotrader.co.uk/hc/en-gb/articles/9102857201565-What-photos-should-I-take-for-my-advert), [Lotra's consistent vehicle photography workflow](https://getlotra.com/resources/guides/dealership-stock-photography-workflow), and [Creative Commons attribution FAQ](https://creativecommons.org/faq/).
 
+**PHOTO-P1-B research update (3 Nov 2026):** [Nine source-page candidates and model-accuracy exclusions](PHOTO_P1_B_SOURCE_SHORTLIST_2026-11-03.md), [machine-readable candidate register](photo_review/PHOTO_P1_B_CANDIDATES_2026-11-03.json). No source binaries, derivatives or live Qt artwork changed; candidates are source/rights preliminaries and their actual visual/crop QA remains open.
+
 ## 4. Reviewed source candidates, NOT selected or bundled
 
 | Model | File page | Licensing information | Artistic/legal caution |
