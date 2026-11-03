@@ -1,5 +1,6 @@
 #include "fleet_add_controller.h"
 #include "rentalsystem.h"
+#include "fleet_photo_store.h"
 #include <cmath>
 #include <utility>
 
@@ -38,8 +39,13 @@ bool FleetAddController::addVehicle(const QString &kind,const QString &brand,
         emit messageChanged();
         return false;
     }
+    // Business record has already committed. A photo is independent optional
+    // fictional media; never report an image failure as a rejected vehicle.
+    const bool attached=!m_photos || m_photos->saveStagedFor(result.vehicleId);
     if(m_afterCommit)m_afterCommit(result.vehicleId);
-    m_message=QStringLiteral("Vehicle %1 added to this temporary demo.").arg(result.vehicleId);
+    m_message=attached
+        ? QStringLiteral("Vehicle %1 added to this temporary demo.").arg(result.vehicleId)
+        : QStringLiteral("Vehicle %1 added; optional photo was not attached.").arg(result.vehicleId);
     emit messageChanged();
     return true;
 }

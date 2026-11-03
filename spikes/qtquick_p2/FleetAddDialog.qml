@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 Dialog {
     id: addDialog
@@ -11,6 +12,16 @@ Dialog {
     focus: true
     width: Math.min(560, parent ? parent.width - 64 : 520)
     standardButtons: Dialog.NoButton
+    // The native file picker is explicit user intent. Decoder/copy validation
+    // lives in C++ and never exposes an arbitrary input to RentalSystem.
+    FileDialog {
+        id: vehiclePhotoPicker
+        objectName: "fleetPhotoPicker"
+        title: "Choose a fictional vehicle photo"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Images (*.png *.jpg *.jpeg *.webp)"]
+        onAccepted: fleetPhotos.chooseFile(selectedFile)
+    }
     closePolicy: Popup.CloseOnEscape
     onOpened: Qt.callLater(function() {
         if(addDialog.visible) {
@@ -21,6 +32,7 @@ Dialog {
         }
     })
     onClosed: {
+        fleetPhotos.discardStaged()
         addBrand.clear()
         addModel.clear()
         addRate.clear()
@@ -84,6 +96,54 @@ Dialog {
                 activeFocusOnTab: true
                 Accessible.name: addType.currentIndex===0
                     ? "Number of car doors" : "Motorcycle engine capacity in cc"
+            }
+        }
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 5
+            RowLayout {
+                Layout.fillWidth: true
+                Button {
+                    objectName: "fleetChoosePhoto"
+                    text: fleetPhotos.hasStaged ? "Change photo..." : "Choose photo (optional)..."
+                    activeFocusOnTab: true
+                    Accessible.name: "Choose an optional photo from this computer"
+                    onClicked: vehiclePhotoPicker.open()
+                }
+                Button {
+                    objectName: "fleetDiscardPhoto"
+                    text: "Clear photo"
+                    visible: fleetPhotos.hasStaged
+                    onClicked: fleetPhotos.discardStaged()
+                }
+                Item { Layout.fillWidth: true }
+                Image {
+                    objectName: "fleetPhotoPreview"
+                    Layout.preferredWidth: 90
+                    Layout.preferredHeight: 56
+                    visible: fleetPhotos.hasStaged
+                    source: visible ? "image://fleetphotos/__staged?v="
+                                      + fleetPhotos.revision : ""
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    Accessible.name: "Chosen preview image"
+                }
+            }
+            Label {
+                objectName: "fleetPhotoFeedback"
+                Layout.fillWidth: true
+                text: fleetPhotos.feedback !== "" ? fleetPhotos.feedback :
+                      "No image needed. A neutral vehicle illustration is the fallback."
+                color: "#5F6F82"
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                Layout.fillWidth: true
+                text: "Photos are copied only into this temporary fictional demo."
+                color: "#5F6F82"
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
             }
         }
         DomainMessage {

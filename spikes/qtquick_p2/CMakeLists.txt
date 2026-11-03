@@ -4,6 +4,7 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
     fleet_add_controller.h fleet_add_controller.cpp
+    fleet_photo_store.h fleet_photo_store.cpp
     fleet_remove_controller.h fleet_remove_controller.cpp
     p6_archived_delete_controller.h p6_archived_delete_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/fleet_read_service.cpp
@@ -24,6 +25,16 @@ target_link_libraries(rental_studio_qtquick_spike
 if(WIN32)
     target_link_libraries(rental_studio_qtquick_spike PRIVATE user32)
 endif()
+# Reuse existing rights-audited, illustrative repo JPEGs in the new
+# *fictional* Fleet gallery. They are candidates, not final model/year photos.
+# Honda/Yamaha retain a neutral silhouette pending source/owner approval.
+qt_add_resources(rental_studio_qtquick_spike "fleet_demo_photo_candidates"
+    PREFIX "/fleet-demo-photos"
+    BASE "${PROJECT_SOURCE_DIR}/assets"
+    FILES
+        "${PROJECT_SOURCE_DIR}/assets/toyota_corolla.jpg"
+        "${PROJECT_SOURCE_DIR}/assets/ford_ranger.jpg"
+        "${PROJECT_SOURCE_DIR}/assets/hyundai_i20.jpg")
 # Explicit fictional-only integration into this REAL Qt Quick executable.
 # NOT the default workspace, not commercial storage and not a Widgets change.
 if(BUILD_P7_SQLITE_SANDBOX)
@@ -139,6 +150,15 @@ if(BUILD_TESTING)
     set_tests_properties(rental_studio_p2_focus_edges PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software"
         TIMEOUT 40)
+    # Genuine image-import/invalid-path/fixture-integrity and actual UI photo
+    # rendering tests, wide and compact, no real customer/photo storage.
+    add_test(NAME rental_studio_fleet_photo_wide
+        COMMAND rental_studio_qtquick_spike --fleet-photo-smoke)
+    add_test(NAME rental_studio_fleet_photo_compact
+        COMMAND rental_studio_qtquick_spike --fleet-photo-smoke --compact)
+    set_tests_properties(rental_studio_fleet_photo_wide
+        rental_studio_fleet_photo_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 70)
     add_test(NAME rental_studio_p6_fleet_add_wide COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke)
     add_test(NAME rental_studio_p6_fleet_add_compact COMMAND rental_studio_qtquick_spike --p6-fleet-add-smoke --compact)
     set_tests_properties(rental_studio_p6_fleet_add_wide rental_studio_p6_fleet_add_compact PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)

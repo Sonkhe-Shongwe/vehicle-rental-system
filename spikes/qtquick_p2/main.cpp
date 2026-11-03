@@ -14,6 +14,7 @@
 #include <QQuickItem>
 #include <QTimer>
 #include <QImage>
+#include <QColor>
 #include <QTest>
 #include <QPointF>
 #include <QProcess>
@@ -35,6 +36,7 @@
 #include "src/application/rental_archive_controller.h"
 #include "p6_archived_delete_controller.h"
 #include "fleet_add_controller.h"
+#include "fleet_photo_store.h"
 #include "fleet_remove_controller.h"
 #include "motion_policy.h"
 #ifdef RENTAL_STUDIO_P7_SQL_LAB
@@ -361,6 +363,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p6-recent-activity-smoke", "Test C++-backed bounded recent contracts, scrolling and read-only routing in real QML."});
     parser.addOption({"p6-contract-detail-smoke", "Test no-PII selected rental contract details and safe close on native Qt Quick."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
+    parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
     parser.addOption({"p6-archived-delete-smoke", "Test exact-confirmation permanent deletion of archived fictional rentals."});
     parser.addOption({"p6-restart-flow", "CI-only separate-process P6 fictional lifecycle orchestrator."});
@@ -791,6 +794,10 @@ int main(int argc, char *argv[]) {
             std::make_shared<P5RejectWriteStorage>())
             : std::shared_ptr<RentalStorage>{});
     FleetController fleet(system);
+    // Photo sidecars live only in the already verified fictional session root.
+    // The default demo root is disposed on process exit. Domain records are
+    // not modified to contain arbitrary file paths or customer media.
+    FleetPhotoStore fleetPhotos(dataDirectory);
     FleetAddController fleetAdmin(system,!persistentDemo,
         [&fleet](const QString &id) {
             fleet.setQuery(QString{});
@@ -798,8 +805,12 @@ int main(int argc, char *argv[]) {
             fleet.refreshAfterCommit();
             fleet.selectById(id);
         });
+    fleetAdmin.setPhotoStore(&fleetPhotos);
     FleetRemoveController fleetRemove(system,!persistentDemo,
-        [&fleet] {
+        [&fleet,&fleetPhotos] {
+            // Successful domain removal first, then erase its optional
+            // fictional media to prevent an ID reused later showing stale art.
+            fleetPhotos.forgetVehicle(fleet.selectedId());
             fleet.clearSelection();
             fleet.refreshAfterCommit();
         });
@@ -1048,6 +1059,9 @@ int main(int argc, char *argv[]) {
                      });
     QQuickStyle::setStyle("Basic");
     QQmlApplicationEngine engine;
+    engine.addImageProvider(QStringLiteral("fleetphotos"),
+                            new FleetPhotoProvider(fleetPhotos));
+    engine.rootContext()->setContextProperty("fleetPhotos", &fleetPhotos);
     engine.rootContext()->setContextProperty("motionPolicy", &motion);
     engine.rootContext()->setContextProperty("persistentFictionalDemo",persistentDemo);
     engine.rootContext()->setContextProperty("fleet", &fleet);
@@ -1075,6 +1089,117 @@ int main(int argc, char *argv[]) {
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
+    }
+    // Actual Qt Quick Gallery, Inspector and Add Vehicle photo paths.
+    // Every source is a pinned resource or a deliberately chosen local file
+    // in the disposable fictional root; source fixture bytes remain intact.
+    if(parser.isSet("fleet-photo-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 710;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1100,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto press=[&](const QString &id)->bool {
+                auto *item=find(find,window->contentItem(),id);
+                if(!item||!item->isEnabled())return false;
+                item->forceActiveFocus(Qt::TabFocusReason);
+                QTest::keyClick(window,Qt::Key_Space);
+                QCoreApplication::processEvents();
+                QTest::qWait(200);
+                return true;
+            };
+            if(!engine.imageProvider("fleetphotos") ||
+               !fleetPhotos.hasPhoto("C001")||!fleetPhotos.hasPhoto("C002")||
+               !fleetPhotos.hasPhoto("C003")||fleetPhotos.hasPhoto("M001")||
+               fleetPhotos.hasPhoto("M002")||fleetPhotos.hasPhoto("C004")||
+               fleetPhotos.imageFor("C001").isNull()) {
+                qCritical()<<"Fleet seeded photo / generic motorcycle fallback failed";
+                app.exit(711);return;
+            }
+            fleet.selectById("C001");
+            QTest::qWait(180);
+            auto *photo=find(find,window->contentItem(),"fleetInspectorPhoto");
+            if(!photo || !photo->property("source").toString().contains("C001")) {
+                qCritical()<<"Fleet inspector photo did not bind selected C001";
+                app.exit(712);return;
+            }
+            if(fleetPhotos.chooseFile(QUrl("https://invalid.example/image.jpg")) ||
+               fleetPhotos.hasStaged()) {
+                qCritical()<<"Fleet image accepted remote URL";
+                app.exit(713);return;
+            }
+            const QString invalid=QDir(dataDirectory).filePath("not-photo.png");
+            QFile bogus(invalid);
+            if(!bogus.open(QIODevice::WriteOnly) ||
+               bogus.write("not-image")!=9) {app.exit(714);return;}
+            bogus.close();
+            if(fleetPhotos.chooseFile(QUrl::fromLocalFile(invalid)) ||
+               fleetPhotos.hasStaged()) {
+                qCritical()<<"Fleet image accepted invalid bytes";
+                app.exit(715);return;
+            }
+            const QString path=QDir(dataDirectory).filePath("fictional-photo.png");
+            QImage image(96,64,QImage::Format_RGB32);
+            image.fill(QColor(31,163,92));
+            if(!image.save(path,"PNG") || !press("fleetAddButton") ||
+               !fleetPhotos.chooseFile(QUrl::fromLocalFile(path)) ||
+               !fleetPhotos.hasStaged()) {
+                qCritical()<<"Fleet optional local photo staging failed";
+                app.exit(716);return;
+            }
+            auto *preview=find(find,window->contentItem(),"fleetPhotoPreview");
+            auto *picker=find(find,window->contentItem(),"fleetChoosePhoto");
+            auto *brand=find(find,window->contentItem(),"fleetAddBrand");
+            auto *model=find(find,window->contentItem(),"fleetAddModel");
+            auto *rate=find(find,window->contentItem(),"fleetAddRate");
+            if(!preview||!picker||!brand||!model||!rate||
+               !preview->property("source").toString().contains("__staged")) {
+                qCritical()<<"Fleet QML photo picker/preview missing";
+                app.exit(717);return;
+            }
+            brand->setProperty("text","Fictional Studio");
+            model->setProperty("text","Concept");
+            rate->setProperty("text","415");
+            if(!press("fleetAddConfirm")||fleet.selectedId()!="C004"||
+               !fleetPhotos.hasPhoto("C004")||fleetPhotos.hasStaged()) {
+                qCritical()<<"Fleet photo did not attach after actual Add Vehicle";
+                app.exit(718);return;
+            }
+            QTest::qWait(250);
+            photo=find(find,window->contentItem(),"fleetInspectorPhoto");
+            FleetPhotoStore second(dataDirectory);
+            const QImage recovered=second.imageFor("C004");
+            if(!photo||!photo->property("source").toString().contains("C004")||
+               !second.hasPhoto("C004")||recovered.size()!=image.size()||
+               recovered.pixelColor(5,5)!=image.pixelColor(5,5)) {
+                qCritical()<<"Fleet image not bound/recoverable from fictional sidecar";
+                app.exit(719);return;
+            }
+            QByteArray fixedV,fixedR;
+            if(!readFile(vehicles,&fixedV)||!readFile(rentals,&fixedR)||
+               fixedV!=beforeVehicles||fixedR!=beforeRentals) {
+                qCritical()<<"Fleet photo changed protected fixture source";
+                app.exit(720);return;
+            }
+            fleetPhotos.forgetVehicle("C004");
+            if(fleetPhotos.hasPhoto("C004")||second.hasPhoto("C004")) {
+                qCritical()<<"Fleet photo did not return to fallback";
+                app.exit(721);return;
+            }
+            qInfo()<<"Fleet illustrative photos + guarded user image import PASS"
+                   <<(compact?"1280x720":"1500x860");
+            app.exit(0);
+        });
+        return app.exec();
     }
 #ifdef RENTAL_STUDIO_P7_SQL_LAB
     if(p7SqlLabSmoke) {

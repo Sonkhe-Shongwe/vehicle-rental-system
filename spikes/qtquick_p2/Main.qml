@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: window
@@ -54,6 +55,21 @@ ApplicationWindow {
     }
 
     color: canvas
+    // Only the user's chosen local image may override a fictional Fleet photo.
+    // Real-source legal/retention policy is out of scope for this preview.
+    FileDialog {
+        id: selectedFleetPhotoDialog
+        objectName: "fleetReplacePhotoPicker"
+        title: "Choose a replacement fictional vehicle photo"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Images (*.png *.jpg *.jpeg *.webp)"]
+        onAccepted: {
+            if(!persistentFictionalDemo && fleet.selectedId !== "" &&
+               fleetPhotos.chooseFile(selectedFile))
+                fleetPhotos.saveStagedFor(fleet.selectedId)
+            fleetPhotos.discardStaged()
+        }
+    }
 
     // Arrow keys are for moving between *vehicles* only while Fleet has
     // keyboard focus. The view scrolls only to reveal a newly focused vehicle.
@@ -888,10 +904,23 @@ ApplicationWindow {
                                             Layout.preferredHeight: 76
                                             color: window.ice
                                             radius: 9
+                                            Image {
+                                                id: cardPhoto
+                                                objectName: "vehicleCardPhoto"
+                                                anchors.fill: parent
+                                                visible: fleetPhotos.hasPhoto(vehicleCard.vehicleId)
+                                                source: visible
+                                                    ? "image://fleetphotos/" + vehicleCard.vehicleId
+                                                      + "?v=" + fleetPhotos.revision : ""
+                                                fillMode: Image.PreserveAspectCrop
+                                                cache: false
+                                                Accessible.name: "Illustrative photo for " + vehicleCard.displayName
+                                            }
                                             VehicleSilhouette {
                                                 id: vehicleArt
                                                 objectName: "vehicleCardArt"
                                                 anchors.centerIn: parent
+                                                visible: !cardPhoto.visible
                                                 vehicleType: vehicleCard.vehicleType
                                                 width: 164
                                                 height: 74
@@ -1079,10 +1108,44 @@ ApplicationWindow {
                                 Layout.preferredHeight: window.height < 800 ? 76 : 104
                                 color: ice
                                 radius: 10
+                                Image {
+                                    id: inspectorPhoto
+                                    objectName: "fleetInspectorPhoto"
+                                    anchors.fill: parent
+                                    visible: fleetPhotos.hasPhoto(fleet.selectedId)
+                                    source: visible
+                                        ? "image://fleetphotos/" + fleet.selectedId
+                                          + "?v=" + fleetPhotos.revision : ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    cache: false
+                                    Accessible.name: "Illustrative model photo for " + fleet.selectedName
+                                }
                                 VehicleSilhouette {
                                     anchors.centerIn: parent
+                                    visible: !inspectorPhoto.visible
                                     vehicleType: fleet.selectedType
                                 }
+                                Label {
+                                    anchors.bottom: parent.bottom
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    font.pixelSize: 10
+                                    text: "Illustrative photo - not the actual rental vehicle"
+                                    color: navy
+                                    visible: inspectorPhoto.visible
+                                    background: Rectangle {
+                                        color: "#EFFFFFFF"
+                                        radius: 4
+                                    }
+                                }
+                            }
+                            Button {
+                                objectName: "fleetReplacePhotoButton"
+                                text: "Change vehicle photo..."
+                                visible: fleet.selectedId !== "" && !persistentFictionalDemo
+                                activeFocusOnTab: true
+                                Layout.minimumHeight: 36
+                                Accessible.name: "Choose a new local illustration for selected fictional vehicle"
+                                onClicked: selectedFleetPhotoDialog.open()
                             }
                             Label {
                                 text: fleet.selectedId === "" ? "Ready to explore" : fleet.selectedName
