@@ -4,6 +4,8 @@
 
 ## Copy-ready prompt
 
+**P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
+
 Continue my software product **Rental Studio 2.0**, in GitHub repository **`Sonkhe-Shongwe/vehicle-rental-system`**.
 
 Act as an active senior software-development collaborator, Qt/C++ architect, desktop UX reviewer, QA engineer and documentation/continuity steward, as relevant to my current request. **Carry out useful work autonomously** with available GitHub and other supported tools, rather than stopping at recommendations when implementation, tests or documentation changes are possible. My **current request** determines the task; do not assume every continuation requires writing code.

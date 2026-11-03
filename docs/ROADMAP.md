@@ -1,10 +1,12 @@
 # Rental Studio 2.0 | Active P0–P9 roadmap
 
-**Live planning checkpoint 2 November 2026.** [Canonical current state](PROJECT_STATE_CANONICAL.md), [latest source/evidence](LATEST_CHECKPOINT.md), [full documentation audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [formal 74-criterion matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md).
+**Live planning checkpoint 3 November 2026.** [Canonical current state](PROJECT_STATE_CANONICAL.md), [latest source/evidence](LATEST_CHECKPOINT.md), [full documentation audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [formal 74-criterion matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md).
 
 The **planned weights and criterion denominators remain frozen**. Source implementation, test coverage and formally accepted checkmarks are three different things.
 
 ## Product-quality track versus optional release track
+
+**3 November 2026 P5 owner decision:** The owner explicitly approved all eight original Corolla booking criteria after the evidence review. [Recorded signoff](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). **P5 8/8; total 36/74, weighted 56.6%** (previously 28/74, 40.6%). Exact source [8a7a1ed](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows Qt 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). Functional acceptance based on evidence does **not** certify physical Windows MinGW, OS scale or Narrator tests and does not authorize release. Earlier 2 November 40.6% milestone remarks below are historical.
 
 **Owner product-quality objective:** “Commercial-grade” describes the desired professional standard of the Windows desktop experience, feature completeness, reliability, maintainability and accessibility. It **does not imply an imminent sale, public release, real customer-data onboarding or a production database cutover**. Fictional-data quality improvements are the current priority; release/distribution and real-data policy gates remain a separate future track. Formal P0–P9 acceptance weighting is not a product-quality score.
 
@@ -17,15 +19,17 @@ The **planned weights and criterion denominators remain frozen**. Source impleme
 | P2 Native Qt/C++ feasibility | 10% | 4/6 | Hosted native tests; earlier local Qt Creator P2 observations | Physical Windows current app, exact SHA/MinGW/keyboard and supported OS scaling |
 | P3 Typed C++ domain | 12% | 7/7 | Accepted | Preserve invariants |
 | P4 Shared native UI/focus | 12% | 5/7 | Components/motion tested | Owner physical keyboard/Narrator/accessibility |
-| P5 Booking vertical slice | 16% | 0/8 | All 8 original expectations have representative automated evidence | Consolidated operator signoff of original eight |
+| P5 Booking vertical slice | 16% | 8/8 | **Owner accepted all original eight functional outcomes 3 Nov 2026** | Maintain native regressions; physical Windows and a11y checked separately |
 | P6 Full Fleet/Rentals lifecycle | 14% | 0/9 | Polished interface, modal-safe Ctrl+F Fleet search and UX-Q1 empty-filter guidance and UX-Q2 compact two-row Rentals toolbar on stacked P7 branch, 8 scoped groups covered, 9th integrated path tested | Ratify bounded nine-point rubric and operator/physical parity review |
 | P7 Reliable commercial storage | 9% | 0/8 | P7-A–S: D1 fictional-only SQLite engine, real-application opt-in Lab now offers C++ Fleet/Rentals filtered record explorer, QML selection and safe retries; native 115/115 each Linux/Windows | D2–D8 owner policies, full approved adapter cutover, secure backups/migration and physical acceptance |
 | P8 Offline Windows installer | 5% | 0/6 | Not started; CI portable kit is NOT installer | Build/run/uninstall/update/rights/privacy tests on clean offline Windows |
 | P9 Final product QA/release | 5% | 0/8 | Not started | Final real device 100/125/150%/Narrator/performance, security/data policy, exact-SHA CI, owner release authorization |
 
-**28/74 accepted, weighted 40.6%; NOT released.** The percentage reflects approvals and evidence-weighting, not how much product code exists.
+**36/74 accepted, weighted 56.6%; NOT released.** The percentage reflects approvals and evidence-weighting, not how much product code exists.
 
 ## Immediate delivery order
+
+**Owner closed P5 functional acceptance 8/8 on 3 Nov.** Next acceptance focus is P6 bounded rubric and independent P1/P2/P4 physical testing; no need to repeat P5 approval simply because earlier dated test reports have 40.6%.
 
 **Latest native-verified main UI, UX-Q2:** [corrected `8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Qt 6.8.3 Linux GCC and hosted Windows MSVC 115/115 EACH PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). [UX-Q2 exact-source/failure/correction report](UX_Q2_RENTALS_COMPACT_TOOLBAR_NATIVE_VERIFIED_2026-11-02.md). Rentals now has separate Status and ID lookup rows, with live matching-contract counts and native wide/compact geometry assertions. The first `fb08a33` native run failed to compile from duplicate C++ test-local names; fixed in `8a7a1ed` and complete native suites rerun green. Formal **28/74 accepted, 40.6% weighted** unchanged; owner physical MinGW/scaling/Narrator review open.
 
@@ -37,7 +41,7 @@ The **planned weights and criterion denominators remain frozen**. Source impleme
 
 1. **Future real-data decision gate, not a current quality blocker:** [P7 D1 owner approval](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) records owner approval of SQLite as the intended engine **only for generated-fictional integration**. [P7 owner brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) still holds D2–D8, including production money/IDs, history retention, contact privacy, backup security, migration and formal acceptance.
 2. **Current fictional-data product-quality integration:** [P7-P record explorer](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md), [P7-Q Fleet search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) and [P7-R Overview](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md) now extend the optional real-app SQLite Lab with filtered Fleet and Rentals DTO selection, actual QML row-clicked inspectors, fail-visible read/retry and scroll at both window sizes. Next build parity toward **fictional-only** shared controller interfaces while preserving protected default QSaveFile storage; do not activate real contacts or production database paths.
-3. **Professional desktop usability and owner review:** [UX-Q1 empty-state](UX_Q1_RENTALS_EMPTY_STATE_NATIVE_VERIFIED_2026-11-02.md) and [UX-Q2 compact toolbar](UX_Q2_RENTALS_COMPACT_TOOLBAR_NATIVE_VERIFIED_2026-11-02.md) are native verified on both CI operating systems. Continue responsive layout, focus and actual owner visual/a11y checks. include [P6-Q modal-safe Fleet quick-find](P6_Q_FLEET_QUICK_FIND_NATIVE_VERIFIED_2026-11-02.md) and all pending P1/P2/P4/P5/P6 checks in one substantial physical Windows owner review. Preserve PASS/FAIL/NOT TESTED and do not infer Narrator or display scaling from hosted Qt tests.
+3. **Professional desktop usability and owner review:** [UX-Q1 empty-state](UX_Q1_RENTALS_EMPTY_STATE_NATIVE_VERIFIED_2026-11-02.md) and [UX-Q2 compact toolbar](UX_Q2_RENTALS_COMPACT_TOOLBAR_NATIVE_VERIFIED_2026-11-02.md) are native verified on both CI operating systems. Continue responsive layout, focus and actual owner visual/a11y checks. include [P6-Q modal-safe Fleet quick-find](P6_Q_FLEET_QUICK_FIND_NATIVE_VERIFIED_2026-11-02.md) and all pending P1/P2/P4/P6 physical checks in one substantial physical Windows owner review. Preserve PASS/FAIL/NOT TESTED and do not infer Narrator or display scaling from hosted Qt tests.
 4. **Optional future distribution and release:** P8 genuine installer and clean-offline deployment tests, P9 final physical, privacy/licensing, robustness and owner approval.
 5. Resolve draft PR stack (#10, #12, #14, #17) only by explicit authorized review; no force push or direct main merge during development.
 

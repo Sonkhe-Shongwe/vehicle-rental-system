@@ -1,8 +1,10 @@
 # Rental Studio 2.0 | Current verification and test policy
 
-**Reconciled 2 November 2026.** [Current source](LATEST_CHECKPOINT.md) | [full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [formal acceptance](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md).
+**Reconciled 3 November 2026.** [Current source](LATEST_CHECKPOINT.md) | [full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [formal acceptance](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md).
 
 ## Verification levels are not interchangeable
+
+**P5 formal owner signoff, 3 November 2026:** [all eight original criteria owner accepted](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P5 **8/8**, total **36/74**, weighted **56.6%**. Last verified compiled source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). The 40.6% remarks in earlier 2 Nov reports are historic. This signoff does not certify physical Windows Qt Creator/MinGW, 100/125/150% scaling, Narrator, commercial data, release or PR merges.
 
 **Designed** ≠ **source implemented** ≠ **compiled** ≠ **native CTest PASS** ≠ **actual hosted Windows Qt screenshot inspected** ≠ **owner physical Windows/MinGW/Narrator checked** ≠ **formal signoff** ≠ **commercial release**. Always tie a result to its exact source SHA, CI job, Qt/OS kit, test scenario, fixture and safety boundary. Treat a documentation-only green run as scope inspection, not freshly verified compiled source.
 
@@ -51,7 +53,7 @@ Use fictional temporary or pinned fixtures only, with tamper refusal and immutab
 
 **Physical Windows outstanding:** owner's Qt Creator 6.10.2 MinGW local exact SHA/CTest, real display 100/125/150% where supported, logical window fit at actual taskbar resolution, keyboard Tab/Shift+Tab/arrow/Enter/Space/Escape, Narrator names and live announcements, visual clipping/focus recovery, portable-kit use and final operator acceptance. User's historical Windows Settings screenshot verified **150% Recommended / 1920×1080**, but not a matching full in-app rendering/assistive check; historical Fleet screenshots showed two static filters and occupancy. [Owner Windows checklist](WINDOWS_ACCEPTANCE.md) keeps observations separate from required manual tests.
 
-**Acceptance boundary:** P1 7/10, P2 4/6, P4 5/7, P5 0/8, P6 0/9, P7 0/8; total 28/74 and **40.6%** weighted accepted; P8/P9 not started. No automatic test increments formal counts.
+**Acceptance boundary after 3 Nov owner P5 signoff:** P1 7/10, P2 4/6, P4 5/7, **P5 8/8**, P6 0/9, P7 0/8; total **36/74 and 56.6%** weighted accepted; P8/P9 not started. Explicit owner decision changed P5, not automated test counting; physical Windows owner tests separately open.
 
 ## Historical test reporting
 

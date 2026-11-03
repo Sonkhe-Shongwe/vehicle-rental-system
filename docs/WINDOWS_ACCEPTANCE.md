@@ -1,10 +1,12 @@
 # Rental Studio 2.0 | Windows physical and operator acceptance
 
+**P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
+
 **Current 2 November 2026:** The new polished P6/P7 stacked Qt Quick application has passing hosted Linux/Windows native CI, but **has not completed a consolidated owner physical-device review** at actual Windows 100/125/150% scaling, Qt Creator 6.10.2 MinGW, keyboard/focus and Narrator. The current physical evidence is earlier P2 local Qt Creator screenshots and two later P6 static Fleet screenshots, not a complete physical test matrix. [Current checkpoint](LATEST_CHECKPOINT.md) | [P6-P compiled UI evidence](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) | [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md).
 
 ## Next single consolidated owner review (NOT YET EXECUTED)
 
-Use the **last verified generated-fictional** Windows review kit linked from a current native CI run, not a historical expired artifact. Capture exact source SHA and Windows/Qt kit version before relying on observations. Check Overview, Fleet Gallery/Table/filter/selection/empty, Add vehicle, Rentals quote/confirm/cancel/stale/duplicate, Return/History/Archive, domain restart, and the actual keyboard/scale/Narrator/clip behavior. Distinguish each criterion as PASS, FAIL or NOT TESTED. Do not enter or upload genuine customers. A packaged hosted Windows acceptance kit is **not an installer or release**. No formal P5/P6 or final physical acceptance has been recorded.
+Use the **last verified generated-fictional** Windows review kit linked from a current native CI run, not a historical expired artifact. Capture exact source SHA and Windows/Qt kit version before relying on observations. Check Overview, Fleet Gallery/Table/filter/selection/empty, Add vehicle, Rentals quote/confirm/cancel/stale/duplicate, Return/History/Archive, domain restart, and the actual keyboard/scale/Narrator/clip behavior. Distinguish each criterion as PASS, FAIL or NOT TESTED. Do not enter or upload genuine customers. A packaged hosted Windows acceptance kit is **not an installer or release**. Original P5 functional owner acceptance was recorded 3 November, but **no new physical Windows/MinGW/Narrator run, P6 or final physical acceptance has been recorded**.
 
 ## Historical P2 owner physical evidence (30 October 2026)
 

@@ -1,5 +1,9 @@
 # P5: Eight-criterion Automated Evidence Crosswalk
 
+**P5 formal owner signoff, 3 November 2026:** [all eight original criteria owner accepted](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P5 **8/8**, total **36/74**, weighted **56.6%**. Last verified compiled source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). The 40.6% remarks in earlier 2 Nov reports are historic. This signoff does not certify physical Windows Qt Creator/MinGW, 100/125/150% scaling, Narrator, commercial data, release or PR merges.
+
+**Historical scope:** Below, the original 1–2 Nov `0/8` descriptions document the pre-signoff state; the 3 Nov owner decision supersedes only those acceptance claims, not the underlying test-to-criterion mapping.
+
 **Current 2 November 2026 audit:** The original eight expectations remain mapped to representative native tests; the P6-P polished UI and P7-H opt-in test source passed [108/108 per hosted platform](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41459622338). This verifies regression coverage, **not P5 owner acceptance**. Formal P5 remains **0/8**. Original source-to-test table below is a dated trace, not a new set of criteria.
 **Updated 1 November 2026.** This is a source-to-test crosswalk, NOT owner formal acceptance.
 

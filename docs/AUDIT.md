@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current audit index
 
+**P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
+
 **Current reconciliation: 2 November 2026.** This is a navigation page, not a second acceptance ledger.
 
 **Latest source-verified P7-S:** [`062ee985`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/062ee985b879208de9b561a9298940df754f7c6c), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827219), [native Qt Linux GCC / hosted Windows MSVC 115/115 each PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827186). [P7-S shared QML cards and two-row explorers](P7_S_REUSABLE_QML_EXPLORER_NATIVE_VERIFIED_2026-11-02.md); no new test count. Compiled-source SHA is distinct from later docs-only commits. D1 fictional-only, commercial D2–D8 unapproved, formal 28/74 weighted 40.6% unchanged; physical owner Windows checks remain open.

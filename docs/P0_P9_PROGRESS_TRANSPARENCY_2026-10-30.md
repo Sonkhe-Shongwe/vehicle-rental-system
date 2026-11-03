@@ -1,13 +1,15 @@
 # Rental Studio 2.0 | P0–P9 formal acceptance and weighted progress
 
-**Current verified ledger: 2 November 2026.** [Latest checkpoint](LATEST_CHECKPOINT.md) | [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [canonical state](PROJECT_STATE_CANONICAL.md). Phase weights and total 74 criteria were **not changed** by this documentation audit.
+**Current verified ledger: 3 November 2026.** [Latest checkpoint](LATEST_CHECKPOINT.md) | [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [canonical state](PROJECT_STATE_CANONICAL.md). Phase weights and total 74 criteria were **not changed** by this documentation audit.
 
 ## Two separate measures
 
 - **Formally accepted criteria:** met with the required reproducible evidence and, where appropriate, owner signoff. A green CTest by itself does not award acceptance.
 - **Weighted accepted coverage:** sum of phase weight × (formally accepted criteria / phase criteria). This is not code completion, commercial readiness, test-suite count, or percentage of time remaining.
 
-## Current acceptance scorecard, 2 November 2026
+## Current acceptance scorecard, 3 November 2026
+
+**3 November 2026 P5 owner decision:** The owner explicitly approved all eight original Corolla booking criteria after the evidence review. [Recorded signoff](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). **P5 8/8; total 36/74, weighted 56.6%** (previously 28/74, 40.6%). Exact source [8a7a1ed](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows Qt 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). Functional acceptance based on evidence does **not** certify physical Windows MinGW, OS scale or Narrator tests and does not authorize release. Earlier 2 November 40.6% milestone remarks below are historical.
 
 | Phase | Scope | Weight | Formally accepted | Weighted contribution | State and actual engineering evidence |
 |---|---|---:|---:|---:|---|
@@ -16,22 +18,22 @@
 | P2 | Native Windows Qt Quick / C++ feasibility | 10% | 4/6 | 6.7% | Partial; exact local Qt Creator/MinGW and physical scale/focus |
 | P3 | Typed C++ services/model boundary | 12% | 7/7 | 12.0% | Accepted |
 | P4 | Shared native QML components and navigation | 12% | 5/7 | 8.6% | Partial; owner physical focus/Narrator |
-| P5 | Genuine persisted Corolla rental vertical slice | 16% | 0/8 | 0% | **IN PROGRESS**; 8/8 expectations representative automation-covered, operator signoff open |
+| P5 | Genuine persisted Corolla rental vertical slice | 16% | 8/8 | 16.0% | **OWNER ACCEPTED 3 Nov 2026**, original eight fictional booking outcomes; physical checks tracked separately |
 | P6 | Fleet/Rental full lifecycle and safe negative paths | 14% | 0/9 | 0% | **IN PROGRESS**; 8/9 provisional groups covered, ninth connected path integrated-tested, owner rubric/physical review open |
 | P7 | IDs, exact money, transactions, backup/migration | 9% | 0/8 | 0% | **IN PROGRESS**; owner-approved D1 fictional SQLite engine. Actual opt-in Qt Quick Lab now includes Fleet/Rentals filtered records and safe selection/retry, native 115/115 each; normal QSaveFile app unchanged. D2–D8 commercial policy, data security and migration still unapproved |
 | P8 | Offline Windows installer, privacy/rights | 5% | 0/6 | 0% | Not started |
 | P9 | Final native QA and release authorization | 5% | 0/8 | 0% | Not started |
-| **TOTAL** | **74 fixed criterion units** | **100%** | **28/74** | **40.6%** | **NOT RELEASED** |
+| **TOTAL** | **74 fixed criterion units** | **100%** | **36/74** | **56.6%** | **NOT RELEASED** |
 
-**Arithmetic:** 5.0 + 8.4 + (10 × 4/6 ≈ 6.6667) + 12 + (12 × 5/7 ≈ 8.5714) = **40.638…%, displayed as 40.6%**; P5–P9 currently contribute zero. Do not sum rounded component labels to infer a false discrepancy.
+**Arithmetic:** 5.0 + 8.4 + (10 × 4/6 ≈ 6.6667) + 12 + (12 × 5/7 ≈ 8.5714) + 16.0 = **56.638…%, displayed as 56.6%**; P6–P9 currently contribute zero. Do not sum rounded component labels to infer a false discrepancy.
 
 ## Current engineering-to-acceptance boundary
 
-- [P5 eight-criterion crosswalk](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md): original business outcomes have native representative tests, but **formal P5 0/8**.
+- [P5 eight-criterion crosswalk](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md): original business outcomes have native representative tests, and [all eight accepted by the owner on 3 Nov](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), **formal P5 8/8**.
 - [P6-N owner review](P6_N_ACCEPTANCE_CLOSURE_DECISION_RECORD_2026-11-02.md), [P6-O bounded rubric and Fleet decision](P6_O_RESEARCH_REVISED_ACCEPTANCE_AND_FLEET_2026-11-02.md), [P6-P polished native UI](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md): source substantially implemented, **formal P6 0/9**.
 - [P7-A candidate eight-group rubric](P7_A_MIGRATION_AND_TEST_CONTRACT_2026-11-02.md) has not been owner-ratified. [P7-G actual domain/SQL blob test](P7_G_CPP_DOMAIN_SQLITE_TRANSPORT_NATIVE_VERIFIED_2026-11-02.md) is separate from [P7-H normalized SQL candidate](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md); neither is the normal application storage. **Formal P7 0/8**.
 - Latest **compiled** source [P7-P `31d1ce3`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/31d1ce3120629861ed5979faee3828c1be02d801): [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869038), [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869095), hosted Windows package checks PASS. [P7-P real-app SQLite record explorer](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md) upgrades actual-app generated-fictional SQL Lab record filtering and inspected Fleet/Rentals rows; no new CTest count or formal acceptance increase. Intermediate `579132b` build failure is recorded in the dated report; later exact source corrected it.
-- P1/P2/P4 remaining owner/device tests, plus P5/P6 operator acceptance, remain untested or formally open. P8/P9 require genuine offline installer and final release QA respectively.
+- P1/P2/P4 remaining owner/device tests, plus P6 operator acceptance, remain untested or formally open. P8/P9 require genuine offline installer and final release QA respectively.
 
 ## Historical P3/P4 checkpoints, reproduced as dated evidence
 

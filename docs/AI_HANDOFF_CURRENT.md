@@ -1,8 +1,10 @@
 # Rental Studio 2.0 | Current AI/project handoff
 
-**2 November 2026.** Read [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md), [CANONICAL STATE](PROJECT_STATE_CANONICAL.md), [2 Nov FULL AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [ROADMAP](ROADMAP.md) and [TESTING](TESTING.md) first. [Evergreen reusable prompt](AI_CONTINUATION_PROMPT.md) is deliberately date-neutral.
+**3 November 2026.** Read [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md), [CANONICAL STATE](PROJECT_STATE_CANONICAL.md), [2 Nov FULL AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [ROADMAP](ROADMAP.md) and [TESTING](TESTING.md) first. [Evergreen reusable prompt](AI_CONTINUATION_PROMPT.md) is deliberately date-neutral.
 
 ## What is already true
+
+**P5 formal owner signoff, 3 November 2026:** [all eight original criteria owner accepted](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P5 **8/8**, total **36/74**, weighted **56.6%**. Last verified compiled source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). The 40.6% remarks in earlier 2 Nov reports are historic. This signoff does not certify physical Windows Qt Creator/MinGW, 100/125/150% scaling, Narrator, commercial data, release or PR merges.
 
 **Latest native-verified main UI, UX-Q2:** [corrected `8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Qt 6.8.3 Linux GCC and hosted Windows MSVC 115/115 EACH PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). [UX-Q2 exact-source/failure/correction report](UX_Q2_RENTALS_COMPACT_TOOLBAR_NATIVE_VERIFIED_2026-11-02.md). Rentals now has separate Status and ID lookup rows, with live matching-contract counts and native wide/compact geometry assertions. The first `fb08a33` native run failed to compile from duplicate C++ test-local names; fixed in `8a7a1ed` and complete native suites rerun green. Formal **28/74 accepted, 40.6% weighted** unchanged; owner physical MinGW/scaling/Narrator review open.
 
@@ -25,11 +27,11 @@ Normal Qt Quick Overview/Fleet/Rentals still use protected fictional QSaveFile d
 - P7 normalized fictional repository ≠ approved live commercial storage or data migration.
 - Original generic vector silhouettes ≠ licensed model-specific vehicle photography.
 - Booked value ≠ collected revenue.
-- 28/74 formal and 40.6% evidence-weighted ≠ product development percentage.
+- 36/74 formal and 56.6% evidence-weighted after P5 owner decision ≠ product development percentage.
 
 ## Current decisions needed
 
-Review [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and the [P7 D2–D8 decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) for pricing ceilings, historic ID and retention, customer privacy, backup, migration and approval. Next engineering work should integrate only **fictional-only** C++ model parity into actual UI, not silently switch default storage. Batch physical owner MinGW/scaling/Narrator/P5/P6 review later; P8/P9 not started.
+Review [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and the [P7 D2–D8 decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) for pricing ceilings, historic ID and retention, customer privacy, backup, migration and approval. Next engineering work should integrate only **fictional-only** C++ model parity into actual UI, not silently switch default storage. Batch physical owner MinGW/scaling/Narrator/P6 review later; P5 original eight functional outcomes already owner accepted on 3 Nov, while device tests remain open; P8/P9 not started.
 
 ## Collaborative safety and maintenance
 

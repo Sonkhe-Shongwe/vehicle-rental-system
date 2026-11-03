@@ -1,8 +1,10 @@
 # Rental Studio 2.0 | Current development continuity
 
-**Reconciled 2 November 2026.** This is the concise CURRENT handoff chronology. The [2 Nov full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [latest checkpoint](LATEST_CHECKPOINT.md), [historical 30 Oct audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [older archived materials](archive/README.md) and Git history preserve the detailed previous narrative. Do not prepend more historical banners.
+**Reconciled 3 November 2026.** This is the concise CURRENT handoff chronology. The [2 Nov full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [latest checkpoint](LATEST_CHECKPOINT.md), [historical 30 Oct audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [older archived materials](archive/README.md) and Git history preserve the detailed previous narrative. Do not prepend more historical banners.
 
 ## Milestone chain
+
+**P5 formal owner signoff, 3 November 2026:** [all eight original criteria owner accepted](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P5 **8/8**, total **36/74**, weighted **56.6%**. Last verified compiled source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). The 40.6% remarks in earlier 2 Nov reports are historic. This signoff does not certify physical Windows Qt Creator/MinGW, 100/125/150% scaling, Narrator, commercial data, release or PR merges.
 
 **Latest native-verified main UI, UX-Q2:** [corrected `8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Qt 6.8.3 Linux GCC and hosted Windows MSVC 115/115 EACH PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). [UX-Q2 exact-source/failure/correction report](UX_Q2_RENTALS_COMPACT_TOOLBAR_NATIVE_VERIFIED_2026-11-02.md). Rentals now has separate Status and ID lookup rows, with live matching-contract counts and native wide/compact geometry assertions. The first `fb08a33` native run failed to compile from duplicate C++ test-local names; fixed in `8a7a1ed` and complete native suites rerun green. Formal **28/74 accepted, 40.6% weighted** unchanged; owner physical MinGW/scaling/Narrator review open.
 
@@ -16,7 +18,7 @@
 |---|---|---|
 | P0–P3 through 30 Oct | Old Qt Widgets baseline preserved; P3 fully accepted 7/7 | Not the final release |
 | P4 through 1 Nov | Reusable focus/shell/motion accepted 5/7 | Remaining physical accessibility |
-| P5 through 1 Nov | [8 original expectations mapped to passing tests](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md) | Operator approval P5 still 0/8 |
+| P5 through 3 Nov | [Original eight mapped to passing native tests](P5_ACCEPTANCE_EVIDENCE_CROSSWALK_2026-11-01.md); [explicit owner approval](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md) | **P5 8/8 FORMALLY ACCEPTED**; physical Windows checks tracked separately |
 | P6-A–M through 2 Nov | [Real three independent processes](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md), return/history/guarded fictional delete | Nine-group formal acceptance 0/9 |
 | P6-O/P through 2 Nov | [Research-informed bounded review](P6_O_RESEARCH_REVISED_ACCEPTANCE_AND_FLEET_2026-11-02.md), [polished cross-workspace Qt UI](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) | Final physical Windows / Navigator / owner design signoff |
 | P7-A–F on 2 Nov | Synthetic read-only legacy preflight, SQL transactions, backup/recovery and cross-process crash/lock tests | Normal app storage cutover or live records |
@@ -41,6 +43,6 @@
 - Continue deferring repetitive manual screenshots until one consolidated physical Windows/MinGW, 100/125/150% scaling, keyboard, Narrator and operator acceptance session. Earlier user screenshots proved two static Fleet filter and summary states only.
 - No real customer/phone/driving-licence data, no unapproved production file imports, privacy/retention policy, general commercial storage, installation/release, merge or tag. P7 ADR and P6 rubric stay owner gated.
 - Use only verified exact source CI results; docs-only heads have scope-only green and skipped expensive build jobs. Never convert 108/108 tests into a fictitious accepted criterion.
-- **28/74 formally accepted, 40.6% weighted evidence; latest compiled and native-tested source P7-R `de47e0f` on stacked draft P7 branch, with docs-only head `b91c528`; all drafts unmerged.**
+- **Current 3 Nov: 36/74 formally accepted, 56.6% weighted.** P5 8/8 owner-signed, last tested source UX-Q2 `8a7a1ed` core 13/13, native Qt Linux/Windows 115/115 each. Subsequent docs-only heads are not newly compiled; all drafts unmerged.
 
 See [current road map](ROADMAP.md) and [testing](TESTING.md) for forward gates.
