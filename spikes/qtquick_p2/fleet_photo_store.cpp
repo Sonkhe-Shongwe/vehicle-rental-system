@@ -22,6 +22,21 @@ QString seed(const QString &id) {
     // Two motorcycles do not yet have licensed/approved model images.
     return {};
 }
+// Only app-reencoded fictional sidecars are expected on disk. Validate
+// bounds from image headers before ever asking Qt to decompress the pixels.
+bool safeSidecarFolder(const QString &root) {
+    const QFileInfo folder(QDir(root).filePath(QStringLiteral("fleet_images")));
+    return folder.isDir() && !folder.isSymLink();
+}
+bool safeSidecar(const QString &root,const QString &file) {
+    const QFileInfo info(file);
+    if(!safeSidecarFolder(root) || !info.isFile() || info.isSymLink() ||
+       info.size()<=0 || info.size()>8*1024*1024)return false;
+    QImageReader reader(file);
+    const QSize dimensions=reader.size();
+    return dimensions.isValid() && dimensions.width()<=1280 &&
+           dimensions.height()<=960 && reader.canRead();
+}
 }
 
 FleetPhotoStore::FleetPhotoStore(const QString &fictionalRoot,QObject *parent)
@@ -37,12 +52,8 @@ bool FleetPhotoStore::hasPhoto(const QString &id) const {
     if(!safeId(id))return false;
     const QString file=imagePath(id);
     if(QFileInfo::exists(file)) {
-        const QFileInfo info(file);
-        // Even this fictional sidecar must never follow a local symlink
-        // or decode a rewritten oversized file.
-        return info.isFile() && !info.isSymLink() &&
-               info.size()>0 && info.size()<=8*1024*1024 &&
-               QImageReader(file).canRead();
+        // Refuse tampered sidecars before Qt allocates decoded pixels.
+        return safeSidecar(m_root,file);
     }
     const auto resource=seededResource(id);
     return !resource.isEmpty() && QImageReader(resource).canRead();
@@ -51,11 +62,7 @@ QImage FleetPhotoStore::imageFor(const QString &id,const QSize &requested) const
     if(!safeId(id))return {};
     const QString file=imagePath(id);
     const bool local=QFileInfo::exists(file);
-    if(local) {
-        const QFileInfo info(file);
-        if(!info.isFile() || info.isSymLink() ||
-           info.size()<=0 || info.size()>8*1024*1024)return {};
-    }
+    if(local && !safeSidecar(m_root,file))return {};
     const QString origin=local?file:seededResource(id);
     if(origin.isEmpty())return {};
     QImageReader reader(origin);
@@ -120,8 +127,9 @@ bool FleetPhotoStore::saveStagedFor(const QString &id) {
         ++m_revision;emit changed();return false;
     }
     QDir dir(m_root);
-    if(!dir.mkpath(QStringLiteral("fleet_images"))) {
-        m_feedback=QStringLiteral("Photo folder could not be created.");
+    if(!dir.mkpath(QStringLiteral("fleet_images")) ||
+       !safeSidecarFolder(m_root) || QFileInfo(imagePath(id)).isSymLink()) {
+        m_feedback=QStringLiteral("Photo folder is not a safe fictional directory.");
         ++m_revision;emit changed();return false;
     }
     QSaveFile out(imagePath(id));
@@ -137,8 +145,10 @@ bool FleetPhotoStore::saveStagedFor(const QString &id) {
 }
 void FleetPhotoStore::forgetVehicle(const QString &id) {
     if(!safeId(id))return;
+    if(!safeSidecarFolder(m_root))return;
     const QString path=imagePath(id);
-    if(QFileInfo::exists(path))QFile::remove(path);
+    if(QFileInfo::exists(path) && !QFileInfo(path).isSymLink())
+        QFile::remove(path);
     ++m_revision;emit changed();
 }
 QImage FleetPhotoProvider::requestImage(const QString &id,QSize *size,
