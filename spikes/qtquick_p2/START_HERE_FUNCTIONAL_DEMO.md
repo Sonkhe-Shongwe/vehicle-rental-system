@@ -32,3 +32,11 @@ The launcher adjusts the Qt desktop window to the *available logical screen size
 ## Boundaries
 
 Existing Fleet/Booking/Return workflows are P5/P6 owner-accepted only for **fictional** demo operations. No final five-photo set, final fleet size, real imports, commercial-data policy, signed installer or release exists yet. No task here modifies `main`, merges draft PRs or authorises operating a real rental business.
+
+## Optional one-click automated functionality check
+
+After extracting the ZIP, double-click **Check-Rental-Studio.cmd** to run the real compiled Qt application through **eight** automated fictional-only checks. They cover protected fixture verification before and after, native startup window, separate-process create/book/return/remove journeys at wide and compact sizes, restart/persistence inside an isolated synthetic directory, stale-quote refusal and cancelled-booking refusal. The check does **not** test actual customer persistence or the owner's manual GUI/Narrator experience.
+
+The check writes a uniquely named functional-check-evidence-* folder alongside the executable, containing RESULTS.txt and per-test logs. Re-running creates a separate report without deleting earlier results. A failed result is a genuine diagnostic issue, not approval to bypass security or use real customer data. Review logs for local paths before sharing them. The protected fictional demo files must remain unchanged. Normal double-click Launch-Rental-Studio.cmd still opens the real graphical app for hands-on testing.
+
+Success supports fictional functionality verification only, not commercial-data approval, a manual physical GUI signoff, an installer or release.

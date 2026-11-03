@@ -166,6 +166,7 @@ jobs:
           Copy-Item "spikes/qtquick_p2/Verify-P2-Windows.ps1" "$dest/Verify-P2-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/WINDOWS_PHYSICAL_ACCEPTANCE.md" "$dest/WINDOWS_PHYSICAL_ACCEPTANCE.md"
           Copy-Item "spikes/qtquick_p2/Launch-Rental-Studio.cmd" "$dest/Launch-Rental-Studio.cmd"
+          Copy-Item "spikes/qtquick_p2/Check-Rental-Studio.cmd" "$dest/Check-Rental-Studio.cmd"
           Copy-Item "spikes/qtquick_p2/START_HERE_FUNCTIONAL_DEMO.md" "$dest/START_HERE_FUNCTIONAL_DEMO.md"
           Copy-Item "spikes/qtquick_p2/Verify-P4-Windows.ps1" "$dest/Verify-P4-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md" "$dest/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md"
@@ -191,6 +192,17 @@ jobs:
           # non-GUI --verify mode against packaged, SHA-pinned fixture bytes.
           & "$dest/Launch-Rental-Studio.cmd" --verify
           if ($LASTEXITCODE -ne 0) { throw "Packaged fictional launcher verification failed: $LASTEXITCODE" }
+          # FUNC-D2: run a user-repeatable, fully packaged, exact-source
+          # native fictional lifecycle check, with QTemporaryDir cleanup.
+          & "$dest/Check-Rental-Studio.cmd"
+          if ($LASTEXITCODE -ne 0) { throw "Packaged functionality check failed: $LASTEXITCODE" }
+          $reports = @(Get-ChildItem -LiteralPath $dest -Directory -Filter "functional-check-evidence-*")
+          if ($reports.Count -ne 1 -or -not (Select-String -Path (Join-Path $reports[0].FullName "RESULTS.txt") -Pattern "^FINAL: PASS - all eight checks exited 0$" -Quiet)) {
+            throw "Package checker did not produce eight all-PASS native results"
+          }
+          Write-Host "FUNC-D2 eight packaged functional checks PASS"
+          # Avoid uploading runner-local log paths or any diagnostics.
+          Remove-Item -LiteralPath $reports[0].FullName -Recurse -Force
           & "$dest/Verify-P2-Windows.ps1" -VerifyOnly
           if ($LASTEXITCODE -ne 0) { throw "Packaged real Qt P2 verification failed" }
           # Run P4 accessibility/focus/motion checks against the relocated
