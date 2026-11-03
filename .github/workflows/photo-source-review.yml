@@ -1,10 +1,9 @@
 name: Photo P1-B primary thumbnail review (never installed)
 
+# Deliberately manual-only after Wikimedia rejected both original media
+# (HTTP 429) and 640px thumbnails (HTTP 400). Never launch new photo
+# downloads automatically on source/documentation pushes.
 on:
-  push:
-    branches: [feature/p7-sqlite-sandbox-20261102]
-    paths:
-      - .github/workflows/photo-source-review.yml
   workflow_dispatch:
 
 permissions:
@@ -110,9 +109,12 @@ jobs:
                   print("PREVIEW", entry["id"], im.size, retained, flush=True)
                   time.sleep(3)  # avoid burst requests
               except HTTPError as error:
-                  record.update(status="BLOCKED_HTTP_429" if error.code == 429 else "HTTP_ERROR",
+                  record.update(status=f"BLOCKED_HTTP_{error.code}"
+                                if 400 <= error.code < 500 else "HTTP_ERROR",
                                 error=f"HTTP {error.code}")
-                  if error.code == 429:
+                  if 400 <= error.code < 500:
+                      # Permanent refusal or rate limit: stop; do not try
+                      # other files or retry on a different route.
                       blocked = True
                   print("STOP / UNAVAILABLE", entry["id"], record["error"], flush=True)
               except (URLError, TimeoutError, ValueError, OSError) as error:
@@ -163,7 +165,7 @@ jobs:
                       "preview_count": len(images),
                       "expected_primary_count": 5,
                       "complete": complete,
-                      "blocked_http_429": blocked,
+                      "blocked_http_4xx": blocked,
                       "installed_application_assets": 0,
                       "notes": "Do not treat preview SHA-256 hashes as original source hashes; credits are sourced from the existing unapproved register. Must reverify metadata, source originals and owner visual approval before adoption.",
                       "files": items}
@@ -178,7 +180,7 @@ jobs:
               "CC BY-SA adaptations require attribution and share-alike review.\n"
               "See each source-page URL in SOURCE_REVIEW_MANIFEST.json.\n",
               encoding="utf-8")
-          print(f"THUMBNAIL REVIEW {len(images)}/5; 429 blocked={blocked}", flush=True)
+          print(f"THUMBNAIL REVIEW {len(images)}/5; blocked_4xx={blocked}", flush=True)
           if not complete:
               raise SystemExit("Incomplete thumbnail review; no photo may be approved")
           PY

@@ -1233,6 +1233,61 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Motorcycle fallback native screenshot failed";
                 app.exit(753);return;
             }
+            // PHOTO-P1 baseline: real Qt screenshots of every currently
+            // shipped fictional model, one visible Gallery card plus the
+            // selected Inspector. These show UNAPPROVED references/fallbacks,
+            // not a claim about new source photographs or actual rental stock.
+            const QStringList reviewIds={
+                QStringLiteral("C001"),QStringLiteral("C002"),
+                QStringLiteral("C003"),QStringLiteral("M001"),
+                QStringLiteral("M002")};
+            for(const QString &id:reviewIds) {
+                const bool expectPhoto=id.startsWith(QLatin1Char('C'));
+                const QString expectedLabel=expectPhoto
+                    ? QStringLiteral("Reference image")
+                    : QStringLiteral("Illustration");
+                fleet.setQuery(id);
+                fleet.selectById(id);
+                QTest::qWait(320);
+                auto *cardImage=find(find,window->contentItem(),
+                                     "vehicleCardPhoto");
+                auto *cardFallback=find(find,window->contentItem(),
+                                        "vehicleCardArt");
+                auto *cardLabel=find(find,window->contentItem(),
+                                     "fleetGalleryMediaStatus");
+                auto *inspectorImage=find(find,window->contentItem(),
+                                          "fleetInspectorPhoto");
+                auto *inspectorFallback=find(find,window->contentItem(),
+                                             "fleetInspectorFallbackArt");
+                if(fleet.selectedId()!=id ||
+                   fleet.selectedName().isEmpty() ||
+                   !cardLabel || !inWindow(cardLabel) ||
+                   cardLabel->property("text").toString()!=expectedLabel ||
+                   photoDisclaimer->property("text").toString()!=expectedLabel ||
+                   !inWindow(photoDisclaimer) ||
+                   (expectPhoto && (!cardImage || !inspectorImage ||
+                                    !inWindow(cardImage) ||
+                                    !inWindow(inspectorImage) ||
+                                    cardFallback || inspectorFallback)) ||
+                   (!expectPhoto && (!cardFallback || !inspectorFallback ||
+                                     !inWindow(cardFallback) ||
+                                     !inWindow(inspectorFallback) ||
+                                     cardImage || inspectorImage))) {
+                    qCritical()<<"Five-model native Fleet review missing/mislabeled"
+                               <<id<<expectedLabel;
+                    app.exit(756);return;
+                }
+                const QImage modelShot=window->grabWindow();
+                const QString filename=QStringLiteral("ux-q3-five-model-%1-%2.png")
+                    .arg(id,photoViewport);
+                if(modelShot.size()!=window->size() ||
+                   !modelShot.save(filename,"PNG")) {
+                    qCritical()<<"Five-model native screenshot failed"<<id;
+                    app.exit(757);return;
+                }
+            }
+            fleet.setQuery("");
+            QTest::qWait(180);
             fleet.selectById("C001");
             QTest::qWait(170);
             const QImage selectedShot=window->grabWindow();
