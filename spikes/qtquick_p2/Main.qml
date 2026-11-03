@@ -1108,9 +1108,12 @@ ApplicationWindow {
                                 objectName: "fleetInspectorSelectedArt"
                                 visible: fleet.selectedId !== ""
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: window.height < 800 ? 76 : 104
+                                // Keep a useful image area even in the 720px Inspector.
+                                Layout.preferredHeight: window.height < 800 ? 96 : 120
+                                Layout.minimumHeight: window.height < 800 ? 86 : 112
                                 color: ice
                                 radius: 10
+                                clip: true
                                 Image {
                                     id: inspectorPhoto
                                     objectName: "fleetInspectorPhoto"
@@ -1122,19 +1125,25 @@ ApplicationWindow {
                                     fillMode: Image.PreserveAspectCrop
                                     cache: false
                                     Accessible.name: "Illustrative model photo for " + fleet.selectedName
+                                    Accessible.description: "Reference picture only, not the actual rental vehicle"
                                 }
                                 VehicleSilhouette {
                                     anchors.centerIn: parent
                                     visible: !inspectorPhoto.visible
                                     vehicleType: fleet.selectedType
                                 }
+                                // A compact top-left marker never overflows into the
+                                // vehicle heading or fights the photo action.
                                 Label {
-                                    anchors.bottom: parent.bottom
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    objectName: "fleetPhotoDisclaimer"
+                                    anchors.top: parent.top
+                                    anchors.left: parent.left
+                                    anchors.margins: 6
                                     font.pixelSize: 10
-                                    text: "Illustrative photo - not the actual rental vehicle"
+                                    text: "Illustrative"
                                     color: navy
                                     visible: inspectorPhoto.visible
+                                    Accessible.description: "Not a photograph of the actual rental vehicle"
                                     background: Rectangle {
                                         color: "#EFFFFFFF"
                                         radius: 4
@@ -1144,14 +1153,16 @@ ApplicationWindow {
                                 // the Book action's room at compact desktop sizes.
                                 Button {
                                     objectName: "fleetReplacePhotoButton"
-                                    text: "Change photo"
+                                    text: window.height < 800 ? "Change" : "Change photo"
+                                    font.pixelSize: 11
+                                    padding: 4
                                     anchors.top: parent.top
                                     anchors.right: parent.right
                                     anchors.margins: 6
                                     z: 2
                                     visible: !persistentFictionalDemo
                                     activeFocusOnTab: true
-                                    height: 34
+                                    height: window.height < 800 ? 27 : 32
                                     Accessible.name: "Choose a new local illustration for selected fictional vehicle"
                                     onClicked: selectedFleetPhotoDialog.open()
                                 }

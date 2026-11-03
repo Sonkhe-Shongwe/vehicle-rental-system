@@ -1158,6 +1158,25 @@ int main(int argc, char *argv[]) {
             }
             // Save real selected-Inspector evidence for visual review on
             // both hosted operating systems; never substitute a mockup.
+            auto *photoDisclaimer=find(find,window->contentItem(),
+                                         "fleetPhotoDisclaimer");
+            auto *selectedArt=find(find,window->contentItem(),
+                                    "fleetInspectorSelectedArt");
+            if(!photoDisclaimer || !selectedArt ||
+               selectedArt->height()<84 || changePhoto->height()>33 ||
+               !inWindow(photoDisclaimer)) {
+                qCritical()<<"Fleet Inspector photo action/disclaimer not contained";
+                app.exit(727);return;
+            }
+            const QRectF artRect=selectedArt->mapRectToScene(
+                QRectF(0,0,selectedArt->width(),selectedArt->height()));
+            const QPointF captionEnd=photoDisclaimer->mapToScene(
+                QPointF(photoDisclaimer->width(),photoDisclaimer->height()));
+            if(captionEnd.y()>artRect.bottom()+1 ||
+               captionEnd.x()>artRect.right()+1) {
+                qCritical()<<"Fleet photo disclaimer overflowed the Inspector";
+                app.exit(728);return;
+            }
             const QString photoViewport=compact?"1280x720":"1500x860";
             const QImage selectedShot=window->grabWindow();
             if(selectedShot.size()!=window->size() ||
