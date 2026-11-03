@@ -125,6 +125,39 @@ static bool backup(Database &source, const QString &destination) {
     }
     return QFileInfo(destination).size() > 0;
 }
+// Generated-fictional-only restore proof. Restore verified snapshots to a
+// new independent file, never over an existing DB or an in-use application.
+static bool restoreVerified(const QString &backupPath,const QString &destination) {
+    const QString staging=destination+QStringLiteral(".restore-stage");
+    const QFileInfo source(backupPath),target(destination),stage(staging);
+    if(!source.isFile()||source.isSymLink()||source.size()<=0||
+       target.exists()||target.isSymLink()||stage.exists()||stage.isSymLink()||
+       QFileInfo::exists(backupPath+"-wal")||
+       QFileInfo::exists(backupPath+"-shm")||
+       QFileInfo::exists(backupPath+"-journal"))
+        return false;
+    // QFile::copy never overwrites an existing stage. We only clean up a
+    // staging file we actually created, never a pre-existing file.
+    if(!QFile::copy(backupPath,staging))return false;
+    bool verified=false;
+    {
+        Database candidate;
+        // Validation occurs on the private staging copy, not the source.
+        verified=candidate.open(staging,false)&&candidate.baseline();
+    }
+    if(!verified) {
+        QFile::remove(staging);
+        return false;
+    }
+    // QFile::rename refuses an occupied final path, including a racing writer.
+    QFile file(staging);
+    if(!file.rename(destination)) {
+        QFile::remove(staging);
+        return false;
+    }
+    return QFileInfo(destination).size()>0;
+}
+
 static QByteArray sha256(const QString &path) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) return {};
@@ -265,6 +298,100 @@ static bool locked() {
            check(restored(dst), "restored data intact after lock retry");
 }
 
+static bool restoreRoundtrip() {
+    QTemporaryDir dir;
+    if(!check(dir.isValid(),"restore temp root"))return false;
+    const QString src=dir.filePath("source.sqlite");
+    const QString backupPath=dir.filePath("backup.sqlite");
+    const QString dst=dir.filePath("restored.sqlite");
+    if(!makeSeed(src))return false;
+    {
+        Database source;
+        if(!source.open(src)||!backup(source,backupPath))return false;
+    }
+    const QByteArray before=sha256(backupPath);
+    if(!check(before.size()==32,"backup SHA before restore")||
+       !check(restoreVerified(backupPath,dst),"new target restored")||
+       !check(restored(dst),"restore passes independent full baseline")||
+       !check(before==sha256(backupPath),"source backup bytes unchanged"))
+        return false;
+    {
+        Database output;
+        if(!output.open(dst)||
+           !check(output.run("INSERT INTO vehicles VALUES('C003','ACTIVE',25000)"),
+                  "restored DB can be independently edited")||
+           !check(output.value("SELECT count(*) FROM vehicles").toInt()==3,
+                  "restored extra record visible"))return false;
+    }
+    return check(restored(backupPath),"backup unaffected by restored edits")&&
+           check(restored(src),"original live source unaffected");
+}
+static bool restoreDamaged() {
+    QTemporaryDir dir;
+    if(!dir.isValid())return false;
+    const QString src=dir.filePath("source.sqlite");
+    const QString good=dir.filePath("backup.sqlite");
+    const QString bad=dir.filePath("damaged.sqlite");
+    const QString dst=dir.filePath("new-target.sqlite");
+    if(!makeSeed(src))return false;
+    {
+        Database source;
+        if(!source.open(src)||!backup(source,good))return false;
+    }
+    const QByteArray hash=sha256(good);
+    if(!check(hash.size()==32&&QFile::copy(good,bad),"corrupt fixture copied"))
+        return false;
+    {
+        QFile bytes(bad);
+        if(!bytes.open(QIODevice::ReadWrite)||!bytes.seek(0)||
+           bytes.write("NOT-SQLITE",10)!=10)return false;
+    }
+    return check(!restoreVerified(bad,dst),"damaged backup restore refused")&&
+           check(!QFileInfo::exists(dst)&&
+                 !QFileInfo::exists(dst+".restore-stage"),
+                 "failed restore cleans only owned stage")&&
+           check(hash==sha256(good),"valid backup bytes retained")&&
+           check(restoreVerified(good,dst)&&restored(dst),
+                 "valid backup restores after corrupt refusal")&&
+           check(restored(src),"live source unaffected");
+}
+static bool restoreRefuseOverwrite() {
+    QTemporaryDir dir;
+    if(!dir.isValid())return false;
+    const QString src=dir.filePath("source.sqlite");
+    const QString good=dir.filePath("backup.sqlite");
+    const QString dst=dir.filePath("existing.sqlite");
+    const QString stage=dst+".restore-stage";
+    if(!makeSeed(src))return false;
+    {
+        Database source;
+        if(!source.open(src)||!backup(source,good))return false;
+    }
+    const QByteArray hash=sha256(good);
+    QFile existing(dst);
+    if(!existing.open(QIODevice::WriteOnly|QIODevice::NewOnly)||
+       existing.write("KEEP-DESTINATION",16)!=16)return false;
+    existing.close();
+    const QByteArray original=sha256(dst);
+    if(!check(!restoreVerified(good,dst),"existing destination refused")||
+       !check(original==sha256(dst),"existing bytes unchanged")||
+       !check(!QFileInfo::exists(stage),"no partial restore stage"))return false;
+    if(!QFile::remove(dst))return false;
+    QFile stale(stage);
+    if(!stale.open(QIODevice::WriteOnly|QIODevice::NewOnly)||
+       stale.write("KEEP-STAGE",10)!=10)return false;
+    stale.close();
+    const QByteArray stageHash=sha256(stage);
+    if(!check(!restoreVerified(good,dst),"existing staging file refused")||
+       !check(stageHash==sha256(stage),"foreign staging bytes unchanged")||
+       !check(!QFileInfo::exists(dst),"refused restore created no target")||
+       !check(hash==sha256(good),"backup original unchanged"))return false;
+    if(!QFile::remove(stage))return false;
+    return check(restoreVerified(good,dst)&&restored(dst),
+                 "valid recovery after staging conflict")&&
+           check(restored(src),"source left unchanged");
+}
+
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     if (argc != 2) return 2; // fixed test names only; never file paths
@@ -276,6 +403,9 @@ int main(int argc, char **argv) {
     else if (mode == "damaged") ok = damaged();
     else if (mode == "refuse_overwrite") ok = refuseOverwrite();
     else if (mode == "locked") ok = locked();
+    else if (mode == "restore_roundtrip") ok = restoreRoundtrip();
+    else if (mode == "restore_damaged") ok = restoreDamaged();
+    else if (mode == "restore_refuse_overwrite") ok = restoreRefuseOverwrite();
     else return 3;
     if (ok) qInfo() << "P7-E synthetic SQLite backup proof PASS:" << mode;
     return ok ? 0 : 1;

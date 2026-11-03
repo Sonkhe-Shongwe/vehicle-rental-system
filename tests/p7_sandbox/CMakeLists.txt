@@ -44,7 +44,8 @@ set_tests_properties(
 # No runtime app or production storage linkage; opted-in via P7 sandbox flag.
 add_executable(rental_studio_p7_sqlite_backup p7_sqlite_backup_tests.cpp)
 target_link_libraries(rental_studio_p7_sqlite_backup PRIVATE Qt6::Core Qt6::Sql)
-foreach(CASE IN ITEMS snapshot readers uncommitted damaged refuse_overwrite locked)
+foreach(CASE IN ITEMS snapshot readers uncommitted damaged refuse_overwrite locked
+    restore_roundtrip restore_damaged restore_refuse_overwrite)
     add_test(NAME rental_studio_p7_backup_${CASE}
         COMMAND rental_studio_p7_sqlite_backup ${CASE})
 endforeach()
@@ -55,6 +56,9 @@ set_tests_properties(
     rental_studio_p7_backup_damaged
     rental_studio_p7_backup_refuse_overwrite
     rental_studio_p7_backup_locked
+    rental_studio_p7_backup_restore_roundtrip
+    rental_studio_p7_backup_restore_damaged
+    rental_studio_p7_backup_restore_refuse_overwrite
     PROPERTIES TIMEOUT 45)
 
 # P7-F: real separate-process crash, writer lock, restart and schema refusal;
