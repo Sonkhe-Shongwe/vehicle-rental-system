@@ -453,6 +453,15 @@ ApplicationWindow {
         target: rentalsModel
         function onSelectionChanged() {
             window.returnLookupFeedback = ""
+            // Consent applies to one continuously selected contract. Once
+            // the modal's target is lost, selecting it again must NOT silently
+            // re-enable the old confirmation. A fresh dialog is required.
+            if (returnConfirmation.visible &&
+                    rentalsModel.selectedRentalId !== returnConfirmation.targetId)
+                returnConfirmation.reviewInvalidated = true
+            if (archiveConfirmation.visible &&
+                    rentalsModel.selectedRentalId !== archiveConfirmation.targetId)
+                archiveConfirmation.reviewInvalidated = true
             Qt.callLater(window.syncCurrentRental)
         }
         function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
@@ -2027,6 +2036,7 @@ ApplicationWindow {
                             Accessible.name: "Return the selected active rental"
                             onClicked: {
                                 returnConfirmation.targetId = rentalsModel.selectedRentalId
+                                returnConfirmation.reviewInvalidated = false
                                 returnConfirmation.open()
                             }
                         }
@@ -2039,6 +2049,7 @@ ApplicationWindow {
                             Accessible.name: "Archive selected returned rental"
                             onClicked: {
                                 archiveConfirmation.targetId = rentalsModel.selectedRentalId
+                                archiveConfirmation.reviewInvalidated = false
                                 archiveConfirmation.open()
                             }
                         }
@@ -2111,14 +2122,19 @@ ApplicationWindow {
                         // Never let a live selection swap the target reviewed
                         // in this modal. The C++ controller repeats the ID guard.
                         property string targetId: ""
+                        property bool reviewInvalidated: false
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Confirm rental return"
-                        question: "Mark " + returnConfirmation.targetId + " as returned today?"
+                        question: "Mark " + returnConfirmation.targetId + " as returned today?" +
+                                  (returnConfirmation.reviewInvalidated
+                                      ? "\\nSelection changed. Close and reopen to review this return."
+                                      : "")
                         acceptText: "Confirm return"
                         acceptName: "rentalReturnConfirm"
                         cancelName: "rentalReturnCancel"
                         canAccept: returnConfirmation.targetId !== "" &&
+                                   !returnConfirmation.reviewInvalidated &&
                                    returnConfirmation.targetId === rentalsModel.selectedRentalId &&
                                    rentalActions.canReturnSelected
                         restoreFocusTo: returnSelectedButton
@@ -2129,15 +2145,20 @@ ApplicationWindow {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
                         property string targetId: ""
+                        property bool reviewInvalidated: false
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Archive returned rental"
                         question: "Move " + archiveConfirmation.targetId +
-                                  " to archived history? The record will not be deleted."
+                                  " to archived history? The record will not be deleted." +
+                                  (archiveConfirmation.reviewInvalidated
+                                      ? "\\nSelection changed. Close and reopen to review this archive."
+                                      : "")
                         acceptText: "Confirm archive"
                         acceptName: "rentalArchiveConfirm"
                         cancelName: "rentalArchiveCancel"
                         canAccept: archiveConfirmation.targetId !== "" &&
+                                   !archiveConfirmation.reviewInvalidated &&
                                    archiveConfirmation.targetId === rentalsModel.selectedRentalId &&
                                    archiveActions.canArchiveSelected
                         restoreFocusTo: archiveActionButton

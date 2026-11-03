@@ -3769,7 +3769,14 @@ int main(int argc, char *argv[]) {
             }
             if(!rentalModel.selectById("R001")) {app.exit(821);return;}
             QCoreApplication::processEvents();
-            if(!returnConfirm->isEnabled()) {app.exit(822);return;}
+            // UX-S8: a round-trip selection cannot resurrect old consent.
+            if(returnConfirm->isEnabled() ||
+               !returnDialog->property("reviewInvalidated").toBool() ||
+               !returnDialog->property("question").toString().contains(
+                   "Close and reopen to review this return.")) {
+                qCritical()<<"UX-S8 return consent re-enabled after selection round-trip";
+                app.exit(827);return;
+            }
             press(returnCancel);
             QTest::qWait(110);
             if(!returnButton->hasActiveFocus() ||
@@ -3777,6 +3784,21 @@ int main(int argc, char *argv[]) {
                rentalModel.selectedRentalId()!="R001") {
                 qCritical()<<"P4 Return Cancel changed domain/selection/focus";
                 app.exit(217);return;
+            }
+            // A newly opened modal explicitly re-arms valid consent.
+            press(returnButton);
+            QTest::qWait(60);
+            if(!returnConfirm->isEnabled() ||
+               returnDialog->property("reviewInvalidated").toBool() ||
+               !returnDialog->property("question").toString().contains("R001")) {
+                qCritical()<<"UX-S8 fresh return confirmation failed to re-arm";
+                app.exit(828);return;
+            }
+            press(returnCancel);
+            QTest::qWait(90);
+            if(system.findRentalById("R001")->getIsReturned()) {
+                qCritical()<<"UX-S8 reopened return Cancel changed record";
+                app.exit(829);return;
             }
             if(!rentalModel.selectById("R002")) {
                 qCritical()<<"P4 returned demo rental absent";
@@ -3807,7 +3829,13 @@ int main(int argc, char *argv[]) {
             }
             if(!rentalModel.selectById("R002")) {app.exit(825);return;}
             QCoreApplication::processEvents();
-            if(!archiveConfirm->isEnabled()) {app.exit(826);return;}
+            if(archiveConfirm->isEnabled() ||
+               !archiveDialog->property("reviewInvalidated").toBool() ||
+               !archiveDialog->property("question").toString().contains(
+                   "Close and reopen to review this archive.")) {
+                qCritical()<<"UX-S8 archived consent re-enabled after selection round-trip";
+                app.exit(830);return;
+            }
             QTest::keyClick(window,Qt::Key_Escape);
             QTest::qWait(155);
             if(!archiveButton->hasActiveFocus() ||
@@ -3815,6 +3843,20 @@ int main(int argc, char *argv[]) {
                rentalModel.selectedRentalId()!="R002") {
                 qCritical()<<"P4 Archive Escape stole selection/changed domain";
                 app.exit(221);return;
+            }
+            press(archiveButton);
+            QTest::qWait(60);
+            if(!archiveConfirm->isEnabled() ||
+               archiveDialog->property("reviewInvalidated").toBool() ||
+               !archiveDialog->property("question").toString().contains("R002")) {
+                qCritical()<<"UX-S8 fresh archive confirmation failed to re-arm";
+                app.exit(831);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(110);
+            if(system.findRentalById("R002")->getIsArchived()) {
+                qCritical()<<"UX-S8 reopened archive Escape changed record";
+                app.exit(832);return;
             }
             QByteArray vehiclesNow,rentalsNow,tempRentalsNow;
             if(!readFile(vehicles,&vehiclesNow) ||
