@@ -1137,15 +1137,21 @@ ApplicationWindow {
                                         radius: 4
                                     }
                                 }
-                            }
-                            Button {
-                                objectName: "fleetReplacePhotoButton"
-                                text: "Change vehicle photo..."
-                                visible: fleet.selectedId !== "" && !persistentFictionalDemo
-                                activeFocusOnTab: true
-                                Layout.minimumHeight: 36
-                                Accessible.name: "Choose a new local illustration for selected fictional vehicle"
-                                onClicked: selectedFleetPhotoDialog.open()
+                                // Overlay, not an extra layout row. Preserve
+                                // the Book action's room at compact desktop sizes.
+                                Button {
+                                    objectName: "fleetReplacePhotoButton"
+                                    text: "Change photo"
+                                    anchors.top: parent.top
+                                    anchors.right: parent.right
+                                    anchors.margins: 6
+                                    z: 2
+                                    visible: !persistentFictionalDemo
+                                    activeFocusOnTab: true
+                                    height: 34
+                                    Accessible.name: "Choose a new local illustration for selected fictional vehicle"
+                                    onClicked: selectedFleetPhotoDialog.open()
+                                }
                             }
                             Label {
                                 text: fleet.selectedId === "" ? "Ready to explore" : fleet.selectedName

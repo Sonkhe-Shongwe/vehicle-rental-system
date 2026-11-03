@@ -1128,8 +1128,23 @@ int main(int argc, char *argv[]) {
             fleet.selectById("C001");
             QTest::qWait(180);
             auto *photo=find(find,window->contentItem(),"fleetInspectorPhoto");
-            if(!photo || !photo->property("source").toString().contains("C001")) {
-                qCritical()<<"Fleet inspector photo did not bind selected C001";
+            auto *changePhoto=find(find,window->contentItem(),
+                                   "fleetReplacePhotoButton");
+            auto *bookAction=find(find,window->contentItem(),
+                                  "fleetBookSelectedButton");
+            const auto inWindow=[window](QQuickItem *item) {
+                if(!item || !item->isVisible())return false;
+                const QPointF at=item->mapToScene(QPointF{0,0});
+                return at.x()>=0 && at.y()>=0 &&
+                       at.x()+item->width()<=window->width() &&
+                       at.y()+item->height()<=window->height();
+            };
+            if(!photo ||
+               !photo->property("source").toString().contains("C001") ||
+               photo->property("status").toInt()!=1 ||
+               !inWindow(changePhoto) || !inWindow(bookAction) ||
+               bookAction->height()<36) {
+                qCritical()<<"Fleet image not rendered or compact Inspector action clipped";
                 app.exit(712);return;
             }
             if(fleetPhotos.chooseFile(QUrl("https://invalid.example/image.jpg")) ||
@@ -1179,6 +1194,8 @@ int main(int argc, char *argv[]) {
             FleetPhotoStore second(dataDirectory);
             const QImage recovered=second.imageFor("C004");
             if(!photo||!photo->property("source").toString().contains("C004")||
+               photo->property("status").toInt()!=1 ||
+               !inWindow(changePhoto) || !inWindow(bookAction) ||
                !second.hasPhoto("C004")||recovered.size()!=image.size()||
                recovered.pixelColor(5,5)!=image.pixelColor(5,5)) {
                 qCritical()<<"Fleet image not bound/recoverable from fictional sidecar";
