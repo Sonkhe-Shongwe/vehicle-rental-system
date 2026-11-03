@@ -338,6 +338,18 @@ ApplicationWindow {
         function onSortByChanged() { Qt.callLater(window.syncCurrentVehicle) }
     }
 
+    // Translate only C++ due-state codes for operator display. Dates,
+    // overdue decisions, contract status and writes remain C++-owned.
+    function dueStateLabel(state) {
+        switch (state) {
+        case "NotApplicable": return "No return due"
+        case "NotDue": return "On schedule"
+        case "DueToday": return "Due today"
+        case "Overdue": return "Overdue"
+        default: return "Due date unavailable"
+        }
+    }
+
     // Rental Arrow navigation follows only C++-filtered visible rows. Text
     // input, filter buttons, Tab and Escape retain native key behaviour.
     function navigateRentals(delta) {
@@ -2262,7 +2274,7 @@ ApplicationWindow {
                                                       ? "Selected rental " : "Rental ") +
                                                      rentalId + ", " + status +
                                                      ", vehicle " + vehicleId +
-                                                     ", " + dueState +
+                                                     ", " + window.dueStateLabel(dueState) +
                                                      ", total R " + Number(total).toFixed(2)
                                     onClicked: rentalsModel.selectById(rentalId)
                                     background: FocusFrame {
@@ -2292,9 +2304,11 @@ ApplicationWindow {
                                             Layout.preferredWidth: 100
                                         }
                                         Label {
-                                            text: rentalRow.dueState
+                                            objectName: "rentalDueLabel" + rentalRow.rentalId
+                                            text: window.dueStateLabel(rentalRow.dueState)
                                             color: ink
                                             Layout.fillWidth: true
+                                            Accessible.name: "Return due: " + text
                                         }
                                         Label {
                                             text: "R " + Number(rentalRow.total).toFixed(2)
@@ -2400,7 +2414,8 @@ ApplicationWindow {
                             Label {
                                 objectName: "rentalDetailStatus"
                                 text: "Status: " + (rentalsModel.selectedContract.status || "Not selected") +
-                                      "  ·  Due: " + (rentalsModel.selectedContract.dueState || "Unknown")
+                                      "  ·  Due: " + window.dueStateLabel(
+                                          rentalsModel.selectedContract.dueState)
                                 color: navy
                                 Accessible.name: text
                             }

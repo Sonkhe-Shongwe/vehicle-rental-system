@@ -2547,6 +2547,16 @@ int main(int argc, char *argv[]) {
             auto *panel=window->findChild<QQuickItem*>("rentalRecordsPanel");
             auto *details=window->findChild<QQuickItem*>("rentalDetailsButton");
             auto *booking=window->findChild<QQuickItem*>("rentalNewBookingButton");
+            auto *activeDue=window->findChild<QQuickItem*>("rentalDueLabelR001");
+            auto *returnedDue=window->findChild<QQuickItem*>("rentalDueLabelR002");
+            // Real QML delegates must not leak C++ enum identifiers.
+            // C++ still owns the raw due-state and all dated decisions.
+            if(!activeDue||!returnedDue||
+               activeDue->property("text").toString()!="Overdue"||
+               returnedDue->property("text").toString()!="No return due") {
+                qCritical()<<"UX-S1 operator-facing due-state text exposed raw enum";
+                app.exit(813);return;
+            }
             if(!page||!list||!panel||!details||!booking||
                !page->isVisible()||!list->isVisible()||
                rentalModel.count()!=2) {
