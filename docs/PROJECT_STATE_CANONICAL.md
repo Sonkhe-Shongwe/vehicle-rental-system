@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Canonical current product state
 
+**UX-Q3 PHOTO FALLBACK / FOCUS, 3 NOV 2026 (EXACT-SOURCE VERIFIED).** [Source `3c8291e`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/3c8291e4dd51cb52af5f10dd4b2f312c72e07be3) corrects photo display so the real Qt Gallery, Inspector and Add Vehicle preview show only decoded `Image.Ready` media; otherwise the silhouette remains. Photo picker/reset flows restore keyboard focus to available controls, with new native rejection/recovery and focus assertions. [Hosted Qt 6.8.3 Linux GCC + Windows MSVC native CI](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41628559156) passed **117/117 CTests EACH**, Windows portable PowerShell 7/5.1 checks PASS. [Evidence/details](UX_Q3_PHOTO_FALLBACK_AND_FOCUS_NATIVE_VERIFIED_2026-11-03.md). No photograph assets changed or approved, no new physical Windows MinGW/scaling/Narrator proof, no commercial data or release. **45/74 accepted, weighted 70.6% unchanged.**
+
 **Reconciled 3 November 2026.** GitHub live state outranks this dated snapshot. [Latest checkpoint](LATEST_CHECKPOINT.md), [full 2 Nov audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [programme ledger](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md), [source-level P7-H report](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md).
 
 ## Latest source verification
