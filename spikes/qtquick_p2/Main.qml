@@ -1050,6 +1050,28 @@ ApplicationWindow {
                                                 width: 164
                                                 height: 74
                                             }
+                                            // Every card must state whether its media is a decoded
+                                            // reference picture or neutral non-photographic artwork.
+                                            // A loading/failed image never masquerades as a photo.
+                                            Label {
+                                                objectName: "fleetGalleryMediaStatus"
+                                                anchors.left: parent.left
+                                                anchors.top: parent.top
+                                                anchors.margins: 5
+                                                padding: 3
+                                                font.pixelSize: 10
+                                                font.bold: true
+                                                text: cardPhoto.visible ? "Reference image" : "Illustration"
+                                                color: navy
+                                                Accessible.name: text
+                                                Accessible.description: cardPhoto.visible
+                                                    ? "Illustrative reference only, not the actual rental vehicle"
+                                                    : "Generic vehicle artwork; no photograph is displayed"
+                                                background: Rectangle {
+                                                    color: "#EFFFFFFF"
+                                                    radius: 4
+                                                }
+                                            }
                                         }
                                         Label {
                                             text: vehicleCard.displayName
@@ -1274,10 +1296,13 @@ ApplicationWindow {
                                     anchors.left: parent.left
                                     anchors.margins: 6
                                     font.pixelSize: 10
-                                    text: "Illustrative"
+                                    text: inspectorPhoto.visible ? "Reference image" : "Illustration"
                                     color: navy
-                                    visible: inspectorPhoto.visible
-                                    Accessible.description: "Not a photograph of the actual rental vehicle"
+                                    visible: fleet.selectedId !== ""
+                                    Accessible.name: text
+                                    Accessible.description: inspectorPhoto.visible
+                                        ? "Reference picture only, not the actual rental vehicle"
+                                        : "Generic vehicle artwork; no photograph is displayed"
                                     background: Rectangle {
                                         color: "#EFFFFFFF"
                                         radius: 4

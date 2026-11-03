@@ -1146,6 +1146,13 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet Gallery photo crop area too small or unreadable";
                 app.exit(724);return;
             }
+            auto *galleryMedia=find(find,window->contentItem(),
+                                    "fleetGalleryMediaStatus");
+            if(!galleryMedia ||
+               galleryMedia->property("text").toString()!="Reference image") {
+                qCritical()<<"Fleet Gallery reference photo lacks truthful media label";
+                app.exit(754);return;
+            }
             fleet.selectById("C001");
             QTest::qWait(180);
             auto *photo=find(find,window->contentItem(),"fleetInspectorPhoto");
@@ -1175,6 +1182,7 @@ int main(int argc, char *argv[]) {
             auto *selectedArt=find(find,window->contentItem(),
                                     "fleetInspectorSelectedArt");
             if(!photoDisclaimer || !selectedArt ||
+               photoDisclaimer->property("text").toString()!="Reference image" ||
                selectedArt->height()<84 || changePhoto->height()>33 ||
                !inWindow(photoDisclaimer)) {
                 qCritical()<<"Fleet Inspector photo action/disclaimer not contained";
@@ -1198,10 +1206,26 @@ int main(int argc, char *argv[]) {
                                       "fleetInspectorFallbackArt");
             if(!motorcycleArt ||
                find(find,window->contentItem(),"fleetInspectorPhoto") ||
-               !inWindow(motorcycleArt)) {
-                qCritical()<<"Motorcycle Fleet fallback was hidden or clipped";
+               !inWindow(motorcycleArt) ||
+               photoDisclaimer->property("text").toString()!="Illustration" ||
+               !inWindow(photoDisclaimer)) {
+                qCritical()<<"Motorcycle Fleet fallback or its media label was hidden";
                 app.exit(752);return;
             }
+            // Real Gallery filtering must label motorcycle artwork as art,
+            // not suggest that an unapproved Honda photograph is present.
+            fleet.setQuery("M001");
+            QTest::qWait(180);
+            galleryMedia=find(find,window->contentItem(),
+                              "fleetGalleryMediaStatus");
+            if(!galleryMedia ||
+               galleryMedia->property("text").toString()!="Illustration" ||
+               !inWindow(galleryMedia)) {
+                qCritical()<<"Fleet Gallery motorcycle fallback mislabeled";
+                app.exit(755);return;
+            }
+            fleet.setQuery("");
+            QTest::qWait(130);
             const QImage motorcycleShot=window->grabWindow();
             if(motorcycleShot.size()!=window->size() ||
                !motorcycleShot.save("ux-q3-motorcycle-fallback-"+
@@ -1464,8 +1488,9 @@ int main(int argc, char *argv[]) {
             fleetPhotos.discardStaged();
             QTest::qWait(180);
             if(find(find,window->contentItem(),"fleetInspectorPhoto") ||
-               !find(find,window->contentItem(),"fleetInspectorFallbackArt")) {
-                qCritical()<<"Unsafe image did not reveal Inspector silhouette";
+               !find(find,window->contentItem(),"fleetInspectorFallbackArt") ||
+               photoDisclaimer->property("text").toString()!="Illustration") {
+                qCritical()<<"Unsafe image did not reveal clearly labelled silhouette";
                 app.exit(750);return;
             }
             if(!image.save(sidecar,"PNG") ||
@@ -1479,8 +1504,9 @@ int main(int argc, char *argv[]) {
             auto *recoveredPhoto=find(find,window->contentItem(),
                                      "fleetInspectorPhoto");
             if(!recoveredPhoto || recoveredPhoto->property("status").toInt()!=1 ||
-               find(find,window->contentItem(),"fleetInspectorFallbackArt")) {
-                qCritical()<<"Inspector photo did not recover after valid image restored";
+               find(find,window->contentItem(),"fleetInspectorFallbackArt") ||
+               photoDisclaimer->property("text").toString()!="Reference image") {
+                qCritical()<<"Inspector photo/media label did not recover after valid image restored";
                 app.exit(751);return;
             }
             QByteArray fixedV,fixedR;
