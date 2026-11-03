@@ -908,7 +908,7 @@ ApplicationWindow {
                                                 id: cardPhoto
                                                 objectName: "vehicleCardPhoto"
                                                 anchors.fill: parent
-                                                visible: fleetPhotos.hasPhoto(vehicleCard.vehicleId)
+                                                visible: fleetPhotos.revision >= 0 && fleetPhotos.hasPhoto(vehicleCard.vehicleId)
                                                 source: visible
                                                     ? "image://fleetphotos/" + vehicleCard.vehicleId
                                                       + "?v=" + fleetPhotos.revision : ""
@@ -1112,7 +1112,7 @@ ApplicationWindow {
                                     id: inspectorPhoto
                                     objectName: "fleetInspectorPhoto"
                                     anchors.fill: parent
-                                    visible: fleetPhotos.hasPhoto(fleet.selectedId)
+                                    visible: fleetPhotos.revision >= 0 && fleetPhotos.hasPhoto(fleet.selectedId)
                                     source: visible
                                         ? "image://fleetphotos/" + fleet.selectedId
                                           + "?v=" + fleetPhotos.revision : ""
