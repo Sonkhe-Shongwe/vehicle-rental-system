@@ -2,6 +2,10 @@
 
 **Reconciled 3 November 2026.** This is the concise CURRENT handoff chronology. The [2 Nov full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [latest checkpoint](LATEST_CHECKPOINT.md), [historical 30 Oct audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [older archived materials](archive/README.md) and Git history preserve the detailed previous narrative. Do not prepend more historical banners.
 
+## Latest verified engineering checkpoint
+
+**CURRENT VERIFIED UX-Q3, 3 NOV 2026.** [Exact Qt/C++ source `f8d7357`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f8d7357042c93d7aefd4b2170adb81c3b0989dd4) passed [native GitHub Actions 41605584293](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41605584293): **117/117 Qt CTests EACH** on Ubuntu 24.04 GCC/Qt 6.8.3 and hosted Windows Server 2022 MSVC/Qt 6.8.3, plus portable Windows packaged checks. Gallery car framing, compact selected-photo Inspector/disclaimer and genuine selected/imported screenshots are documented in [UX-Q3 exact-source visual QA](UX_Q3_FLEET_PHOTO_NATIVE_AND_VISUAL_QA_2026-11-03.md). **Owner P1 photography/whole-product visual, physical MinGW/Windows scaling/Narrator, P7 real-data policy and release remain OPEN.** P5 8/8, P6 9/9 owner approved, **45/74 accepted, weighted 70.6%** unchanged; `main` untouched, PRs draft, no real data, merge or release.
+
 ## Milestone chain
 
 **P6 owner decision (3 Nov 2026):** [nine bounded fictional lifecycle criteria accepted](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). P5 8/8 + P6 9/9, total **45/74**, weighted **70.6%**. Verified source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/hosted Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095); physical Windows/Narrator and P7 real-data rules still open. Earlier 56.6% is P5-only intermediate.
