@@ -2,6 +2,8 @@
 
 **Mission adopted:** 3 November 2026. **Status:** ACTIVE, not visually completed or owner accepted. The user set a clear new target: take the Fleet photography and related presentation from a subjective **3/10** to an owner-accepted **10/10** while retaining truthful model association, legally documented image rights, offline operation and full Qt/C++ functionality.
 
+**PHOTO-P1-D engineering update, 3 November 2026.** [PHOTO-P1-D evidence](PHOTO_P1_D_FIVE_MODEL_NATIVE_BASELINE_2026-11-03.md): [source `2995ddc`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/2995ddcef5e89cba7ffd7600e6aee45354be59eb), [native Actions 41641573481](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481), **117/117 native Qt CTests PASS each** Linux and hosted Windows. Actual QML wide and compact Fleet Gallery+Inspector screenshots now captured for **all five existing models** from pinned fictional data, with reference-photo vs neutral-motorcycle illustration assertions. No final artwork installed, all candidate sources unapproved, screenshots not independently pixel-inspected in this session. Source-download attempts are suspended after [originals 9× HTTP 429](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41631655379) and [thumbnails 5× HTTP 400](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641126446). Stage/source selection and P1 visual owner approval remain outstanding; baseline subjective 3/10 is not replaced by a test percentage.
+
 ## 1. Live source baseline and ground truth
 
 - Development branch: `feature/p7-sqlite-sandbox-20261102`, stacked **draft PR #17** on draft P6 #14, stable `main` unchanged.

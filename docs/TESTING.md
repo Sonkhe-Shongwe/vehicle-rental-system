@@ -2,20 +2,22 @@
 
 **Evidence audit: 3 November 2026.** [Checkpoint](LATEST_CHECKPOINT.md) | [Formal acceptance](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) | [Roadmap](ROADMAP.md). Native screenshots, automated green builds, physical Windows testing and owner acceptance are **different evidence levels**.
 
+**Latest: [source `2995ddc`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/2995ddcef5e89cba7ffd7600e6aee45354be59eb) / [native Actions 41641573481](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481).** Same Qt 6.8.3 OS kits; **117/117 CTests PASS each** including native five-model photo checks and hosted Windows portable PS7/5.1 checks. [PHOTO-P1-D evidence](PHOTO_P1_D_FIVE_MODEL_NATIVE_BASELINE_2026-11-03.md). The QML test produces ten additional real Fleet screenshot files per hosted platform (five IDs × wide/compact) from existing photo assets/fallback only. No manual screenshot pixel-review or owner aesthetic certification claimed. Photo-source run 41641126446 (640px thumbnails) failed all five with HTTP 400; prior 41631655379 original-file download failed all nine with HTTP 429. External acquisition is now manual-only, 4xx fail-fast.
+
 ## Latest exact-source successful native execution
 
 | Field | Verified observation |
 |---|---|
-| Executable source commit | [`087c923fcde13f8a5515c22e53e7883a15b6d5b4`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/087c923fcde13f8a5515c22e53e7883a15b6d5b4) |
-| GitHub Actions | [run 41637857962](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962), completed successfully |
+| Executable source commit | [`2995ddcef5e89cba7ffd7600e6aee45354be59eb`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/2995ddcef5e89cba7ffd7600e6aee45354be59eb) |
+| GitHub Actions | [run 41641573481](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481), **completed SUCCESS** |
 | Linux | Ubuntu 24.04 / GCC / Qt 6.8.3, **117/117 CTests passed**, 0 failed; genuine Qt GUI/screenshot jobs completed |
 | Hosted Windows | Windows Server 2022 / MSVC / Qt 6.8.3, **117/117 CTests passed**, 0 failed; actual QML test screenshots |
 | Windows portable verification | PowerShell 7 and Windows PowerShell 5.1 checks passed in hosted workflow |
-| UI layouts captured | 1500 x 860 wide and 1280 x 720 compact, including real Gallery/Inspector and motorcycle fallback; media-label assertions PASS |
-| Previous source evidence | [PHOTO-P1-C `8f1d8cc`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8f1d8cc0afa00af2feb8930ab5f02d2d1cde76ea) / [run 41632213416](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41632213416) were compiled and passed earlier; do not substitute their outcome for the latest source |
+| UI layouts captured | 1500×860 wide and 1280×720 compact; newly recorded selected Inspector + filtered Gallery for each C001/C002/C003/M001/M002, with truthfully labelled media/fallback and screenshot image dimensions validated. Artifacts: [Linux](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481/artifacts/13232748218), [Windows](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481/artifacts/13233403628). |
+| Previous source evidence | Earlier UX-Q6 [`087c923`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/087c923fcde13f8a5515c22e53e7883a15b6d5b4) / [run 41637857962](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962) PASS on both OS; PHOTO-P1-C `8f1d8cc` earlier still. No source claims from later documentation-only HEADs. |
 | Hard limitations | No physical owner's Windows 6.10.2 MinGW/Qt Creator build, actual 100/125/150% OS scaling, Narrator, production data, clean offline installer or release |
 
-Both 117/117 outputs and checkout of the **exact** `087c923fcde13f8a5515c22e53e7883a15b6d5b4` SHA were checked in the Linux and Windows job logs, including wide and compact `rental_studio_fleet_photo_*` PASS. [Linux screenshots](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962/artifacts/13232086999) and [Windows screenshots](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41637857962/artifacts/13232021763) were uploaded, but were not independently pixel-reviewed in this session. Documentation-only follow-ups are not compiled-source results.
+Both 117/117 summaries and checkout of exact source `2995ddcef5e89cba7ffd7600e6aee45354be59eb` were verified in actual Linux and hosted Windows job logs, including native `rental_studio_fleet_photo_wide` and `_compact` PASS. Actual screenshot ZIP artifacts were uploaded, not pixel-inspected independently here. The existing `UX-Q6` test improvements and all previous fixture tests remain enabled.
 
 **Latest feature-specific report:** [UX-Q6 native media-state labels](UX_Q6_FLEET_MEDIA_STATE_NATIVE_VERIFIED_2026-11-03.md). The tests assert truthful Gallery/Inspector labels on seeded pictures, motorcycle illustrations, oversized/corrupt image fallback and later valid-media recovery, while preserving the fixture-byte checks. No formal acceptance increment.
 
