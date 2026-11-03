@@ -1,0 +1,144 @@
+name: Photo P1-B candidate visual review (no app assets)
+
+on:
+  push:
+    branches: [feature/p7-sqlite-sandbox-20261102]
+    paths:
+      - .github/workflows/photo-source-review.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install review-only tooling
+        run: python -m pip install Pillow==11.3.0
+      - name: Fetch source images, hash and compare gallery framing
+        run: |
+          python - <<'PY'
+          import hashlib, json, time
+          from io import BytesIO
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from PIL import Image, ImageOps, ImageDraw, ImageFont
+          
+          folder=Path("design/photo_review")
+          data=json.loads((folder/"PHOTO_P1_B_CANDIDATES_2026-11-03.json").read_text(encoding="utf-8"))
+          out=folder/"review_output"
+          out.mkdir(exist_ok=True)
+          rows=[]
+          record=[]
+          fontpath="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+          boldpath="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+          regular=ImageFont.truetype(fontpath,15)
+          bold=ImageFont.truetype(boldpath,18)
+          header=ImageFont.truetype(boldpath,25)
+          for entry in data["candidates"]:
+              item={"id":entry["id"],"model":entry["model"],
+                    "creator_from_register":entry["author"],
+                    "license_from_register":entry["license"],"file_page":entry["url"],
+                    "approved":False}
+              try:
+                  filename=entry["file"].replace(" ","_")
+                  digest=hashlib.md5(filename.encode("utf-8")).hexdigest()
+                  source="https://upload.wikimedia.org/wikipedia/commons/{}/{}/{}".format(
+                      digest[0],digest[:2],quote(filename,safe="-._()"))
+                  request=Request(source,headers={"User-Agent":
+                      "RentalStudioPhotoReview/1.0 (github.com/Sonkhe-Shongwe/vehicle-rental-system)","Accept":"image/jpeg"})
+                  blob=None
+                  for attempt in range(3):
+                      try:
+                          with urlopen(request,timeout=40) as response:
+                              blob=response.read(25*1024*1024+1)
+                          break
+                      except (HTTPError,URLError,TimeoutError):
+                          if attempt==2: raise
+                          time.sleep(2*(attempt+1))
+                  if not blob or len(blob)>25*1024*1024: raise ValueError("Source unavailable or oversized")
+                  with Image.open(BytesIO(blob)) as image: image.verify()
+                  with Image.open(BytesIO(blob)) as image:
+                      im=ImageOps.exif_transpose(image).convert("RGB")
+                  if im.width*im.height>75_000_000: raise ValueError("Oversized decoded image")
+                  if im.size!=tuple(entry["dimensions"]):
+                      raise ValueError("Dimensions changed: {} vs {}".format(im.size,entry["dimensions"]))
+                  stage_ratio=380/136
+                  ratio=im.width/im.height
+                  retained=round(100*min(ratio/stage_ratio,stage_ratio/ratio),1)
+                  item.update(status="REVIEWABLE",download_url=source,
+                      original_sha256=hashlib.sha256(blob).hexdigest(),
+                      original_size_bytes=len(blob),original_dimensions=list(im.size),
+                      centered_crop_area_retained_percent=retained)
+                  rows.append((entry,im,item))
+                  print("PASS",entry["id"],im.size,retained,flush=True)
+              except Exception as error:
+                  item.update(status="UNAVAILABLE",error=str(error))
+                  print("FAIL",entry["id"],error,flush=True)
+              record.append(item)
+          
+          def framed(im,size,cover):
+              if cover:
+                  return ImageOps.fit(im,size,method=Image.Resampling.LANCZOS)
+              pane=Image.new("RGB",size,"#EAF0F4")
+              small=ImageOps.contain(im,size,method=Image.Resampling.LANCZOS)
+              pane.paste(small,((size[0]-small.width)//2,(size[1]-small.height)//2))
+              return pane
+          
+          def sheet(items,title,path):
+              w,h=1240,88+len(items)*226
+              result=Image.new("RGB",(w,h),"#F6F8FA")
+              draw=ImageDraw.Draw(result)
+              draw.text((20,10),title,font=header,fill="#17324D")
+              draw.text((20,47),"REVIEW ONLY | not bundled | 2.79:1 crop approximates Qt Gallery",font=regular,fill="#0F766E")
+              for i,(entry,im,info) in enumerate(items):
+                  top=88+i*226
+                  draw.rounded_rectangle((8,top,w-8,top+219),radius=12,fill="#FFFFFF",outline="#DCE4EB")
+                  draw.text((22,top+7),entry["model"]+" / "+entry["id"],font=bold,fill="#17324D")
+                  draw.text((22,top+31),entry["author"]+" / "+entry["license"],font=regular,fill="#0F766E")
+                  result.paste(framed(im,(380,136),False),(22,top+58))
+                  result.paste(framed(im,(380,136),True),(416,top+58))
+                  result.paste(framed(im,(260,170),False),(810,top+36))
+                  draw.text((22,top+198),"Contain: entire source",font=regular,fill="#17324D")
+                  draw.text((416,top+198),"Crop: {}% pixels retained".format(
+                      info["centered_crop_area_retained_percent"]),font=regular,fill="#17324D")
+              result.save(path,"PNG",optimize=True)
+          
+          sheet(rows,"Rental Studio | Nine candidates: contain vs crop",out/"ALL_CANDIDATES.png")
+          primary={"corolla_2022","ranger_harvey","i20_calreyn","honda_chanokchon","yamaha_packmeceng"}
+          sheet([row for row in rows if row[0]["id"] in primary],
+                "Rental Studio | Five primary candidates",out/"FIVE_MODEL_CANDIDATES.png")
+          (out/"SOURCE_REVIEW_MANIFEST.json").write_text(json.dumps({
+              "status":"review only, no asset approved or installed",
+              "expected_count":len(record),"reviewable_count":len(rows),
+              "complete":len(rows)==len(record),"files":record
+          },indent=2,ensure_ascii=False),encoding="utf-8")
+          credits=["# PHOTO-P1-B attribution and limits","",
+              "Research derivatives only. Not installed artwork or actual rental stock imagery.",
+              "Crop/rescale modifications are made for review. For CC BY-SA 4.0 photographs,",
+              "retain author/source attribution and relevant ShareAlike obligations:",
+              "https://creativecommons.org/licenses/by-sa/4.0/",""]
+          for item in record:
+              credits.append("- {} | {} | {} | {} | {}".format(item["model"],item["id"],
+                  item["creator_from_register"],item["license_from_register"],item["file_page"]))
+          (out/"CREDITS.md").write_text("\n".join(credits)+"\n",encoding="utf-8")
+          print("REVIEW COMPLETE {}/{}".format(len(rows),len(record)),flush=True)
+          if len(rows)!=len(record):
+              raise SystemExit("Incomplete review: do not approve images from partial data")
+          PY
+      - name: Retain attribution and crop-review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photo-p1-b-source-review
+          path: design/photo_review/review_output/
+          if-no-files-found: warn
+          retention-days: 14
