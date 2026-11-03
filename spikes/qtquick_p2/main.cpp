@@ -2576,10 +2576,21 @@ int main(int argc, char *argv[]) {
             page->setProperty("contentY",maximum);
             QCoreApplication::processEvents();
             QTest::qWait(100);
-            // ListView delegates are virtualized; query only after the
-            // actual page exposes the record panel, not before scrolling.
-            auto *activeDue=window->findChild<QQuickItem*>("rentalDueLabelR001");
-            auto *returnedDue=window->findChild<QQuickItem*>("rentalDueLabelR002");
+            // QML ListView delegates belong to the visual QQuickItem
+            // hierarchy, not necessarily the window's QObject parent chain.
+            // Query the live visual tree after the page reveals its rows.
+            const auto findVisible=[](const auto &self,QQuickItem *item,
+                                      const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *activeDue=findVisible(findVisible,window->contentItem(),
+                                        "rentalDueLabelR001");
+            auto *returnedDue=findVisible(findVisible,window->contentItem(),
+                                          "rentalDueLabelR002");
             if(!activeDue||!returnedDue||
                activeDue->property("text").toString()!="Overdue"||
                returnedDue->property("text").toString()!="No return due") {
