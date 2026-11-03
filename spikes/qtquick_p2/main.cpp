@@ -1198,6 +1198,41 @@ int main(int argc, char *argv[]) {
                 app.exit(728);return;
             }
             const QString photoViewport=compact?"1280x720":"1500x860";
+            // The real native inspector must offer an uncropped, read-only
+            // reference view for decoded photos, with honest disclosure and
+            // keyboard focus restoration. It is not a licence acceptance.
+            auto *viewFull=find(find,window->contentItem(),
+                                 "fleetViewFullPhotoButton");
+            if(!viewFull || !inWindow(viewFull) ||
+               !press("fleetViewFullPhotoButton")) {
+                qCritical()<<"Full-photo inspection action missing";
+                app.exit(758);return;
+            }
+            QTest::qWait(170);
+            auto *fullPhoto=find(find,window->contentItem(),
+                                  "fleetFullPhotoImage");
+            auto *fullHeading=find(find,window->contentItem(),
+                                    "fleetFullPhotoHeading");
+            auto *fullDisclosure=find(find,window->contentItem(),
+                                       "fleetFullPhotoDisclosure");
+            auto *fullClose=find(find,window->contentItem(),
+                                  "fleetFullPhotoClose");
+            if(!fullPhoto || !fullHeading || !fullDisclosure || !fullClose ||
+               fullPhoto->property("status").toInt()!=1 ||
+               !fullPhoto->property("source").toString().contains("C001") ||
+               !fullHeading->property("text").toString().contains("Toyota Corolla") ||
+               !fullDisclosure->property("text").toString().contains("not a verified photo") ||
+               !inWindow(fullClose) || !inWindow(fullPhoto) ||
+               !press("fleetFullPhotoClose")) {
+                qCritical()<<"Full-photo review disclosure or close failed";
+                app.exit(759);return;
+            }
+            QTest::qWait(130);
+            if(find(find,window->contentItem(),"fleetFullPhotoImage") ||
+               !viewFull->hasActiveFocus()) {
+                qCritical()<<"Photo preview leaked or keyboard focus was lost";
+                app.exit(760);return;
+            }
             // Verify the model-neutral fallback actually renders for a
             // real motorcycle selection, not merely a provider boolean.
             fleet.selectById("M001");
@@ -1263,6 +1298,8 @@ int main(int argc, char *argv[]) {
                                                "fleetGalleryFallbackModelLabel");
                 auto *inspectorFallbackIdentity=find(find,window->contentItem(),
                                                "fleetInspectorFallbackModelLabel");
+                auto *visibleFullPhotoAction=find(find,window->contentItem(),
+                                                  "fleetViewFullPhotoButton");
                 // Both bikes use one make-neutral silhouette. The actual
                 // C++ model name must distinguish the media stage, without
                 // pretending that the drawing depicts a particular model.
@@ -1278,6 +1315,8 @@ int main(int argc, char *argv[]) {
                 if(fleet.selectedId()!=id ||
                    fleet.selectedName().isEmpty() ||
                    !motorcycleIdentityValid ||
+                   bool(visibleFullPhotoAction)!=expectPhoto ||
+                   (expectPhoto && !inWindow(visibleFullPhotoAction)) ||
                    !cardLabel || !inWindow(cardLabel) ||
                    cardLabel->property("text").toString()!=expectedLabel ||
                    photoDisclaimer->property("text").toString()!=expectedLabel ||

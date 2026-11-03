@@ -38,6 +38,21 @@ ApplicationWindow {
     property string photoChangeTargetId: ""
     property string photoChangeNotice: ""
     property string photoResetTargetId: ""
+    // Locked, read-only reference-image inspection. Neither the preview
+    // nor its close action changes authoritative fleet/photo storage.
+    property string fullPhotoTargetId: ""
+    property string fullPhotoTargetName: ""
+
+    function openFullFleetPhoto() {
+        if (window.workspace !== 1 || fleet.selectedId === "" ||
+                !fleetPhotos.hasPhoto(fleet.selectedId) ||
+                inspectorPhoto.status !== Image.Ready)
+            return false
+        window.fullPhotoTargetId = fleet.selectedId
+        window.fullPhotoTargetName = fleet.selectedName
+        fleetFullPhotoDialog.open()
+        return true
+    }
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -178,6 +193,88 @@ ApplicationWindow {
         }
     }
 
+    // Show the FULL reference image without Gallery/Inspector cropping.
+    // This is a reversible inspection aid, not a newly licensed photo.
+    Dialog {
+        id: fleetFullPhotoDialog
+        objectName: "fleetFullPhotoDialog"
+        title: "Full reference image"
+        modal: true
+        focus: true
+        standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        width: Math.min(860, parent ? parent.width - 40 : 820)
+        height: Math.min(660, parent ? parent.height - 40 : 600)
+        x: parent ? (parent.width - width) / 2 : 0
+        y: parent ? (parent.height - height) / 2 : 0
+        onClosed: {
+            window.fullPhotoTargetId = ""
+            window.fullPhotoTargetName = ""
+            Qt.callLater(function() {
+                if (window.workspace === 1 && fleetViewFullPhotoButton.visible &&
+                        fleetViewFullPhotoButton.enabled)
+                    fleetViewFullPhotoButton.forceActiveFocus(Qt.TabFocusReason)
+            })
+        }
+        contentItem: ColumnLayout {
+            spacing: 10
+            Label {
+                objectName: "fleetFullPhotoHeading"
+                Layout.fillWidth: true
+                text: window.fullPhotoTargetName + " · " + window.fullPhotoTargetId
+                color: window.navy
+                font.bold: true
+                font.pixelSize: 18
+                elide: Text.ElideRight
+                Accessible.name: text
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: window.ice
+                radius: 10
+                clip: true
+                Image {
+                    id: fleetFullPhotoImage
+                    objectName: "fleetFullPhotoImage"
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    source: window.fullPhotoTargetId !== "" &&
+                            fleetPhotos.hasPhoto(window.fullPhotoTargetId)
+                        ? "image://fleetphotos/" + window.fullPhotoTargetId +
+                          "?v=" + fleetPhotos.revision : ""
+                    fillMode: Image.PreserveAspectFit
+                    cache: false
+                    asynchronous: false
+                    Accessible.name: "Full uncropped illustrative reference photo for " +
+                                     window.fullPhotoTargetName
+                    Accessible.description: "Complete source image fitted within the viewing area, " +
+                                            "not a photograph of the actual rented vehicle"
+                }
+            }
+            Label {
+                objectName: "fleetFullPhotoDisclosure"
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: "Illustrative model reference only. This is not a verified photo of an actual fleet vehicle."
+                color: window.ink
+                font.pixelSize: 12
+                Accessible.name: text
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                Button {
+                    objectName: "fleetFullPhotoClose"
+                    text: "Close"
+                    activeFocusOnTab: true
+                    Accessible.name: "Close full image and return to vehicle details"
+                    onClicked: fleetFullPhotoDialog.close()
+                }
+            }
+        }
+    }
+
     // Arrow keys are for moving between *vehicles* only while Fleet has
     // keyboard focus. The view scrolls only to reveal a newly focused vehicle.
     // Search text and ComboBox controls retain their native arrow behaviour.
@@ -230,6 +327,11 @@ ApplicationWindow {
         function onSelectionChanged() {
             Qt.callLater(window.syncCurrentVehicle)
             window.photoChangeNotice = ""
+            // A read-only preview must never show a prior vehicle after
+            // the authoritative C++ selection has changed.
+            if (window.fullPhotoTargetId !== "" &&
+                    fleet.selectedId !== window.fullPhotoTargetId)
+                fleetFullPhotoDialog.close()
         }
         function onQueryChanged() { Qt.callLater(window.syncCurrentVehicle) }
         function onStatusChanged() { Qt.callLater(window.syncCurrentVehicle) }
@@ -1361,6 +1463,26 @@ ApplicationWindow {
                                         color: "#EFFFFFFF"
                                         radius: 4
                                     }
+                                }
+                                // Optional full-size, uncropped inspection of
+                                // already decoded media. Does not modify source
+                                // images or imply this is the stock unit.
+                                Button {
+                                    id: fleetViewFullPhotoButton
+                                    objectName: "fleetViewFullPhotoButton"
+                                    text: "View full"
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    anchors.margins: 6
+                                    height: window.height < 800 ? 27 : 30
+                                    padding: 4
+                                    font.pixelSize: 11
+                                    z: 2
+                                    visible: inspectorPhoto.visible
+                                    activeFocusOnTab: true
+                                    Accessible.name: "View uncropped illustrative photo for " +
+                                                     fleet.selectedName
+                                    onClicked: window.openFullFleetPhoto()
                                 }
                                 // Overlay, not an extra layout row. Preserve
                                 // the Book action's room at compact desktop sizes.
