@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Functionality first, final fleet population last
 
+**First completed functionality-first technical milestone (FUNC-D1):** [FUNC-D1 compiled source `25661db`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/25661db7c8d53b1d274534baf55d37e9c25c04ee) / [native run 41666259382](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41666259382) native Qt **118/118 CTests each Linux/hosted Windows**. Actual QScreen logical work-area startup fit and a self-verified double-click Windows fictional demo launcher are now built and downloadable as a portable QA ZIP; `START_HERE_FUNCTIONAL_DEMO.md` describes the user journey and temporary-data reset. [portable Windows QA kit](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41666259382/artifacts/13247085314); [FUNC-D1 report](FUNC_D1_WINDOWS_LAUNCH_AND_SCREEN_FIT_NATIVE_VERIFIED_2026-11-03.md). The next important evidence is a **real user physical Windows session**, not another screenshot polish or catalogue expansion. Final Fleet Population remains LAST. P7 data-policy and P8 installer/release gates unchanged.
+
 **Owner instruction: 3 November 2026.** This is the current sequencing directive. It supersedes earlier project suggestions that final photo sourcing should be the immediate next development task. It does **not** rewrite the frozen P0-P9 acceptance matrix or erase historical engineering/photo evidence.
 
 ## Immediate objective: a functioning desktop product
