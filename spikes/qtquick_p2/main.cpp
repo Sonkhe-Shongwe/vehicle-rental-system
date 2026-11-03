@@ -1201,6 +1201,24 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet image not bound/recoverable from fictional sidecar";
                 app.exit(719);return;
             }
+            // A small PNG file can still claim huge dimensions. Refuse a
+            // rewritten sidecar before the decoder allocates those pixels.
+            const QString sidecar=QDir(dataDirectory).filePath(
+                "fleet_images/C004.png");
+            QImage oversized(1281,961,QImage::Format_RGB32);
+            oversized.fill(QColor(31,163,92));
+            if(!oversized.save(sidecar,"PNG") ||
+               fleetPhotos.hasPhoto("C004") ||
+               !fleetPhotos.imageFor("C004").isNull()) {
+                qCritical()<<"Fleet oversized sidecar was not rejected";
+                app.exit(722);return;
+            }
+            if(!image.save(sidecar,"PNG") ||
+               !fleetPhotos.hasPhoto("C004") ||
+               fleetPhotos.imageFor("C004").size()!=image.size()) {
+                qCritical()<<"Fleet valid sidecar could not be recovered";
+                app.exit(723);return;
+            }
             QByteArray fixedV,fixedR;
             if(!readFile(vehicles,&fixedV)||!readFile(rentals,&fixedR)||
                fixedV!=beforeVehicles||fixedR!=beforeRentals) {
