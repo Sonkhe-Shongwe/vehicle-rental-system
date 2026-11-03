@@ -2547,16 +2547,6 @@ int main(int argc, char *argv[]) {
             auto *panel=window->findChild<QQuickItem*>("rentalRecordsPanel");
             auto *details=window->findChild<QQuickItem*>("rentalDetailsButton");
             auto *booking=window->findChild<QQuickItem*>("rentalNewBookingButton");
-            auto *activeDue=window->findChild<QQuickItem*>("rentalDueLabelR001");
-            auto *returnedDue=window->findChild<QQuickItem*>("rentalDueLabelR002");
-            // Real QML delegates must not leak C++ enum identifiers.
-            // C++ still owns the raw due-state and all dated decisions.
-            if(!activeDue||!returnedDue||
-               activeDue->property("text").toString()!="Overdue"||
-               returnedDue->property("text").toString()!="No return due") {
-                qCritical()<<"UX-S1 operator-facing due-state text exposed raw enum";
-                app.exit(813);return;
-            }
             if(!page||!list||!panel||!details||!booking||
                !page->isVisible()||!list->isVisible()||
                rentalModel.count()!=2) {
@@ -2586,6 +2576,18 @@ int main(int argc, char *argv[]) {
             page->setProperty("contentY",maximum);
             QCoreApplication::processEvents();
             QTest::qWait(100);
+            // ListView delegates are virtualized; query only after the
+            // actual page exposes the record panel, not before scrolling.
+            auto *activeDue=window->findChild<QQuickItem*>("rentalDueLabelR001");
+            auto *returnedDue=window->findChild<QQuickItem*>("rentalDueLabelR002");
+            if(!activeDue||!returnedDue||
+               activeDue->property("text").toString()!="Overdue"||
+               returnedDue->property("text").toString()!="No return due") {
+                qCritical()<<"UX-S2 readable due-state delegate did not render"
+                           <<"active"<<(activeDue?activeDue->property("text").toString():"<not instantiated>")
+                           <<"returned"<<(returnedDue?returnedDue->property("text").toString():"<not instantiated>");
+                app.exit(813);return;
+            }
             const QPointF pos=details->mapToItem(page,QPointF(0,0));
             if(pos.y()<0 || pos.y()+details->height()>page->height()+2) {
                 qCritical()<<"UX-S1 contract details action not reachable"
