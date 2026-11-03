@@ -78,7 +78,10 @@ class OfflinePhotoReviewTests(unittest.TestCase):
     def test_symlink_source_refused(self):
         outside = self.base / "outside.jpg"
         Image.new("RGB", (800, 600), (1, 2, 3)).save(outside)
-        (self.originals / "C003.jpg").symlink_to(outside)
+        try:
+            (self.originals / "C003.jpg").symlink_to(outside)
+        except (OSError, NotImplementedError) as exc:
+            self.skipTest(f"OS does not permit creating a test symlink: {exc}")
         self.put([sample("C003", "C003.jpg")])
         with self.assertRaises(review.ReviewError):
             review.run(self.originals, self.manifest, self.out)
@@ -112,6 +115,31 @@ class OfflinePhotoReviewTests(unittest.TestCase):
     def test_app_assets_directory_refused(self):
         with self.assertRaises(review.ReviewError):
             review.safe_output(self.originals, review.PROTECTED_ASSETS / "review")
+
+    def test_real_source_exif_removed_from_review_jpeg(self):
+        photo = Image.new("RGB", (800, 600), (10, 20, 30))
+        exif = Image.Exif()
+        exif[0x010E] = "Synthetic source metadata must not survive"
+        photo.save(self.originals / "C003.jpg", exif=exif)
+        with Image.open(self.originals / "C003.jpg") as original:
+            self.assertIn(0x010E, original.getexif())
+        source_bytes = (self.originals / "C003.jpg").read_bytes()
+        self.put([sample("C003", "C003.jpg")])
+        result = review.run(self.originals, self.manifest, self.out)
+        with Image.open(self.out / "C003-review-only-normalized.jpg") as output:
+            self.assertNotIn(0x010E, output.getexif())
+            self.assertFalse(output.getexif())
+        self.assertEqual(result["candidates"][0]["original_sha256"], review.sha256(source_bytes))
+        self.assertEqual(source_bytes, (self.originals / "C003.jpg").read_bytes())
+
+    def test_file_larger_than_input_limit_refused(self):
+        with (self.originals / "C003.jpg").open("wb") as out:
+            out.seek(review.MAX_INPUT_BYTES)
+            out.write(b"X")
+        self.put([sample("C003", "C003.jpg")])
+        with self.assertRaises(review.ReviewError):
+            review.run(self.originals, self.manifest, self.out)
+        self.assertFalse(self.out.exists())
 
     def test_transparent_png_exif_stripping_and_crop(self):
         photo = Image.new("RGBA", (700, 500), (0, 0, 0, 0))
