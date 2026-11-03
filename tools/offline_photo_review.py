@@ -54,7 +54,7 @@ def read_candidates(manifest: Path):
             raise ReviewError("Every candidate must be an object")
         id_ = entry.get("vehicle_id")
         name = entry.get("file")
-        if id_ not in MODEL_IDS or id_ in seen_ids:
+        if not isinstance(id_, str) or id_ not in MODEL_IDS or id_ in seen_ids:
             raise ReviewError(f"Unknown or duplicate vehicle ID: {id_!r}")
         if not isinstance(name, str) or not name or name != Path(name).name or name in (".", "..") or "/" in name or "\\" in name:
             raise ReviewError(f"Candidate filename must be a direct basename: {name!r}")
@@ -147,11 +147,18 @@ def run(input_dir: Path, manifest: Path, output_dir: Path) -> dict:
             "installed_in_application": False,
         })
     dest.mkdir(parents=True, exist_ok=True)
-    board = Image.new("RGB", (1860, 130 + 340 * len(staged)), "#F6F8FA")
+    board = Image.new("RGB", (1860, 156 + 360 * len(staged)), "#F6F8FA")
     draw = ImageDraw.Draw(board)
-    draw.text((26, 18), "RENTAL STUDIO | OFFLINE PHOTOGRAPH REVIEW", fill="#17324D")
-    draw.text((26, 42), "UNAPPROVED | no source rights verified | no Qt assets replaced", fill="#0F766E")
-    draw.text((26, 77), "Full photo (contain)                    Gallery center crop                 Inspector center crop", fill="#17324D")
+    title_font = ImageFont.load_default(size=32)
+    label_font = ImageFont.load_default(size=24)
+    info_font = ImageFont.load_default(size=21)
+    draw.text((26, 18), "RENTAL STUDIO | OFFLINE PHOTOGRAPH REVIEW",
+              font=title_font, fill="#17324D")
+    draw.text((26, 65), "UNAPPROVED | source rights not verified | no Qt assets replaced",
+              font=info_font, fill="#0F766E")
+    for x, label in ((26, "Original (contain)"), (645, "Gallery center crop"),
+                     (1263, "Inspector center crop")):
+        draw.text((x, 108), label, font=label_font, fill="#17324D")
     for i, ((id_, im), row) in enumerate(zip(staged, records)):
         normalized = im.copy()
         normalized.thumbnail((1600, 1200), Image.Resampling.LANCZOS)
@@ -160,16 +167,19 @@ def run(input_dir: Path, manifest: Path, output_dir: Path) -> dict:
         normalized.save(target, "JPEG", quality=88, optimize=True, exif=b"")
         row["review_derivative"] = filename
         row["review_derivative_sha256"] = sha256(target.read_bytes())
-        y = 130 + 340 * i
-        draw.rounded_rectangle((14, y, 1840, y + 328), radius=14,
+        y = 156 + 360 * i
+        draw.rounded_rectangle((14, y, 1840, y + 345), radius=14,
                                fill="#FFFFFF", outline="#DCE4EB", width=2)
-        draw.text((26, y + 9), f"{id_}  {MODEL_IDS[id_]}  |  SOURCE / LICENCE UNVERIFIED", fill="#17324D")
-        board.paste(fit_contain(im, (600, 240)), (26, y + 42))
-        board.paste(ImageOps.fit(im, (600, 220), method=Image.Resampling.LANCZOS), (645, y + 42))
-        board.paste(ImageOps.fit(im, (550, 260), method=Image.Resampling.LANCZOS), (1263, y + 42))
-        draw.text((26, y + 300), "Contain full picture", fill="#17324D")
-        draw.text((645, y + 300), f"2.73:1 crop, {row['centered_gallery_crop_area_retained_percent']}% area retained", fill="#17324D")
-        draw.text((1263, y + 308), "Inspector image crop", fill="#17324D")
+        draw.text((26, y + 12), f"{id_}  {MODEL_IDS[id_]}  |  RIGHTS NOT VERIFIED",
+                  font=label_font, fill="#17324D")
+        board.paste(fit_contain(im, (600, 240)), (26, y + 57))
+        board.paste(ImageOps.fit(im, (600, 220), method=Image.Resampling.LANCZOS), (645, y + 57))
+        board.paste(ImageOps.fit(im, (550, 260), method=Image.Resampling.LANCZOS), (1263, y + 57))
+        draw.text((26, y + 309), "Full image preserved", font=info_font, fill="#17324D")
+        draw.text((645, y + 309),
+                  f"2.73:1 | {row['centered_gallery_crop_area_retained_percent']}% area retained",
+                  font=info_font, fill="#17324D")
+        draw.text((1263, y + 322), "Inspector crop", font=info_font, fill="#17324D")
     board.save(dest / "CONTACT_SHEET_UNAPPROVED.png", "PNG", optimize=True)
     summary = {
         "approval": "NONE - images are review-only; rights, actual subject and owner visual decisions still required",

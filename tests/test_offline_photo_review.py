@@ -94,6 +94,12 @@ class OfflinePhotoReviewTests(unittest.TestCase):
             review.run(self.originals, self.manifest, self.out)
         self.assertFalse(self.out.exists())
 
+    def test_non_string_vehicle_id_refused_safely(self):
+        self.put([sample(["C003"], "C003.png")])
+        with self.assertRaises(review.ReviewError):
+            review.run(self.originals, self.manifest, self.out)
+        self.assertFalse(self.out.exists())
+
     def test_invalid_or_duplicate_vehicle_identity_refused(self):
         self.put([sample("C003", "a.png"), sample("C003", "b.png")])
         with self.assertRaises(review.ReviewError):
