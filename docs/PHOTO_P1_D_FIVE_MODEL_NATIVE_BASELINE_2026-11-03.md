@@ -34,3 +34,21 @@ No media-source asset, QML production layout, visual style selection, rental-dom
 P1 photographic quality/rights and complete five-model owner visual selection remain **OPEN**. The owner-approved P5 8/8 and P6 9/9 remain intact; overall **45/74 formally accepted and 70.6% weighted** unchanged. P7 commercial data, physical Windows accessibility/scaling, P8 installer and P9 release are also open. Draft PRs unmerged; `main` unchanged.
 
 **Next most useful action:** inspect both actual Qt screenshot artifacts and assess which of the three existing car crops or neutral motorcycle fallbacks are visually unacceptable. Then secure genuine licensable model-correct image files through compliant access/owner-supplied material before attempting a visual replacement. Do not replace source media or change the licensed asset register without independent verification and owner visual approval.
+
+## Post-CI visual QA addendum: images actually inspected
+
+**PHOTO-P1-D supplemental visual inspection, 3 November 2026.** Actual [native Linux artifact](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481/artifacts/13232748218) and [hosted Windows artifact](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481/artifacts/13233403628) were downloaded into the engineering review environment after the original CI report. We inspected all five full 1280×720 Linux Fleet screenshots and a five-row contact-sheet crop covering both compact Gallery/Inspector and wide Inspector media; we also inspected the hosted Windows 1280×720 Hyundai i20 full frame. **The principal photographic blockers are confirmed visually:** Corolla's dark vehicle competes with garden/house/fence scenery; Ranger retains showroom clutter and tight vehicle crop; i20's frame contains competing vehicles; Honda and Yamaha use the exact same make-neutral illustration. Visible status labels, fleet IDs, daily rates and compact booking controls were present in the reviewed examples. No owner acceptance or real physical Windows test. The PNG contact sheet is available in the chat conversation and was not committed as a replacement Qt asset.
+
+**Prior report qualification:** statements above saying screenshots were not independently inspected describe the state at the first report publication. This later visual audit inspected the stated subset and does **not** claim all ten Windows screenshots were opened individually, whole-product acceptance, or a new photograph set.
+
+### Model-by-model current asset assessment (visual, subjective)
+
+| Model | Actual reviewed image issue | Proposed next art direction |
+|---|---|---|
+| Toyota Corolla | Car is dark against a prominent house/fence/garden; busy background reduces premium catalogue clarity | Same exact model, brighter vehicle exposure, neutral background, full bumper/roofline without tight crop |
+| Ford Ranger | Glossy dark China-market showroom pickup; signage/plate/reflections and close front three-quarter crop pull focus | Legitimately licensed, calmer outdoor/studio-like representation with full pickup silhouette; disclose illustrative variant |
+| Hyundai i20 | Multiple surrounding cars visible; target hatchback visually competes with two other vehicles | Highest-priority photo replacement: one clearly isolated regular i20 body, not i20 N/Coupe unless demo record changes by approval |
+| Honda CB500F | Neutral road-motorcycle art renders correctly but is not a recognisable CB500F photo | Distinct licensable CB500F photograph with readable engine/tank and both wheels, or separately owner-approved model-safe fallback |
+| Yamaha MT-07 | Same motorcycle artwork as Honda with no visual model differentiation | Distinct licensable MT-07 photograph and intentional matching visual scale; preserve transparency that it is a model reference |
+
+The visible compact Fleet booking/inspection controls were not clipped in the reviewed captures. The single-vehicle search filter deliberately leaves empty Gallery space, so it must **not** be misreported as a normal unfiltered layout defect. The test photos are still not commercially approved, and no rubric or formal P1 criterion is awarded by these observations.

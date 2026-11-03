@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**P1-D screenshot follow-up:** [Current native photo review addendum](PHOTO_P1_D_FIVE_MODEL_NATIVE_BASELINE_2026-11-03.md) records independently seen Qt examples: Hyundai multi-car ambiguity, Ranger showroom clutter, Corolla background clutter and identical neutral motorcycle art. All five existing media states and controls passed native tests on both hosted OS. Do not treat visual review as owner asset approval or physical Windows certification. Future sessions should begin from this source-evidence shortlist instead of repeating blocked image retrieval.
+
 **Reconciled 3 November 2026.** This is a short orientation, not a second acceptance ledger. First open [Latest checkpoint](LATEST_CHECKPOINT.md), [canonical product state](PROJECT_STATE_CANONICAL.md), [roadmap](ROADMAP.md), [test evidence](TESTING.md), [formal progress](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) and the [timeless continuation prompt](AI_CONTINUATION_PROMPT.md).
 
 ## Where to resume
