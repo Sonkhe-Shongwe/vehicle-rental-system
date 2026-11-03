@@ -1,4 +1,4 @@
-name: Photo P1-B candidate visual review (no app assets)
+name: Photo P1-B primary thumbnail review (never installed)
 
 on:
   push:
@@ -13,132 +13,180 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install review-only tooling
-        run: python -m pip install Pillow==11.3.0
-      - name: Fetch source images, hash and compare gallery framing
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Fetch bounded Commons thumbnails, never blocked originals
         run: |
           python - <<'PY'
-          import hashlib, json, time
+          import hashlib
+          import json
+          import time
           from io import BytesIO
           from pathlib import Path
-          from urllib.request import Request, urlopen
           from urllib.error import HTTPError, URLError
-          from urllib.parse import quote
+          from urllib.parse import quote, urlparse
+          from urllib.request import Request, urlopen
           from PIL import Image, ImageOps, ImageDraw, ImageFont
-          
-          folder=Path("design/photo_review")
-          data=json.loads((folder/"PHOTO_P1_B_CANDIDATES_2026-11-03.json").read_text(encoding="utf-8"))
-          out=folder/"review_output"
-          out.mkdir(exist_ok=True)
-          rows=[]
-          record=[]
-          fontpath="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-          boldpath="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-          regular=ImageFont.truetype(fontpath,15)
-          bold=ImageFont.truetype(boldpath,18)
-          header=ImageFont.truetype(boldpath,25)
-          for entry in data["candidates"]:
-              item={"id":entry["id"],"model":entry["model"],
-                    "creator_from_register":entry["author"],
-                    "license_from_register":entry["license"],"file_page":entry["url"],
-                    "approved":False}
+
+          source_dir = Path("design/photo_review")
+          register = json.loads((source_dir / "PHOTO_P1_B_CANDIDATES_2026-11-03.json")
+                                .read_text(encoding="utf-8"))
+          output = source_dir / "review_output"
+          output.mkdir(parents=True, exist_ok=True)
+          primary_ids = ("corolla_2022", "ranger_harvey", "i20_calreyn",
+                         "honda_chanokchon", "yamaha_packmeceng")
+          entries = [item for candidate_id in primary_ids
+                     for item in register["candidates"] if item["id"] == candidate_id]
+          if len(entries) != 5 or len({e["model"] for e in entries}) != 5:
+              raise SystemExit("Invalid source-page shortlist; exactly five distinct models required")
+
+          items = []
+          images = []
+          blocked = False
+          for entry in entries:
+              record = {"id": entry["id"], "model": entry["model"],
+                        "file_page": entry["url"],
+                        "creator_from_existing_register": entry["author"],
+                        "licence_from_existing_register": entry["license"],
+                        "source_page_metadata_reverified": False,
+                        "original_file_retrieved": False,
+                        "approved": False}
+              if blocked:
+                  record["status"] = "SKIPPED_AFTER_HTTP_429"
+                  items.append(record)
+                  continue
+
+              # One small, commonly served Commons thumbnail per candidate.
+              # No original-file request, no fallback to original, no automatic
+              # 429 retry, no concurrent downloads and no third-party hosts.
+              filename = entry["file"].replace(" ", "_")
+              encoded = quote(filename, safe="-._()")
+              md5 = hashlib.md5(filename.encode("utf-8")).hexdigest()
+              url = ("https://upload.wikimedia.org/wikipedia/commons/thumb/"
+                     f"{md5[0]}/{md5[:2]}/{encoded}/640px-{encoded}")
+              record["thumbnail_request_url"] = url
               try:
-                  filename=entry["file"].replace(" ","_")
-                  digest=hashlib.md5(filename.encode("utf-8")).hexdigest()
-                  source="https://upload.wikimedia.org/wikipedia/commons/{}/{}/{}".format(
-                      digest[0],digest[:2],quote(filename,safe="-._()"))
-                  request=Request(source,headers={"User-Agent":
-                      "RentalStudioPhotoReview/1.0 (github.com/Sonkhe-Shongwe/vehicle-rental-system)","Accept":"image/jpeg"})
-                  blob=None
-                  for attempt in range(3):
-                      try:
-                          with urlopen(request,timeout=40) as response:
-                              blob=response.read(25*1024*1024+1)
-                          break
-                      except (HTTPError,URLError,TimeoutError):
-                          if attempt==2: raise
-                          time.sleep(2*(attempt+1))
-                  if not blob or len(blob)>25*1024*1024: raise ValueError("Source unavailable or oversized")
-                  with Image.open(BytesIO(blob)) as image: image.verify()
+                  req = Request(url, headers={
+                      "User-Agent": "RentalStudioPhotoReview/2.0 (https://github.com/Sonkhe-Shongwe/vehicle-rental-system; non-commercial candidate review)",
+                      "Accept": "image/jpeg"
+                  })
+                  with urlopen(req, timeout=20) as response:
+                      parsed = urlparse(response.geturl())
+                      if parsed.scheme != "https" or parsed.hostname != "upload.wikimedia.org" or "/thumb/" not in parsed.path:
+                          raise ValueError("Unexpected media redirect: no thumbnail accepted")
+                      blob = response.read(4 * 1024 * 1024 + 1)
+                  if not blob or len(blob) > 4 * 1024 * 1024:
+                      raise ValueError("Thumbnail empty or larger than 4 MB")
                   with Image.open(BytesIO(blob)) as image:
-                      im=ImageOps.exif_transpose(image).convert("RGB")
-                  if im.width*im.height>75_000_000: raise ValueError("Oversized decoded image")
-                  if im.size!=tuple(entry["dimensions"]):
-                      raise ValueError("Dimensions changed: {} vs {}".format(im.size,entry["dimensions"]))
-                  stage_ratio=380/136
-                  ratio=im.width/im.height
-                  retained=round(100*min(ratio/stage_ratio,stage_ratio/ratio),1)
-                  item.update(status="REVIEWABLE",download_url=source,
-                      original_sha256=hashlib.sha256(blob).hexdigest(),
-                      original_size_bytes=len(blob),original_dimensions=list(im.size),
-                      centered_crop_area_retained_percent=retained)
-                  rows.append((entry,im,item))
-                  print("PASS",entry["id"],im.size,retained,flush=True)
-              except Exception as error:
-                  item.update(status="UNAVAILABLE",error=str(error))
-                  print("FAIL",entry["id"],error,flush=True)
-              record.append(item)
-          
-          def framed(im,size,cover):
-              if cover:
-                  return ImageOps.fit(im,size,method=Image.Resampling.LANCZOS)
-              pane=Image.new("RGB",size,"#EAF0F4")
-              small=ImageOps.contain(im,size,method=Image.Resampling.LANCZOS)
-              pane.paste(small,((size[0]-small.width)//2,(size[1]-small.height)//2))
+                      image.verify()
+                  with Image.open(BytesIO(blob)) as image:
+                      image.load()
+                      if image.format != "JPEG":
+                          raise ValueError("Thumbnail is not JPEG")
+                      im = ImageOps.exif_transpose(image).convert("RGB")
+                  if not (320 <= im.width <= 640 and im.height > 160 and
+                          im.width * im.height <= 700000):
+                      raise ValueError(f"Unexpected thumbnail dimensions: {im.size}")
+                  ow, oh = entry["dimensions"]
+                  if abs(im.width / im.height - ow / oh) > 0.025:
+                      raise ValueError("Thumbnail proportions differ from registered source")
+                  stage_ratio = 380 / 136
+                  aspect = im.width / im.height
+                  retained = round(100 * min(aspect / stage_ratio,
+                                             stage_ratio / aspect), 1)
+                  record.update(status="THUMBNAIL_PREVIEW_ONLY",
+                                thumbnail_sha256=hashlib.sha256(blob).hexdigest(),
+                                thumbnail_bytes=len(blob),
+                                thumbnail_dimensions=list(im.size),
+                                registered_original_dimensions=[ow, oh],
+                                centered_crop_area_retained_percent=retained)
+                  images.append((entry, im, record))
+                  print("PREVIEW", entry["id"], im.size, retained, flush=True)
+                  time.sleep(3)  # avoid burst requests
+              except HTTPError as error:
+                  record.update(status="BLOCKED_HTTP_429" if error.code == 429 else "HTTP_ERROR",
+                                error=f"HTTP {error.code}")
+                  if error.code == 429:
+                      blocked = True
+                  print("STOP / UNAVAILABLE", entry["id"], record["error"], flush=True)
+              except (URLError, TimeoutError, ValueError, OSError) as error:
+                  record.update(status="UNAVAILABLE", error=str(error)[:240])
+                  print("UNAVAILABLE", entry["id"], record["error"], flush=True)
+              items.append(record)
+
+          def framed(im, size, crop):
+              if crop:
+                  return ImageOps.fit(im, size, method=Image.Resampling.LANCZOS)
+              pane = Image.new("RGB", size, "#EAF0F4")
+              photo = ImageOps.contain(im, size, method=Image.Resampling.LANCZOS)
+              pane.paste(photo, ((size[0] - photo.width) // 2,
+                                 (size[1] - photo.height) // 2))
               return pane
-          
-          def sheet(items,title,path):
-              w,h=1240,88+len(items)*226
-              result=Image.new("RGB",(w,h),"#F6F8FA")
-              draw=ImageDraw.Draw(result)
-              draw.text((20,10),title,font=header,fill="#17324D")
-              draw.text((20,47),"REVIEW ONLY | not bundled | 2.79:1 crop approximates Qt Gallery",font=regular,fill="#0F766E")
-              for i,(entry,im,info) in enumerate(items):
-                  top=88+i*226
-                  draw.rounded_rectangle((8,top,w-8,top+219),radius=12,fill="#FFFFFF",outline="#DCE4EB")
-                  draw.text((22,top+7),entry["model"]+" / "+entry["id"],font=bold,fill="#17324D")
-                  draw.text((22,top+31),entry["author"]+" / "+entry["license"],font=regular,fill="#0F766E")
-                  result.paste(framed(im,(380,136),False),(22,top+58))
-                  result.paste(framed(im,(380,136),True),(416,top+58))
-                  result.paste(framed(im,(260,170),False),(810,top+36))
-                  draw.text((22,top+198),"Contain: entire source",font=regular,fill="#17324D")
-                  draw.text((416,top+198),"Crop: {}% pixels retained".format(
-                      info["centered_crop_area_retained_percent"]),font=regular,fill="#17324D")
-              result.save(path,"PNG",optimize=True)
-          
-          sheet(rows,"Rental Studio | Nine candidates: contain vs crop",out/"ALL_CANDIDATES.png")
-          primary={"corolla_2022","ranger_harvey","i20_calreyn","honda_chanokchon","yamaha_packmeceng"}
-          sheet([row for row in rows if row[0]["id"] in primary],
-                "Rental Studio | Five primary candidates",out/"FIVE_MODEL_CANDIDATES.png")
-          (out/"SOURCE_REVIEW_MANIFEST.json").write_text(json.dumps({
-              "status":"review only, no asset approved or installed",
-              "expected_count":len(record),"reviewable_count":len(rows),
-              "complete":len(rows)==len(record),"files":record
-          },indent=2,ensure_ascii=False),encoding="utf-8")
-          credits=["# PHOTO-P1-B attribution and limits","",
-              "Research derivatives only. Not installed artwork or actual rental stock imagery.",
-              "Crop/rescale modifications are made for review. For CC BY-SA 4.0 photographs,",
-              "retain author/source attribution and relevant ShareAlike obligations:",
-              "https://creativecommons.org/licenses/by-sa/4.0/",""]
-          for item in record:
-              credits.append("- {} | {} | {} | {} | {}".format(item["model"],item["id"],
-                  item["creator_from_register"],item["license_from_register"],item["file_page"]))
-          (out/"CREDITS.md").write_text("\n".join(credits)+"\n",encoding="utf-8")
-          print("REVIEW COMPLETE {}/{}".format(len(rows),len(record)),flush=True)
-          if len(rows)!=len(record):
-              raise SystemExit("Incomplete review: do not approve images from partial data")
+
+          if images:
+              font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 15)
+              heading = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 23)
+              board = Image.new("RGB", (1120, 84 + len(images) * 215), "#F6F8FA")
+              draw = ImageDraw.Draw(board)
+              draw.text((18, 10), "Rental Studio | Source thumbnail crop comparison",
+                        font=heading, fill="#17324D")
+              draw.text((18, 47), "REVIEW ONLY | 640px thumbnail | no originals, approval or Qt asset changes",
+                        font=font, fill="#0F766E")
+              for i, (entry, im, info) in enumerate(images):
+                  top = 84 + i * 215
+                  draw.rounded_rectangle((8, top, 1110, top + 207),
+                                         radius=10, fill="#FFFFFF", outline="#DCE4EB")
+                  draw.text((18, top + 8), f'{entry["model"]} / {entry["id"]}',
+                            font=font, fill="#17324D")
+                  draw.text((18, top + 32), f'{entry["author"]} | {entry["license"]} (register only)',
+                            font=font, fill="#0F766E")
+                  board.paste(framed(im, (380, 136), False), (18, top + 58))
+                  board.paste(framed(im, (380, 136), True), (413, top + 58))
+                  draw.text((18, top + 195), "Contain: all of thumbnail",
+                            font=font, fill="#17324D")
+                  draw.text((413, top + 195),
+                            f'Center crop: {info["centered_crop_area_retained_percent"]}% area retained',
+                            font=font, fill="#17324D")
+              board.save(output / "PRIMARY_FIVE_THUMBNAIL_CROP_REVIEW.png", "PNG",
+                         optimize=True)
+
+          complete = len(images) == len(entries)
+          manifest = {"status": "UNAPPROVED_THUMBNAIL_REVIEW_ONLY",
+                      "source_original_files_retrieved": 0,
+                      "source_metadata_reverified_this_run": False,
+                      "preview_count": len(images),
+                      "expected_primary_count": 5,
+                      "complete": complete,
+                      "blocked_http_429": blocked,
+                      "installed_application_assets": 0,
+                      "notes": "Do not treat preview SHA-256 hashes as original source hashes; credits are sourced from the existing unapproved register. Must reverify metadata, source originals and owner visual approval before adoption.",
+                      "files": items}
+          (output / "SOURCE_REVIEW_MANIFEST.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8")
+          (output / "CREDITS_AND_LIMITATIONS.md").write_text(
+              "# Thumbnail review only\n\n"
+              "No original media files fetched or bundled; no product asset modified.\n"
+              "Creator/licence labels are from the existing source-page shortlist, "
+              "not independently reverified in this workflow.\n"
+              "CC BY-SA adaptations require attribution and share-alike review.\n"
+              "See each source-page URL in SOURCE_REVIEW_MANIFEST.json.\n",
+              encoding="utf-8")
+          print(f"THUMBNAIL REVIEW {len(images)}/5; 429 blocked={blocked}", flush=True)
+          if not complete:
+              raise SystemExit("Incomplete thumbnail review; no photo may be approved")
           PY
-      - name: Retain attribution and crop-review artifacts
+      - name: Retain review evidence, including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: photo-p1-b-source-review
+          name: photo-p1-b-primary-thumbnails-unapproved
           path: design/photo_review/review_output/
           if-no-files-found: warn
           retention-days: 14
