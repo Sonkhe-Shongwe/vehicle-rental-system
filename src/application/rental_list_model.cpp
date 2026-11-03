@@ -199,7 +199,11 @@ QList<RentalRecordSummary> RentalListModel::filtered(
              item.status == RentalRecordStatus::Returned) ||
             (m_statusFilter == QStringLiteral("Archived") &&
              item.status == RentalRecordStatus::Archived) ||
-            (m_statusFilter == QStringLiteral("History") && !active))
+            (m_statusFilter == QStringLiteral("History") && !active) ||
+            (m_statusFilter == QStringLiteral("Overdue") && active &&
+             item.dueState == RentalDueState::Overdue) ||
+            (m_statusFilter == QStringLiteral("DueToday") && active &&
+             item.dueState == RentalDueState::DueToday))
             result.append(item);
     }
     return result;
@@ -211,7 +215,9 @@ void RentalListModel::setStatusFilter(const QString &filter) {
         filter != QStringLiteral("Active") &&
         filter != QStringLiteral("Returned") &&
         filter != QStringLiteral("Archived") &&
-        filter != QStringLiteral("History"))
+        filter != QStringLiteral("History") &&
+        filter != QStringLiteral("Overdue") &&
+        filter != QStringLiteral("DueToday"))
         return;
     if (filter == m_statusFilter)
         return;

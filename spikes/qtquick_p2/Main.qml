@@ -2180,6 +2180,55 @@ ApplicationWindow {
                             }
                         }
                         RowLayout {
+                            objectName: "rentalDueRow"
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Label {
+                                text: "Return timing"
+                                color: ink
+                                font.pixelSize: 12
+                                Accessible.name: "Filter active rentals by due date"
+                            }
+                            Repeater {
+                                // Derived from typed C++ due state; selection only.
+                                model: [
+                                    { value: "Overdue", label: "Overdue" },
+                                    { value: "DueToday", label: "Due today" }
+                                ]
+                                delegate: Button {
+                                    required property var modelData
+                                    objectName: "rentalFilter" + modelData.value
+                                    text: modelData.label
+                                    activeFocusOnTab: true
+                                    Layout.minimumHeight: 36
+                                    Accessible.role: Accessible.RadioButton
+                                    Accessible.name: modelData.label + " rentals"
+                                    Accessible.checkable: true
+                                    Accessible.checked: rentalsModel.statusFilter === modelData.value
+                                    Accessible.description: "Filter active fictional rentals by return timing, without changing records"
+                                    onClicked: rentalsModel.statusFilter = modelData.value
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: rentalsModel.statusFilter === parent.modelData.value ? navy : ice
+                                    }
+                                    contentItem: Text {
+                                        text: parent.text
+                                        color: rentalsModel.statusFilter === parent.modelData.value ? "white" : navy
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        font.bold: rentalsModel.statusFilter === parent.modelData.value
+                                    }
+                                }
+                            }
+                            Item { Layout.fillWidth: true }
+                            Label {
+                                text: "Active contracts only · read-only"
+                                color: ink
+                                font.pixelSize: 12
+                                Accessible.name: text
+                            }
+                        }
+                        RowLayout {
                             objectName: "rentalLookupRow"
                             Layout.fillWidth: true
                             spacing: 10
@@ -2333,7 +2382,11 @@ ApplicationWindow {
                                         font.pixelSize: 14
                                         text: rentalsModel.statusFilter === "All" ?
                                               "No fictional rentals yet. Use New rental to create the first contract." :
-                                              "No " + rentalsModel.statusFilter + " rental records in this view. Show all rentals to see other contracts."
+                                              rentalsModel.statusFilter === "Overdue" ?
+                                               "No overdue active rentals. Show all rentals to see other contracts." :
+                                               rentalsModel.statusFilter === "DueToday" ?
+                                               "No active rentals due today. Show all rentals to see other contracts." :
+                                               "No " + rentalsModel.statusFilter + " rental records in this view. Show all rentals to see other contracts."
                                         Accessible.name: text
                                     }
                                     Button {
@@ -2345,7 +2398,7 @@ ApplicationWindow {
                                         activeFocusOnTab: true
                                         Layout.minimumHeight: 44
                                         Accessible.name: "Show all rental records"
-                                        Accessible.description: "Clear only the current rental lifecycle filter. No records are changed."
+                                        Accessible.description: "Clear only the current rental list filter. No records are changed."
                                         onClicked: rentalsModel.statusFilter = "All"
                                     }
                                 }

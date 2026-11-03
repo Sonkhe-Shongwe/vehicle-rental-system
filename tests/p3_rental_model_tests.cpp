@@ -102,6 +102,37 @@ int main(int argc, char **argv) {
               "Qt list model has no child rows");
         // This navigation reuses the complete snapshot and does not interfere
         // with lifecycle filters, selection count assertions or persistence.
+        // UX-S3: urgency filters use authoritative C++ due-state snapshots.
+        RentalListModel timingRoute(service);
+        const double fullValue=timingRoute.activeBookedValue();
+        check(timingRoute.overdueCount()==1 && timingRoute.dueTodayCount()==1 &&
+              timingRoute.activeCount()==3,"fixture has overdue/due-today active rentals");
+        timingRoute.setStatusFilter("Overdue");
+        check(timingRoute.count()==1 &&
+              timingRoute.data(timingRoute.index(0,0),RentalListModel::RentalIdRole)=="R002" &&
+              timingRoute.selectVisibleRow(0) && timingRoute.selectedRentalId()=="R002" &&
+              timingRoute.activeBookedValue()==fullValue,
+              "Overdue filters one active overdue; complete metrics remain");
+        timingRoute.setStatusFilter("DueToday");
+        check(timingRoute.count()==1 &&
+              timingRoute.data(timingRoute.index(0,0),RentalListModel::RentalIdRole)=="R003" &&
+              timingRoute.selectedRentalId().isEmpty() &&
+              timingRoute.activeBookedValue()==fullValue,
+              "DueToday shows one and disarms hidden overdue selection");
+        timingRoute.setStatusFilter("dueToday"); // invalid case
+        check(timingRoute.statusFilter()=="DueToday" &&
+              !timingRoute.selectById("R002") &&
+              timingRoute.locateById(" r002 ") &&
+              timingRoute.statusFilter()=="All" &&
+              timingRoute.selectedRentalId()=="R002",
+              "invalid filter no-op, explicit lookup reveals hidden match");
+        timingRoute.setStatusFilter("Overdue");
+        check(timingRoute.locateActiveReturn(" M001 ") &&
+              timingRoute.statusFilter()=="Active" &&
+              timingRoute.selectedRentalId()=="R003" &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "read-only return lookup safely reveals due-hidden active contract");
         RentalListModel overdueRoute(service);
         overdueRoute.setStatusFilter("History");
         check(overdueRoute.oldestOverdueRentalId()=="R002" &&

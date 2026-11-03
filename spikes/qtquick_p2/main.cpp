@@ -2800,6 +2800,9 @@ int main(int argc, char *argv[]) {
                                               "rentalFilterArchived");
             auto *allButton = findVisual(findVisual, window->contentItem(),
                                           "rentalFilterAll");
+            auto *overdueButton=findVisual(findVisual,window->contentItem(),"rentalFilterOverdue");
+            auto *dueTodayButton=findVisual(findVisual,window->contentItem(),"rentalFilterDueToday");
+            auto *dueRow=findVisual(findVisual,window->contentItem(),"rentalDueRow");
             auto *emptyState=window->findChild<QQuickItem*>("rentalEmptyState");
             auto *emptyMessage=window->findChild<QQuickItem*>("rentalEmptyMessage");
             auto *emptyReset=window->findChild<QQuickItem*>("rentalEmptyReset");
@@ -2809,7 +2812,8 @@ int main(int argc, char *argv[]) {
             auto *toolbarLookupButton=findVisual(findVisual,window->contentItem(),"rentalLookupButton");
             auto *visibleCount=findVisual(findVisual,window->contentItem(),"rentalVisibleCount");
             if (!list || !list->isVisible() || !selected ||
-                !statusRow || !lookupRow || !toolbarLookupField || !toolbarLookupButton || !visibleCount ||
+                !statusRow || !dueRow || !overdueButton || !dueTodayButton ||
+                !lookupRow || !toolbarLookupField || !toolbarLookupButton || !visibleCount ||
                 !activeButton || !historyButton || !allButton ||
                 !returnedButton || !archivedButton ||
                 !emptyState || !emptyMessage || !emptyReset ||
@@ -2848,6 +2852,9 @@ int main(int argc, char *argv[]) {
             // Both screen sizes must present two genuinely distinct rows:
             // no overlapping filters, hidden lookup field or clipped submit.
             const QPointF statusPos=statusRow->mapToScene(QPointF(0,0));
+            const QPointF duePos=dueRow->mapToScene(QPointF(0,0));
+            const QPointF overduePos=overdueButton->mapToScene(QPointF(0,0));
+            const QPointF dueTodayPos=dueTodayButton->mapToScene(QPointF(0,0));
             const QPointF lookupPos=lookupRow->mapToScene(QPointF(0,0));
             const QPointF fieldPos=toolbarLookupField->mapToScene(QPointF(0,0));
             const QPointF buttonPos=toolbarLookupButton->mapToScene(QPointF(0,0));
@@ -2857,8 +2864,13 @@ int main(int argc, char *argv[]) {
                     pos.y()+item->height()<=window->height();
             };
             if(statusPos.y()<0 ||
-               lookupPos.y()+1<statusPos.y()+statusRow->height() ||
+               duePos.y()+1<statusPos.y()+statusRow->height() ||
+               lookupPos.y()+1<duePos.y()+dueRow->height() ||
                !withinViewport(statusRow,statusPos) ||
+               !withinViewport(dueRow,duePos) ||
+               !withinViewport(overdueButton,overduePos) ||
+               !withinViewport(dueTodayButton,dueTodayPos) ||
+               overdueButton->width()<55 || dueTodayButton->width()<70 ||
                !withinViewport(lookupRow,lookupPos) ||
                !withinViewport(toolbarLookupField,fieldPos) ||
                !withinViewport(toolbarLookupButton,buttonPos) ||
@@ -2871,6 +2883,36 @@ int main(int argc, char *argv[]) {
                 app.exit(620);return;
             }
             const QString suffix=compact?"1280x720":"1500x860";
+            // UX-S3: genuine Qt keyboard urgency filtering, no domain writes.
+            const int baselineActive=rentalModel.activeCount();
+            const int baselineHistory=rentalModel.historyCount();
+            const double baselineValue=rentalModel.activeBookedValue();
+            press(overdueButton);
+            if(rentalModel.statusFilter()!="Overdue" || rentalModel.count()!=1 ||
+               rentalModel.selectedRentalId()!="R001" ||
+               rentalModel.data(rentalModel.index(0,0),RentalListModel::DueStateRole)!="Overdue" ||
+               rentalModel.activeCount()!=baselineActive ||
+               rentalModel.historyCount()!=baselineHistory ||
+               rentalModel.activeBookedValue()!=baselineValue) {
+                qCritical()<<"UX-S3 Overdue filter or KPI mismatch";
+                app.exit(814);return;
+            }
+            press(dueTodayButton);
+            if(rentalModel.statusFilter()!="DueToday" || rentalModel.count()!=0 ||
+               !rentalModel.selectedRentalId().isEmpty() || !emptyState->isVisible() ||
+               !emptyReset->isVisible() ||
+               !emptyMessage->property("text").toString().contains("due today") ||
+               rentalModel.activeCount()!=baselineActive ||
+               rentalModel.activeBookedValue()!=baselineValue) {
+                qCritical()<<"UX-S3 Due today empty state or selection wrong";
+                app.exit(815);return;
+            }
+            press(allButton);
+            if(rentalModel.statusFilter()!="All" || rentalModel.count()!=2 ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"UX-S3 All failed to clear urgency view";
+                app.exit(816);return;
+            }
             press(returnedButton);
             if(rentalModel.statusFilter()!="Returned" ||
                rentalModel.count()!=1 || list->property("count").toInt()!=1 ||
