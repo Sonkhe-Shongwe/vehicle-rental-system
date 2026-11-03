@@ -1156,6 +1156,15 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet image not rendered or compact Inspector action clipped";
                 app.exit(712);return;
             }
+            // Save real selected-Inspector evidence for visual review on
+            // both hosted operating systems; never substitute a mockup.
+            const QString photoViewport=compact?"1280x720":"1500x860";
+            const QImage selectedShot=window->grabWindow();
+            if(selectedShot.size()!=window->size() ||
+               !selectedShot.save("ux-q3-selected-fleet-"+photoViewport+".png","PNG")) {
+                qCritical()<<"Fleet selected Inspector capture failed";
+                app.exit(725);return;
+            }
             if(fleetPhotos.chooseFile(QUrl("https://invalid.example/image.jpg")) ||
                fleetPhotos.hasStaged()) {
                 qCritical()<<"Fleet image accepted remote URL";
@@ -1209,6 +1218,12 @@ int main(int argc, char *argv[]) {
                recovered.pixelColor(5,5)!=image.pixelColor(5,5)) {
                 qCritical()<<"Fleet image not bound/recoverable from fictional sidecar";
                 app.exit(719);return;
+            }
+            const QImage importedShot=window->grabWindow();
+            if(importedShot.size()!=window->size() ||
+               !importedShot.save("ux-q3-imported-fleet-"+photoViewport+".png","PNG")) {
+                qCritical()<<"Fleet imported photo capture failed";
+                app.exit(726);return;
             }
             // A small PNG file can still claim huge dimensions. Refuse a
             // rewritten sidecar before the decoder allocates those pixels.
