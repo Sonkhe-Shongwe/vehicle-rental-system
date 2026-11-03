@@ -4,6 +4,8 @@
 
 ## What is already true
 
+**Latest P6 owner acceptance (3 November 2026):** [Original nine bounded fictional criteria plus intentional Qt Quick parity approved](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P6 **9/9**, P5 **8/8**, overall **45/74**, weighted **70.6%**. Latest compiled source `8a7a1ed` [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [native Linux and Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). Physical Windows MinGW/scaling/Narrator, P7 real-data policy and release remain unapproved; earlier P5-only 56.6% notes below are historical.
+
 **P6 REVIEW PACK READY, 3 November 2026:** [Nine-criterion, bounded fictional-data owner decision packet](P6_CONSOLIDATED_OWNER_ACCEPTANCE_REVIEW_2026-11-03.md). Original P6 work had nine unnumbered points, so the P6-N/O grouping still requires owner ratification. Exact tested source [`8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [native Qt 6.8.3 hosted Linux GCC + Windows MSVC 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095), including native P6 multi-process, lifecycle and UI coverage. P6-01..08 representative automated; P6-09 integrated tested but broad parity needs intentional differences accepted. **No P6 approval implied by “next”: P6 0/9, overall 36/74, weighted 56.6%.** With explicit nine-group ratification and all nine functional approvals, score would be 45/74, 70.6%; not a commercial release, real-data or physical device signoff.
 
 **P5 formal owner signoff, 3 November 2026:** [all eight original criteria owner accepted](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), P5 **8/8**, total **36/74**, weighted **56.6%**. Last verified compiled source `8a7a1ed`, [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows native 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). The 40.6% remarks in earlier 2 Nov reports are historic. This signoff does not certify physical Windows Qt Creator/MinGW, 100/125/150% scaling, Narrator, commercial data, release or PR merges.
@@ -29,11 +31,11 @@ Normal Qt Quick Overview/Fleet/Rentals still use protected fictional QSaveFile d
 - P7 normalized fictional repository ≠ approved live commercial storage or data migration.
 - Original generic vector silhouettes ≠ licensed model-specific vehicle photography.
 - Booked value ≠ collected revenue.
-- 36/74 formal and 56.6% evidence-weighted after P5 owner decision ≠ product development percentage.
+- 45/74 formal and 70.6% evidence-weighted after P5 and P6 owner decisions ≠ product development percentage.
 
 ## Current decisions needed
 
-Review [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and the [P7 D2–D8 decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) for pricing ceilings, historic ID and retention, customer privacy, backup, migration and approval. Next engineering work should integrate only **fictional-only** C++ model parity into actual UI, not silently switch default storage. Batch physical owner MinGW/scaling/Narrator/P6 review later; P5 original eight functional outcomes already owner accepted on 3 Nov, while device tests remain open; P8/P9 not started.
+Review [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and the [P7 D2–D8 decision brief](P7_OWNER_DECISION_BRIEF_2026-11-02.md) for pricing ceilings, historic ID and retention, customer privacy, backup, migration and approval. Next engineering work should integrate only **fictional-only** C++ model parity into actual UI, not silently switch default storage. Batch physical owner MinGW/scaling/Narrator review later; P5 and P6 bounded functional outcomes owner approved 3 Nov, physical device/assistive QA remains separate; P8/P9 not started.
 
 ## Collaborative safety and maintenance
 

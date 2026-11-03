@@ -10,6 +10,8 @@ Offline-first Windows vehicle-rental desktop application, rental-business rules 
 
 ## Repository and authority
 
+**3 November 2026 P6 owner decision:** The owner explicitly ratified the [nine bounded P6 criteria and six intentional Qt Quick design differences](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), accepting **P6 9/9** for generated-fictional functionality. Current total **45/74 formally accepted, 70.6% weighted**; P5 remains 8/8. Based on [compiled source `8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [native Linux/hosted Windows Qt 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). Not physical Windows MinGW/scaling/Narrator signoff, real-data authorization, PR merge or release. Earlier P5-only score notes below (56.6%) are dated intermediate state.
+
 **3 November 2026 P5 owner decision:** The owner explicitly approved all eight original Corolla booking criteria after the evidence review. [Recorded signoff](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). **P5 8/8; total 36/74, weighted 56.6%** (previously 28/74, 40.6%). Exact source [8a7a1ed](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3) passed [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), [Linux/Windows Qt 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095). Functional acceptance based on evidence does **not** certify physical Windows MinGW, OS scale or Narrator tests and does not authorize release. Earlier 2 November 40.6% milestone remarks below are historical.
 
 Public repo [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Shongwe/vehicle-rental-system). Stable **main** was not changed by this development work. Active branch at audit start feature/p7-sqlite-sandbox-20261102, draft [#17](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/17) stacked on draft [#14](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/14), [#12](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/12), [#10](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/pull/10). The latest exact-source CI evidence is stated below; the original 2 November full-audit source commit is historical, not the current compiled source. Check actual heads, no inferred merge or signoff.
@@ -40,12 +42,12 @@ Public repo [Sonkhe-Shongwe/vehicle-rental-system](https://github.com/Sonkhe-Sho
 | P3 | 12% | 7/7 | Accepted source boundary |
 | P4 | 12% | 5/7 | Owner physical accessibility |
 | P5 | 16% | 8/8 | Original functional outcomes owner accepted 3 Nov; device/a11y remains independent |
-| P6 | 14% | 0/9 | Bounded nine-group review, not signed |
+| P6 | 14% | 9/9 | Bounded fictional-data nine-group rubric and modern UI parity explicitly accepted 3 November 2026 |
 | P7 | 9% | 0/8 | D1 fictional-only SQL Lab integrated into actual app; P7-P Fleet/Rentals read-only filters, selection and retry native verified; commercial D2–D8 and default storage switch still open |
 | P8 | 5% | 0/6 | Installer not started |
 | P9 | 5% | 0/8 | Release QA not started |
 
-**Total 36/74, weighted 56.6%.** Not an estimate of code completion or market readiness.
+**Total 45/74, weighted 70.6%.** Not an estimate of code completion or market readiness.
 
 ## Outstanding decisions and authorized next work
 

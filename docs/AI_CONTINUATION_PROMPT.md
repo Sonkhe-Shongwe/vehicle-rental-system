@@ -4,6 +4,8 @@
 
 ## Copy-ready prompt
 
+**Latest owner decision (3 Nov 2026):** [P6 9/9 bounded fictional-data lifecycle approval](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), following P5 8/8, moves formal ledger to **45/74, weighted 70.6%**. No physical Windows MinGW/scaling/Narrator results, production-data cutover, P8/P9 release or PR merge authorized; earlier P5-only 56.6% is historical.
+
 **P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
 
 Continue my software product **Rental Studio 2.0**, in GitHub repository **`Sonkhe-Shongwe/vehicle-rental-system`**.

@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Windows physical and operator acceptance
 
+**P6 functional owner approval, 3 November 2026:** [All nine bounded fictional-data criteria ratified and accepted](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md), following P5 8/8 acceptance. Current formal ledger **45/74, weighted 70.6%**. This is **not** physical Windows Qt Creator MinGW, OS 100/125/150% scale, focus/Narrator or final release signoff; the on-device matrix below remains outstanding.
+
 **P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
 
 **Current 2 November 2026:** The new polished P6/P7 stacked Qt Quick application has passing hosted Linux/Windows native CI, but **has not completed a consolidated owner physical-device review** at actual Windows 100/125/150% scaling, Qt Creator 6.10.2 MinGW, keyboard/focus and Narrator. The current physical evidence is earlier P2 local Qt Creator screenshots and two later P6 static Fleet screenshots, not a complete physical test matrix. [Current checkpoint](LATEST_CHECKPOINT.md) | [P6-P compiled UI evidence](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) | [Full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md).

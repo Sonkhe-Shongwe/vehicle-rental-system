@@ -1,4 +1,6 @@
 # P6 | Consolidated nine-criterion owner acceptance decision pack
+
+**Current decision supersedes this pre-approval packet:** On 3 November 2026 the owner ratified **all nine bounded P6 fictional lifecycle groups and the intentionally modernized Qt Quick differences**. [Owner approval record](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). **P6 now 9/9, programme 45/74 weighted 70.6%**. The original PENDING decisions and 56.6% projection below are historical pre-signoff review questions, not current acceptance. Physical Windows MinGW/scaling/Narrator and commercial release/real-data rules still open.
 **Prepared 3 November 2026 (Africa/Johannesburg). No P6 owner signoff yet.**
 
 ## Current verified state

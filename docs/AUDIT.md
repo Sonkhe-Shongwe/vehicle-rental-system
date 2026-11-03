@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current audit index
 
+**Owner acceptance update, 3 November 2026:** [P6 9/9 bounded fictional lifecycle criteria and intentional design differences accepted](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); with P5 8/8 the ledger is now **45/74, weighted 70.6%**. Source tests previously passed native Linux/Windows 115/115 each at `8a7a1ed`. Physical Windows scale/MinGW/Narrator, P7 real-data rules and release remain open; older 56.6% material is intermediate history.
+
 **P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
 
 **Current reconciliation: 2 November 2026.** This is a navigation page, not a second acceptance ledger.

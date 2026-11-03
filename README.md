@@ -18,7 +18,7 @@ The default app still uses protected fictional `RentalSystem` + QSaveFile text s
 
 ## Evidence and remaining gates
 
-The accepted planning ledger is now **36 of 74 criteria, 56.6% weighted evidence**, including [P5 owner signoff 8/8 on 3 November](docs/P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). P6 0/9, P7 0/8 still require separate acceptance and/or integration; P5 original eight functional outcomes have owner approval while physical Windows/assistive QA remains open; P8 installer and P9 release QA not started. Hosted CI is not physical Qt Creator MinGW/Windows 100/125/150% or Narrator acceptance. No merge, release, production data or official installation is approved. [Windows physical checklist](docs/WINDOWS_ACCEPTANCE.md) and [P6-P polished UI report](docs/P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) describe the consolidated future owner session.
+The accepted planning ledger is now **45 of 74 criteria, 70.6% weighted evidence**, including [P5 8/8 owner signoff](docs/P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md) and [P6 9/9 owner signoff](docs/P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md) on 3 November. P7 0/8 still requires separate acceptance and/or integration; P5 original eight functional outcomes have owner approval while physical Windows/assistive QA remains open; P8 installer and P9 release QA not started. Hosted CI is not physical Qt Creator MinGW/Windows 100/125/150% or Narrator acceptance. No merge, release, production data or official installation is approved. [Windows physical checklist](docs/WINDOWS_ACCEPTANCE.md) and [P6-P polished UI report](docs/P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md) describe the consolidated future owner session.
 
 ## Working and documentation rules
 
