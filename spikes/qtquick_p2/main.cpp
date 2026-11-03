@@ -1222,16 +1222,86 @@ int main(int argc, char *argv[]) {
                !fullPhoto->property("source").toString().contains("C001") ||
                !fullHeading->property("text").toString().contains("Toyota Corolla") ||
                !fullDisclosure->property("text").toString().contains("not a verified photo") ||
-               !inWindow(fullClose) || !inWindow(fullPhoto) ||
-               !press("fleetFullPhotoClose")) {
-                qCritical()<<"Full-photo review disclosure or close failed";
+               // QtQuick Image.PreserveAspectFit = 1, no misleading source crop.
+               fullPhoto->property("fillMode").toInt()!=1 ||
+               !inWindow(fullHeading) || !inWindow(fullDisclosure) ||
+               !inWindow(fullClose) || !inWindow(fullPhoto)) {
+                qCritical()<<"Full-photo review disclosure or image fit failed";
                 app.exit(759);return;
+            }
+            // PHOTO-P1-H: capture the actual OPEN popup, not just the
+            // underlying vehicle card. Both hosted OS/viewport configurations
+            // must produce a reviewable before/after evidence image.
+            const QImage fullCorollaShot=window->grabWindow();
+            const QString fullCorollaFile=QStringLiteral(
+                "ux-q3-full-reference-C001-%1.png").arg(photoViewport);
+            if(fullCorollaShot.size()!=window->size() ||
+               !fullCorollaShot.save(fullCorollaFile,"PNG")) {
+                qCritical()<<"Uncropped Corolla review screenshot failed";
+                app.exit(761);return;
+            }
+            if(!press("fleetFullPhotoClose")) {
+                qCritical()<<"Full-photo Close inaccessible";
+                app.exit(762);return;
             }
             QTest::qWait(130);
             if(find(find,window->contentItem(),"fleetFullPhotoImage") ||
                !viewFull->hasActiveFocus()) {
                 qCritical()<<"Photo preview leaked or keyboard focus was lost";
                 app.exit(760);return;
+            }
+            // Independently verify the most visually problematic i20 source,
+            // including ESC dismissal and source-bound title, without
+            // changing/unlicensing any of the existing app photo binaries.
+            fleet.selectById("C003");
+            QTest::qWait(230);
+            if(!press("fleetViewFullPhotoButton")) {
+                qCritical()<<"i20 full-photo action missing";
+                app.exit(763);return;
+            }
+            QTest::qWait(180);
+            fullPhoto=find(find,window->contentItem(),"fleetFullPhotoImage");
+            fullHeading=find(find,window->contentItem(),"fleetFullPhotoHeading");
+            fullDisclosure=find(find,window->contentItem(),"fleetFullPhotoDisclosure");
+            fullClose=find(find,window->contentItem(),"fleetFullPhotoClose");
+            if(!fullPhoto || !fullHeading || !fullDisclosure || !fullClose ||
+               fullPhoto->property("status").toInt()!=1 ||
+               fullPhoto->property("fillMode").toInt()!=1 ||
+               !fullPhoto->property("source").toString().contains("C003") ||
+               !fullHeading->property("text").toString().contains("Hyundai i20") ||
+               !inWindow(fullPhoto) || !inWindow(fullHeading) ||
+               !inWindow(fullDisclosure) || !inWindow(fullClose)) {
+                qCritical()<<"i20 uncropped popup is wrong or clipped";
+                app.exit(764);return;
+            }
+            const QImage fullI20Shot=window->grabWindow();
+            const QString fullI20File=QStringLiteral(
+                "ux-q3-full-reference-C003-%1.png").arg(photoViewport);
+            if(fullI20Shot.size()!=window->size() ||
+               !fullI20Shot.save(fullI20File,"PNG")) {
+                qCritical()<<"Uncropped i20 review screenshot failed";
+                app.exit(765);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(200);
+            auto *i20ViewFull=find(find,window->contentItem(),
+                                    "fleetViewFullPhotoButton");
+            if(find(find,window->contentItem(),"fleetFullPhotoImage") ||
+               !i20ViewFull || !i20ViewFull->hasActiveFocus()) {
+                qCritical()<<"Escape did not dismiss image popup/restore focus";
+                app.exit(766);return;
+            }
+            // A selection change while open must dismiss stale imagery.
+            if(!press("fleetViewFullPhotoButton")) {
+                app.exit(767);return;
+            }
+            QTest::qWait(130);
+            fleet.selectById("C001");
+            QTest::qWait(230);
+            if(find(find,window->contentItem(),"fleetFullPhotoImage") ||
+               fleet.selectedId()!="C001") {
+                qCritical()<<"Full image viewer persisted after vehicle change";
+                app.exit(768);return;
             }
             // Verify the model-neutral fallback actually renders for a
             // real motorcycle selection, not merely a provider boolean.
