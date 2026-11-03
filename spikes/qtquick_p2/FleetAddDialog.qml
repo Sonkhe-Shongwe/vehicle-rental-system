@@ -121,9 +121,10 @@ Dialog {
                     objectName: "fleetPhotoPreview"
                     Layout.preferredWidth: 90
                     Layout.preferredHeight: 56
-                    visible: fleetPhotos.hasStaged
-                    source: visible ? "image://fleetphotos/__staged?v="
-                                      + fleetPhotos.revision : ""
+                    // Source must not depend on visible: failed decode hides preview.
+                    source: fleetPhotos.hasStaged
+                        ? "image://fleetphotos/__staged?v=" + fleetPhotos.revision : ""
+                    visible: fleetPhotos.hasStaged && status === Image.Ready
                     fillMode: Image.PreserveAspectCrop
                     cache: false
                     Accessible.name: "Chosen preview image"

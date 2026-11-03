@@ -85,8 +85,22 @@ ApplicationWindow {
         title: "Choose a replacement fictional vehicle photo"
         fileMode: FileDialog.OpenFile
         nameFilters: ["Images (*.png *.jpg *.jpeg *.webp)"]
-        onAccepted: window.applySelectedFleetPhoto(selectedFile)
-        onRejected: window.photoChangeTargetId = ""
+        onAccepted: {
+            window.applySelectedFleetPhoto(selectedFile)
+            Qt.callLater(function() {
+                if (window.workspace === 1 && fleetReplacePhotoButton.visible &&
+                        fleetReplacePhotoButton.enabled)
+                    fleetReplacePhotoButton.forceActiveFocus(Qt.TabFocusReason)
+            })
+        }
+        onRejected: {
+            window.photoChangeTargetId = ""
+            Qt.callLater(function() {
+                if (window.workspace === 1 && fleetReplacePhotoButton.visible &&
+                        fleetReplacePhotoButton.enabled)
+                    fleetReplacePhotoButton.forceActiveFocus(Qt.TabFocusReason)
+            })
+        }
     }
 
     // A reset removes only the optional local override after user
@@ -118,7 +132,21 @@ ApplicationWindow {
         standardButtons: Dialog.NoButton
         closePolicy: Popup.CloseOnEscape
         onAccepted: window.confirmFleetPhotoReset()
-        onClosed: window.photoResetTargetId = ""
+        onClosed: {
+            window.photoResetTargetId = ""
+            // After removal the reset action hides. Restore focus to an
+            // available, visible Inspector control rather than losing it.
+            Qt.callLater(function() {
+                if (window.workspace !== 1)
+                    return
+                if (fleetRestoreDefaultPhotoButton.visible &&
+                        fleetRestoreDefaultPhotoButton.enabled)
+                    fleetRestoreDefaultPhotoButton.forceActiveFocus(Qt.TabFocusReason)
+                else if (fleetReplacePhotoButton.visible &&
+                         fleetReplacePhotoButton.enabled)
+                    fleetReplacePhotoButton.forceActiveFocus(Qt.TabFocusReason)
+            })
+        }
         contentItem: ColumnLayout {
             spacing: 14
             Label {
@@ -994,10 +1022,21 @@ ApplicationWindow {
                                                 id: cardPhoto
                                                 objectName: "vehicleCardPhoto"
                                                 anchors.fill: parent
-                                                visible: fleetPhotos.revision >= 0 && fleetPhotos.hasPhoto(vehicleCard.vehicleId)
-                                                source: visible
+                                                // A source is not a decoded image; fallback stays visible until Ready.
+
+                                                readonly property bool photoAvailable:
+
+                                                    fleetPhotos.revision >= 0 &&
+
+                                                    fleetPhotos.hasPhoto(vehicleCard.vehicleId)
+
+                                                source: photoAvailable
+
                                                     ? "image://fleetphotos/" + vehicleCard.vehicleId
+
                                                       + "?v=" + fleetPhotos.revision : ""
+
+                                                visible: photoAvailable && status === Image.Ready
                                                 fillMode: Image.PreserveAspectCrop
                                                 cache: false
                                                 Accessible.name: "Illustrative photo for " + vehicleCard.displayName
@@ -1201,16 +1240,28 @@ ApplicationWindow {
                                     id: inspectorPhoto
                                     objectName: "fleetInspectorPhoto"
                                     anchors.fill: parent
-                                    visible: fleetPhotos.revision >= 0 && fleetPhotos.hasPhoto(fleet.selectedId)
-                                    source: visible
+                                    readonly property bool photoAvailable:
+
+                                        fleetPhotos.revision >= 0 &&
+
+                                        fleetPhotos.hasPhoto(fleet.selectedId)
+
+                                    source: photoAvailable
+
                                         ? "image://fleetphotos/" + fleet.selectedId
+
                                           + "?v=" + fleetPhotos.revision : ""
+
+                                    // Failed or loading image cannot conceal the fallback silhouette.
+
+                                    visible: photoAvailable && status === Image.Ready
                                     fillMode: Image.PreserveAspectCrop
                                     cache: false
                                     Accessible.name: "Illustrative model photo for " + fleet.selectedName
                                     Accessible.description: "Reference picture only, not the actual rental vehicle"
                                 }
                                 VehicleSilhouette {
+                                    objectName: "fleetInspectorFallbackArt"
                                     anchors.centerIn: parent
                                     visible: !inspectorPhoto.visible
                                     vehicleType: fleet.selectedType
@@ -1235,6 +1286,7 @@ ApplicationWindow {
                                 // Overlay, not an extra layout row. Preserve
                                 // the Book action's room at compact desktop sizes.
                                 Button {
+                                    id: fleetReplacePhotoButton
                                     objectName: "fleetReplacePhotoButton"
                                     text: window.height < 800 ? "Change" : "Change photo"
                                     font.pixelSize: 11
@@ -1254,6 +1306,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Button {
+                                    id: fleetRestoreDefaultPhotoButton
                                     objectName: "fleetRestoreDefaultPhotoButton"
                                     text: window.height < 800 ? "Reset" : "Restore default"
                                     font.pixelSize: 11

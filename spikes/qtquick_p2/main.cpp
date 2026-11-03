@@ -1356,6 +1356,13 @@ int main(int argc, char *argv[]) {
                 app.exit(742);return;
             }
             afterCancel.close();
+            QTest::qWait(100);
+            auto *resetFocus=find(find,window->contentItem(),
+                                  "fleetRestoreDefaultPhotoButton");
+            if(!resetFocus || !resetFocus->hasActiveFocus()) {
+                qCritical()<<"Cancelling photo reset did not restore keyboard focus";
+                app.exit(748);return;
+            }
             if(!press("fleetRestoreDefaultPhotoButton") ||
                !press("fleetRestoreDefaultConfirm")) {
                 qCritical()<<"Fleet photo reset confirmation unavailable";
@@ -1372,6 +1379,10 @@ int main(int argc, char *argv[]) {
                    "Default image restored for C001")) {
                 qCritical()<<"Reset did not restore seeded image and feedback";
                 app.exit(744);return;
+            }
+            if(!changePhoto->hasActiveFocus()) {
+                qCritical()<<"Successful photo reset left keyboard focus on a hidden control";
+                app.exit(749);return;
             }
             // Reused ID safety: a deleted C001 later assigned to a Demo
             // Motors vehicle cannot show the old Toyota Corolla artwork.
@@ -1428,11 +1439,28 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet oversized sidecar was not rejected";
                 app.exit(722);return;
             }
+            // Exercise actual QML invalid-image fallback and recovery.
+            fleetPhotos.discardStaged();
+            QTest::qWait(180);
+            if(find(find,window->contentItem(),"fleetInspectorPhoto") ||
+               !find(find,window->contentItem(),"fleetInspectorFallbackArt")) {
+                qCritical()<<"Unsafe image did not reveal Inspector silhouette";
+                app.exit(750);return;
+            }
             if(!image.save(sidecar,"PNG") ||
                !fleetPhotos.hasPhoto("C004") ||
                fleetPhotos.imageFor("C004").size()!=image.size()) {
                 qCritical()<<"Fleet valid sidecar could not be recovered";
                 app.exit(723);return;
+            }
+            fleetPhotos.discardStaged();
+            QTest::qWait(220);
+            auto *recoveredPhoto=find(find,window->contentItem(),
+                                     "fleetInspectorPhoto");
+            if(!recoveredPhoto || recoveredPhoto->property("status").toInt()!=1 ||
+               find(find,window->contentItem(),"fleetInspectorFallbackArt")) {
+                qCritical()<<"Inspector photo did not recover after valid image restored";
+                app.exit(751);return;
             }
             QByteArray fixedV,fixedR;
             if(!readFile(vehicles,&fixedV)||!readFile(rentals,&fixedR)||
