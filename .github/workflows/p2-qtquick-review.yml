@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - spike/p2-qtquick-fleet-20261030
+      # Scoped CI fallback for Q3 changes if PR events are not delivered.
+      - feature/p7-sqlite-sandbox-20261102
     paths:
       - CMakeLists.txt
       - 'spikes/qtquick_p2/**'
