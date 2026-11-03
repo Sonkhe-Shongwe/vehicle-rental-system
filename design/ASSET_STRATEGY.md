@@ -1,5 +1,7 @@
 # Automotive Photography and Visual Asset Strategy — Rebuild
 
+**3 NOV 2026 ACTIVE:** [Five-model 3/10 to 10/10 photography charter](FLEET_PHOTOGRAPHY_10_OF_10_MISSION_2026-11-03.md) | [live model identity source/CI report](../docs/PHOTO_P1_A_MODEL_IDENTITY_NATIVE_VERIFIED_2026-11-03.md). Historical CI-pending material below is superseded by verified Qt 117/117 per OS. Car artworks and motorcycle fallbacks remain original and **not owner-approved**; no image binary was changed by the identity fix.
+
 **Decision date:** 29 October 2026  
 **Status:** art direction **not approved**; three previously bundled model photos have licences recorded but are **not necessarily suitable for the new design**.
 
