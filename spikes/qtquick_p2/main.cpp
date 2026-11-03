@@ -3752,6 +3752,24 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 shared Return confirm/cancel controls unavailable";
                 app.exit(216);return;
             }
+            // UX-S7: a modal must remain bound to R001 even if a C++ model
+            // update changes selection while it is open. No hidden relabel.
+            auto *returnDialog=window->findChild<QObject*>("rentalReturnDialog");
+            if(!returnDialog || !returnDialog->property("question").toString().contains("R001") ||
+               !rentalModel.selectById("R002")) {
+                qCritical()<<"UX-S7 return modal setup/selection change failed";
+                app.exit(819);return;
+            }
+            QCoreApplication::processEvents();
+            if(returnConfirm->isEnabled() ||
+               !returnDialog->property("question").toString().contains("R001") ||
+               system.findRentalById("R001")->getIsReturned()) {
+                qCritical()<<"UX-S7 return dialog target changed during open modal";
+                app.exit(820);return;
+            }
+            if(!rentalModel.selectById("R001")) {app.exit(821);return;}
+            QCoreApplication::processEvents();
+            if(!returnConfirm->isEnabled()) {app.exit(822);return;}
             press(returnCancel);
             QTest::qWait(110);
             if(!returnButton->hasActiveFocus() ||
@@ -3776,6 +3794,20 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 shared Archive confirm/cancel controls unavailable";
                 app.exit(220);return;
             }
+            // UX-S7: archive wording remains R002 and its confirm action
+            // is disabled when selection moves to an ineligible rental.
+            auto *archiveDialog=window->findChild<QObject*>("rentalArchiveDialog");
+            if(!archiveDialog || !archiveDialog->property("question").toString().contains("R002") ||
+               !rentalModel.selectById("R001")) {app.exit(823);return;}
+            QCoreApplication::processEvents();
+            if(archiveConfirm->isEnabled() ||
+               !archiveDialog->property("question").toString().contains("R002")) {
+                qCritical()<<"UX-S7 archive dialog target changed while open";
+                app.exit(824);return;
+            }
+            if(!rentalModel.selectById("R002")) {app.exit(825);return;}
+            QCoreApplication::processEvents();
+            if(!archiveConfirm->isEnabled()) {app.exit(826);return;}
             QTest::keyClick(window,Qt::Key_Escape);
             QTest::qWait(155);
             if(!archiveButton->hasActiveFocus() ||

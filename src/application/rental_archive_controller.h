@@ -40,6 +40,8 @@ public:
     bool canArchiveSelected() const;
     QString lastArchiveMessage() const { return m_message; }
     Q_INVOKABLE bool archiveSelected();
+    // Exact-ID guard for the contract reviewed in the confirmation dialog.
+    Q_INVOKABLE bool archiveSelectedFor(const QString &expectedRentalId);
 signals:
     void stateChanged();
     void archiveSucceeded(const QString &rentalId);

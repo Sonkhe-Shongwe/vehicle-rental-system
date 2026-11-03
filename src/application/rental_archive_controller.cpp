@@ -39,6 +39,19 @@ bool RentalArchiveController::canArchiveSelected() const {
     return item && item->status==RentalRecordStatus::Returned;
 }
 
+bool RentalArchiveController::archiveSelectedFor(const QString &expectedRentalId) {
+    if (expectedRentalId.isEmpty() ||
+        expectedRentalId != m_rentals.selectedRentalId() ||
+        m_rentals.selectedRow() < 0) {
+        m_message = QStringLiteral(
+            "Selection changed. Open the archive confirmation again.");
+        emit stateChanged();
+        emit archiveRejected(RentalArchiveError::MissingRental);
+        return false;
+    }
+    return archiveSelected();
+}
+
 bool RentalArchiveController::archiveSelected() {
     const QString id=m_rentals.selectedRentalId();
     const auto result=(id.isEmpty() || m_rentals.selectedRow()<0)

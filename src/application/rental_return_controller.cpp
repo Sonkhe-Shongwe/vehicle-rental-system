@@ -50,6 +50,19 @@ bool RentalReturnController::canReturnSelected() const {
     return item && item->status == RentalRecordStatus::Active;
 }
 
+bool RentalReturnController::returnSelectedFor(const QString &expectedRentalId) {
+    if (expectedRentalId.isEmpty() ||
+        expectedRentalId != m_rentals.selectedRentalId() ||
+        m_rentals.selectedRow() < 0) {
+        m_lastMessage = QStringLiteral(
+            "Selection changed. Open the return confirmation again.");
+        emit stateChanged();
+        emit returnRejected(RentalReturnError::MissingRental);
+        return false;
+    }
+    return returnSelected();
+}
+
 bool RentalReturnController::returnSelected() {
     // The controller never acts on a stale or invisible selection.
     const QString id = m_rentals.selectedRentalId();

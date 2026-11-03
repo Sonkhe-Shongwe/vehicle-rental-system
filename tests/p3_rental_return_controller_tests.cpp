@@ -71,6 +71,17 @@ int main(int argc, char **argv) {
 
     check(model.selectById(" r001 ") && action.canReturnSelected(),
           "selected active real ID eligible");
+    // UX-S7: both R001 and R002 are eligible Active rentals. Consent for
+    // R002 must not be reused to return a different selected active R001.
+    const QByteArray guardedLedger=bytes(ledgerFile);
+    check(!action.returnSelectedFor("R002") && rejected==2 &&
+          succeeded==0 && fleetRefreshes==0 && resets==0 &&
+          model.selectedRentalId()=="R001" && action.canReturnSelected() &&
+          action.lastReturnMessage().contains("Selection changed") &&
+          !system.findRentalById("R001")->getIsReturned() &&
+          !system.findRentalById("R002")->getIsReturned() &&
+          bytes(ledgerFile)==guardedLedger && bytes(fleetFile)==sourceFleet,
+          "stale return confirmation rejects a different eligible ID without writes");
     const QByteArray beforeInvalid=bytes(ledgerFile);
     RentalReturnService impossibleDate(system, read, []{return QDate();});
     check(impossibleDate.returnById("R001").error==RentalReturnError::InvalidReturnDate &&
@@ -86,7 +97,7 @@ int main(int argc, char **argv) {
     check(QFile::rename(ledgerFile,dir.filePath("rentals-backup.txt")),
           "prepare forced commit failure without losing bytes");
     check(QDir().mkdir(ledgerFile), "block ledger commit path");
-    check(!action.returnSelected() && rejected==2 &&
+    check(!action.returnSelectedFor("R001") && rejected==3 &&
           fleetRefreshes==0 && resets==0 && succeeded==0 &&
           action.lastReturnMessage().contains("not saved") &&
           system.findRentalById("R001") &&
@@ -103,7 +114,7 @@ int main(int argc, char **argv) {
     model.setStatusFilter("Active");
     check(action.canReturnSelected(), "active filter retains selected ID");
     const int preSuccessCount=model.count();
-    check(action.returnSelected() && succeeded==1 && rejected==2 &&
+    check(action.returnSelectedFor("R001") && succeeded==1 && rejected==3 &&
           fleetRefreshes==1 && resets==3 &&
           model.count()==preSuccessCount && model.statusFilter()=="All" &&
           model.selectedRentalId()=="R001" && model.selectedRow()==0 &&
@@ -117,7 +128,7 @@ int main(int argc, char **argv) {
     check(model.count()==1 && model.selectedRentalId()=="R001" &&
           model.selectById("r001") &&
           !action.canReturnSelected() && !action.returnSelected() &&
-          rejected==3 && fleetRefreshes==1 && succeeded==1,
+          rejected==4 && fleetRefreshes==1 && succeeded==1,
           "returned history cannot return twice or refresh on rejection");
     check(action.lastReturnMessage().contains("Only active"),"typed rejection status");
 

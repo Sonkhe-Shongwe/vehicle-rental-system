@@ -92,35 +92,56 @@ int main(int argc,char **argv) {
         QTemporaryDir other;
         check(other.isValid(),"separate archive receipt fixture");
         RentalSystem different(other.path());
-        check(different.addVehicle(new Car("C200","Fictional","Car",300,4)),
-              "separate archive vehicle");
+        check(different.addVehicle(new Car("C200","Fictional","Car",300,4)) &&
+              different.addVehicle(new Car("C201","Fictional","Car",300,4)),
+              "separate archive vehicles");
         auto entry=std::make_unique<Rental>("R200","Fictional Person","0000000000",
                                             "C200",today,today.addDays(2),2,300,600);
         check(different.createRental(entry.get()),"separate archive booking");
         entry.release();
         check(different.completeRental("R200",today),"separate returned receipt");
+        auto otherEntry=std::make_unique<Rental>("R201","Fictional Person","0000000000",
+                                                 "C201",today,today.addDays(2),2,300,600);
+        check(different.createRental(otherEntry.get()),"second archive booking");
+        otherEntry.release();
+        check(different.completeRental("R201",today),"second eligible archive record");
         const QByteArray unchangedFleet=read(other.filePath("vehicles.txt"));
+        const QByteArray guardedLedger=read(other.filePath("rentals.txt"));
         RentalReadService differentReads(different);
         RentalListModel differentModel(differentReads);
         RentalArchiveController differentArchive(different,differentReads,differentModel);
         differentModel.setStatusFilter("Returned");
-        check(differentModel.count()==1 &&
+        check(differentModel.count()==2 &&
               differentModel.selectById("R200") &&
               differentArchive.canArchiveSelected(),
-              "returned-only record selected and eligible");
-        check(differentArchive.archiveSelected() &&
+              "two returned-only records available for review");
+        int guardRejections=0;
+        QObject::connect(&differentArchive,&RentalArchiveController::archiveRejected,
+                         [&](RentalArchiveError){++guardRejections;});
+        check(!differentArchive.archiveSelectedFor("R201") &&
+              guardRejections==1 &&
+              differentArchive.lastArchiveMessage().contains("Selection changed") &&
+              differentModel.selectedRentalId()=="R200" &&
+              differentArchive.canArchiveSelected() &&
+              !different.findRentalById("R200")->getIsArchived() &&
+              !different.findRentalById("R201")->getIsArchived() &&
+              read(other.filePath("rentals.txt"))==guardedLedger &&
+              read(other.filePath("vehicles.txt"))==unchangedFleet,
+              "stale archive confirmation cannot act on another eligible returned ID");
+        check(differentArchive.archiveSelectedFor("R200") &&
               differentModel.statusFilter()=="All" &&
-              differentModel.count()==1 &&
+              differentModel.count()==2 &&
               differentModel.selectedRentalId()=="R200" &&
               differentModel.selectedContract().value("status").toString()=="Archived" &&
               !differentArchive.canArchiveSelected() &&
               read(other.filePath("vehicles.txt"))==unchangedFleet,
               "archive reveals saved record from Returned filter without fleet changes");
         differentModel.setStatusFilter("History");
-        check(differentModel.count()==1 &&
+        check(differentModel.count()==2 &&
               differentModel.selectedRentalId()=="R200" &&
-              differentModel.selectedContract().value("status").toString()=="Archived",
-              "archived receipt remains selected in History");
+              differentModel.selectedContract().value("status").toString()=="Archived" &&
+              !different.findRentalById("R201")->getIsArchived(),
+              "archived receipt remains selected in History; other returned rental unchanged");
     }
     std::cout<<"P3 archive C++ commit, rollback, history and restart PASS\n";
     return 0;

@@ -54,6 +54,9 @@ public:
     bool canReturnSelected() const;
     QString lastReturnMessage() const { return m_lastMessage; }
     Q_INVOKABLE bool returnSelected();
+    // Guard the original ID captured when the confirmation dialog opened.
+    // A newly selected eligible contract must never inherit old consent.
+    Q_INVOKABLE bool returnSelectedFor(const QString &expectedRentalId);
 
 signals:
     void stateChanged();

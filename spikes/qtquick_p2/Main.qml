@@ -2025,7 +2025,10 @@ ApplicationWindow {
                             activeFocusOnTab: true
                             enabled: rentalActions.canReturnSelected
                             Accessible.name: "Return the selected active rental"
-                            onClicked: returnConfirmation.open()
+                            onClicked: {
+                                returnConfirmation.targetId = rentalsModel.selectedRentalId
+                                returnConfirmation.open()
+                            }
                         }
                         Button {
                             id: archiveActionButton
@@ -2034,7 +2037,10 @@ ApplicationWindow {
                             activeFocusOnTab: true
                             enabled: archiveActions.canArchiveSelected
                             Accessible.name: "Archive selected returned rental"
-                            onClicked: archiveConfirmation.open()
+                            onClicked: {
+                                archiveConfirmation.targetId = rentalsModel.selectedRentalId
+                                archiveConfirmation.open()
+                            }
                         }
                         Button {
                             id: deleteArchivedButton
@@ -2102,33 +2108,41 @@ ApplicationWindow {
                     ConfirmActionDialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
+                        // Never let a live selection swap the target reviewed
+                        // in this modal. The C++ controller repeats the ID guard.
+                        property string targetId: ""
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Confirm rental return"
-                        question: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
+                        question: "Mark " + returnConfirmation.targetId + " as returned today?"
                         acceptText: "Confirm return"
                         acceptName: "rentalReturnConfirm"
                         cancelName: "rentalReturnCancel"
-                        canAccept: rentalActions.canReturnSelected
+                        canAccept: returnConfirmation.targetId !== "" &&
+                                   returnConfirmation.targetId === rentalsModel.selectedRentalId &&
+                                   rentalActions.canReturnSelected
                         restoreFocusTo: returnSelectedButton
                         fallbackFocusTo: rentalList
-                        onConfirmed: rentalActions.returnSelected()
+                        onConfirmed: rentalActions.returnSelectedFor(returnConfirmation.targetId)
                     }
                     ConfirmActionDialog {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
+                        property string targetId: ""
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         title: "Archive returned rental"
-                        question: "Move " + rentalsModel.selectedRentalId +
+                        question: "Move " + archiveConfirmation.targetId +
                                   " to archived history? The record will not be deleted."
                         acceptText: "Confirm archive"
                         acceptName: "rentalArchiveConfirm"
                         cancelName: "rentalArchiveCancel"
-                        canAccept: archiveActions.canArchiveSelected
+                        canAccept: archiveConfirmation.targetId !== "" &&
+                                   archiveConfirmation.targetId === rentalsModel.selectedRentalId &&
+                                   archiveActions.canArchiveSelected
                         restoreFocusTo: archiveActionButton
                         fallbackFocusTo: rentalList
-                        onConfirmed: archiveActions.archiveSelected()
+                        onConfirmed: archiveActions.archiveSelectedFor(archiveConfirmation.targetId)
                     }
                     P6ArchivedDeleteDialog {
                         id: archivedDeleteDialog
