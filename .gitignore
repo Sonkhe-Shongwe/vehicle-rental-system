@@ -31,3 +31,8 @@ CMakeCache.txt
 .env.*
 !/.env.example
 .DS_Store
+
+# Review files may contain private originals, metadata and unapproved visual content.
+/design/photo_review/local_originals/
+/design/photo_review/local_manifest.json
+/design/photo_review/local_output/
