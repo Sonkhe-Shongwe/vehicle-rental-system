@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | P0–P9 formal acceptance and weighted progress
 
+**Separate PHOTO-P1-E engineering activity (no acceptance award):** [PHOTO-P1-E source `f768514`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f76851460600b8379a160e1643265ca4032c0d57), [offline CI run 41647940737](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41647940737) passed **12/12 synthetic-only Python tests each on Linux and hosted Windows**. This is an offline photo-candidate review utility, **not** a compiled Qt feature, a final P1 licensed photographic set, physical Windows/MinGW accessibility acceptance, real-data authorization or a release. Last native Qt application source remains `2995ddc` / [run 41641573481](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41641573481). Frozen formal total remains **45/74, weighted 70.6%**.
+
 **Current verified ledger: 3 November 2026.** [Latest checkpoint](LATEST_CHECKPOINT.md) | [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [canonical state](PROJECT_STATE_CANONICAL.md). Phase weights and total 74 criteria were **not changed** by this documentation audit.
 
 ## Two separate measures

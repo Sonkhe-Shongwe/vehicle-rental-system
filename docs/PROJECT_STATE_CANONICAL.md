@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Canonical product and governance state
 
+**Current image-review boundary:** [PHOTO-P1-E local-only candidate preflight](../design/photo_review/OFFLINE_REVIEW_README.md), [offline CI run 41647940737](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41647940737), 12/12 synthetic Python checks each on Linux and hosted Windows. Reviewer accepts explicitly provided originals only, labels creator/licence claims **unverified**, strips EXIF from review copies, and refuses writes into application `assets/`; it does not approve or install any image. The actual Qt executable's latest native test remains `2995ddc` / run 41641573481. No change to C++ business authority, data storage or real customer-data permission.
+
 **Reviewed 3 November 2026.** Source-level evidence and dates are in [Latest checkpoint](LATEST_CHECKPOINT.md), not duplicated as a rolling changelog here. [Roadmap](ROADMAP.md) | [Testing](TESTING.md) | [Formal acceptance](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md).
 
 ## Product contract

@@ -7,6 +7,7 @@
 | Which branch and exact source last passed? | [LATEST_CHECKPOINT](LATEST_CHECKPOINT.md) |
 | What product architecture, limits and permissions are approved? | [PROJECT_STATE_CANONICAL](PROJECT_STATE_CANONICAL.md) and [ARCHITECTURE](ARCHITECTURE.md) |
 | What should we do next? | [ROADMAP](ROADMAP.md) |
+| How can we review a lawful local candidate image without downloads? | [OFFLINE PHOTO REVIEW GUIDE](../design/photo_review/OFFLINE_REVIEW_README.md), [PHOTO-P1-E source/testing](PHOTO_P1_E_OFFLINE_CANDIDATE_PREFLIGHT_VERIFIED_2026-11-03.md) |
 | What was actually tested on Linux/Windows? | [TESTING](TESTING.md), [UX-Q6 evidence](UX_Q6_FLEET_MEDIA_STATE_NATIVE_VERIFIED_2026-11-03.md) and [PHOTO-P1-C evidence](PHOTO_P1_C_MOTORCYCLE_FALLBACK_NATIVE_VERIFIED_2026-11-03.md) |
 | Which criterion is officially accepted? | [FROZEN P0-P9 MATRIX](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) and [P5](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md)/[P6](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md) owner decisions |
 | How do I resume in another tab? | [EVERGREEN PROMPT](AI_CONTINUATION_PROMPT.md), [CURRENT HANDOFF](AI_HANDOFF_CURRENT.md), [CONTINUITY](CONTINUITY.md) |
