@@ -127,6 +127,38 @@ bool FleetPhotoStore::replaceFor(const QString &id,const QUrl &file) {
     }
     return saved;
 }
+bool FleetPhotoStore::hasCustomPhoto(const QString &id) const {
+    if(!safeId(id) || !safeSidecarFolder(m_root))return false;
+    const QFileInfo info(imagePath(id));
+    // An invalid on-disk image is still an override that the operator
+    // needs to be able to discard without deleting the fleet vehicle.
+    return info.isFile() && !info.isSymLink();
+}
+bool FleetPhotoStore::restoreDefaultFor(const QString &id) {
+    if(!m_replacementEnabled || !safeId(id)) {
+        m_feedback=!m_replacementEnabled
+            ? QStringLiteral("Restoring images is disabled in fixed fictional-only mode.")
+            : QStringLiteral("Default image unchanged: invalid vehicle ID.");
+        ++m_revision;emit changed();return false;
+    }
+    if(!safeSidecarFolder(m_root)) {
+        m_feedback=QStringLiteral("Default image unchanged: fictional photo folder is unsafe.");
+        ++m_revision;emit changed();return false;
+    }
+    const QString file=imagePath(id);
+    const QFileInfo info(file);
+    if(!info.isFile() || info.isSymLink()) {
+        m_feedback=QStringLiteral("Default image unchanged: no safe custom photo to remove.");
+        ++m_revision;emit changed();return false;
+    }
+    if(!QFile::remove(file)) {
+        m_feedback=QStringLiteral("Default image unchanged: custom photo could not be removed.");
+        ++m_revision;emit changed();return false;
+    }
+    m_feedback=QStringLiteral("Default fictional vehicle image restored.");
+    ++m_revision;emit changed();
+    return true;
+}
 void FleetPhotoStore::discardStaged() {
     m_staged=QImage{};
     m_feedback.clear();

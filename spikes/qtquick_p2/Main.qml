@@ -37,6 +37,7 @@ ApplicationWindow {
     // Capture the target before the native picker can change focus/selection.
     property string photoChangeTargetId: ""
     property string photoChangeNotice: ""
+    property string photoResetTargetId: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -86,6 +87,67 @@ ApplicationWindow {
         nameFilters: ["Images (*.png *.jpg *.jpeg *.webp)"]
         onAccepted: window.applySelectedFleetPhoto(selectedFile)
         onRejected: window.photoChangeTargetId = ""
+    }
+
+    // A reset removes only the optional local override after user
+    // confirmation. Default repo imagery and C++ fleet records are untouched.
+    function confirmFleetPhotoReset() {
+        const id = window.photoResetTargetId
+        window.photoResetTargetId = ""
+        if (persistentFictionalDemo || window.workspace !== 1 || id === "" ||
+                fleet.selectedId !== id) {
+            window.photoChangeNotice = "Photo unchanged. Select the vehicle again before restoring the default."
+            return false
+        }
+        const restored = fleetPhotos.restoreDefaultFor(id)
+        window.photoChangeNotice = restored
+            ? "Default image restored for " + id + "."
+            : "Photo unchanged for " + id + ". " + fleetPhotos.feedback
+        return restored
+    }
+
+    Dialog {
+        id: fleetRestorePhotoDialog
+        objectName: "fleetRestorePhotoDialog"
+        title: "Restore default image?"
+        modal: true
+        focus: true
+        width: Math.min(420, parent ? parent.width - 48 : 400)
+        x: parent ? (parent.width - width) / 2 : 0
+        y: parent ? (parent.height - height) / 2 : 0
+        standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        onAccepted: window.confirmFleetPhotoReset()
+        onClosed: window.photoResetTargetId = ""
+        contentItem: ColumnLayout {
+            spacing: 14
+            Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: "Remove the custom photo for " + window.photoResetTargetId
+                      + "? The original illustration or neutral vehicle silhouette will return. "
+                      + "This cannot recover the custom photo."
+                color: window.navy
+                Accessible.name: text
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Button {
+                    objectName: "fleetRestoreDefaultCancel"
+                    text: "Keep photo"
+                    activeFocusOnTab: true
+                    onClicked: fleetRestorePhotoDialog.reject()
+                }
+                Item { Layout.fillWidth: true }
+                Button {
+                    objectName: "fleetRestoreDefaultConfirm"
+                    text: "Restore default"
+                    activeFocusOnTab: true
+                    Accessible.name: "Confirm removing the custom fictional vehicle photo"
+                    onClicked: fleetRestorePhotoDialog.accept()
+                }
+            }
+        }
     }
 
     // Arrow keys are for moving between *vehicles* only while Fleet has
@@ -1189,6 +1251,27 @@ ApplicationWindow {
                                         window.photoChangeTargetId = fleet.selectedId
                                         window.photoChangeNotice = ""
                                         selectedFleetPhotoDialog.open()
+                                    }
+                                }
+                                Button {
+                                    objectName: "fleetRestoreDefaultPhotoButton"
+                                    text: window.height < 800 ? "Reset" : "Restore default"
+                                    font.pixelSize: 11
+                                    padding: 4
+                                    anchors.bottom: parent.bottom
+                                    anchors.right: parent.right
+                                    anchors.margins: 6
+                                    z: 2
+                                    height: window.height < 800 ? 27 : 32
+                                    visible: !persistentFictionalDemo && fleet.selectedId !== "" &&
+                                             fleetPhotos.revision >= 0 &&
+                                             fleetPhotos.hasCustomPhoto(fleet.selectedId)
+                                    activeFocusOnTab: true
+                                    Accessible.name: "Restore the original fictional vehicle image"
+                                    onClicked: {
+                                        window.photoResetTargetId = fleet.selectedId
+                                        window.photoChangeNotice = ""
+                                        fleetRestorePhotoDialog.open()
                                     }
                                 }
                             }

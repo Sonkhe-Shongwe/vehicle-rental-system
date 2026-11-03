@@ -1319,6 +1319,49 @@ int main(int argc, char *argv[]) {
                 app.exit(738);return;
             }
             afterStale.close();
+            // A custom image can be discarded only through the actual
+            // confirmation UI. Fixed fictional-only storage may not reset it.
+            if(lockedPhotoStore.restoreDefaultFor("C001") ||
+               !fleetPhotos.hasCustomPhoto("C001")) {
+                qCritical()<<"Fixed fictional session reset was not guarded";
+                app.exit(739);return;
+            }
+            fleet.selectById("C001");
+            QTest::qWait(150);
+            if(!press("fleetRestoreDefaultPhotoButton")) {
+                qCritical()<<"Fleet restore button missing for custom photo";
+                app.exit(740);return;
+            }
+            // Escape/cancel must retain the source bytes and active photo.
+            if(!press("fleetRestoreDefaultCancel") ||
+               !fleetPhotos.hasCustomPhoto("C001")) {
+                qCritical()<<"Cancelling photo reset discarded custom media";
+                app.exit(741);return;
+            }
+            QFile afterCancel(c001Sidecar);
+            if(!afterCancel.open(QIODevice::ReadOnly) ||
+               afterCancel.readAll()!=beforeRejected) {
+                qCritical()<<"Cancelled photo reset changed stored bytes";
+                app.exit(742);return;
+            }
+            afterCancel.close();
+            if(!press("fleetRestoreDefaultPhotoButton") ||
+               !press("fleetRestoreDefaultConfirm")) {
+                qCritical()<<"Fleet photo reset confirmation unavailable";
+                app.exit(743);return;
+            }
+            QTest::qWait(150);
+            photo=find(find,window->contentItem(),"fleetInspectorPhoto");
+            if(fleetPhotos.hasCustomPhoto("C001") ||
+               QFileInfo::exists(c001Sidecar) ||
+               !fleetPhotos.hasPhoto("C001") ||
+               fleetPhotos.imageFor("C001").isNull() ||
+               !photo || photo->property("status").toInt()!=1 ||
+               !replacementNotice->property("text").toString().contains(
+                   "Default image restored for C001")) {
+                qCritical()<<"Reset did not restore seeded image and feedback";
+                app.exit(744);return;
+            }
             fleet.selectById("C004");
             QTest::qWait(130);
             const QImage importedShot=window->grabWindow();

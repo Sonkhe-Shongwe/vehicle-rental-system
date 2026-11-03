@@ -22,6 +22,9 @@ public:
     // its actual storage outcome. C++ Fleet Add uses saveStagedFor directly.
     void setReplacementEnabled(bool enabled) { m_replacementEnabled=enabled; }
     Q_INVOKABLE bool replaceFor(const QString &vehicleId,const QUrl &localFile);
+    // Reveal only a local fictional override; default resources are read-only.
+    Q_INVOKABLE bool hasCustomPhoto(const QString &vehicleId) const;
+    Q_INVOKABLE bool restoreDefaultFor(const QString &vehicleId);
     bool saveStagedFor(const QString &vehicleId);
     void forgetVehicle(const QString &vehicleId);
     QImage imageFor(const QString &vehicleId, const QSize &requestedSize={}) const;
