@@ -1190,6 +1190,27 @@ int main(int argc, char *argv[]) {
                 app.exit(728);return;
             }
             const QString photoViewport=compact?"1280x720":"1500x860";
+            // Verify the model-neutral fallback actually renders for a
+            // real motorcycle selection, not merely a provider boolean.
+            fleet.selectById("M001");
+            QTest::qWait(220);
+            auto *motorcycleArt=find(find,window->contentItem(),
+                                      "fleetInspectorFallbackArt");
+            if(!motorcycleArt ||
+               find(find,window->contentItem(),"fleetInspectorPhoto") ||
+               !inWindow(motorcycleArt)) {
+                qCritical()<<"Motorcycle Fleet fallback was hidden or clipped";
+                app.exit(752);return;
+            }
+            const QImage motorcycleShot=window->grabWindow();
+            if(motorcycleShot.size()!=window->size() ||
+               !motorcycleShot.save("ux-q3-motorcycle-fallback-"+
+                       photoViewport+".png","PNG")) {
+                qCritical()<<"Motorcycle fallback native screenshot failed";
+                app.exit(753);return;
+            }
+            fleet.selectById("C001");
+            QTest::qWait(170);
             const QImage selectedShot=window->grabWindow();
             if(selectedShot.size()!=window->size() ||
                !selectedShot.save("ux-q3-selected-fleet-"+photoViewport+".png","PNG")) {
