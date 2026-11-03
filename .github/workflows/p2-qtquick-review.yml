@@ -11,6 +11,10 @@ on:
     paths:
       - CMakeLists.txt
       - 'spikes/qtquick_p2/**'
+      # Application-controller fixes and P3 regression tests must receive the
+      # same native Windows/Linux checks even if PR synchronize is delayed.
+      - 'src/application/**'
+      - 'tests/p3_*.cpp'
       # Safety and recovery work in the opt-in SQLite test target also needs
       # native Windows/Linux checks, even when Qt Quick source is unchanged.
       - 'src/application/p7_sandbox/**'
