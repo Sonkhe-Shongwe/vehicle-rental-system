@@ -3234,17 +3234,17 @@ int main(int argc, char *argv[]) {
             }
             press(confirm);
             QTest::qWait(150);
-            // P6-H deliberately locates the contract in Active. A saved
-            // return therefore disappears from Active and clears selection;
-            // never let an invisible returned record stay actionable.
-            if (rentalModel.statusFilter()!="Active" ||
-                rentalModel.count()!=0 ||
-                !rentalModel.selectedRentalId().isEmpty() ||
+            // UX-S6: return from an Active-only view must reveal and select
+            // the newly Returned contract, while disabling repeat returns.
+            if (rentalModel.statusFilter()!="All" ||
+                rentalModel.count()!=2 ||
+                rentalModel.selectedRentalId()!="R001" ||
+                rentalModel.selectedContract().value("status").toString()!="Returned" ||
                 rentalActions.canReturnSelected() || returnButton->isEnabled() ||
                 fleet.availableCount()!=5 ||
                 system.findVehicleById("C002")->getIsRented() ||
                 !system.findRentalById("R001")->getIsReturned()) {
-                qCritical()<<"P6-H committed return did not safely clear Active"
+                qCritical()<<"UX-S6 saved return not visible or still actionable"
                            <<rentalModel.selectedRentalId()<<fleet.availableCount();
                 app.exit(127);return;
             }
@@ -3252,7 +3252,7 @@ int main(int argc, char *argv[]) {
             if(rentalModel.count()!=2 ||
                rentalModel.data(rentalModel.index(0,0),
                                 RentalListModel::StatusRole).toString()!="Returned" ||
-               !rentalModel.selectedRentalId().isEmpty() ||
+               rentalModel.selectedRentalId()!="R001" ||
                returnButton->isEnabled()) {
                 qCritical()<<"P6-H persisted return not visible in History";
                 app.exit(137);return;
@@ -3484,6 +3484,14 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P3 archival returned selection not enabled";
                 app.exit(172);return;
             }
+            // UX-S6: archive must reveal the saved contract even when the
+            // Returned-only view would hide its new Archived state.
+            rentalModel.setStatusFilter("Returned");
+            if (rentalModel.selectedRentalId()!="R002" ||
+                rentalModel.count()!=1 || !archive->isEnabled()) {
+                qCritical()<<"UX-S6 Returned filter did not preserve selected receipt";
+                app.exit(818);return;
+            }
             QByteArray initial;
             if(!readFile(disposable.filePath("rentals.txt"),&initial)){
                 app.exit(173);return;
@@ -3507,6 +3515,7 @@ int main(int argc, char *argv[]) {
             press(confirm);
             QTest::qWait(120);
             if(rentalModel.selectedRentalId()!="R002" ||
+               rentalModel.statusFilter()!="All" || rentalModel.count()!=2 ||
                archiveActions.canArchiveSelected() || archive->isEnabled() ||
                rentalModel.data(rentalModel.index(1,0),
                         RentalListModel::StatusRole).toString()!="Archived" ||

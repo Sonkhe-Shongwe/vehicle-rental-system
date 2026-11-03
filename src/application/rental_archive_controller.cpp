@@ -68,6 +68,9 @@ bool RentalArchiveController::archiveSelected() {
     }
     // Archive does not change vehicle occupancy: only rental model refreshes.
     m_rentals.refresh();
+    // A just-archived contract is hidden by Returned-only filtering.
+    // Preserve the successful receipt's visible ID using read-only lookup.
+    m_rentals.locateById(result.rentalId);
     m_message=QStringLiteral("Rental %1 archived.").arg(result.rentalId);
     emit stateChanged();
     emit archiveSucceeded(result.rentalId);

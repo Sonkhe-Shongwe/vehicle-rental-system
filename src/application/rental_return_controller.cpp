@@ -86,6 +86,10 @@ bool RentalReturnController::returnSelected() {
     m_rentals.refresh();
     if (m_refreshFleet)
         m_refreshFleet();
+    // The committed contract may have disappeared from Active, Overdue or
+    // DueToday. Reveal its actual saved Returned state without another write.
+    // As in booking, a visible record keeps the current filter.
+    m_rentals.locateById(result.rentalId);
     m_lastMessage = QStringLiteral("Returned rental %1.").arg(result.rentalId);
     emit stateChanged();
     emit returnSucceeded(result.rentalId);

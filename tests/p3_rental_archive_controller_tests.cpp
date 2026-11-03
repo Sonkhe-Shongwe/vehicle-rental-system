@@ -86,6 +86,42 @@ int main(int argc,char **argv) {
           reopened.findRentalById("R001")->getIsReturned() &&
           !reopened.findVehicleById("C001")->getIsRented(),
           "archived record persists across restart and occupancy remains free");
+    // UX-S6: a separate fictional Returned-only session must not lose its
+    // newly archived receipt. The write is still exclusively domain-owned.
+    {
+        QTemporaryDir other;
+        check(other.isValid(),"separate archive receipt fixture");
+        RentalSystem different(other.path());
+        check(different.addVehicle(new Car("C200","Fictional","Car",300,4)),
+              "separate archive vehicle");
+        auto entry=std::make_unique<Rental>("R200","Fictional Person","0000000000",
+                                            "C200",today,today.addDays(2),2,300,600);
+        check(different.createRental(entry.get()),"separate archive booking");
+        entry.release();
+        check(different.completeRental("R200",today),"separate returned receipt");
+        const QByteArray unchangedFleet=read(other.filePath("vehicles.txt"));
+        RentalReadService differentReads(different);
+        RentalListModel differentModel(differentReads);
+        RentalArchiveController differentArchive(different,differentReads,differentModel);
+        differentModel.setStatusFilter("Returned");
+        check(differentModel.count()==1 &&
+              differentModel.selectById("R200") &&
+              differentArchive.canArchiveSelected(),
+              "returned-only record selected and eligible");
+        check(differentArchive.archiveSelected() &&
+              differentModel.statusFilter()=="All" &&
+              differentModel.count()==1 &&
+              differentModel.selectedRentalId()=="R200" &&
+              differentModel.selectedContract().value("status").toString()=="Archived" &&
+              !differentArchive.canArchiveSelected() &&
+              read(other.filePath("vehicles.txt"))==unchangedFleet,
+              "archive reveals saved record from Returned filter without fleet changes");
+        differentModel.setStatusFilter("History");
+        check(differentModel.count()==1 &&
+              differentModel.selectedRentalId()=="R200" &&
+              differentModel.selectedContract().value("status").toString()=="Archived",
+              "archived receipt remains selected in History");
+    }
     std::cout<<"P3 archive C++ commit, rollback, history and restart PASS\n";
     return 0;
 }

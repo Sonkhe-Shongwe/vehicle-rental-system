@@ -96,21 +96,26 @@ int main(int argc, char **argv) {
     check(QDir().rmdir(ledgerFile) &&
           QFile::rename(dir.filePath("rentals-backup.txt"),ledgerFile) &&
           bytes(ledgerFile)==beforeInvalid, "restore original ledger exactly");
-    check(model.selectedRentalId()=="R001" && action.canReturnSelected(),
-          "rejected return keeps selected active rental");
+    check(model.selectedRentalId()=="R001" &&
+          model.statusFilter()=="All" && action.canReturnSelected(),
+          "rejected return keeps selected active rental and filter");
 
     model.setStatusFilter("Active");
     check(action.canReturnSelected(), "active filter retains selected ID");
     const int preSuccessCount=model.count();
     check(action.returnSelected() && succeeded==1 && rejected==2 &&
-          fleetRefreshes==1 && resets==2 &&
-          model.count()==preSuccessCount-1 &&
-          model.selectedRentalId().isEmpty() && !action.canReturnSelected() &&
+          fleetRefreshes==1 && resets==3 &&
+          model.count()==preSuccessCount && model.statusFilter()=="All" &&
+          model.selectedRentalId()=="R001" && model.selectedRow()==0 &&
+          model.selectedContract().value("status").toString()=="Returned" &&
+          !action.canReturnSelected() &&
           !system.findVehicleById("C001")->getIsRented() &&
           bytes(ledgerFile)!=originalLedger &&
-          bytes(fleetFile)==sourceFleet, "successful commit updates both snapshots only after write");
+          bytes(fleetFile)==sourceFleet,
+          "committed return exits Active, reveals saved receipt and disables repeat return");
     model.setStatusFilter("History");
-    check(model.count()==1 && model.selectById("r001") &&
+    check(model.count()==1 && model.selectedRentalId()=="R001" &&
+          model.selectById("r001") &&
           !action.canReturnSelected() && !action.returnSelected() &&
           rejected==3 && fleetRefreshes==1 && succeeded==1,
           "returned history cannot return twice or refresh on rejection");
