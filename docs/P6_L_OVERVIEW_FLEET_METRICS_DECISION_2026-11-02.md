@@ -1,5 +1,7 @@
 # P6-L | Overview and Fleet secondary metrics: source-grounded product decision proposal
 
+**Implementation follow-up, 2 November 2026:** The recommended **Option A** is now **implemented in P6** and verified: Fleet displays Cars, Motorcycles and **N of M currently rented** from the authoritative complete C++ snapshot, unchanged by view filters. This is instantaneous occupancy, **not a historical rental-day utilisation KPI**, and not a collected-revenue claim. See [P6-O decision](P6_O_RESEARCH_REVISED_ACCEPTANCE_AND_FLEET_2026-11-02.md) and [P6-P native-verified polished UI](P6_P_POLISHED_UI_CANDIDATE_NATIVE_VERIFIED_2026-11-02.md). The original proposal/evidence below is preserved as an earlier step, **not the current implementation status**. Formal P6 0/9 unchanged.
+
 **Prepared:** 2 November 2026 (Africa/Johannesburg). **Status:** **RECOMMENDATION FOR OWNER REVIEW, NOT APPROVED DESIGN OR IMPLEMENTED CODE**. **Branch audited:** `feature/p6-fleet-create-disposable-20261101` at `5b494beb` (P6-K documentation head). **Latest exact native-tested implementation:** [`fae183b`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/fae183bb334d227bcc313cc89c8de670c7de66f2), [13/13 core](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457853), [72/72 native Qt Linux and 72/72 Windows](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41363457990). This P6-L document adds **no UI, metrics, business logic or test**.
 
 ## 1. The actual comparison

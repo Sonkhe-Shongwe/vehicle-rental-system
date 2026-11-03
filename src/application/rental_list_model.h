@@ -8,6 +8,8 @@
 #include <QString>
 #include <QVariantList>
 #include <QVariantMap>
+#include <functional>
+#include <optional>
 
 // Native Qt read-only model. The service and its owning RentalSystem must
 // outlive this adapter. No Rental* or customer PII is exposed through roles.
@@ -18,6 +20,8 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(QString selectedRentalId READ selectedRentalId NOTIFY selectionChanged)
     Q_PROPERTY(int selectedRow READ selectedRow NOTIFY selectionChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    // False means the last provider read failed; retained figures may be stale.
+    Q_PROPERTY(bool snapshotAvailable READ snapshotAvailable NOTIFY snapshotAvailabilityChanged)
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
     // Derived from the complete C++ snapshot, never the filtered Rentals view.
     Q_PROPERTY(int activeCount READ activeCount NOTIFY metricsChanged)
@@ -48,12 +52,18 @@ public:
 
     explicit RentalListModel(const RentalReadService &service,
                              QObject *parent = nullptr);
+    // P7-J compatibility seam: caller supplies validated, copy-only domain
+    // snapshots. Nullopt means failed read, not an empty rental database.
+    // Default legacy constructor and QML behavior remain unchanged.
+    using SnapshotProvider = std::function<std::optional<QList<RentalRecordSummary>>()>;
+    explicit RentalListModel(SnapshotProvider provider, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
     int count() const { return m_items.size(); }
+    bool snapshotAvailable() const { return m_snapshotAvailable; }
     int activeCount() const;
     int historyCount() const;
     int overdueCount() const;
@@ -87,13 +97,15 @@ signals:
     void countChanged();
     void statusFilterChanged();
     void metricsChanged();
+    void snapshotAvailabilityChanged();
     void selectedContractChanged();
 
 private:
     int rowForId(const QString &rentalId) const;
     QList<RentalRecordSummary> filtered(const QList<RentalRecordSummary> &all) const;
 
-    const RentalReadService &m_service;
+    SnapshotProvider m_recordsProvider;
+    bool m_snapshotAvailable = false;
     QList<RentalRecordSummary> m_allItems;
     QList<RentalRecordSummary> m_items;
     QString m_statusFilter = QStringLiteral("All");

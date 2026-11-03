@@ -128,8 +128,23 @@ QVariantMap RentalListModel::selectedContract() const {
 }
 
 RentalListModel::RentalListModel(const RentalReadService &service, QObject *parent)
-    : QAbstractListModel(parent), m_service(service),
-      m_allItems(service.records()), m_items(m_allItems) {}
+    : RentalListModel([&service]() -> std::optional<QList<RentalRecordSummary>> {
+          return service.records();
+      }, parent) {}
+
+RentalListModel::RentalListModel(SnapshotProvider provider, QObject *parent)
+    : QAbstractListModel(parent), m_recordsProvider(std::move(provider)) {
+    // A failed first read is not interpreted as a successfully loaded
+    // business ledger. No production backend uses this constructor yet.
+    if(m_recordsProvider) {
+        auto records=m_recordsProvider();
+        if(records) {
+            m_allItems=std::move(*records);
+            m_items=m_allItems;
+            m_snapshotAvailable=true;
+        }
+    }
+}
 
 int RentalListModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : m_items.size();
@@ -324,7 +339,20 @@ void RentalListModel::refresh() {
     const int priorCount = m_items.size();
     const int priorRow = selectedRow();
     const QString priorId = m_selectedRentalId;
-    QList<RentalRecordSummary> latest = m_service.records();
+    // A failed SQL read must never erase a valid existing ListModel
+    // snapshot or emit false post-commit metric change notifications.
+    const auto loaded=m_recordsProvider ? m_recordsProvider() :
+        std::optional<QList<RentalRecordSummary>>{};
+    if(!loaded) {
+        if(m_snapshotAvailable) {
+            m_snapshotAvailable=false;
+            emit snapshotAvailabilityChanged();
+        }
+        return; // Do not reset, emit metrics, or imply an empty ledger.
+    }
+    const bool recovered=!m_snapshotAvailable;
+    m_snapshotAvailable=true;
+    QList<RentalRecordSummary> latest=std::move(*loaded);
     QList<RentalRecordSummary> visible = filtered(latest);
 
     beginResetModel();
@@ -341,6 +369,7 @@ void RentalListModel::refresh() {
     // Lifecycle/dates can change while the selected rental ID stays the same.
     // Force the separate contract view to rebind after authoritative refresh.
     emit selectedContractChanged();
+    if(recovered)emit snapshotAvailabilityChanged();
     // Emitted only after the caller's authoritative persisted transaction
     // requests refresh(). Filters and unconfirmed previews never alter KPIs.
     emit metricsChanged();

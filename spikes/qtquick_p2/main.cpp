@@ -37,6 +37,12 @@
 #include "fleet_add_controller.h"
 #include "fleet_remove_controller.h"
 #include "motion_policy.h"
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+#include "src/application/p7_sandbox/repository_preview_controller.h"
+#include "src/application/p7_sandbox/sqlite_read_projection.h"
+#include "src/application/p7_sandbox/fictional_fleet_snapshot.h"
+#include "src/application/p7_sandbox/fictional_operations_snapshot.h"
+#endif
 
 // The P3 typed application read boundary snapshots RentalSystem objects as
 // values from disposable fictional fixtures. No Vehicle* reaches QML.
@@ -371,7 +377,22 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p4-a11y-smoke", "Check live Qt accessibility names, roles and mutually exclusive states on fictional controls."});
     parser.addOption({"p4-motion-smoke", "Test native Qt Quick reduced-motion policy with fictional data only."});
     parser.addOption({"p4-reduce-motion", "Test-only reduced-motion preference; requires --p4-motion-smoke."});
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    parser.addOption({"p7-fictional-sql-lab", "Explicit isolated generated-fictional SQLite Lab inside real Qt Quick app. No commercial data."});
+    parser.addOption({"p7-fictional-sql-app-smoke", "CI-only native test of the real app's isolated fictional SQLite Lab."});
+#endif
     parser.process(app);
+    bool p7SqlLabEnabled=false;
+    bool p7SqlLabSmoke=false;
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    p7SqlLabSmoke=parser.isSet("p7-fictional-sql-app-smoke");
+    p7SqlLabEnabled=p7SqlLabSmoke || parser.isSet("p7-fictional-sql-lab");
+    if(p7SqlLabEnabled &&
+       (parser.optionNames().size()!=(p7SqlLabSmoke && parser.isSet("compact")?2:1))) {
+        qCritical()<<"P7 fictional Lab cannot be combined with other options";
+        return 600;
+    }
+#endif
     const bool p6Parent=parser.isSet("p6-restart-flow");
     const bool p6Seed=parser.isSet("p6-restart-child-seed");
     const bool p6Update=parser.isSet("p6-restart-child-update");
@@ -791,6 +812,54 @@ int main(int argc, char *argv[]) {
     bookingActions.setPersistentFictionalOnly(persistentDemo);
     RentalArchiveController archiveActions(system, rentalRead, rentalModel);
     P6ArchivedDeleteController archivedDelete(system,rentalRead,rentalModel,!persistentDemo);
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    // D1 owner authorization is limited to a separate fixed-fictional
+    // SQLite workspace in this actual Qt Quick executable. The other three
+    // workspaces remain QSaveFile-backed and are NEVER pointed at this repo.
+    std::unique_ptr<p7fiction::PreviewController> p7SqlController;
+    // Test-only provider fault toggles; never exposed to QML or user input.
+    bool p7RefuseFleetReads=false, p7RefuseRentalReads=false;
+    bool p7RefuseOperationsReads=false;
+    std::unique_ptr<p7fiction::FictionalOperationsSnapshot> p7SqlOverview;
+    std::unique_ptr<p7fiction::FictionalFleetSnapshot> p7SqlFleet;
+    std::unique_ptr<RentalListModel> p7SqlRentals;
+    if(p7SqlLabEnabled) {
+        p7SqlController=std::make_unique<p7fiction::PreviewController>();
+        if(!p7SqlController->ready()) {
+            qCritical()<<"P7 generated-fictional SQL Lab unavailable";
+            return 601;
+        }
+        auto *controller=p7SqlController.get();
+        p7SqlOverview=std::make_unique<p7fiction::FictionalOperationsSnapshot>(
+            [controller,&p7RefuseOperationsReads]() -> std::optional<p7fiction::FleetRows> {
+                if(p7RefuseOperationsReads)return {};
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?repo->fleetRows():std::nullopt;
+            });
+        p7SqlFleet=std::make_unique<p7fiction::FictionalFleetSnapshot>(
+            [controller,&p7RefuseFleetReads]() -> std::optional<QList<FleetVehicleSummary>> {
+                if(p7RefuseFleetReads)return {};
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?p7fiction::ReadProjection(*repo).fleet():std::nullopt;
+            });
+        p7SqlRentals=std::make_unique<RentalListModel>(
+            [controller,&p7RefuseRentalReads]() -> std::optional<QList<RentalRecordSummary>> {
+                if(p7RefuseRentalReads)return {};
+                const auto *repo=controller->testOnlyReadRepository();
+                return repo?p7fiction::ReadProjection(*repo).rentals(QDate(2026,11,2)):
+                            std::nullopt;
+            });
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlOverview.get(),&p7fiction::FictionalOperationsSnapshot::refresh);
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlFleet.get(),&p7fiction::FictionalFleetSnapshot::refresh);
+        QObject::connect(controller,&p7fiction::PreviewController::committed,
+                         p7SqlRentals.get(),&RentalListModel::refresh);
+        if(!p7SqlOverview->snapshotAvailable() ||
+           !p7SqlFleet->snapshotAvailable() ||
+           !p7SqlRentals->snapshotAvailable())return 602;
+    }
+#endif
     if(sessionTest) {
         const QString ledger=QDir(dataDirectory).filePath("rentals.txt");
         if(seedTest) {
@@ -989,11 +1058,261 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("bookingActions", &bookingActions);
     engine.rootContext()->setContextProperty("archiveActions", &archiveActions);
     engine.rootContext()->setContextProperty("archivedDelete", &archivedDelete);
+    engine.rootContext()->setContextProperty("p7SqlLabEnabled",p7SqlLabEnabled);
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    engine.rootContext()->setContextProperty("p7SqlController",
+                                              p7SqlController.get());
+    engine.rootContext()->setContextProperty("p7SqlOverview",p7SqlOverview.get());
+    engine.rootContext()->setContextProperty("p7SqlFleet",p7SqlFleet.get());
+    engine.rootContext()->setContextProperty("p7SqlRentals",p7SqlRentals.get());
+#else
+    engine.rootContext()->setContextProperty("p7SqlController",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlOverview",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlFleet",static_cast<QObject*>(nullptr));
+    engine.rootContext()->setContextProperty("p7SqlRentals",static_cast<QObject*>(nullptr));
+#endif
     engine.loadFromModule("RentalStudioSpike", "Main");
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Qt Quick did not load the P2 window";
         return 5;
     }
+#ifdef RENTAL_STUDIO_P7_SQL_LAB
+    if(p7SqlLabSmoke) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 603;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",3);
+        QTimer::singleShot(1150,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name && item->isVisible())return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            auto *nav=find(find,root,"workspaceNavSQLite Lab");
+            auto *overviewFleet=find(find,root,"p7AppOverviewFleet");
+            auto *overviewRentals=find(find,root,"p7AppOverviewRentals");
+            auto *overviewValue=find(find,root,"p7AppOverviewValue");
+            auto *fleetCard=find(find,root,"p7AppFleetSnapshotCard");
+            auto *rentalsCard=find(find,root,"p7AppRentalsSnapshotCard");
+            auto *fleetText=find(find,root,"p7AppFleetMetrics");
+            auto *rentalsText=find(find,root,"p7AppRentalsMetrics");
+            auto *receipt=find(find,root,"p7AppReceipt");
+            auto *lab=find(find,root,"p7AppSqlLab");
+            auto *fleetSelection=find(find,root,"p7AppFleetSelected");
+            auto *fleetSearch=find(find,root,"p7AppFleetSearch");
+            auto *rentalSelection=find(find,root,"p7AppRentalSelected");
+            auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
+            auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
+            if(!nav||!fleetCard||!rentalsCard||
+               !overviewFleet||!overviewRentals||!overviewValue||
+               !fleetText||!rentalsText||!receipt||!lab||
+               !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
+               !fleetText->property("text").toString().contains("1 available") ||
+               !rentalsText->property("text").toString().contains("Active: 0") ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->totalVehicles()!=1 ||
+               p7SqlOverview->availableVehicles()!=1 ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->historyRentals()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
+               !overviewValue->property("text").toString().contains("R 0.00") ||
+               p7SqlFleet->totalCount()!=1 || p7SqlRentals->activeCount()!=0 ||
+               p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=0 ||
+               !fleetVisible->property("text").toString().contains("1 matching") ||
+               !rentalVisible->property("text").toString().contains("0 visible")) {
+                qCritical()<<"P7 real app fictional Lab failed to load isolated read models";
+                app.exit(604);return;
+            }
+            const auto click=[&](const QString &name) {
+                auto *target=find(find,root,name);
+                if(!target||!target->isEnabled()||target->width()<10||
+                   target->height()<10)return false;
+                const auto scene=target->mapToScene(
+                    QPointF(target->width()/2.0,target->height()/2.0));
+                QTest::mouseClick(window,Qt::LeftButton,Qt::NoModifier,scene.toPoint());
+                QCoreApplication::processEvents();
+                return true;
+            };
+            if(!click("p7AppPreview")||!p7SqlController->canConfirm()||
+               p7SqlFleet->availableCount()!=1||p7SqlRentals->activeCount()!=0||
+               !p7SqlController->rejectNextBookingForTest() ||
+               !click("p7AppConfirm")||p7SqlController->rentalId()!=""||
+               p7SqlFleet->availableCount()!=1||p7SqlRentals->activeCount()!=0||
+               !receipt->property("text").toString().contains("not issued") ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00") {
+                qCritical()<<"P7 real app leaked uncommitted/rejected SQL booking";
+                app.exit(605);return;
+            }
+            if(!click("p7AppConfirm") || p7SqlController->rentalId()!="R001"||
+               p7SqlFleet->availableCount()!=0||p7SqlRentals->activeCount()!=1||
+               !fleetText->property("text").toString().contains("0 available")||
+               !rentalsText->property("text").toString().contains("Active: 1")||
+               p7SqlOverview->activeRentals()!=1 ||
+               p7SqlOverview->availableVehicles()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 1350.00" ||
+               !overviewValue->property("text").toString().contains("R 1350.00")||
+               !click("p7AppReturn")||p7SqlFleet->availableCount()!=1||
+               !click("p7AppArchive")||p7SqlRentals->historyCount()!=1||
+               !click("p7AppRetire")||p7SqlFleet->availableCount()!=0||
+               !p7SqlController->independentReopen()||
+               !p7SqlRentals->snapshotAvailable()||
+               !p7SqlFleet->snapshotAvailable() ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->activeRentals()!=0 ||
+               p7SqlOverview->historyRentals()!=1 ||
+               p7SqlOverview->availableVehicles()!=0 ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
+               p7SqlRentals->count()!=1 || p7SqlFleet->visibleCount()!=1) {
+                qCritical()<<"P7 real app SQL commit and QML availability parity FAILED";
+                app.exit(606);return;
+            }
+            // Actual-application read-only record explorer: the same
+            // production-facing RentalListModel owns status/selection rules,
+            // while the fictional SQL Fleet adapter owns availability filtering.
+            lab->setProperty("contentY",420.0);
+            QCoreApplication::processEvents();
+            auto *fleetList=find(find,root,"p7AppFleetList");
+            auto *rentalList=find(find,root,"p7AppRentalList");
+            if(!fleetList || !rentalList ||
+               fleetList->height()<90.0 || rentalList->height()<90.0) {
+                qCritical()<<"P7 reusable record explorer list rows are too cramped";
+                app.exit(618);return;
+            }
+            if(!click("p7AppFleetRowC001") ||
+               p7SqlFleet->selectedVehicleId()!="C001" ||
+               !fleetSelection->property("text").toString().contains("4 doors") ||
+               !click("p7AppRentalRowR001") ||
+               p7SqlRentals->selectedRentalId()!="R001" ||
+               !rentalSelection->property("text").toString().contains("Archived") ||
+               !rentalSelection->property("text").toString().contains("1350.00")) {
+                qCritical()<<"P7 actual-app record inspector failed real QML row selection";
+                app.exit(609);return;
+            }
+            p7SqlFleet->setStatusFilter("Available");
+            p7SqlRentals->setStatusFilter("Active");
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->visibleCount()!=0 ||
+               !p7SqlFleet->selectedVehicleId().isEmpty() ||
+               p7SqlRentals->count()!=0 ||
+               !p7SqlRentals->selectedRentalId().isEmpty() ||
+               !fleetVisible->property("text").toString().contains("0 matching") ||
+               !rentalVisible->property("text").toString().contains("0 visible")) {
+                qCritical()<<"P7 SQL Fleet/Rentals filtered inspector showed hidden records";
+                app.exit(610);return;
+            }
+            p7SqlFleet->setStatusFilter("Unavailable");
+            p7SqlRentals->setStatusFilter("History");
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=1 ||
+               !fleetVisible->property("text").toString().contains("1 matching") ||
+               !rentalVisible->property("text").toString().contains("1 visible") ||
+               !p7SqlFleet->selectById("c001") ||
+               !p7SqlRentals->selectById("r001")) {
+                qCritical()<<"P7 SQL C++ read-only history/status filter mismatch";
+                app.exit(611);return;
+            }
+            // Actual QML search filters verified C++ Fleet DTOs in conjunction
+            // with availability; hidden selection never leaks through.
+            fleetSearch->setProperty("text",QStringLiteral("not-a-fictional-car"));
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->searchText()!="not-a-fictional-car" ||
+               p7SqlFleet->visibleCount()!=0 ||
+               !p7SqlFleet->selectedVehicleId().isEmpty() ||
+               p7SqlFleet->totalCount()!=1 ||
+               p7SqlFleet->selectById("C001") ||
+               !fleetVisible->property("text").toString().contains("0 matching") ||
+               !find(find,root,"p7AppFleetEmpty")) {
+                qCritical()<<"P7 Fleet search exposed hidden fictional record";
+                app.exit(614);return;
+            }
+            fleetSearch->setProperty("text",QStringLiteral("corOLLa"));
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->visibleCount()!=1 ||
+               !p7SqlFleet->selectById("c001") ||
+               p7SqlFleet->selectedVehicleId()!="C001" ||
+               !fleetSelection->property("text").toString().contains("4 doors") ||
+               !fleetVisible->property("text").toString().contains("1 matching") ||
+               find(find,root,"p7AppFleetEmpty")) {
+                qCritical()<<"P7 case-insensitive Fleet search did not restore visible match";
+                app.exit(615);return;
+            }
+            // Search remains active across a failed read and recovery.
+            // Explicit provider failure must retain known-good C++ records
+            // but HIDE every unverifiable row and selected contract in QML.
+            p7RefuseFleetReads=true;
+            p7RefuseRentalReads=true;
+            p7RefuseOperationsReads=true;
+            p7SqlOverview->refresh();
+            p7SqlFleet->refresh();
+            p7SqlRentals->refresh();
+            QCoreApplication::processEvents();
+            if(p7SqlFleet->snapshotAvailable() ||
+               p7SqlRentals->snapshotAvailable() ||
+               p7SqlOverview->snapshotAvailable() ||
+               !overviewFleet->property("text").toString().contains("unavailable") ||
+               !overviewRentals->property("text").toString().contains("unavailable") ||
+               !overviewValue->property("text").toString().contains("unavailable") ||
+               p7SqlFleet->totalCount()!=1 || p7SqlRentals->count()!=1 ||
+               !fleetSelection->property("text").toString().contains("snapshot unavailable") ||
+               !rentalSelection->property("text").toString().contains("snapshot unavailable") ||
+               !fleetVisible->property("text").toString().contains("Unverified") ||
+               !rentalVisible->property("text").toString().contains("Unverified")) {
+                qCritical()<<"P7 real app SQL read failure leaked stale inspector";
+                app.exit(612);return;
+            }
+            p7RefuseFleetReads=false;
+            p7RefuseRentalReads=false;
+            p7RefuseOperationsReads=false;
+            // The Overview panel sits below the always-accessible
+            // booking controls on compact windows. Scroll as a real
+            // operator would to retry the failed read, then return to
+            // the top for the existing Fleet/Rentals retry controls.
+            lab->setProperty("contentY",230.0);
+            QCoreApplication::processEvents();
+            if(!click("p7AppRetryOverview")) {
+                qCritical()<<"P7 actual-app Overview retry control inaccessible";
+                app.exit(617);return;
+            }
+            lab->setProperty("contentY",0.0);
+            QCoreApplication::processEvents();
+            if(!click("p7AppRetryFleet") || !click("p7AppRetryRentals") ||
+               !p7SqlFleet->snapshotAvailable() ||
+               !p7SqlRentals->snapshotAvailable() ||
+               !p7SqlOverview->snapshotAvailable() ||
+               p7SqlOverview->activeBookedLabel()!="R 0.00" ||
+               p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=1 ||
+               !fleetSelection->property("text").toString().contains("4 doors") ||
+               !rentalSelection->property("text").toString().contains("Archived")) {
+                qCritical()<<"P7 actual-app SQL read recovery did not restore verified inspector";
+                app.exit(613);return;
+            }
+            // Main app's other three workspaces remain a distinct protected
+            // fictional text demo; SQL actions must not mutate their source.
+            QByteArray vafter,rafter;
+            if(!readFile(vehicles,&vafter)||!readFile(rentals,&rafter)||
+               vafter!=beforeVehicles||rafter!=beforeRentals||
+               rentalModel.activeCount()!=1||fleet.availableCount()!=4) {
+                qCritical()<<"P7 SQL Lab modified baseline Qt Quick demo";
+                app.exit(607);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            if(window->grabWindow().isNull()||
+               !window->grabWindow().save("p7-real-app-fictional-sql-lab-"+size+".png","PNG")) {
+                qCritical()<<"P7 real app fictional Lab capture failed";
+                app.exit(608);return;
+            }
+            qInfo()<<"P7 actual Qt Quick fictional SQL Lab PASS"
+                   <<size<<"separate engine, exact cents, committed UI, no source mutation";
+            app.exit(0);
+        });
+    }
+#endif
     if (uiSeedTest || uiReopenTest || failureTest) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window) return 323;
@@ -1683,9 +2002,20 @@ int main(int argc, char *argv[]) {
                                               "rentalFilterArchived");
             auto *allButton = findVisual(findVisual, window->contentItem(),
                                           "rentalFilterAll");
+            auto *emptyState=window->findChild<QQuickItem*>("rentalEmptyState");
+            auto *emptyMessage=window->findChild<QQuickItem*>("rentalEmptyMessage");
+            auto *emptyReset=window->findChild<QQuickItem*>("rentalEmptyReset");
+            auto *statusRow=findVisual(findVisual,window->contentItem(),"rentalStatusRow");
+            auto *lookupRow=findVisual(findVisual,window->contentItem(),"rentalLookupRow");
+            auto *toolbarLookupField=findVisual(findVisual,window->contentItem(),"rentalLookupField");
+            auto *toolbarLookupButton=findVisual(findVisual,window->contentItem(),"rentalLookupButton");
+            auto *visibleCount=findVisual(findVisual,window->contentItem(),"rentalVisibleCount");
             if (!list || !list->isVisible() || !selected ||
+                !statusRow || !lookupRow || !toolbarLookupField || !toolbarLookupButton || !visibleCount ||
                 !activeButton || !historyButton || !allButton ||
                 !returnedButton || !archivedButton ||
+                !emptyState || !emptyMessage || !emptyReset ||
+                emptyState->isVisible() || emptyReset->isVisible() ||
                 rentalModel.count()!=2 || list->property("count").toInt()!=2) {
                 qCritical() << "P3-H real filter/list QML controls absent";
                 app.exit(101); return;
@@ -1717,6 +2047,31 @@ int main(int argc, char *argv[]) {
                     app.exit(116);return;
                 }
             }
+            // Both screen sizes must present two genuinely distinct rows:
+            // no overlapping filters, hidden lookup field or clipped submit.
+            const QPointF statusPos=statusRow->mapToScene(QPointF(0,0));
+            const QPointF lookupPos=lookupRow->mapToScene(QPointF(0,0));
+            const QPointF fieldPos=toolbarLookupField->mapToScene(QPointF(0,0));
+            const QPointF buttonPos=toolbarLookupButton->mapToScene(QPointF(0,0));
+            const auto withinViewport=[window](QQuickItem *item,const QPointF &pos) {
+                return pos.x()>=0 && pos.y()>=0 &&
+                    pos.x()+item->width()<=window->width() &&
+                    pos.y()+item->height()<=window->height();
+            };
+            if(statusPos.y()<0 ||
+               lookupPos.y()+1<statusPos.y()+statusRow->height() ||
+               !withinViewport(statusRow,statusPos) ||
+               !withinViewport(lookupRow,lookupPos) ||
+               !withinViewport(toolbarLookupField,fieldPos) ||
+               !withinViewport(toolbarLookupButton,buttonPos) ||
+               toolbarLookupField->width()<150 || toolbarLookupButton->height()<36 ||
+               list->height()<65 ||
+               !visibleCount->property("text").toString().contains("2 matching")) {
+                qCritical()<<"UX-Q2 compact Rentals toolbar overlaps or clips"
+                           <<statusPos<<lookupPos<<fieldPos<<buttonPos
+                           <<list->height();
+                app.exit(620);return;
+            }
             const QString suffix=compact?"1280x720":"1500x860";
             press(returnedButton);
             if(rentalModel.statusFilter()!="Returned" ||
@@ -1724,7 +2079,8 @@ int main(int argc, char *argv[]) {
                rentalModel.selectedRentalId()!="" ||
                rentalModel.data(rentalModel.index(0,0),
                                 RentalListModel::StatusRole).toString()!="Returned" ||
-               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
+               !visibleCount->property("text").toString().contains("1 matching")) {
                 qCritical()<<"P6-G Returned view must show only returned records";
                 app.exit(117);return;
             }
@@ -1739,9 +2095,23 @@ int main(int argc, char *argv[]) {
             if(rentalModel.statusFilter()!="Archived" ||
                rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
                !rentalModel.selectedRentalId().isEmpty() ||
-               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1) {
+               rentalModel.activeCount()!=1 || rentalModel.historyCount()!=1 ||
+               !emptyState->isVisible() || !emptyReset->isVisible() ||
+               !emptyReset->isEnabled() ||
+               !emptyMessage->property("text").toString().contains("Archived") ||
+               !visibleCount->property("text").toString().contains("0 matching")) {
                 qCritical()<<"P6-G Archived empty-state must not include Returned";
                 app.exit(119);return;
+            }
+            // Clear a filter-only empty result via the real keyboard button.
+            // No archived/returned record, value or selected ID may mutate.
+            press(emptyReset);
+            if(rentalModel.statusFilter()!="All" ||
+               rentalModel.count()!=2 || list->property("count").toInt()!=2 ||
+               emptyState->isVisible() || emptyReset->isVisible() ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"P6-G Rentals empty-state reset failed";
+                app.exit(619);return;
             }
             press(historyButton);
             if (rentalModel.statusFilter()!="History" || rentalModel.count()!=1 ||
@@ -1803,7 +2173,9 @@ int main(int argc, char *argv[]) {
             press(returnedButton);
             if(rentalModel.statusFilter()!="Returned" ||
                rentalModel.count()!=0 || list->property("count").toInt()!=0 ||
-               !rentalModel.selectedRentalId().isEmpty()) {
+               !rentalModel.selectedRentalId().isEmpty() ||
+               !emptyState->isVisible() ||
+               !emptyMessage->property("text").toString().contains("Returned")) {
                 qCritical()<<"P6-G Returned view retained archived selection";
                 app.exit(122);return;
             }
@@ -2727,11 +3099,39 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 Booking initial vehicle field focus failed";
                 app.exit(247);return;
             }
+            // Ctrl+F must never steal focus from an open booking modal.
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(65);
+            if(window->property("workspace").toInt()!=2 ||
+               !vehicle->hasActiveFocus()) {
+                qCritical()<<"P4 Ctrl+F escaped the active booking dialog";
+                app.exit(258);return;
+            }
             QTest::keyClick(window,Qt::Key_Escape);
             QTest::qWait(120);
             if(!booking->hasActiveFocus()||bookingActions.canConfirm()){
                 qCritical()<<"P4 booking Escape did not cancel preview/restore";
                 app.exit(248);return;
+            }
+            // Real cross-workspace Fleet search accelerator should give a
+            // visible keyboard focus target, without changing any records.
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(90);
+            if(window->property("workspace").toInt()!=1 ||
+               !search->hasActiveFocus() || !search->isVisible()) {
+                qCritical()<<"P4 Ctrl+F did not route to visible Fleet search";
+                app.exit(259);return;
+            }
+            // Repeat from Overview, preserving the source's usual search
+            // navigation and the prior selection/draft safety rules.
+            window->setProperty("workspace",0);
+            QCoreApplication::processEvents();
+            QTest::keyClick(window,Qt::Key_F,Qt::ControlModifier);
+            QTest::qWait(90);
+            if(window->property("workspace").toInt()!=1 ||
+               !search->hasActiveFocus()) {
+                qCritical()<<"P4 Ctrl+F from Overview failed Fleet focus";
+                app.exit(260);return;
             }
             QByteArray sourceFleet,sourceRental,tempRental;
             if(!readFile(vehicles,&sourceFleet) ||

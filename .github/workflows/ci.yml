@@ -4,9 +4,35 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
 
 jobs:
+  scope:
+    name: Inspect changed paths
+    runs-on: ubuntu-24.04
+    outputs:
+      run_full: ${{ steps.paths.outputs.run_full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate and classify PR head delta
+        id: paths
+        env:
+          CI_EVENT_NAME: ${{ github.event_name }}
+          CI_EVENT_ACTION: ${{ github.event.action }}
+          CI_BEFORE: ${{ github.event.before }}
+          CI_AFTER: ${{ github.event.after }}
+        run: |
+          python3 tests/ci_change_scope.py --self-test
+          python3 tests/ci_change_scope.py --emit
+
   build-test:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

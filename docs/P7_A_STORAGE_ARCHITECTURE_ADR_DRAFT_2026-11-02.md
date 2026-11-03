@@ -1,6 +1,11 @@
 # P7-A | Commercial storage architecture ADR, DRAFT / NO IMPLEMENTATION AUTHORIZATION
 
-**Date:** 2 November 2026. **Decision state:** **PROPOSED / OWNER APPROVAL REQUIRED**. Existing Rental Studio remains strictly **fictional-only**. Source evidence: [P7-A hazards](P7_A_SOURCE_STORAGE_AND_MIGRATION_RISK_AUDIT_2026-11-02.md); existing [P6-M native 3-process evidence](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md); [final product spec draft](RENTAL_STUDIO_FINAL_PRODUCT_SPEC_DRAFT_2026-11-01.md). This ADR does not switch storage, enable any real record or add QtSql to the build.
+**Status update, 2 November 2026:** [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) approves the D1 SQLite choice **for generated-fictional integration into the actual Qt Quick app only**. [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md) implements this in a fourth opt-in workspace with 115/115 Linux/Windows native CI. This ADR's remaining business/PII/retention/backup/migration/cutover decisions remain **PROPOSED**; older wording below is preserved as the prior design evaluation, not the current complete technical status.
+
+**Current context added after later engineering, 2 November 2026:** [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [P7-H exact-source normalized repository tests](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md). This document's original narrative below describes an earlier evaluation date and **is not a claim that subsequent work is owner-accepted**. The latest application remains fictional-only, not a Qt Quick commercial SQLite runtime. Formal P5/P6/P7 scores remain 0/8, 0/9, 0/8.
+
+
+**Date:** 2 November 2026. **Decision state:** **PROPOSED / OWNER APPROVAL REQUIRED**. Existing Rental Studio remains strictly **fictional-only**. Source evidence: [P7-A hazards](P7_A_SOURCE_STORAGE_AND_MIGRATION_RISK_AUDIT_2026-11-02.md); existing [P6-M native 3-process evidence](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md); [final product spec draft](RENTAL_STUDIO_FINAL_PRODUCT_SPEC_DRAFT_2026-11-01.md). This ADR does not switch normal application storage, enable any real record or add QtSql to the normal Qt Quick executable. Separate opt-in P7 tests already link QtSql.
 
 ## 1. Target and recommendation
 

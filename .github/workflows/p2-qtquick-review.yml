@@ -11,7 +11,9 @@ on:
       - 'spikes/qtquick_p2/**'
       - '.github/workflows/p2-qtquick-review.yml'
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
+      - main
       - docs/product-rebuild-reset-20261029
       # P3 is reviewed independently against the unmerged P2 source branch.
       - spike/p2-qtquick-fleet-20261030
@@ -24,14 +26,8 @@ on:
       # P5-A operational dashboard is stacked on the still-unmerged P4 draft.
       - feature/p4-shared-shell-focus-20261030
       - feature/p5-operational-overview-20261101
-    paths:
-      - CMakeLists.txt
-      - 'src/application/**'
-      - 'tests/p3_fleet_read_tests.cpp'
-      - 'tests/p3_rental_quote_tests.cpp'
-      - 'tests/p3_rental_confirm_tests.cpp'
-      - 'spikes/qtquick_p2/**'
-      - '.github/workflows/p2-qtquick-review.yml'
+      # P7-B isolated storage review is stacked above the still-draft P6.
+      - feature/p6-fleet-create-disposable-20261101
   workflow_dispatch:
 
 permissions:
@@ -39,10 +35,33 @@ permissions:
 
 concurrency:
   group: p2-qtquick-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+  # A later documentation-only update must not cancel an in-flight code validation.
+  cancel-in-progress: false
 
 jobs:
+  scope:
+    name: Inspect changed paths
+    runs-on: ubuntu-24.04
+    outputs:
+      run_full: ${{ steps.paths.outputs.run_full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate and classify PR head delta
+        id: paths
+        env:
+          CI_EVENT_NAME: ${{ github.event_name }}
+          CI_EVENT_ACTION: ${{ github.event.action }}
+          CI_BEFORE: ${{ github.event.before }}
+          CI_AFTER: ${{ github.event.after }}
+        run: |
+          python3 tests/ci_change_scope.py --self-test
+          python3 tests/ci_change_scope.py --emit
+
   linux:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
     name: Qt 6.8.3 / Linux GCC / real QML smoke
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -61,7 +80,7 @@ jobs:
           arch: linux_gcc_64
           cache: true
       - name: Configure opt-in spike alongside legacy app
-        run: cmake -S . -B build-p2 -G Ninja -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR"
+        run: cmake -S . -B build-p2 -G Ninja -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR"
       - name: Build unchanged legacy app and new QML executable
         run: cmake --build build-p2 --parallel 2
       - name: Run complete legacy + P2 native CTest
@@ -88,6 +107,8 @@ jobs:
           retention-days: 7
 
   windows:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
     name: Qt 6.8.3 / Windows MSVC / real QML smoke
     runs-on: windows-2022
     timeout-minutes: 25
@@ -108,7 +129,7 @@ jobs:
       - name: Configure on exact Qt kit
         shell: pwsh
         run: |
-          cmake -S . -B build-p2 -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          cmake -S . -B build-p2 -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build unchanged legacy app and new Qt Quick executable
         shell: pwsh

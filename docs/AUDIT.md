@@ -1,13 +1,24 @@
-# Current Audit Index | Rental Studio 2.0
+# Rental Studio 2.0 | Current audit index
 
-**Audited: 30 October 2026.**
+**Owner acceptance update, 3 November 2026:** [P6 9/9 bounded fictional lifecycle criteria and intentional design differences accepted](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); with P5 8/8 the ledger is now **45/74, weighted 70.6%**. Source tests previously passed native Linux/Windows 115/115 each at `8a7a1ed`. Physical Windows scale/MinGW/Narrator, P7 real-data rules and release remain open; older 56.6% material is intermediate history.
 
-- [CANONICAL CURRENT STATE](PROJECT_STATE_CANONICAL.md): authoritative short factual state, owner decisions, exact evidence and gate status.
-- [FULL DOCUMENT AUDIT AND CONTINUITY](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md): detailed review of docs, risks, discrepancies, historical-to-current reconciliation, and next-action decision tree.
-- [GENERAL-PURPOSE CONTINUATION PROMPT](AI_CONTINUATION_PROMPT.md): copy-ready, task-neutral instruction to recover and verify the above.
-- [P0–P9 PLAN](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): 74 checks, weighted criteria and current verified percentage.
-- [WINDOWS ACCEPTANCE](WINDOWS_ACCEPTANCE.md): actual user physical P2 evidence and remaining exact tests.
+**P5 OWNER SIGNOFF 3 NOVEMBER 2026:** [all eight original booking criteria approved](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md); P5 **8/8**, **36/74 formally accepted, 56.6% weighted**. Functional evidence-based owner approval, not physical MinGW/Windows display-scaling/Narrator testing or commercial release authorization. 2 November 40.6% snapshots are historical.
 
-**Current reality:** Native P2 C++/QML Fleet spike **built and ran** both in hosted Qt CI and owner's Windows Qt Creator; P1 final design approval and P2 physical scaling/keyboard/toolkit go-no-go remain open. **P0 5/5; P1 7/10; P2 3/6; weighted 18.4%; NOT RELEASED.**
+**Current reconciliation: 2 November 2026.** This is a navigation page, not a second acceptance ledger.
 
-The prior [29 Oct master audit](PRODUCT_REBUILD_MASTER_AUDIT_2026-10-29.md), [masterplan](ENGINEERING_MASTERPLAN_RESEARCH_2026-10-30.md) and [historical archive](archive/README.md) preserve research and earlier status snapshots, not competing current truth. GitHub branches, PRs and workflows must be freshly inspected in future sessions.
+**Latest source-verified P7-S:** [`062ee985`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/062ee985b879208de9b561a9298940df754f7c6c), [core 13/13 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827219), [native Qt Linux GCC / hosted Windows MSVC 115/115 each PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41512827186). [P7-S shared QML cards and two-row explorers](P7_S_REUSABLE_QML_EXPLORER_NATIVE_VERIFIED_2026-11-02.md); no new test count. Compiled-source SHA is distinct from later docs-only commits. D1 fictional-only, commercial D2–D8 unapproved, formal 28/74 weighted 40.6% unchanged; physical owner Windows checks remain open.
+
+**Owner product-quality objective:** “Commercial-grade” describes the desired professional standard of the Windows desktop experience, feature completeness, reliability, maintainability and accessibility. It **does not imply an imminent sale, public release, real customer-data onboarding or a production database cutover**. Fictional-data quality improvements are the current priority; release/distribution and real-data policy gates remain a separate future track. Formal P0–P9 acceptance weighting is not a product-quality score.
+
+- [2 NOVEMBER FULL DOCUMENT / GITHUB AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md): inventory of 90 current + 15 archive Markdown documents, drift, links, CI/source, accepted criteria and corrections.
+- [LATEST CHECKPOINT](LATEST_CHECKPOINT.md): one-page current branch, exact tested source and gates.
+- [CANONICAL STATE](PROJECT_STATE_CANONICAL.md): reliable current business, architecture, permissions and governance boundary.
+- [ROADMAP](ROADMAP.md): status of all P0–P9 stages and next deliverable.
+- [FROZEN ACCEPTANCE MATRIX](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md): 74 criteria, 100% weighted planned programme.
+- [TESTING POLICY](TESTING.md): exact Linux/Windows source evidence and limits.
+- [HANDOFF](AI_HANDOFF_CURRENT.md), [CONTINUITY](CONTINUITY.md), [ARCHITECTURE](ARCHITECTURE.md), [EVERGREEN PROMPT](AI_CONTINUATION_PROMPT.md): continuity without stale P2-only instructions.
+- [HISTORICAL 30 OCT AUDIT](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md) and [archived files](archive/README.md): dated historical evidence, NOT current status.
+
+**P7-R exact-source verified:** [corrected `de47e0f`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/de47e0f2f0355750f429f929f4997b63d23b2495), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775107), [native Qt Linux/hosted Windows 115/115 EACH](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41509775180), Windows packaged checks PASS. [P7-R engineering report](P7_R_FICTIONAL_SQLITE_OVERVIEW_NATIVE_VERIFIED_2026-11-02.md). [P7-Q search](P7_Q_FICTIONAL_FLEET_SEARCH_NATIVE_STATUS_2026-11-02.md) was independently verified at `260794b`. Generated-fictional D1 only, D2–D8 open, no physical owner MinGW/scaling/Narrator acceptance, formal **28/74 and weighted 40.6% unchanged**.
+
+**Earlier compiled P7-P source:** [P7-P `31d1ce3`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/31d1ce3120629861ed5979faee3828c1be02d801), [core 13/13](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869038), [native Qt Linux/hosted Windows 115/115 each](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41497869095). [P7-P real-app SQLite record explorer](P7_P_SQLITE_LAB_RECORD_EXPLORER_NATIVE_VERIFIED_2026-11-02.md) proves filtered read-only Fleet/Rentals record inspection, QML row selection, denied stale data and safe retry within the actual application's **opt-in fictional SQLite Lab**. D1 approval is limited; D2–D8 remain open. Formal P5 0/8, P6 0/9, P7 0/8; total 28/74 and 40.6% weighted, P8/P9 unstarted. All PRs draft/unmerged, main unchanged, no commercial release.

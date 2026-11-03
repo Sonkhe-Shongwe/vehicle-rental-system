@@ -1,0 +1,40 @@
+# P6 | Consolidated nine-criterion owner acceptance decision pack
+
+**Current decision supersedes this pre-approval packet:** On 3 November 2026 the owner ratified **all nine bounded P6 fictional lifecycle groups and the intentionally modernized Qt Quick differences**. [Owner approval record](P6_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md). **P6 now 9/9, programme 45/74 weighted 70.6%**. The original PENDING decisions and 56.6% projection below are historical pre-signoff review questions, not current acceptance. Physical Windows MinGW/scaling/Narrator and commercial release/real-data rules still open.
+**Prepared 3 November 2026 (Africa/Johannesburg). No P6 owner signoff yet.**
+
+## Current verified state
+- **Formal programme:** 36/74 accepted, weighted 56.6%; P5 original eight owner-accepted on 3 November, P6 0/9, P7 0/8, P8/P9 0. **P6 contributes 14 percentage points if all nine proposed criteria are ratified and formally accepted; projected 70.6% overall.** For 1 criterion, 14/9 = approximately 1.56 weighted points, but **do not award any before approval**.
+- **Original P6 roadmap wording:** “Add Car/Motorcycle, search/filter/sort selection, deletion safeguards, active/overdue, return/repeat refusal, archive and delete in allowed states, cancellation non-mutation, restart and full domain parity tests on new UI.” The original roadmap assigns NINE acceptance units but **does not number the individual criteria**. The P6-N and P6-O nine-row groups below are **proposed**, not a previously ratified literal original checklist.
+- **Latest exact source with compiled native tests:** [`8a7a1ed`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/8a7a1ed587b05775d1528868b1db593ce73384d3). [Core C++ run 41517964414](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964414), **13/13 PASS**; [real Qt 6.8.3 native run 41517964095](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41517964095), **115/115 Linux GCC and 115/115 hosted Windows MSVC PASS**, including the precise P6 scenarios below. This evidence is for the stacked P7 branch's **main fictional-data Qt Quick Overview/Fleet/Rentals**. Hosted native CI does **not** prove owner physical Windows MinGW, real 100/125/150% scale or Narrator.
+- **Prior source:** [P6-N nine-row crosswalk](P6_N_ACCEPTANCE_CLOSURE_DECISION_RECORD_2026-11-02.md), [P6-O bounded legacy-parity and Fleet snapshot decision](P6_O_RESEARCH_REVISED_ACCEPTANCE_AND_FLEET_2026-11-02.md), [P6-I 22-row legacy comparison](P6_I_LIFECYCLE_PARITY_AUDIT_2026-11-01.md), [P6-M three genuine native processes](P6_M_THREE_PROCESS_INTEGRATED_NATIVE_VERIFIED_2026-11-02.md). Dated earlier references to P5 0/8 and 40.6% are HISTORICAL: [P5 owner signed 8/8](P5_OWNER_APPROVED_ACCEPTANCE_2026-11-03.md) on 3 November.
+
+## Nine proposed criteria, honest decision basis
+| ID | Proposed scope, faithful to original milestone | Named actual verified native evidence | Owner status |
+|---|---|---|---|
+| **P6-01** | Add validated fictional Car and Motorcycle | `rental_studio_p6_fleet_add_wide/compact`, independent restart | **PENDING**; automated covered |
+| **P6-02** | Fleet search/filter/sort, Gallery/Table shared selected ID, keyboard edges | `rental_studio_p2_qml_*`, `rental_studio_p2_focus_edges`, `rental_studio_p2_arrows_focus` | **PENDING**; automated covered |
+| **P6-03** | Safe vehicle removal, refuse surviving active/returned/archived rental reference, exact fictional confirmation | `rental_studio_p6_fleet_remove_wide/compact`; P6-D domain guard | **PENDING**; automated covered; real-business RETIRE policy NOT approved |
+| **P6-04** | C++ authoritative active/overdue status and navigation | `rental_studio_p5_overview_wide/compact`; P5-J due-state proof | **PENDING**; automated covered |
+| **P6-05** | Return by active rental or vehicle ID; explicit confirm, reject repeated/missing return | `rental_studio_p3_return_qml_wide/compact`, `rental_studio_p6_integrated_wide/compact` | **PENDING**; automated covered |
+| **P6-06** | Archive valid Returned rental, exact-phrase deletion of ARCHIVED **disposable fictional** record only; no hidden cascade | `rental_studio_p3_archive_qml_wide/compact`, `rental_studio_p6_archived_delete_wide/compact` | **PENDING**; automated covered; real history retention NOT approved |
+| **P6-07** | Cancel/Escape/decline/failed writes leave no mutation or fake receipt | P5 cancel and stale-quote cases, P6 remove/archive failures, P6-M wrong phrase | **PENDING**; automated covered |
+| **P6-08** | Separate native-process reconstruct of Fleet/Rentals/Overview after lifecycle writes | `rental_studio_p6_cross_process_wide/compact`, `rental_studio_p6_integrated_wide/compact` | **PENDING**; automated covered in restricted fictional session |
+| **P6-09** | Bounded complete native lifecycle operator path and *functional* parity with legacy, intentional design departures recorded | P6-M integrated real three-process wide/compact; P6-I 22-row audit; P6-J bounded recent contracts; P6-K read-only non-contact detail | **PENDING**; integrated tested but requires owner ratification of bounded parity and design differences |
+
+All the listed P6-Q, P6-M, P6-D and P6-O native implementation reports are backed by earlier exact-source runs; latest 115-test source includes the regression cases. No new code or tests were added for this review.
+
+## Specific P6-09 parity decisions to avoid pretending a pixel-for-pixel Widgets remake
+1. **Three task-focused workspaces (Overview/Fleet/Rentals)** replace many legacy tabs, preserving the core workflows. This is a deliberate navigation architecture, not a missing-page defect.
+2. **Fleet secondary metrics** show authoritative Cars/Motorcycles and N-of-M *currently rented*, added as P6-O. This is **not** historical utilisation, which would require a time period and rentable asset-days.
+3. Overview shows **four recent contracts** based on start date, **not** a fabricated return/archive event timeline; the modern Overview emphasizes actionable operational metrics.
+4. Selected rental details include dates, duration, status, rate and booked amount but **omit broad customer name/phone roles** by intentional fictional-data privacy direction. This does not authorize or prohibit a future purpose-limited real-data customer contact workflow.
+5. Booking uses a fresh C++ authoritative quote, a guided fictional form and explicit Confirm/Cancel rather than a pixel-identical legacy review panel. Source reports describe the functionality; the owner's assessment of visual clarity still matters.
+6. **Vehicle hard removal and archived rental deletion are restricted to disposable fictional data** with guards; no legal-business retirement, retention or production history deletion policy is being approved by P6.
+
+## Scope of a potential approval
+If the owner explicitly approves the **nine above as the bounded P6 interpretation**, approves the six documented parity design departures **for fictional P6 only**, and accepts all nine tested functional outcomes based on the cited evidence, then update P6 to **9/9 formally accepted**, 14.0% phase contribution and overall **45/74 formally accepted, 70.6% weighted**. This **does not** mean the owner's physical Qt Creator 6.10.2 MinGW build, Windows 100/125/150% scale, Narrator, final accessibility, real-data storage, installer, main branch merge or release are approved. If any criterion is withheld, record accepted IDs individually (14/9 percentage points each) without reassigning denominators.
+
+**Recommended next owner decision:** “I approve the nine bounded P6 fictional-data criteria, the intentional parity differences, and all nine evidence-backed functional outcomes, without approving physical-device tests or commercial release.” Or specify which IDs/choices need review.
+
+**Until that explicit P6 decision:** P6 **0/9**, current overall **36/74, 56.6%**. Draft stack remains unmerged. No customer data, live SQL cutover, destructive production history, release or installer work authorized.

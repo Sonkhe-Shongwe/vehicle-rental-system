@@ -1,5 +1,11 @@
 # P7-A | Candidate P7 verification matrix and decision ledger
 
+**Status update, 2 November 2026:** D1 intended SQLite engine/fictional-only Qt Quick integration is now explicitly [P7 D1 limited owner authorization](P7_D1_OWNER_APPROVED_FICTIONAL_ONLY_SQLITE_INTEGRATION_2026-11-02.md) and implemented by [P7-O actual-app SQLite Lab](P7_O_ACTUAL_APP_SQLITE_LAB_NATIVE_VERIFIED_2026-11-02.md), verified 115/115 Linux and hosted Windows. The **P7 eight provisional acceptance criteria remain unratiﬁed and 0/8 accepted**; D2–D8 owner policies are OPEN. The historical candidate table below is intentionally preserved.
+
+**Current context added after later engineering, 2 November 2026:** [2 November full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [P7-H exact-source normalized repository tests](P7_H_NORMALIZED_SQLITE_REPOSITORY_NATIVE_VERIFIED_2026-11-02.md). This document's original narrative below describes an earlier evaluation date and **is not a claim that subsequent work is owner-accepted**. The latest application remains fictional-only, not a Qt Quick commercial SQLite runtime. Formal P5/P6/P7 scores remain 0/8, 0/9, 0/8.
+
+## Original provisional P7 eight-criterion design, preserved below
+
 **Prepared:** 2 November 2026. **Not a formal rubric.** The [programme matrix](P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) says P7 is **"Stable IDs, money, storage, backup/migration hardening"**, weight **9%**, **eight** acceptance units, but does **not** individually name them. These are candidate groupings for future owner ratification, not eight new approved requirements. All formal P7 acceptance remains **0/8**.
 
 ## 1. Provisional eight criteria, with explicit negative tests
