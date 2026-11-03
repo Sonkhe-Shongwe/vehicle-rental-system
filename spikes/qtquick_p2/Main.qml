@@ -524,9 +524,15 @@ ApplicationWindow {
                 }
                 Item { Layout.fillHeight: true }
                 Label {
-                    text: "P3 · Verified fictional data\nC++ domain owns all writes"
+                    objectName: "sessionModeSidebar"
+                    text: p7SqlLabEnabled
+                          ? "Fictional SQLite Lab\nSeparate from the demo fleet"
+                          : persistentFictionalDemo
+                          ? "Fictional demo\nBookings survive restart"
+                          : "Fictional demo\nChanges reset when you close"
                     color: ink; font.pixelSize: 11
                     wrapMode: Text.WordWrap
+                    Accessible.name: text
                 }
             }
         }
@@ -546,7 +552,14 @@ ApplicationWindow {
                     font.pixelSize: 30; font.bold: true; color: navy
                 }
                 Item { Layout.fillWidth: true }
-                Label { text: "FICTIONAL DEMO · C++ DOMAIN WRITES"; color: ink; font.pixelSize: 12 }
+                Label {
+                    objectName: "sessionModeNotice"
+                    text: p7SqlLabEnabled ? "FICTIONAL · ISOLATED SQLITE LAB"
+                          : persistentFictionalDemo ? "FICTIONAL · BOOKINGS SAVED"
+                          : "FICTIONAL · RESETS ON EXIT"
+                    color: ink; font.pixelSize: 12
+                    Accessible.name: text
+                }
             }
             Rectangle { Layout.fillWidth: true; height: 1; color: "#D8E2E8" }
 

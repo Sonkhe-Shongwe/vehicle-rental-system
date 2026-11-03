@@ -1149,6 +1149,16 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Startup Qt Quick operator shell is empty";
                 app.exit(602);return;
             }
+            // Normal portable sessions discard changes on exit.
+            // The actual Qt shell must disclose this, not just the CMD log.
+            auto *mode=startupWindow->findChild<QQuickItem*>("sessionModeNotice");
+            auto *sidebar=startupWindow->findChild<QQuickItem*>("sessionModeSidebar");
+            if(!mode||!sidebar||!mode->isVisible()||!sidebar->isVisible()||
+               !mode->property("text").toString().contains("RESETS ON EXIT")||
+               !sidebar->property("text").toString().contains("reset when you close")) {
+                qCritical()<<"Fictional disposable session notice missing";
+                app.exit(603);return;
+            }
             qInfo()<<"FUNC-D1 native desktop-fit startup PASS"
                    <<startupArea<<startupWindow->geometry();
             app.exit(0);
@@ -1778,6 +1788,7 @@ int main(int argc, char *argv[]) {
             };
             auto *root=window->contentItem();
             auto *nav=find(find,root,"workspaceNavSQLite Lab");
+            auto *mode=find(find,root,"sessionModeNotice");
             auto *overviewFleet=find(find,root,"p7AppOverviewFleet");
             auto *overviewRentals=find(find,root,"p7AppOverviewRentals");
             auto *overviewValue=find(find,root,"p7AppOverviewValue");
@@ -1792,7 +1803,9 @@ int main(int argc, char *argv[]) {
             auto *rentalSelection=find(find,root,"p7AppRentalSelected");
             auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
             auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
-            if(!nav||!fleetCard||!rentalsCard||
+            if(!nav||!mode||
+               !mode->property("text").toString().contains("ISOLATED SQLITE LAB")||
+               !fleetCard||!rentalsCard||
                !overviewFleet||!overviewRentals||!overviewValue||
                !fleetText||!rentalsText||!receipt||!lab||
                !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
@@ -2037,7 +2050,9 @@ int main(int argc, char *argv[]) {
                 QTest::qWait(140);
                 auto *active=find(find,root,"overviewActiveCard");
                 auto *value=find(find,root,"overviewValueCard");
-                if(!active||!value||
+                auto *mode=find(find,root,"sessionModeNotice");
+                if(!active||!value||!mode||
+                   !mode->property("text").toString().contains("BOOKINGS SAVED")||
                    active->property("value").toString()!="2" ||
                    value->property("value").toString()!="R 2750.00" ||
                    rentalModel.activeCount()!=2 ||
