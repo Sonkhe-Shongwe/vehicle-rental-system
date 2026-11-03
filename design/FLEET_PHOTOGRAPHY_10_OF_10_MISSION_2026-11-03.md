@@ -6,7 +6,7 @@
 
 - Development branch: `feature/p7-sqlite-sandbox-20261102`, stacked **draft PR #17** on draft P6 #14, stable `main` unchanged.
 - Native verified before mission: UX-Q5 [`c04a4c4`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/c04a4c4b9ec8c57a05102b71f4497170cfb4c975), [117/117 tests on Linux and hosted Windows](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41614666826), **not** physical Windows Qt Creator/MinGW, Narrator, or final artwork approval.
-- First mission code: [`f0332a8`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f0332a81a75849fd5013ce89cc302dee110772f9), changes reference-image matching from ID alias to live C++ make/model resolution and adds negative tests for recycled IDs, mismatched models and missing identity. **Record exact CI pass/failure separately after completion**, never infer it from an earlier run.
+- First mission code: [`f0332a8`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f0332a81a75849fd5013ce89cc302dee110772f9), changes reference-image matching from ID alias to live C++ make/model resolution and adds negative tests for recycled IDs, mismatched models and missing identity. **Verified:** [native GitHub Actions 41618236689](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41618236689), **117/117 tests on Linux and hosted Windows**, including real Qt wide/compact photo cases, plus Windows portable/PS5.1 checks. [Source report](../docs/PHOTO_P1_A_MODEL_IDENTITY_NATIVE_VERIFIED_2026-11-03.md).
 - The current Qt Gallery has 112px image strips inside 214px cards (230px row cells). The Inspector has a 96px photo at 720px app height and 120px at wide height. Both use `Image.PreserveAspectCrop`. These are useful functional layouts but not yet art-directed photo stages.
 - Current verified asset register: [`assets/README.md`](../assets/README.md), [`design/ASSET_CREDITS.md`](ASSET_CREDITS.md). **C001 Toyota Corolla**, **C002 Ford Ranger**, **C003 Hyundai i20** bundle CC0-derived *illustrative* photos. **M001 Honda CB500F** and **M002 Yamaha MT-07** show the same original generic motorcycle line illustration. No real photographed inventory is represented.
 - The existing vehicle models do not specify trim, year or colour. Each example image requires an **illustrative** disclosure, not an assertion that it depicts an owned/available specific unit. No final image, licence, crop or entire product look has owner signoff.
@@ -68,6 +68,10 @@ Research basis, not a source of image rights: [Auto Trader's listing photo sugge
 3. **Visual rebuild:** after selection, edit source crop/hero processing and adjust Qt Gallery / Inspector photo-stage geometry as a focused reversible commit. Do not break Book, Remove, current search/filter, keyboard or photo actions.
 4. **Native QA:** full GitHub Qt 6.8.3 GCC/Linux and MSVC/Windows CTests, capture real 1280x720/1500x860 Gallery and selected Inspector photos (including all five models), inspect clipping, camera orientation, contrast, empty and override cases. Retain old synthetic regression cases.
 5. **Review:** owner sees coherent before/after five-vehicle comparison, licence manifest, physical Windows checklist and exact evidence. Record individual accepted items without pre-emptively marking formal P1 complete.
+
+### Research exclusion: false motorcycle identity
+
+The Commons image named [`20250701 Honda CB500F in Lucca.JPG`](https://commons.wikimedia.org/wiki/File:20250701_Honda_CB500F_in_Lucca.JPG) depicts a classic **CB500 Four**, according to its source page, not the demo's modern CB500F. Exclude it on model-identity grounds.
 
 ## 7. Boundaries
 
