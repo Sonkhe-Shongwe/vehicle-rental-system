@@ -36,15 +36,27 @@ QString FleetPhotoStore::imagePath(const QString &id) const {
 bool FleetPhotoStore::hasPhoto(const QString &id) const {
     if(!safeId(id))return false;
     const QString file=imagePath(id);
-    if(QFileInfo::exists(file))
-        return QImageReader(file).canRead();
+    if(QFileInfo::exists(file)) {
+        const QFileInfo info(file);
+        // Even this fictional sidecar must never follow a local symlink
+        // or decode a rewritten oversized file.
+        return info.isFile() && !info.isSymLink() &&
+               info.size()>0 && info.size()<=8*1024*1024 &&
+               QImageReader(file).canRead();
+    }
     const auto resource=seededResource(id);
     return !resource.isEmpty() && QImageReader(resource).canRead();
 }
 QImage FleetPhotoStore::imageFor(const QString &id,const QSize &requested) const {
     if(!safeId(id))return {};
     const QString file=imagePath(id);
-    const QString origin=QFileInfo::exists(file)?file:seededResource(id);
+    const bool local=QFileInfo::exists(file);
+    if(local) {
+        const QFileInfo info(file);
+        if(!info.isFile() || info.isSymLink() ||
+           info.size()<=0 || info.size()>8*1024*1024)return {};
+    }
+    const QString origin=local?file:seededResource(id);
     if(origin.isEmpty())return {};
     QImageReader reader(origin);
     reader.setAutoTransform(true);
