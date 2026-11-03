@@ -1,0 +1,48 @@
+name: Curate genuine vehicle photos on design branch
+on:
+  push:
+    branches:
+      - design/authentic-photo-hybrid-20261029
+    paths:
+      - design/v3/PHOTO_SOURCES.json
+      - design/v3/fetch_photos.py
+      - .github/workflows/photo-assets.yml
+permissions:
+  contents: write
+jobs:
+  fetch-photo-review-assets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow>=11,<13'
+      - name: Fetch and validate reviewed Commons photos
+        run: python design/v3/fetch_photos.py
+      - name: Confirm existing image output and source manifest
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import json, pathlib
+          root=pathlib.Path('design/v3/photos')
+          data=json.loads((root/'MANIFEST.json').read_text())
+          assert data['downloaded_count']>=1
+          assert data['downloaded_count']+len(data['pending']) == data['expected_count']
+          for p in data['photos']:
+              path=root/p['path']
+              assert path.exists()
+              im=Image.open(path); im.verify()
+              assert p['size_bytes']<=2000000
+          print(f"Verified {data['downloaded_count']} images; {len(data['pending'])} pending")
+          PY
+      - name: Commit generated images on the design branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add design/v3/photos
+          if ! git diff --cached --quiet; then
+            git commit -m 'design(photos): add verified vehicle photo derivatives and manifest'
+            git push origin HEAD:design/authentic-photo-hybrid-20261029
+          fi

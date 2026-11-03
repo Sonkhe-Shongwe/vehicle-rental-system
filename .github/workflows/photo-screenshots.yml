@@ -1,0 +1,36 @@
+name: Render photographic hybrid visual review screens
+on:
+  push:
+    branches:
+      - design/authentic-photo-hybrid-20261029
+    paths:
+      - design/v3/preview.html
+      - .github/workflows/photo-screenshots.yml
+permissions:
+  contents: write
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture real browser renders without remote assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome
+          mkdir -p design/v3/screens
+          for page in dashboard fleet rentals; do
+            google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --virtual-time-budget=1200 --window-size=1440,900 --screenshot="$PWD/design/v3/screens/${page}.png" "file://$PWD/design/v3/preview.html?page=$page" 2>/dev/null
+            test -s "design/v3/screens/${page}.png"
+            file "design/v3/screens/${page}.png"
+          done
+      - name: Commit review-only screenshots to design branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add design/v3/screens
+          if ! git diff --cached --quiet; then
+            git commit -m 'design: capture photographic hybrid HTML review images'
+            git push origin HEAD:design/authentic-photo-hybrid-20261029
+          fi
