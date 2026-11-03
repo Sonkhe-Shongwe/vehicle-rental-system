@@ -108,6 +108,25 @@ bool FleetPhotoStore::chooseFile(const QUrl &file) {
     m_feedback=QStringLiteral("Photo ready for this fictional demo vehicle.");
     ++m_revision;emit changed();return true;
 }
+bool FleetPhotoStore::replaceFor(const QString &id,const QUrl &file) {
+    // The fixed fictional-only session is read-only for image changes too.
+    if(!m_replacementEnabled || !safeId(id)) {
+        m_staged=QImage{};
+        m_feedback=!m_replacementEnabled
+            ? QStringLiteral("Photo changes are disabled in fixed fictional-only mode.")
+            : QStringLiteral("Photo unchanged: invalid vehicle ID.");
+        ++m_revision;emit changed();return false;
+    }
+    if(!chooseFile(file))return false;
+    const bool saved=saveStagedFor(id);
+    if(!saved) {
+        // Keep the reason visible but never leak replacement staging into
+        // the separate Add Vehicle preview after a rejected write.
+        m_staged=QImage{};
+        ++m_revision;emit changed();
+    }
+    return saved;
+}
 void FleetPhotoStore::discardStaged() {
     m_staged=QImage{};
     m_feedback.clear();
@@ -136,7 +155,7 @@ bool FleetPhotoStore::saveStagedFor(const QString &id) {
     if(!out.open(QIODevice::WriteOnly) || out.write(png)!=png.size() ||
        !out.commit()) {
         out.cancelWriting();
-        m_feedback=QStringLiteral("Vehicle saved but photo could not be attached.");
+        m_feedback=QStringLiteral("Photo could not be stored; existing vehicle details remain unchanged.");
         ++m_revision;emit changed();return false;
     }
     m_staged=QImage{};

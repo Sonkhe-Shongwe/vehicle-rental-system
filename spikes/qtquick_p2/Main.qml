@@ -33,6 +33,10 @@ ApplicationWindow {
     property string bookingCancelledNotice: ""
     property string rentalLookupFeedback: ""
     property string returnLookupFeedback: ""
+    // Last replacement outcome is shown in the existing Fleet message lane.
+    // Capture the target before the native picker can change focus/selection.
+    property string photoChangeTargetId: ""
+    property string photoChangeNotice: ""
 
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
@@ -55,20 +59,33 @@ ApplicationWindow {
     }
 
     color: canvas
-    // Only the user's chosen local image may override a fictional Fleet photo.
-    // Real-source legal/retention policy is out of scope for this preview.
+    // Keep the C++ photo store authoritative. This function is exercised in
+    // real native QML tests, not merely by staging Add Vehicle media.
+    function applySelectedFleetPhoto(fileUrl) {
+        const id = window.photoChangeTargetId
+        window.photoChangeTargetId = ""
+        if(persistentFictionalDemo || window.workspace !== 1 || id === "" ||
+                fleet.selectedId !== id) {
+            window.photoChangeNotice = "Photo unchanged. Select the vehicle again before changing its photo."
+            return false
+        }
+        const saved = fleetPhotos.replaceFor(id, fileUrl)
+        window.photoChangeNotice = saved
+            ? "Photo updated for " + id + " in this temporary demo."
+            : "Photo unchanged for " + id + ". " + fleetPhotos.feedback
+        return saved
+    }
+
+    // Only explicitly chosen local media may override a fictional Fleet photo.
+    // Cancel never mutates the prior photo or the rental business records.
     FileDialog {
         id: selectedFleetPhotoDialog
         objectName: "fleetReplacePhotoPicker"
         title: "Choose a replacement fictional vehicle photo"
         fileMode: FileDialog.OpenFile
         nameFilters: ["Images (*.png *.jpg *.jpeg *.webp)"]
-        onAccepted: {
-            if(!persistentFictionalDemo && fleet.selectedId !== "" &&
-               fleetPhotos.chooseFile(selectedFile))
-                fleetPhotos.saveStagedFor(fleet.selectedId)
-            fleetPhotos.discardStaged()
-        }
+        onAccepted: window.applySelectedFleetPhoto(selectedFile)
+        onRejected: window.photoChangeTargetId = ""
     }
 
     // Arrow keys are for moving between *vehicles* only while Fleet has
@@ -120,7 +137,10 @@ ApplicationWindow {
 
     Connections {
         target: fleet
-        function onSelectionChanged() { Qt.callLater(window.syncCurrentVehicle) }
+        function onSelectionChanged() {
+            Qt.callLater(window.syncCurrentVehicle)
+            window.photoChangeNotice = ""
+        }
         function onQueryChanged() { Qt.callLater(window.syncCurrentVehicle) }
         function onStatusChanged() { Qt.callLater(window.syncCurrentVehicle) }
         function onSortByChanged() { Qt.callLater(window.syncCurrentVehicle) }
@@ -807,7 +827,8 @@ ApplicationWindow {
                             }
                             DomainMessage {
                                 objectName: "fleetAddMessage"
-                                text: fleetAdmin.lastMessage
+                                text: window.photoChangeNotice !== ""
+                                      ? window.photoChangeNotice : fleetAdmin.lastMessage
                             }
                         }
 
@@ -1164,7 +1185,11 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     height: window.height < 800 ? 27 : 32
                                     Accessible.name: "Choose a new local illustration for selected fictional vehicle"
-                                    onClicked: selectedFleetPhotoDialog.open()
+                                    onClicked: {
+                                        window.photoChangeTargetId = fleet.selectedId
+                                        window.photoChangeNotice = ""
+                                        selectedFleetPhotoDialog.open()
+                                    }
                                 }
                             }
                             Label {

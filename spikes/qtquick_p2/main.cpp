@@ -798,6 +798,8 @@ int main(int argc, char *argv[]) {
     // The default demo root is disposed on process exit. Domain records are
     // not modified to contain arbitrary file paths or customer media.
     FleetPhotoStore fleetPhotos(dataDirectory);
+    // Photo replacement is explicitly unavailable in the fixed fictional session.
+    fleetPhotos.setReplacementEnabled(!persistentDemo);
     FleetAddController fleetAdmin(system,!persistentDemo,
         [&fleet](const QString &id) {
             fleet.setQuery(QString{});
@@ -1238,6 +1240,87 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet image not bound/recoverable from fictional sidecar";
                 app.exit(719);return;
             }
+            // Exercise the actual QML Change photo callback and the guarded
+            // C++ write. Previously the QML called a non-invokable C++ method.
+            const QString replacementPath=QDir(dataDirectory).filePath(
+                "replacement-photo.png");
+            QImage replacementImage(64,64,QImage::Format_RGB32);
+            replacementImage.fill(QColor(40,70,210));
+            if(!replacementImage.save(replacementPath,"PNG")) {
+                app.exit(729);return;
+            }
+            FleetPhotoStore lockedPhotoStore(dataDirectory);
+            if(lockedPhotoStore.replaceFor("C001",
+                    QUrl::fromLocalFile(replacementPath)) ||
+               QFileInfo::exists(QDir(dataDirectory).filePath("fleet_images/C001.png"))) {
+                qCritical()<<"Fixed fictional photo replacement was not denied";
+                app.exit(730);return;
+            }
+            const auto applyPhoto=[window](const QUrl &url) {
+                return QMetaObject::invokeMethod(window,"applySelectedFleetPhoto",
+                    Q_ARG(QVariant,QVariant(url)));
+            };
+            fleet.selectById("C001");
+            window->setProperty("photoChangeTargetId","C001");
+            if(!applyPhoto(QUrl::fromLocalFile(replacementPath))) {
+                qCritical()<<"QML replacement action could not be invoked";
+                app.exit(731);return;
+            }
+            QTest::qWait(220);
+            const QString c001Sidecar=QDir(dataDirectory).filePath(
+                "fleet_images/C001.png");
+            QFile persisted(c001Sidecar);
+            if(!persisted.open(QIODevice::ReadOnly)) {app.exit(732);return;}
+            const QByteArray beforeRejected=persisted.readAll();
+            persisted.close();
+            auto *replacementNotice=find(find,window->contentItem(),
+                                          "fleetAddMessage");
+            photo=find(find,window->contentItem(),"fleetInspectorPhoto");
+            if(!replacementNotice ||
+               !replacementNotice->property("text").toString().contains(
+                   "Photo updated for C001") ||
+               !fleetPhotos.hasPhoto("C001") ||
+               fleetPhotos.imageFor("C001").pixelColor(3,3)!=
+                   replacementImage.pixelColor(3,3) ||
+               !photo || photo->property("status").toInt()!=1) {
+                qCritical()<<"Replacement photo write or on-screen notice failed";
+                app.exit(733);return;
+            }
+            window->setProperty("photoChangeTargetId","C001");
+            if(!applyPhoto(QUrl("https://invalid.example/image.jpg")) ||
+               !QFileInfo::exists(c001Sidecar)) {
+                qCritical()<<"QML photo rejection callback not available";
+                app.exit(734);return;
+            }
+            QFile afterDenied(c001Sidecar);
+            if(!afterDenied.open(QIODevice::ReadOnly)) {app.exit(735);return;}
+            const QByteArray unchanged=afterDenied.readAll();
+            afterDenied.close();
+            if(unchanged!=beforeRejected ||
+               !replacementNotice->property("text").toString().contains(
+                   "Photo unchanged for C001")) {
+                qCritical()<<"Rejected photo lost previous image or gave false success";
+                app.exit(736);return;
+            }
+            // A selection switched while the picker was open must not write
+            // the old target ID, even when the new URL is valid.
+            window->setProperty("photoChangeTargetId","C001");
+            fleet.selectById("C002");
+            if(!applyPhoto(QUrl::fromLocalFile(replacementPath)) ||
+               !window->property("photoChangeNotice").toString().contains(
+                   "Photo unchanged")) {
+                qCritical()<<"Stale selected vehicle image import not refused";
+                app.exit(737);return;
+            }
+            QFile afterStale(c001Sidecar);
+            if(!afterStale.open(QIODevice::ReadOnly) ||
+               afterStale.readAll()!=beforeRejected) {
+                qCritical()<<"Stale photo selection modified previous image";
+                app.exit(738);return;
+            }
+            afterStale.close();
+            fleet.selectById("C004");
+            QTest::qWait(130);
             const QImage importedShot=window->grabWindow();
             if(importedShot.size()!=window->size() ||
                !importedShot.save("ux-q3-imported-fleet-"+photoViewport+".png","PNG")) {

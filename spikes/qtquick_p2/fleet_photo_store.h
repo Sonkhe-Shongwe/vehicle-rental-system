@@ -18,6 +18,10 @@ public:
     Q_INVOKABLE bool chooseFile(const QUrl &file);
     Q_INVOKABLE void discardStaged();
     Q_INVOKABLE bool hasPhoto(const QString &vehicleId) const;
+    // The QML replacement path must be explicit, fictional-only and report
+    // its actual storage outcome. C++ Fleet Add uses saveStagedFor directly.
+    void setReplacementEnabled(bool enabled) { m_replacementEnabled=enabled; }
+    Q_INVOKABLE bool replaceFor(const QString &vehicleId,const QUrl &localFile);
     bool saveStagedFor(const QString &vehicleId);
     void forgetVehicle(const QString &vehicleId);
     QImage imageFor(const QString &vehicleId, const QSize &requestedSize={}) const;
@@ -36,6 +40,7 @@ private:
     QString m_feedback;
     QImage m_staged;
     int m_revision=0;
+    bool m_replacementEnabled=false;
 };
 
 class FleetPhotoProvider final : public QQuickImageProvider {
