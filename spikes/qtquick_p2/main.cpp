@@ -2538,8 +2538,13 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"UX-S1 native Rentals scroller or data absent";
                 app.exit(806);return;
             }
-            const double maximum=page->property("contentHeight").toDouble()-page->height();
-            if(maximum<90 || panel->height()<340 || list->height()<160 ||
+            // A large desktop may fit the whole page with only a few
+            // pixels of overflow. Compact must genuinely scroll; both
+            // layouts must expose the contract action without clipping.
+            const double maximum=std::max(0.0,
+                page->property("contentHeight").toDouble()-page->height());
+            if((compact && maximum<90) || panel->height()<340 ||
+               list->height()<160 ||
                page->property("contentY").toDouble()>2) {
                 qCritical()<<"UX-S1 Rentals page cannot reach records"
                            <<maximum<<panel->height()<<list->height();
@@ -2548,7 +2553,8 @@ int main(int argc, char *argv[]) {
             booking->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_PageDown);
             QTest::qWait(120);
-            if(page->property("contentY").toDouble()<50) {
+            if(maximum>3 &&
+               page->property("contentY").toDouble()<std::min(50.0,maximum)-2) {
                 qCritical()<<"UX-S1 keyboard PageDown did not reveal records";
                 app.exit(808);return;
             }
@@ -2570,7 +2576,9 @@ int main(int argc, char *argv[]) {
             }
             QTest::keyClick(window,Qt::Key_PageUp);
             QTest::qWait(120);
-            if(page->property("contentY").toDouble()>=maximum-30 ||
+            if((maximum>3 &&
+                page->property("contentY").toDouble()>
+                    maximum-std::min(40.0,maximum)+2) ||
                !rentalModel.selectedRentalId().isEmpty()) {
                 qCritical()<<"UX-S1 keyboard PageUp/selection mutation";
                 app.exit(811);return;
