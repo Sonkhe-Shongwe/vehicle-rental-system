@@ -470,6 +470,24 @@ ApplicationWindow {
         }
     }
 
+    // Page keys scroll hidden controls without stealing rental arrow selection.
+    Shortcut {
+        sequence: "PgDown"
+        enabled: window.workspace === 2 && !bookingDialog.visible &&
+                 !returnConfirmation.visible && !archiveConfirmation.visible &&
+                 !archivedDeleteDialog.visible && !contractDetailsDialog.visible
+        onActivated: rentalsPageScroll.contentY = Math.min(
+            Math.max(0, rentalsPageScroll.contentHeight - rentalsPageScroll.height),
+            rentalsPageScroll.contentY + Math.max(140, rentalsPageScroll.height * 0.8))
+    }
+    Shortcut {
+        sequence: "PgUp"
+        enabled: window.workspace === 2 && !bookingDialog.visible &&
+                 !returnConfirmation.visible && !archiveConfirmation.visible &&
+                 !archivedDeleteDialog.visible && !contractDetailsDialog.visible
+        onActivated: rentalsPageScroll.contentY = Math.max(
+            0, rentalsPageScroll.contentY - Math.max(140, rentalsPageScroll.height * 0.8))
+    }
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -1658,8 +1676,24 @@ ApplicationWindow {
                     }
                 }
 
-                ColumnLayout {
-                    spacing: 14
+                // UX-S1: page-level scroll keeps lower rental controls reachable.
+                Flickable {
+                    id: rentalsPageScroll
+                    objectName: "rentalsPageScroll"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    contentWidth: width
+                    contentHeight: rentalPageContent.implicitHeight
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    ScrollBar.vertical: ScrollBar {
+                        objectName: "rentalsPageScrollBar"
+                        policy: ScrollBar.AlwaysOn
+                    }
+                    ColumnLayout {
+                        id: rentalPageContent
+                        width: Math.max(0, rentalsPageScroll.width - 18)
+                        spacing: 14
                     RowLayout {
                         Layout.fillWidth: true
                         Label {
@@ -1725,7 +1759,8 @@ ApplicationWindow {
                         title: "New rental: review authoritative quote"
                         modal: true
                         focus: true
-                        anchors.centerIn: parent
+                        parent: Overlay.overlay
+                        anchors.centerIn: Overlay.overlay
                         width: Math.min(620, window.width - 80)
                         standardButtons: Dialog.NoButton
                         closePolicy: Popup.CloseOnEscape
@@ -2017,7 +2052,8 @@ ApplicationWindow {
                     ConfirmActionDialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
-                        anchors.centerIn: parent
+                        parent: Overlay.overlay
+                        anchors.centerIn: Overlay.overlay
                         title: "Confirm rental return"
                         question: "Mark " + rentalsModel.selectedRentalId + " as returned today?"
                         acceptText: "Confirm return"
@@ -2031,7 +2067,8 @@ ApplicationWindow {
                     ConfirmActionDialog {
                         id: archiveConfirmation
                         objectName: "rentalArchiveDialog"
-                        anchors.centerIn: parent
+                        parent: Overlay.overlay
+                        anchors.centerIn: Overlay.overlay
                         title: "Archive returned rental"
                         question: "Move " + rentalsModel.selectedRentalId +
                                   " to archived history? The record will not be deleted."
@@ -2046,7 +2083,8 @@ ApplicationWindow {
                     P6ArchivedDeleteDialog {
                         id: archivedDeleteDialog
                         objectName: "rentalDeleteArchivedDialog"
-                        anchors.centerIn: parent
+                        parent: Overlay.overlay
+                        anchors.centerIn: Overlay.overlay
                         command: archivedDelete
                         focusReturn: deleteArchivedButton
                         fallbackFocusReturn: rentalList
@@ -2156,8 +2194,10 @@ ApplicationWindow {
                         }
                     }
                     Rectangle {
+                        id: rentalRecordsPanel
+                        objectName: "rentalRecordsPanel"
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
+                        Layout.preferredHeight: Math.min(460, Math.max(360, 135 + 77 * rentalsModel.count))
                         color: "white"
                         radius: 12
                         ColumnLayout {
@@ -2181,6 +2221,9 @@ ApplicationWindow {
                                 spacing: 7
                                 activeFocusOnTab: true
                                 keyNavigationEnabled: false
+                                // With a short list the wheel scrolls the page;
+                                // larger sets keep their own virtualized list scroll.
+                                interactive: rentalsModel.count > 4
                                 Keys.onPressed: (event) => window.handleRentalArrow(event)
                                 model: rentalsModel
                                 Accessible.role: Accessible.List
@@ -2310,7 +2353,8 @@ ApplicationWindow {
                         objectName: "rentalContractDetailsDialog"
                         title: "Rental contract details"
                         width: Math.min(540, window.width - 64)
-                        anchors.centerIn: parent
+                        parent: Overlay.overlay
+                        anchors.centerIn: Overlay.overlay
                         modal: true
                         focus: true
                         closePolicy: Popup.CloseOnEscape
@@ -2392,6 +2436,7 @@ ApplicationWindow {
                                 }
                             }
                         }
+                    }
                     }
                 }
                 // Slot 4 loads ONLY for the explicit fictional-only SQL
