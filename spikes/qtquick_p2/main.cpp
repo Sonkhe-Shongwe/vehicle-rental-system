@@ -1259,8 +1259,25 @@ int main(int argc, char *argv[]) {
                                           "fleetInspectorPhoto");
                 auto *inspectorFallback=find(find,window->contentItem(),
                                              "fleetInspectorFallbackArt");
+                auto *cardFallbackIdentity=find(find,window->contentItem(),
+                                               "fleetGalleryFallbackModelLabel");
+                auto *inspectorFallbackIdentity=find(find,window->contentItem(),
+                                               "fleetInspectorFallbackModelLabel");
+                // Both bikes use one make-neutral silhouette. The actual
+                // C++ model name must distinguish the media stage, without
+                // pretending that the drawing depicts a particular model.
+                const bool motorcycleIdentityValid=expectPhoto
+                    ? (!cardFallbackIdentity && !inspectorFallbackIdentity)
+                    : (cardFallbackIdentity && inspectorFallbackIdentity &&
+                       inWindow(cardFallbackIdentity) &&
+                       inWindow(inspectorFallbackIdentity) &&
+                       cardFallbackIdentity->property("text").toString()==
+                           fleet.selectedName() &&
+                       inspectorFallbackIdentity->property("text").toString()==
+                           fleet.selectedName());
                 if(fleet.selectedId()!=id ||
                    fleet.selectedName().isEmpty() ||
+                   !motorcycleIdentityValid ||
                    !cardLabel || !inWindow(cardLabel) ||
                    cardLabel->property("text").toString()!=expectedLabel ||
                    photoDisclaimer->property("text").toString()!=expectedLabel ||

@@ -1045,10 +1045,37 @@ ApplicationWindow {
                                                 id: vehicleArt
                                                 objectName: "vehicleCardArt"
                                                 anchors.centerIn: parent
+                                                // Reserve space for the textual motorcycle identity.
+                                                // The vector remains make-neutral, never a stock photo.
+                                                anchors.verticalCenterOffset:
+                                                    vehicleCard.vehicleType === "Motorcycle" ? -10 : 0
                                                 visible: !cardPhoto.visible
                                                 vehicleType: vehicleCard.vehicleType
                                                 width: 164
                                                 height: 74
+                                            }
+                                            Label {
+                                                objectName: "fleetGalleryFallbackModelLabel"
+                                                anchors.bottom: parent.bottom
+                                                anchors.horizontalCenter: parent.horizontalCenter
+                                                anchors.bottomMargin: 4
+                                                visible: !cardPhoto.visible &&
+                                                    vehicleCard.vehicleType === "Motorcycle"
+                                                text: vehicleCard.displayName
+                                                width: Math.min(implicitWidth, parent.width - 12)
+                                                elide: Text.ElideRight
+                                                font.pixelSize: 11
+                                                font.bold: true
+                                                color: navy
+                                                padding: 3
+                                                z: 1
+                                                Accessible.name: "Generic motorcycle illustration for " + text
+                                                Accessible.description:
+                                                    "Text identifies the fictional fleet model; the drawing is not model-specific"
+                                                background: Rectangle {
+                                                    color: "#F3FFFFFF"
+                                                    radius: 5
+                                                }
                                             }
                                             // Every card must state whether its media is a decoded
                                             // reference picture or neutral non-photographic artwork.
@@ -1285,8 +1312,35 @@ ApplicationWindow {
                                 VehicleSilhouette {
                                     objectName: "fleetInspectorFallbackArt"
                                     anchors.centerIn: parent
+                                    anchors.verticalCenterOffset:
+                                        fleet.selectedType === "Motorcycle" ? -10 : 0
                                     visible: !inspectorPhoto.visible
                                     vehicleType: fleet.selectedType
+                                }
+                                Label {
+                                    objectName: "fleetInspectorFallbackModelLabel"
+                                    anchors.bottom: parent.bottom
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.bottomMargin: 4
+                                    visible: !inspectorPhoto.visible &&
+                                        fleet.selectedType === "Motorcycle" &&
+                                        fleet.selectedId !== ""
+                                    // Bind to the selected C++ model, not a stale ID->name map.
+                                    text: fleet.selectedName
+                                    width: Math.min(implicitWidth, parent.width - 16)
+                                    elide: Text.ElideRight
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    color: navy
+                                    padding: 3
+                                    z: 1
+                                    Accessible.name: "Generic motorcycle illustration for " + text
+                                    Accessible.description:
+                                        "Text identifies the fictional fleet model; the drawing is not model-specific"
+                                    background: Rectangle {
+                                        color: "#F3FFFFFF"
+                                        radius: 5
+                                    }
                                 }
                                 // A compact top-left marker never overflows into the
                                 // vehicle heading or fights the photo action.
