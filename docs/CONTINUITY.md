@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current development continuity
 
+**PHOTO-P1-B SOURCE REVIEW, 3 NOV 2026 (RESEARCH ONLY).** The [five-model nine-candidate source shortlist](../design/PHOTO_P1_B_SOURCE_SHORTLIST_2026-11-03.md) and [machine-readable artist/licence register](../design/photo_review/PHOTO_P1_B_CANDIDATES_2026-11-03.json) are on the active draft branch. They compare appropriate Corolla/Ranger/i20/CB500F/MT-07 Commons source pages, flag incorrect body variants and CC BY-SA obligations, and **do not install or approve any photo**. Asset bytes, native Gallery/Inspector framing and Qt/C++ source remain unchanged since the last exact-source [`f0332a8` 117/117-per-OS run](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41618236689). Source-image binary retrieval, crop/contact-sheet QA, model/trim suitability, five-photo consistency and owner P1 approval remain open. Formal **45/74, weighted 70.6%**, draft PR stack unmerged, stable `main` unchanged.
+
 **Reconciled 3 November 2026.** This is the concise CURRENT handoff chronology. The [2 Nov full audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md), [latest checkpoint](LATEST_CHECKPOINT.md), [historical 30 Oct audit](FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-10-30.md), [older archived materials](archive/README.md) and Git history preserve the detailed previous narrative. Do not prepend more historical banners.
 
 ## Latest verified engineering checkpoint
