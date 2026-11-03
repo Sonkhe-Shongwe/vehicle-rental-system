@@ -100,6 +100,36 @@ int main(int argc, char **argv) {
               "first explicit refresh resets model and notifies count once");
         check(model.rowCount(model.index(0, 0)) == 0,
               "Qt list model has no child rows");
+        // UX-S5: advancing the injected read-only calendar changes due-state
+        // metrics and visible urgency rows without a domain transaction.
+        QDate movingDay=today;
+        RentalReadService movingRead(system,[&movingDay] {return movingDay;});
+        RentalListModel rollover(movingRead);
+        const double movingBookedValue=rollover.activeBookedValue();
+        rollover.setStatusFilter("DueToday");
+        check(rollover.count()==0 && rollover.dueTodayCount()==0 &&
+              rollover.overdueCount()==0,
+              "day zero has no due-today or overdue active rentals");
+        movingDay=today.addDays(1);
+        rollover.refresh();
+        check(rollover.count()==1 && rollover.dueTodayCount()==1 &&
+              rollover.overdueCount()==0 &&
+              rollover.data(rollover.index(0,0),RentalListModel::RentalIdRole)=="R002",
+              "next calendar day refresh reveals R002 due today");
+        check(rollover.selectById("R002"),"read-only due-today selection");
+        movingDay=today.addDays(2);
+        rollover.refresh();
+        check(rollover.count()==1 && rollover.dueTodayCount()==1 &&
+              rollover.overdueCount()==1 &&
+              rollover.oldestOverdueRentalId()=="R002" &&
+              rollover.data(rollover.index(0,0),RentalListModel::RentalIdRole)=="R003" &&
+              rollover.selectedRentalId().isEmpty() &&
+              rollover.activeCount()==3 &&
+              rollover.activeBookedValue()==movingBookedValue &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "second day refresh changes urgency and disarms hidden selection without writes");
+
         // This navigation reuses the complete snapshot and does not interfere
         // with lifecycle filters, selection count assertions or persistence.
         // UX-S3: urgency filters use authoritative C++ due-state snapshots.

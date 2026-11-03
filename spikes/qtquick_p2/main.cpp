@@ -2836,6 +2836,34 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P3-H rental arrow did not select first visible ID";
                 app.exit(102); return;
             }
+            // UX-S5: the real QML calendar-change trigger calls the C++
+            // snapshot exactly once for a changed day. QML never classifies
+            // due-state or writes source fixtures. Exercise at both sizes.
+            auto *dateTimer=window->findChild<QObject*>("rentalDayRefreshTimer");
+            const QString dayKey=window->property("lastRentalCalendarDay").toString();
+            const QDate parsedDay=QDate::fromString(dayKey,Qt::ISODate);
+            int dateRefreshSignals=0;
+            const auto dateConnection=QObject::connect(
+                &rentalModel,&RentalListModel::metricsChanged,&app,
+                [&dateRefreshSignals]{++dateRefreshSignals;});
+            const auto askDay=[window](const QString &day) {
+                return QMetaObject::invokeMethod(window,
+                    "refreshRentalDueIfCalendarChanged",
+                    Q_ARG(QVariant,QVariant(day)));
+            };
+            if(!dateTimer || !parsedDay.isValid() ||
+               !askDay(dayKey) || dateRefreshSignals!=0 ||
+               !askDay(parsedDay.addDays(1).toString(Qt::ISODate)) ||
+               dateRefreshSignals!=1 ||
+               !askDay(parsedDay.addDays(1).toString(Qt::ISODate)) ||
+               dateRefreshSignals!=1 ||
+               !askDay(dayKey) || dateRefreshSignals!=2 ||
+               rentalModel.selectedRentalId()!="R001" ||
+               rentalModel.statusFilter()!="All") {
+                qCritical()<<"UX-S5 real QML calendar refresh not idempotent or selection unsafe";
+                app.exit(817);return;
+            }
+            QObject::disconnect(dateConnection);
             // The compact Windows/Linux view must keep both extra
             // lifecycle choices in the visible viewport, not offscreen.
             for (auto *item : {returnedButton, archivedButton}) {

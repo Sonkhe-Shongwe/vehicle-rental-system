@@ -33,6 +33,31 @@ ApplicationWindow {
     property string bookingCancelledNotice: ""
     property string rentalLookupFeedback: ""
     property string returnLookupFeedback: ""
+    // The C++ read service owns all due-date decisions. The local calendar
+    // key is only a cheap reason to ask it for a fresh read-only snapshot.
+    // It prevents all-day stale Due today / Overdue labels across midnight
+    // or after the desktop resumes from sleep.
+    property string lastRentalCalendarDay: Qt.formatDate(new Date(), "yyyy-MM-dd")
+    function refreshRentalDueIfCalendarChanged(dayKey) {
+        if (!dayKey || dayKey === window.lastRentalCalendarDay)
+            return false
+        window.lastRentalCalendarDay = dayKey
+        rentalsModel.refresh()
+        return true
+    }
+    onActiveChanged: {
+        if (active)
+            window.refreshRentalDueIfCalendarChanged(
+                Qt.formatDate(new Date(), "yyyy-MM-dd"))
+    }
+    Timer {
+        objectName: "rentalDayRefreshTimer"
+        interval: 60000
+        running: window.visible
+        repeat: true
+        onTriggered: window.refreshRentalDueIfCalendarChanged(
+            Qt.formatDate(new Date(), "yyyy-MM-dd"))
+    }
     // Last replacement outcome is shown in the existing Fleet message lane.
     // Capture the target before the native picker can change focus/selection.
     property string photoChangeTargetId: ""
