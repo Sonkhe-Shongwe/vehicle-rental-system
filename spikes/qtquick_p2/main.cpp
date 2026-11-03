@@ -798,6 +798,16 @@ int main(int argc, char *argv[]) {
     // The default demo root is disposed on process exit. Domain records are
     // not modified to contain arbitrary file paths or customer media.
     FleetPhotoStore fleetPhotos(dataDirectory);
+    // C++ RentalSystem is the identity authority. No default photo is
+    // supplied for an unknown ID, a stale ID, or a mismatched vehicle model.
+    const FleetPhotoStore::IdentityLookup livePhotoIdentity=[&system](
+        const QString &id)->QPair<QString,QString> {
+        const Vehicle *vehicle=system.findVehicleById(id);
+        return vehicle
+            ? QPair<QString,QString>{vehicle->getBrand(),vehicle->getModel()}
+            : QPair<QString,QString>{};
+    };
+    fleetPhotos.setVehicleIdentityLookup(livePhotoIdentity);
     // Photo replacement is explicitly unavailable in the fixed fictional session.
     fleetPhotos.setReplacementEnabled(!persistentDemo);
     FleetAddController fleetAdmin(system,!persistentDemo,
@@ -1231,6 +1241,7 @@ int main(int argc, char *argv[]) {
             QTest::qWait(250);
             photo=find(find,window->contentItem(),"fleetInspectorPhoto");
             FleetPhotoStore second(dataDirectory);
+            second.setVehicleIdentityLookup(livePhotoIdentity);
             const QImage recovered=second.imageFor("C004");
             if(!photo||!photo->property("source").toString().contains("C004")||
                photo->property("status").toInt()!=1 ||
@@ -1361,6 +1372,41 @@ int main(int argc, char *argv[]) {
                    "Default image restored for C001")) {
                 qCritical()<<"Reset did not restore seeded image and feedback";
                 app.exit(744);return;
+            }
+            // Reused ID safety: a deleted C001 later assigned to a Demo
+            // Motors vehicle cannot show the old Toyota Corolla artwork.
+            // Missing/unregistered IDs also fail closed for local sidecars.
+            FleetPhotoStore reusedId(dataDirectory);
+            reusedId.setVehicleIdentityLookup([](const QString &id) {
+                return id==QStringLiteral("C001")
+                    ? QPair<QString,QString>{QStringLiteral("Demo Motors"),
+                                             QStringLiteral("Orion")}
+                    : QPair<QString,QString>{};
+            });
+            if(reusedId.hasPhoto("C001") ||
+               !reusedId.imageFor("C001").isNull() ||
+               reusedId.hasPhoto("C004") ||
+               !reusedId.imageFor("C004").isNull()) {
+                qCritical()<<"Wrong vehicle identity inherited default or orphan photo";
+                app.exit(745);return;
+            }
+            reusedId.setVehicleIdentityLookup([](const QString &id) {
+                return id==QStringLiteral("C001")
+                    ? QPair<QString,QString>{QStringLiteral(" Toyota "),
+                                             QStringLiteral("corolla")}
+                    : QPair<QString,QString>{};
+            });
+            if(!reusedId.hasPhoto("C001") ||
+               reusedId.imageFor("C001").isNull() ||
+               reusedId.hasPhoto("C004")) {
+                qCritical()<<"Live make/model could not recover correct reference image";
+                app.exit(746);return;
+            }
+            FleetPhotoStore noIdentity(dataDirectory);
+            if(noIdentity.hasPhoto("C001") || noIdentity.hasPhoto("C004") ||
+               !noIdentity.imageFor("C001").isNull()) {
+                qCritical()<<"Image provider allowed unverified vehicle identities";
+                app.exit(747);return;
             }
             fleet.selectById("C004");
             QTest::qWait(130);

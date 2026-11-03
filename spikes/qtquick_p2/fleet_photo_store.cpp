@@ -6,20 +6,29 @@
 #include <QImageReader>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <utility>
 
 namespace {
 bool safeId(const QString &id) {
     static const QRegularExpression pattern(QStringLiteral("^[CM][0-9]{3,8}$"));
     return pattern.match(id).hasMatch();
 }
-QString seed(const QString &id) {
-    if(id==QStringLiteral("C001"))
+QString seed(const QString &id,const QPair<QString,QString> &identity) {
+    if(!id.startsWith(QLatin1Char('C')))return {};
+    const QString make=identity.first.trimmed();
+    const QString model=identity.second.trimmed();
+    // Explicit representative model association, never an ID-number alias.
+    // Trims/years remain unknown, so these are still illustrative only.
+    if(make.compare(QStringLiteral("Toyota"),Qt::CaseInsensitive)==0 &&
+       model.compare(QStringLiteral("Corolla"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/toyota_corolla.jpg");
-    if(id==QStringLiteral("C002"))
+    if(make.compare(QStringLiteral("Ford"),Qt::CaseInsensitive)==0 &&
+       model.compare(QStringLiteral("Ranger"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/ford_ranger.jpg");
-    if(id==QStringLiteral("C003"))
+    if(make.compare(QStringLiteral("Hyundai"),Qt::CaseInsensitive)==0 &&
+       model.compare(QStringLiteral("i20"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/hyundai_i20.jpg");
-    // Two motorcycles do not yet have licensed/approved model images.
+    // Motorcycles and unapproved makes/models use the original silhouette.
     return {};
 }
 // Only app-reencoded fictional sidecars are expected on disk. Validate
@@ -42,14 +51,26 @@ bool safeSidecar(const QString &root,const QString &file) {
 FleetPhotoStore::FleetPhotoStore(const QString &fictionalRoot,QObject *parent)
     : QObject(parent),m_root(fictionalRoot) {}
 
+void FleetPhotoStore::setVehicleIdentityLookup(IdentityLookup lookup) {
+    m_vehicleIdentityLookup=std::move(lookup);
+    ++m_revision;
+    emit changed();
+}
+bool FleetPhotoStore::hasLiveVehicle(const QString &id) const {
+    if(!safeId(id) || !m_vehicleIdentityLookup)return false;
+    const auto identity=m_vehicleIdentityLookup(id);
+    return !identity.first.trimmed().isEmpty() &&
+           !identity.second.trimmed().isEmpty();
+}
 QString FleetPhotoStore::seededResource(const QString &id) const {
-    return seed(id);
+    if(!hasLiveVehicle(id))return {};
+    return seed(id,m_vehicleIdentityLookup(id));
 }
 QString FleetPhotoStore::imagePath(const QString &id) const {
     return QDir(m_root).filePath(QStringLiteral("fleet_images/%1.png").arg(id));
 }
 bool FleetPhotoStore::hasPhoto(const QString &id) const {
-    if(!safeId(id))return false;
+    if(!hasLiveVehicle(id))return false;
     const QString file=imagePath(id);
     if(QFileInfo::exists(file)) {
         // Refuse tampered sidecars before Qt allocates decoded pixels.
@@ -59,7 +80,7 @@ bool FleetPhotoStore::hasPhoto(const QString &id) const {
     return !resource.isEmpty() && QImageReader(resource).canRead();
 }
 QImage FleetPhotoStore::imageFor(const QString &id,const QSize &requested) const {
-    if(!safeId(id))return {};
+    if(!hasLiveVehicle(id))return {};
     const QString file=imagePath(id);
     const bool local=QFileInfo::exists(file);
     if(local && !safeSidecar(m_root,file))return {};
@@ -110,7 +131,7 @@ bool FleetPhotoStore::chooseFile(const QUrl &file) {
 }
 bool FleetPhotoStore::replaceFor(const QString &id,const QUrl &file) {
     // The fixed fictional-only session is read-only for image changes too.
-    if(!m_replacementEnabled || !safeId(id)) {
+    if(!m_replacementEnabled || !hasLiveVehicle(id)) {
         m_staged=QImage{};
         m_feedback=!m_replacementEnabled
             ? QStringLiteral("Photo changes are disabled in fixed fictional-only mode.")
@@ -128,14 +149,14 @@ bool FleetPhotoStore::replaceFor(const QString &id,const QUrl &file) {
     return saved;
 }
 bool FleetPhotoStore::hasCustomPhoto(const QString &id) const {
-    if(!safeId(id) || !safeSidecarFolder(m_root))return false;
+    if(!hasLiveVehicle(id) || !safeSidecarFolder(m_root))return false;
     const QFileInfo info(imagePath(id));
     // An invalid on-disk image is still an override that the operator
     // needs to be able to discard without deleting the fleet vehicle.
     return info.isFile() && !info.isSymLink();
 }
 bool FleetPhotoStore::restoreDefaultFor(const QString &id) {
-    if(!m_replacementEnabled || !safeId(id)) {
+    if(!m_replacementEnabled || !hasLiveVehicle(id)) {
         m_feedback=!m_replacementEnabled
             ? QStringLiteral("Restoring images is disabled in fixed fictional-only mode.")
             : QStringLiteral("Default image unchanged: invalid vehicle ID.");
@@ -166,7 +187,7 @@ void FleetPhotoStore::discardStaged() {
 }
 bool FleetPhotoStore::saveStagedFor(const QString &id) {
     if(m_staged.isNull())return true; // A fallback silhouette is valid.
-    if(!safeId(id)) {
+    if(!hasLiveVehicle(id)) {
         m_feedback=QStringLiteral("Photo not attached: unsafe vehicle ID.");
         ++m_revision;emit changed();return false;
     }

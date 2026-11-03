@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QImage>
 #include <QUrl>
+#include <QPair>
+#include <functional>
 #include <QQuickImageProvider>
 #include <QString>
 
@@ -12,6 +14,10 @@ class FleetPhotoStore final : public QObject {
     Q_PROPERTY(int revision READ revision NOTIFY changed)
 public:
     explicit FleetPhotoStore(const QString &fictionalRoot, QObject *parent=nullptr);
+    // Resolve an actual live fictional fleet record. A reused ID alone
+    // must never grant access to a previous model's reference photograph.
+    using IdentityLookup = std::function<QPair<QString,QString>(const QString &)>;
+    void setVehicleIdentityLookup(IdentityLookup lookup);
     bool hasStaged() const { return !m_staged.isNull(); }
     QString feedback() const { return m_feedback; }
     int revision() const { return m_revision; }
@@ -39,7 +45,9 @@ signals:
 private:
     QString imagePath(const QString &vehicleId) const;
     QString seededResource(const QString &vehicleId) const;
+    bool hasLiveVehicle(const QString &vehicleId) const;
     QString m_root;
+    IdentityLookup m_vehicleIdentityLookup;
     QString m_feedback;
     QImage m_staged;
     int m_revision=0;
