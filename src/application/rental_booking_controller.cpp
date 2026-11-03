@@ -126,7 +126,11 @@ bool RentalBookingController::confirm(const QString &customerName,
     m_rentals.refresh();
     if (m_refreshFleet)
         m_refreshFleet();
-    m_rentals.selectById(id); // Honors whichever lifecycle filter is visible.
+    // A committed rental must be visible to the operator even if History or
+    // a return-timing filter had hidden newly active contracts. Explicitly
+    // revealing this receipt is read-only navigation: non-excluding filters
+    // remain unchanged, while excluding filters reset to All.
+    m_rentals.locateById(id);
     m_lastRentalId=id; // Store only transaction ID, never customer contact.
     m_message=QStringLiteral("Booking %1 saved.").arg(id);
     emit quoteChanged();

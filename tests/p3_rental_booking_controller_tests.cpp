@@ -73,6 +73,14 @@ int main(int argc,char **argv) {
           booking.quoteSummary().contains("Total R 1460.00"),
           "re-preview uses new authoritative daily rate");
 
+    // New active bookings cannot appear in a History-only view. A failed
+    // commit must preserve that filter; a successful commit must reveal its
+    // actual saved receipt without an additional manual lookup.
+    rentals.setStatusFilter("History");
+    check(rentals.statusFilter()=="History" && rentals.count()==0 &&
+          rentals.selectedRentalId().isEmpty(),
+          "History filter excludes existing active bookings before retry");
+
     // Force the authoritative QSaveFile commit failure and prove rollback.
     const QString ledger=temp.filePath("rentals.txt");
     check(QFile::rename(ledger,temp.filePath("rentals-backup")),"save ledger backup");
@@ -80,14 +88,19 @@ int main(int argc,char **argv) {
     check(!booking.confirm("Demo Customer","0000000000") &&
           booking.canConfirm() && fleetRefresh==1 &&
           !car->getIsRented() && system.getRentals().size()==1 &&
-          rentals.count()==1 && failed==5 &&
+          rentals.count()==0 && rentals.statusFilter()=="History" &&
+          rentals.selectedRentalId().isEmpty() && failed==5 &&
           booking.lastRentalId()=="R001","no false success on QSaveFile failure");
     check(QDir().rmdir(ledger) &&
           QFile::rename(temp.filePath("rentals-backup"),ledger) &&
           bytes(ledger)==originalLedger,"restore bytes");
     check(booking.confirm("Demo Customer","0000000000") &&
           booking.lastRentalId()=="R002" && fleetRefresh==2 &&
-          rentals.count()==2 && ok==2 && !booking.canConfirm(),"successful retry after failure");
+          rentals.count()==2 && rentals.statusFilter()=="All" &&
+          rentals.selectedRentalId()=="R002" && rentals.selectedRow()==1 &&
+          rentals.selectedContract().value("rentalId").toString()=="R002" &&
+          ok==2 && !booking.canConfirm(),
+          "successful retry reveals the committed booking from a hidden History filter");
     const QByteArray persisted=bytes(ledger);
     booking.discardPreview();
     rentals.refresh();
