@@ -1,5 +1,5 @@
 # Real Qt Quick proof, opt-in only. This does not replace the Qt Widgets target.
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 QuickDialogs2 Test)
 qt_add_executable(rental_studio_qtquick_spike main.cpp
     p5_synthetic_session.h p5_synthetic_session.cpp
     motion_policy.h motion_policy.cpp
@@ -21,7 +21,7 @@ qt_add_executable(rental_studio_qtquick_spike main.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_archive_controller.cpp
     ${PROJECT_SOURCE_DIR}/src/application/rental_admin_commands.cpp)
 target_link_libraries(rental_studio_qtquick_spike
-    PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+    PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::QuickDialogs2 Qt6::Test)
 if(WIN32)
     target_link_libraries(rental_studio_qtquick_spike PRIVATE user32)
 endif()
