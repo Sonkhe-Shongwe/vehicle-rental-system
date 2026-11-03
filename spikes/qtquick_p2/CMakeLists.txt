@@ -202,6 +202,14 @@ if(BUILD_TESTING)
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 150)
     # P3-F: genuine QQuickWindow and delegate-backed Rentals state, selection
     # and refresh after a committed C++ fictional-domain operation.
+    # UX-S1: ensure the entire Rentals page can reveal lower controls.
+    add_test(NAME rental_studio_ux_s1_scroll_wide
+        COMMAND rental_studio_qtquick_spike --rentals-page-scroll-smoke)
+    add_test(NAME rental_studio_ux_s1_scroll_compact
+        COMMAND rental_studio_qtquick_spike --rentals-page-scroll-smoke --compact)
+    set_tests_properties(rental_studio_ux_s1_scroll_wide
+        rental_studio_ux_s1_scroll_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 55)
     add_test(NAME rental_studio_p3_rentals_qml_wide
         COMMAND rental_studio_qtquick_spike --rentals-smoke)
     add_test(NAME rental_studio_p3_rentals_qml_compact

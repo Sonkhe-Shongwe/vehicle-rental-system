@@ -106,6 +106,7 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-cancel-outcome-*.png
             build-p2/spikes/qtquick_p2/p6-qt-archived-delete-*.png
             build-p2/spikes/qtquick_p2/ux-q3-*.png
+            build-p2/spikes/qtquick_p2/ux-s1-rentals-bottom-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -244,5 +245,6 @@ jobs:
             build-p2/spikes/qtquick_p2/p5-qt-cancel-outcome-*.png
             build-p2/spikes/qtquick_p2/p6-qt-archived-delete-*.png
             build-p2/spikes/qtquick_p2/ux-q3-*.png
+            build-p2/spikes/qtquick_p2/ux-s1-rentals-bottom-*.png
           if-no-files-found: ignore
           retention-days: 7

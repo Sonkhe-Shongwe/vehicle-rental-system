@@ -345,6 +345,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"focus-edges-smoke", "Test filtered selection, sorted focus, empty states, boundaries and responsive columns."});
     parser.addOption({"dpi-smoke", "Assert a real Qt window screenshot with synthetic device pixel ratio."});
     parser.addOption({"rentals-smoke", "Test the real read-only QML Rentals view and C++ commit-triggered refresh."});
+    parser.addOption({"rentals-page-scroll-smoke", "Native Rentals page scroll and PageUp/PageDown reachability smoke."});
     parser.addOption({"rentals-filter-smoke", "Test real QML Active/History filtering and keyboard selected IDs."});
     parser.addOption({"rentals-return-smoke", "Test real QML confirmed return through C++ domain and model refresh."});
     parser.addOption({"rentals-booking-smoke", "Drive real QML booking review and domain confirm in temporary fixtures."});
@@ -2516,6 +2517,74 @@ int main(int argc, char *argv[]) {
                        " sort-ID sync and responsive grid PASS";
             app.exit(0);
         });
+    }
+    // UX-S1 regression: exercise the actual Qt Quick Rentals workspace
+    // whose lower record panel was clipped on the owner's Windows screen.
+    if(parser.isSet("rentals-page-scroll-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 805;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1050,&app,[&,window,compact] {
+            auto *page=window->findChild<QQuickItem*>("rentalsPageScroll");
+            auto *list=window->findChild<QQuickItem*>("rentalList");
+            auto *panel=window->findChild<QQuickItem*>("rentalRecordsPanel");
+            auto *details=window->findChild<QQuickItem*>("rentalDetailsButton");
+            auto *booking=window->findChild<QQuickItem*>("rentalNewBookingButton");
+            if(!page||!list||!panel||!details||!booking||
+               !page->isVisible()||!list->isVisible()||
+               rentalModel.count()!=2) {
+                qCritical()<<"UX-S1 native Rentals scroller or data absent";
+                app.exit(806);return;
+            }
+            const double maximum=page->property("contentHeight").toDouble()-page->height();
+            if(maximum<90 || panel->height()<340 || list->height()<160 ||
+               page->property("contentY").toDouble()>2) {
+                qCritical()<<"UX-S1 Rentals page cannot reach records"
+                           <<maximum<<panel->height()<<list->height();
+                app.exit(807);return;
+            }
+            booking->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_PageDown);
+            QTest::qWait(120);
+            if(page->property("contentY").toDouble()<50) {
+                qCritical()<<"UX-S1 keyboard PageDown did not reveal records";
+                app.exit(808);return;
+            }
+            page->setProperty("contentY",maximum);
+            QCoreApplication::processEvents();
+            QTest::qWait(100);
+            const QPointF pos=details->mapToItem(page,QPointF(0,0));
+            if(pos.y()<0 || pos.y()+details->height()>page->height()+2) {
+                qCritical()<<"UX-S1 contract details action not reachable"
+                           <<pos<<page->size()<<details->height();
+                app.exit(809);return;
+            }
+            const QString size=compact?"1280x720":"1500x860";
+            const QImage shot=window->grabWindow();
+            if(shot.size()!=QSize(compact?1280:1500,compact?720:860)||
+               !shot.save("ux-s1-rentals-bottom-"+size+".png","PNG")) {
+                qCritical()<<"UX-S1 native bottom-of-page screenshot failed";
+                app.exit(810);return;
+            }
+            QTest::keyClick(window,Qt::Key_PageUp);
+            QTest::qWait(120);
+            if(page->property("contentY").toDouble()>=maximum-30 ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"UX-S1 keyboard PageUp/selection mutation";
+                app.exit(811);return;
+            }
+            QByteArray v,r;
+            if(!readFile(vehicles,&v)||!readFile(rentals,&r)||
+               v!=beforeVehicles||r!=beforeRentals) {
+                qCritical()<<"UX-S1 page scroll modified demo source";
+                app.exit(812);return;
+            }
+            qInfo()<<"UX-S1 real scroll and keyboard PASS"<<size;
+            app.exit(0);
+        });
+        return app.exec();
     }
     if (parser.isSet("rentals-smoke")) {
         auto *window = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
