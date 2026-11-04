@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**LOCAL WORKFLOW QUALITY-OF-LIFE UPDATE (4 Nov 2026):** [Qt Creator permanent source workflow, opt-in fictional CMake preset and batch audit](LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md) remove the need for repeated owner QA ZIP downloads on routine commits. GitHub Desktop Pull → Qt Creator Build/Run the real Qt Quick target; existing CI continues separate cross-platform tests. Zero obsolete tracked CMD/PS1 files found; all four remain for QA. **NEXT physical owner gate** is one latest-source Qt Creator 6.10.2 MinGW, UX-CTRL-002 keyboard/contract, actual scaling and Narrator session, not an extra P7 storage feature. Local runtime not yet executed; formal 45/74 and 70.6%, P7 0/8 unchanged.
+
+---
+
+
 **PRIORITY SHIFT AFTER IMPLEMENTATION | UX-CTRL-002 (4 Nov 2026):** The owner-approved directional-navigation/color/read-only-contract design is **implemented and exact-source hosted Qt CI verified**, [`f273d038`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f273d038be2bce0398241f6e5950f3938a13f6d1) / [run #41815907017](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41815907017): **125/125 on Linux and Windows**, Windows fictional kit 8/8. [Implementation and QA report](UX_CTRL_002_IMPLEMENTATION_AND_NATIVE_VERIFICATION_2026-11-04.md). **NOW PRIORITIZE THE OWNER'S PHYSICAL WINDOWS REVIEW**, including sidebar Enter activation, Overview 3-action route, Fleet inspect, Rentals record Enter read-only dialog/Close/Escape, hover/red danger, compact visual clipping, supported 100/125/150% scaling, Narrator and Qt Creator 6.10.2 MinGW. No dedicated screenshot of open contract dialog in hosted artifact. Fix only reproducible issues with regression tests, then seek separate owner acceptance. P7 D2-D8 data policy, final Fleet imagery, P8 installer and P9 release remain gated. Formal **45/74 and fixed 70.6%, P7 0/8** unchanged. The old "Implement UX-CTRL-002" banner below is superseded as an engineering task, but its owner acceptance gate remains open.
 
 ---

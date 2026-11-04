@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Qt/C++ Windows rental-management application
 
+**New local development workflow (4 November 2026):** [One-time Qt Creator setup, CMake preset and complete Windows script audit](docs/LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md). For everyday changes, use the existing P7 feature branch in GitHub Desktop, pull, then **Build/Run `rental_studio_qtquick_spike`** in the configured Qt 6.10.2 MinGW Qt Creator kit. Do not download a new QA ZIP for every commit. The four existing packaged QA verification scripts are still required by GitHub Actions; no redundant tracked batch file was identified. Actual local MinGW validation and UX-CTRL-002 physical owner acceptance remain OPEN. The older historical compiled-source references below are not the latest checkpoint; follow [LATEST_CHECKPOINT](docs/LATEST_CHECKPOINT.md).
+
+---
+
+
 **Current project audit: 2 November 2026. This is a development project, NOT a commercial release.** [Latest checkpoint](docs/LATEST_CHECKPOINT.md) | [Full current documentation audit](docs/FULL_DOCUMENT_AUDIT_AND_CONTINUITY_2026-11-02.md) | [Roadmap](docs/ROADMAP.md) | [Formal acceptance](docs/P0_P9_PROGRESS_TRANSPARENCY_2026-10-30.md) | [Testing](docs/TESTING.md).
 
 ## Application
