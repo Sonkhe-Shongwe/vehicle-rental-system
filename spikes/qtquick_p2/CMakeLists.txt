@@ -293,6 +293,16 @@ if(BUILD_TESTING)
         rental_studio_ux_ctrl_002_wide
         rental_studio_ux_ctrl_002_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # UX-CTRL-003: real bidirectional and boundary-aware Qt Quick keyboard
+    # navigation across Overview, Fleet and Rentals at both logical sizes.
+    add_test(NAME rental_studio_ux_ctrl_003_wide
+        COMMAND rental_studio_qtquick_spike --ux-ctrl-003-smoke)
+    add_test(NAME rental_studio_ux_ctrl_003_compact
+        COMMAND rental_studio_qtquick_spike --ux-ctrl-003-smoke --compact)
+    set_tests_properties(
+        rental_studio_ux_ctrl_003_wide
+        rental_studio_ux_ctrl_003_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 70)
     # P6-K: purpose-limited native contract detail dialog, true actual dates,
     # hidden-selection guards, modal Escape/focus and no accidental writes.
     add_test(NAME rental_studio_p6_contract_detail_wide

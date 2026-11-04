@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
+
+---
+
+
 **LOCAL WORKFLOW QUALITY-OF-LIFE UPDATE (4 Nov 2026):** [Qt Creator permanent source workflow, opt-in fictional CMake preset and batch audit](LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md) remove the need for repeated owner QA ZIP downloads on routine commits. GitHub Desktop Pull → Qt Creator Build/Run the real Qt Quick target; existing CI continues separate cross-platform tests. Zero obsolete tracked CMD/PS1 files found; all four remain for QA. **NEXT physical owner gate** is one latest-source Qt Creator 6.10.2 MinGW, UX-CTRL-002 keyboard/contract, actual scaling and Narrator session, not an extra P7 storage feature. Local runtime not yet executed; formal 45/74 and 70.6%, P7 0/8 unchanged.
 
 ---

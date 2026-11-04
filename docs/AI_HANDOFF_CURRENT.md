@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
+
+---
+
+
 **LOCAL QT CREATOR CONTINUATION (4 Nov 2026):** [Permanent GitHub Desktop → Qt Creator source/build workflow and script audit](LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md) introduced `CMakePresets.json` with `rental-studio-local`, modern `rental_studio_qtquick_spike` app, fictional-only P7 sandbox and testing enabled. On owner's Windows Qt Creator 6.10.2 MinGW, select the **root CMakeLists.txt** and the preset, then Build/Run after GitHub Desktop Fetch/Pull on **P7 feature** branch. No fresh QA ZIP for routine changes. Repo has only **two tracked .cmd / two .ps1**; all are packaged and exercised in hosted Windows CI, so no deletion. Preset parser checked but owner MinGW local compile/GUI remains NOT TESTED. UX-CTRL-002 source `f273d038` still latest compiled successful app, tested in hosted run 41815907017; formal 45/74, 70.6%, P7 0/8 unchanged; draft stack and main protected.
 
 ---

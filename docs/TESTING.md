@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Verification policy and current evidence
 
+**UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
+
+---
+
+
 **LATEST HOSTED NATIVE VERIFICATION UX-CTRL-002, 4 Nov 2026:** [exact compiled `f273d038`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f273d038be2bce0398241f6e5950f3938a13f6d1) passed [run 41815907017](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41815907017): **125/125 each Ubuntu GCC and hosted Windows MSVC Qt6.8.3**, including actual wide/compact owner directional-navigation tests #61/#62. Windows relocated fictional functional check **8/8**, P2/P4 packaging and PowerShell 5.1 PASS. [Detailed exact-source report](UX_CTRL_002_IMPLEMENTATION_AND_NATIVE_VERIFICATION_2026-11-04.md) documents superseded failed #41813106258 (C++ compile), #41813946359 (QML test-target discovery), #41814762509 (Enter failed to activate Fleet) and successful corrections. Screenshot archive 13314832815 reviewed; **contract-dialog screenshot not captured**, so rendered modal, hover, OS scaling and Narrator remain unverified. Owner Windows Qt Creator 6.10.2 MinGW NOT TESTED. Formal 45/74, 70.6%, P7 0/8 unchanged; older entries below remain chronological history.
 
 ---

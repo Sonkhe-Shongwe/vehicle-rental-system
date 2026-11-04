@@ -399,25 +399,118 @@ ApplicationWindow {
     function handleRentalArrow(event) {
         if (event.modifiers !== Qt.NoModifier)
             return
-        if (event.key === Qt.Key_Up)
-            navigateRentals(-1)
-        else if (event.key === Qt.Key_Down)
-            navigateRentals(1)
-        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
-                 event.key === Qt.Key_Space)
+        if (event.key === Qt.Key_Up) {
+            if (rentalsModel.selectedRow <= 0)
+                focusEnabled(rentalLookupField)
+            else
+                navigateRentals(-1)
+        } else if (event.key === Qt.Key_Down) {
+            if (rentalsModel.count > 0 &&
+                    rentalsModel.selectedRow === rentalsModel.count - 1) {
+                if (!focusEnabled(showContractDetailsButton))
+                    navigateRentals(1)
+            } else
+                navigateRentals(1)
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
+                   event.key === Qt.Key_Space)
             openSelectedRentalDetails(true)
         else
             return
         event.accepted = true
     }
 
-    // Explicit, local focus routes. Never activate a command on arrow movement
-    // or run nearest-pixel focus searches. Inputs keep their native caret keys.
+    // UX-CTRL-003: remembering region focus is distinct from selected C++ IDs.
+    property int lastOverviewQuickFocus: 0
+    property int lastRentalStatusFocus: 0
+    property int lastRentalDueFocus: 0
+    property int lastRentalReturnFocus: 0
+    property int lastRentalActionFocus: 0
+    // A vertical transition must reveal its destination inside Rentals.
+    // No global pixel-distance navigation search is performed.
+    function revealRentalFocus(item) {
+        if (window.workspace !== 2 || !rentalsPageScroll.visible) return
+        const top = item.mapToItem(rentalPageContent,0,0).y
+        const bottom = top + item.height
+        const page = rentalsPageScroll
+        const maxY = Math.max(0,page.contentHeight-page.height)
+        let next = page.contentY
+        if (top < next + 12 || item.height > page.height - 24)
+            next = top - 12
+        else if (bottom > next + page.height - 12)
+            next = bottom - page.height + 12
+        page.contentY = Math.max(0,Math.min(maxY,next))
+    }
+    // Only explicit bounded neighbors are navigated. Text native caret wins.
     function focusEnabled(item) {
         if (!item || !item.visible || !item.enabled)
             return false
         item.forceActiveFocus(Qt.TabFocusReason)
+        revealRentalFocus(item)
         return true
+    }
+    function focusRentalStatus() {
+        return focusEnabled(rentalStatusRepeater.itemAt(lastRentalStatusFocus)) ||
+               focusEnabled(rentalStatusRepeater.itemAt(0))
+    }
+    function focusRentalDue() {
+        return focusEnabled(rentalDueRepeater.itemAt(lastRentalDueFocus)) ||
+               focusEnabled(rentalDueRepeater.itemAt(0))
+    }
+    function focusReturnLookup() {
+        const previous = lastRentalReturnFocus === 1
+            ? returnLookupButton : returnLookupField
+        return focusEnabled(previous) || focusEnabled(returnLookupField)
+    }
+    function focusRentalAction() {
+        const controls = [newBookingButton,returnSelectedButton,
+                          archiveActionButton,deleteArchivedButton]
+        return focusEnabled(controls[lastRentalActionFocus]) ||
+               focusEnabled(newBookingButton)
+    }
+    function rentalActionKey(event,index) {
+        if (event.modifiers !== Qt.NoModifier) return
+        const controls = [newBookingButton,returnSelectedButton,
+                          archiveActionButton,deleteArchivedButton]
+        if (activateFocusedButton(event,controls[index])) return
+        if (event.key === Qt.Key_Left) {
+            if (index === 0) focusSidebar()
+            else {
+                for(let i=index-1;i>=1;--i)
+                    if(focusEnabled(controls[i]))break
+            }
+        } else if (event.key === Qt.Key_Right) {
+            for(let i=Math.max(1,index+1);i<controls.length;++i)
+                if(focusEnabled(controls[i]))break
+        } else if (event.key === Qt.Key_Up) {
+            if(index!==0)focusEnabled(newBookingButton)
+        } else if (event.key === Qt.Key_Down) {
+            if(index===0) {
+                let next = false
+                if(lastRentalActionFocus>0)
+                    next=focusEnabled(controls[lastRentalActionFocus])
+                if(!next)for(let i=1;i<controls.length;++i)
+                    if(focusEnabled(controls[i])){next=true;break}
+                if(!next)focusReturnLookup()
+            } else focusReturnLookup()
+        } else return
+        event.accepted = true
+    }
+    function overviewRecentKey(event,index) {
+        if (event.modifiers !== Qt.NoModifier) return
+        if (activateFocusedButton(event,overviewRecentRepeater.itemAt(index)))
+            return
+        if (event.key === Qt.Key_Up) {
+            if (index===0)
+                focusEnabled([overviewActiveButton,overviewFleetButton,
+                              overviewOverdueAction][lastOverviewQuickFocus])
+            else
+                focusEnabled(overviewRecentRepeater.itemAt(index-1))
+        } else if (event.key === Qt.Key_Down)
+            focusEnabled(overviewRecentRepeater.itemAt(index+1))
+        else if (event.key === Qt.Key_Left)
+            focusSidebar()
+        else return
+        event.accepted = true
     }
     function focusSidebar() {
         return focusEnabled(workspaceItems.itemAt(window.workspace))
@@ -449,6 +542,11 @@ ApplicationWindow {
                           overviewOverdueAction]
         if (activateFocusedButton(event,controls[index]))
             return
+        if (event.key === Qt.Key_Down) {
+            if (focusEnabled(overviewRecentRepeater.itemAt(0)))
+                event.accepted = true
+            return
+        }
         if (event.key === Qt.Key_Left) {
             if (index === 0)
                 focusSidebar()
@@ -472,8 +570,10 @@ ApplicationWindow {
             else focusEnabled(rentalStatusRepeater.itemAt(index-1))
         } else if (event.key === Qt.Key_Right)
             focusEnabled(rentalStatusRepeater.itemAt(index+1))
+        else if (event.key === Qt.Key_Up)
+            focusReturnLookup()
         else if (event.key === Qt.Key_Down)
-            focusEnabled(rentalDueRepeater.itemAt(0))
+            focusRentalDue()
         else return
         event.accepted = true
     }
@@ -488,7 +588,7 @@ ApplicationWindow {
         } else if (event.key === Qt.Key_Right)
             focusEnabled(rentalDueRepeater.itemAt(index+1))
         else if (event.key === Qt.Key_Up)
-            focusEnabled(rentalStatusRepeater.itemAt(0))
+            focusRentalStatus()
         else if (event.key === Qt.Key_Down)
             focusEnabled(rentalLookupField)
         else return
@@ -513,6 +613,9 @@ ApplicationWindow {
             return
         if (event.key === Qt.Key_Down) {
             if (focusFleetCollection())
+                event.accepted = true
+        } else if (event.key === Qt.Key_Up) {
+            if (focusEnabled(search))
                 event.accepted = true
         } else if (event.key === Qt.Key_Right && useGallery) {
             if (focusEnabled(fleetTableToggle))
@@ -690,8 +793,17 @@ ApplicationWindow {
             event.accepted = true
             return
         }
-        if (event.key === Qt.Key_Up) navigateVehicles(-1, 0)
-        else if (event.key === Qt.Key_Down) navigateVehicles(1, 0)
+        if (event.key === Qt.Key_Up) {
+            const view = window.gallery ? galleryView : tableView
+            const selected = fleet.selectedVisibleIndex()
+            const row = selected >= 0 ? selected : Math.max(0,view.currentIndex)
+            const columns = window.gallery
+                ? Math.max(1,Math.round(galleryView.width/galleryView.cellWidth)) : 1
+            if(row < columns)
+                focusEnabled(window.gallery ? fleetGalleryToggle : fleetTableToggle)
+            else
+                navigateVehicles(-1,0)
+        } else if (event.key === Qt.Key_Down) navigateVehicles(1,0)
         else if (window.gallery && event.key === Qt.Key_Left) navigateVehicles(0, -1)
         else if (window.gallery && event.key === Qt.Key_Right) navigateVehicles(0, 1)
         else return
@@ -969,6 +1081,9 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastOverviewQuickFocus = 0
+                            }
                             Keys.onPressed: (event) => window.overviewQuickKey(event,0)
                             Accessible.name: "Review active rentals"
                             onClicked: {
@@ -996,6 +1111,9 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastOverviewQuickFocus = 1
+                            }
                             Keys.onPressed: (event) => window.overviewQuickKey(event,1)
                             Accessible.name: "Open Fleet"
                             onClicked: window.workspace = 1
@@ -1025,6 +1143,9 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                             }
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastOverviewQuickFocus = 2
+                            }
                             Keys.onPressed: (event) => window.overviewQuickKey(event,2)
                             Accessible.name: "Review oldest overdue rental"
                             Accessible.description: "Select the oldest overdue active rental without changing its record"
@@ -1080,12 +1201,14 @@ ApplicationWindow {
                                 Accessible.name: text
                             }
                             Repeater {
+                                id: overviewRecentRepeater
                                 model: rentalsModel.recentActivities
                                 delegate: Button {
                                     required property var modelData
                                     required property int index
                                     objectName: "overviewRecentRow" + index
                                     activeFocusOnTab: true
+                                    Keys.onPressed: (event) => window.overviewRecentKey(event,index)
                                     Layout.fillWidth: true
                                     Layout.minimumHeight: 44
                                     hoverEnabled: true
@@ -1171,10 +1294,11 @@ ApplicationWindow {
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
                                     Keys.onPressed: (event) => {
-                                        if (event.modifiers === Qt.NoModifier &&
-                                            event.key === Qt.Key_Down &&
-                                            !inputMethodComposing &&
-                                            window.focusFleetCollection())
+                                        if (event.modifiers !== Qt.NoModifier ||
+                                                inputMethodComposing) return
+                                        if (event.key === Qt.Key_Down &&
+                                                window.focusEnabled(window.gallery
+                                                  ? fleetGalleryToggle : fleetTableToggle))
                                             event.accepted = true
                                     }
                                 }
@@ -2046,6 +2170,10 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 0
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,0)
                             Accessible.name: "Create a new fictional rental"
                             onClicked: {
                                 window.bookingReceiptNotice = ""
@@ -2283,6 +2411,10 @@ ApplicationWindow {
                             objectName: "rentalReturnButton"
                             text: "Return selected rental"
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 1
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,1)
                             enabled: rentalActions.canReturnSelected
                             Accessible.name: "Return the selected active rental"
                             onClicked: {
@@ -2297,6 +2429,10 @@ ApplicationWindow {
                             objectName: "rentalArchiveButton"
                             text: "Archive returned"
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 2
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,2)
                             enabled: archiveActions.canArchiveSelected
                             Accessible.name: "Archive selected returned rental"
                             onClicked: {
@@ -2311,6 +2447,10 @@ ApplicationWindow {
                             objectName: "rentalDeleteArchivedButton"
                             text: "Delete archived"
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 3
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,3)
                             enabled: archivedDelete.canDeleteSelected
                             Accessible.name: "Permanently delete selected archived fictional rental"
                             Accessible.description: archivedDelete.canDeleteSelected
@@ -2348,12 +2488,41 @@ ApplicationWindow {
                                 window.returnLookupFeedback = ""
                             }
                             onAccepted: window.findActiveReturn()
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalReturnFocus = 0
+                            }
+                            Keys.onPressed: (event) => {
+                                if (event.modifiers !== Qt.NoModifier ||
+                                        inputMethodComposing) return
+                                if (event.key === Qt.Key_Up &&
+                                        window.focusRentalAction())
+                                    event.accepted = true
+                                else if (event.key === Qt.Key_Down &&
+                                         window.focusRentalStatus())
+                                    event.accepted = true
+                            }
                         }
                         Button {
                             id: returnLookupButton
                             objectName: "returnLookupButton"
                             text: "Locate return"
                             activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalReturnFocus = 1
+                            }
+                            Keys.onPressed: (event) => {
+                                if (window.activateFocusedButton(event,returnLookupButton))
+                                    return
+                                if (event.modifiers !== Qt.NoModifier) return
+                                if (event.key === Qt.Key_Left)
+                                    window.focusEnabled(returnLookupField)
+                                else if (event.key === Qt.Key_Up)
+                                    window.focusRentalAction()
+                                else if (event.key === Qt.Key_Down)
+                                    window.focusRentalStatus()
+                                else return
+                                event.accepted = true
+                            }
                             Layout.minimumHeight: 36
                             Accessible.name: "Locate active rental for return"
                             Accessible.description: "Select only. Opens no confirmation and writes nothing."
@@ -2471,6 +2640,9 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     hoverEnabled: true
                                     Keys.onPressed: (event) => window.rentalStatusKey(event,index)
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) window.lastRentalStatusFocus = index
+                                    }
                                     Layout.minimumHeight: 44
                                     Accessible.role: Accessible.RadioButton
                                     Accessible.name: modelData + " rentals"
@@ -2529,6 +2701,9 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     hoverEnabled: true
                                     Keys.onPressed: (event) => window.rentalDueKey(event,index)
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) window.lastRentalDueFocus = index
+                                    }
                                     Layout.minimumHeight: 44
                                     Accessible.role: Accessible.RadioButton
                                     Accessible.name: modelData.label + " rentals"
@@ -2583,12 +2758,13 @@ ApplicationWindow {
                                     onTextEdited: window.rentalLookupFeedback = ""
                                     onAccepted: window.findRentalById()
                                     Keys.onPressed: (event) => {
-                                        // Down exits a single-line field only when it
-                                        // is not composing text; Left/Right stay native.
-                                        if (event.key === Qt.Key_Down &&
-                                                event.modifiers === Qt.NoModifier &&
-                                                !inputMethodComposing &&
-                                                window.enterRentalRecords())
+                                        if (event.modifiers !== Qt.NoModifier ||
+                                                inputMethodComposing) return
+                                        if (event.key === Qt.Key_Up &&
+                                                window.focusRentalDue())
+                                            event.accepted = true
+                                        else if (event.key === Qt.Key_Down &&
+                                                 window.enterRentalRecords())
                                             event.accepted = true
                                     }
                                 }
@@ -2613,8 +2789,11 @@ ApplicationWindow {
                                         if (event.key === Qt.Key_Left) {
                                             rentalLookupField.forceActiveFocus(Qt.TabFocusReason)
                                             event.accepted = true
-                                        } else if (event.key === Qt.Key_Down &&
-                                                   window.enterRentalRecords())
+                                        } else if (event.key === Qt.Key_Up &&
+                                                   window.focusRentalDue())
+                                            event.accepted = true
+                                        else if (event.key === Qt.Key_Down &&
+                                                 window.enterRentalRecords())
                                             event.accepted = true
                                     }
                                     Accessible.name: "Find rental by rental or vehicle ID"
@@ -2762,7 +2941,16 @@ ApplicationWindow {
                                         Accessible.name: text
                                     }
                                     Button {
+                                        id: rentalEmptyReset
                                         objectName: "rentalEmptyReset"
+                                        Keys.onPressed: (event) => {
+                                            if (window.activateFocusedButton(event,rentalEmptyReset))
+                                                return
+                                            if (event.modifiers === Qt.NoModifier &&
+                                                    event.key === Qt.Key_Up &&
+                                                    window.focusEnabled(rentalLookupField))
+                                                event.accepted = true
+                                        }
                                         Layout.alignment: Qt.AlignHCenter
                                         text: "Show all rentals"
                                         visible: rentalsModel.statusFilter !== "All"
@@ -2815,8 +3003,14 @@ ApplicationWindow {
                                     Accessible.name: "View selected rental contract details"
                                     Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
                                     onClicked: window.openSelectedRentalDetails(false)
-                                    Keys.onPressed: (event) =>
-                                        window.activateFocusedButton(event,showContractDetailsButton)
+                                    Keys.onPressed: (event) => {
+                                        if (window.activateFocusedButton(event,showContractDetailsButton))
+                                            return
+                                        if (event.modifiers === Qt.NoModifier &&
+                                                event.key === Qt.Key_Up &&
+                                                window.enterRentalRecords())
+                                            event.accepted = true
+                                    }
                                 }
                             }
                         }

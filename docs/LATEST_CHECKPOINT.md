@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Latest verified checkpoint
 
+**UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
+
+---
+
+
 **LOCAL DEVELOPMENT WORKFLOW ENABLED (4 Nov 2026):** Added a cross-kit Qt Creator [CMake preset and script audit](LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md). GitHub Desktop pulls the active `feature/p7-sqlite-sandbox-20261102` checkout; Qt Creator uses its installed Qt6.10.2 MinGW kit to build/run `rental_studio_qtquick_spike`. The preset enables CMake `BUILD_QTQUICK_P2_SPIKE=ON`, `BUILD_P7_SQLITE_SANDBOX=ON` (generated-fictional only), and `BUILD_TESTING=ON` in Git-ignored `build/rental-studio-local`. Tracked-script audit found only **two CMD and two PS1, all used in CI**, so **no scripts deleted**. This is untested on the owner's PC; last compiled app source is still [`f273d038`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f273d038be2bce0398241f6e5950f3938a13f6d1) / [run 41815907017](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41815907017). Physical keyboard/contract/Narrator/scale/MinGW gate OPEN; **45/74, 70.6%, P7 0/8** unchanged.
 
 ---
