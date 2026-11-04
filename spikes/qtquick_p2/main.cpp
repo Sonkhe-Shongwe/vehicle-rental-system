@@ -4800,10 +4800,10 @@ int main(int argc, char *argv[]) {
             auto *status=find(find,root,"rentalDetailStatus");
             auto *close=find(find,root,"rentalDetailsClose");
             if(!dialog||!start||!expected||!actual||!total||!status||!close||
-               start->property("text").toString()!="Start date: 2026-10-28" ||
-               expected->property("text").toString()!="Expected return: 2026-10-30" ||
-               actual->property("text").toString()!="Actual return: Not returned"||
-               total->property("text").toString()!="Booked contract total: R 1400.00"||
+               start->property("text").toString()!="2026-10-28" ||
+               expected->property("text").toString()!="2026-10-30" ||
+               actual->property("text").toString()!="Not returned"||
+               total->property("text").toString()!="R 1,400.00"||
                !status->property("text").toString().contains("Active") ||
                !close->hasActiveFocus()) {
                 qCritical()<<"P6-K active modal dates/rate/keyboard focus missing"
@@ -4850,7 +4850,7 @@ int main(int argc, char *argv[]) {
             actual=find(find,root,"rentalDetailActual");
             status=find(find,root,"rentalDetailStatus");
             if(!actual||!status ||
-               actual->property("text").toString()!="Actual return: 2026-10-22"||
+               actual->property("text").toString()!="2026-10-22"||
                !status->property("text").toString().contains("Returned")) {
                 qCritical()<<"P6-K returned contract actual date/status incorrect";
                 app.exit(569);return;
