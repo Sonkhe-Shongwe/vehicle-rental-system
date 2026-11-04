@@ -7,13 +7,14 @@ Rectangle {
     objectName: "sharedFocusFrame"
     property bool keyboardFocused: false
     property bool selected: false
+    property bool hovered: false
     property color idleSurface: colors.surface
     property int cornerRadius: 12
     readonly property int selectionFadeMs: motionPolicy.selectionFadeMs
 
     DesignTokens { id: colors }
     radius: cornerRadius
-    color: selected ? colors.mint : idleSurface
+    color: selected ? colors.mint : hovered ? colors.neutralHover : idleSurface
     border.width: keyboardFocused ? colors.focusWidth :
                   selected ? colors.selectedWidth : 1
     border.color: keyboardFocused ? colors.navy :

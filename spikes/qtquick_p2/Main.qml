@@ -396,9 +396,111 @@ ApplicationWindow {
             navigateRentals(-1)
         else if (event.key === Qt.Key_Down)
             navigateRentals(1)
+        else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
+                 event.key === Qt.Key_Space)
+            openSelectedRentalDetails(true)
         else
             return
         event.accepted = true
+    }
+
+    // Explicit, local focus routes. Never activate a command on arrow movement
+    // or run nearest-pixel focus searches. Inputs keep their native caret keys.
+    function focusEnabled(item) {
+        if (!item || !item.visible || !item.enabled)
+            return false
+        item.forceActiveFocus(Qt.TabFocusReason)
+        return true
+    }
+    function focusSidebar() {
+        return focusEnabled(workspaceItems.itemAt(window.workspace))
+    }
+    function enterWorkspaceContent(index) {
+        if (index !== window.workspace)
+            return false
+        if (index === 0)
+            return focusEnabled(overviewActiveButton)
+        if (index === 1)
+            return focusEnabled(search)
+        if (index === 2)
+            return focusEnabled(rentalStatusRepeater.itemAt(0))
+        return false // Lab is a separate opt-in surface with its own focus.
+    }
+    function overviewQuickKey(event, index) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        const controls = [overviewActiveButton, overviewFleetButton,
+                          overviewOverdueAction]
+        if (event.key === Qt.Key_Left) {
+            if (index === 0)
+                focusSidebar()
+            else {
+                for (let i=index-1; i>=0; --i)
+                    if (focusEnabled(controls[i])) break
+            }
+        } else if (event.key === Qt.Key_Right) {
+            for (let i=index+1; i<controls.length; ++i)
+                if (focusEnabled(controls[i])) break
+        } else return
+        event.accepted = true
+    }
+    function rentalStatusKey(event, index) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Left) {
+            if (index === 0) focusSidebar()
+            else focusEnabled(rentalStatusRepeater.itemAt(index-1))
+        } else if (event.key === Qt.Key_Right)
+            focusEnabled(rentalStatusRepeater.itemAt(index+1))
+        else if (event.key === Qt.Key_Down)
+            focusEnabled(rentalDueRepeater.itemAt(0))
+        else return
+        event.accepted = true
+    }
+    function rentalDueKey(event, index) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Left) {
+            if (index === 0) focusSidebar()
+            else focusEnabled(rentalDueRepeater.itemAt(index-1))
+        } else if (event.key === Qt.Key_Right)
+            focusEnabled(rentalDueRepeater.itemAt(index+1))
+        else if (event.key === Qt.Key_Up)
+            focusEnabled(rentalStatusRepeater.itemAt(0))
+        else if (event.key === Qt.Key_Down)
+            focusEnabled(rentalLookupField)
+        else return
+        event.accepted = true
+    }
+    function enterRentalRecords() {
+        if (!rentalsModel.snapshotAvailable)
+            return false
+        if (rentalsModel.count === 0)
+            return focusEnabled(rentalEmptyReset)
+        let row = rentalsModel.selectedRow
+        if (row < 0) {
+            if (!rentalsModel.selectVisibleRow(0))
+                return false
+            row = 0
+        }
+        rentalList.currentIndex = row
+        rentalList.positionViewAtIndex(row, ListView.Contain)
+        return focusEnabled(rentalList)
+    }
+    property bool contractDetailsFromRow: false
+    property string contractDetailsOpenedId: ""
+    function openSelectedRentalDetails(fromRow) {
+        if (!rentalsModel.snapshotAvailable ||
+                !rentalsModel.selectedContract.rentalId)
+            return false
+        window.contractDetailsOpenedId = rentalsModel.selectedRentalId
+        window.contractDetailsFromRow = fromRow
+        contractDetailsDialog.open()
+        return true
+    }
+    function revokeOpenContractDetails() {
+        if (contractDetailsDialog.visible)
+            contractDetailsDialog.close()
     }
 
     // A deliberate lookup can reveal an ID hidden by the current filter.
@@ -468,6 +570,9 @@ ApplicationWindow {
     Connections {
         target: rentalsModel
         function onSelectionChanged() {
+            if (contractDetailsDialog.visible &&
+                    rentalsModel.selectedRentalId !== window.contractDetailsOpenedId)
+                window.revokeOpenContractDetails()
             // Lookup feedback describes the result of a specific deliberate
             // selection. Pointer, keyboard, or domain navigation elsewhere
             // must not keep claiming an older record is selected.
@@ -492,6 +597,8 @@ ApplicationWindow {
         // A clock rollover or any authoritative model refresh can alter the
         // visible contract details without emitting selectionChanged.
         function onModelReset() {
+            // Never leave the old read-only modal showing stale money or status.
+            window.revokeOpenContractDetails()
             // A reset may preserve selected ID while changing its state.
             // Neither lookup's earlier success/miss is current afterward.
             window.rentalLookupFeedback = ""
@@ -507,6 +614,8 @@ ApplicationWindow {
             Qt.callLater(window.syncCurrentRental)
         }
         function onSnapshotAvailabilityChanged() {
+            if (!rentalsModel.snapshotAvailable)
+                window.revokeOpenContractDetails()
             // A failed read leaves a last-known selection buffered but no
             // verified record. Never retain a misleading "Selected" receipt.
             window.rentalLookupFeedback = ""
@@ -521,6 +630,16 @@ ApplicationWindow {
         // text-input cursor keys or native ComboBox arrow controls.
         if (event.modifiers !== Qt.NoModifier)
             return
+        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter ||
+                 event.key === Qt.Key_Space) {
+            const view = window.gallery ? galleryView : tableView
+            if (view.count > 0 && view.currentItem && view.currentItem.vehicleId)
+                fleet.selectById(view.currentItem.vehicleId)
+            else if (view.count > 0)
+                navigateVehicles(0,0)
+            event.accepted = true
+            return
+        }
         if (event.key === Qt.Key_Up) navigateVehicles(-1, 0)
         else if (event.key === Qt.Key_Down) navigateVehicles(1, 0)
         else if (window.gallery && event.key === Qt.Key_Left) navigateVehicles(0, -1)
@@ -621,12 +740,7 @@ ApplicationWindow {
                         currentWorkspace: window.workspace === index
                         workspaceItems: workspaceItems
                         onClicked: window.workspace = index
-                        onEnterContent: {
-                            window.workspace = 1
-                            Qt.callLater(function() {
-                                search.forceActiveFocus(Qt.TabFocusReason)
-                            })
-                        }
+                        onEnterContent: window.enterWorkspaceContent(index)
                     }
                 }
                 Item { Layout.fillHeight: true }
@@ -776,44 +890,7 @@ ApplicationWindow {
                                     Accessible.name: text
                                 }
                                 Item { Layout.fillWidth: true }
-                                Button {
-                                    id: overviewOverdueAction
-                                    objectName: "overviewReviewOverdue"
-                                    text: "Review overdue"
-                                    Layout.minimumHeight: 44
-                                    enabled: rentalsModel.oldestOverdueRentalId !== ""
-                                    hoverEnabled: true
-                                    background: Rectangle {
-                                        radius: 8
-                                        color: overviewOverdueAction.enabled
-                                            ? (overviewOverdueAction.hovered ? mint : "#FFFFFF")
-                                            : "#E6EAEE"
-                                        border.color: overviewOverdueAction.activeFocus ? navy : teal
-                                        border.width: overviewOverdueAction.activeFocus ? 3 : 1
-                                    }
-                                    contentItem: Text {
-                                        text: overviewOverdueAction.text
-                                        color: overviewOverdueAction.enabled ? teal : ink
-                                        font.bold: true
-                                        verticalAlignment: Text.AlignVCenter
-                                        horizontalAlignment: Text.AlignHCenter
-                                    }
-                                    activeFocusOnTab: true
-                                    Accessible.name: "Review oldest overdue rental"
-                                    Accessible.description: "Select the oldest overdue active rental without changing its record"
-                                    onClicked: {
-                                        if (!rentalsModel.selectOldestOverdue())
-                                            return
-                                        window.workspace = 2
-                                        Qt.callLater(function() {
-                                            if (window.workspace !== 2)
-                                                return
-                                            rentalList.currentIndex = rentalsModel.selectedRow
-                                            rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
-                                            rentalList.forceActiveFocus(Qt.TabFocusReason)
-                                        })
-                                    }
-                                }
+
                             }
                         }
                     }
@@ -841,6 +918,7 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             activeFocusOnTab: true
+                            Keys.onPressed: (event) => window.overviewQuickKey(event,0)
                             Accessible.name: "Review active rentals"
                             onClicked: {
                                 rentalsModel.statusFilter = "Active"
@@ -866,8 +944,48 @@ ApplicationWindow {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             activeFocusOnTab: true
+                            Keys.onPressed: (event) => window.overviewQuickKey(event,1)
                             Accessible.name: "Open Fleet"
                             onClicked: window.workspace = 1
+                        }
+                        Button {
+                            id: overviewOverdueAction
+                            objectName: "overviewReviewOverdue"
+                            text: "Review overdue"
+                            Layout.minimumHeight: 44
+                            enabled: rentalsModel.oldestOverdueRentalId !== ""
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewOverdueAction.enabled
+                                    ? (overviewOverdueAction.hovered ? mint : "#FFFFFF")
+                                    : "#E6EAEE"
+                                border.color: overviewOverdueAction.activeFocus ? navy : teal
+                                border.width: overviewOverdueAction.activeFocus ? 3 : 1
+                            }
+                            contentItem: Text {
+                                text: overviewOverdueAction.text
+                                color: overviewOverdueAction.enabled ? teal : ink
+                                font.bold: true
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                            activeFocusOnTab: true
+                            Keys.onPressed: (event) => window.overviewQuickKey(event,2)
+                            Accessible.name: "Review oldest overdue rental"
+                            Accessible.description: "Select the oldest overdue active rental without changing its record"
+                            onClicked: {
+                                if (!rentalsModel.selectOldestOverdue())
+                                    return
+                                window.workspace = 2
+                                Qt.callLater(function() {
+                                    if (window.workspace !== 2)
+                                        return
+                                    rentalList.currentIndex = rentalsModel.selectedRow
+                                    rentalList.positionViewAtIndex(rentalsModel.selectedRow, ListView.Contain)
+                                    rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                })
+                            }
                         }
                     }
                     Label {
@@ -1238,12 +1356,14 @@ ApplicationWindow {
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
                                                     + (available ? ", available" : ", rented")
+                                    hoverEnabled: true
                                     onClicked: {
                                         galleryView.currentIndex = index
                                         fleet.selectById(vehicleId)
                                         galleryView.forceActiveFocus(Qt.MouseFocusReason)
                                     }
                                     background: FocusFrame {
+                                        hovered: vehicleCard.hovered
                                         objectName: "fleetGalleryFocus"
                                         keyboardFocused: galleryView.activeFocus &&
                                                          galleryView.currentIndex === vehicleCard.index
@@ -1736,7 +1856,7 @@ ApplicationWindow {
                                       : "This vehicle is currently rented"
                                 onClicked: window.bookSelectedFleetVehicle()
                             }
-                            Button {
+                            DangerButton {
                                 id: removeSelectedFleetButton
                                 objectName: "fleetRemoveSelectedButton"
                                 Layout.fillWidth: true
@@ -2117,7 +2237,7 @@ ApplicationWindow {
                                 archiveConfirmation.open()
                             }
                         }
-                        Button {
+                        DangerButton {
                             id: deleteArchivedButton
                             objectName: "rentalDeleteArchivedButton"
                             text: "Delete archived"
@@ -2273,12 +2393,16 @@ ApplicationWindow {
                                 // History remains a combined view; Returned
                                 // and Archived have distinct C++ lifecycle filters.
                                 model: ["All", "Active", "Returned", "Archived", "History"]
+                                id: rentalStatusRepeater
                                 delegate: Button {
                                     required property string modelData
+                                    required property int index
                                     objectName: "rentalFilter" + modelData
                                     text: modelData
                                     activeFocusOnTab: true
-                                    Layout.minimumHeight: 36
+                                    hoverEnabled: true
+                                    Keys.onPressed: (event) => window.rentalStatusKey(event,index)
+                                    Layout.minimumHeight: 44
                                     Accessible.role: Accessible.RadioButton
                                     Accessible.name: modelData + " rentals"
                                     Accessible.checkable: true
@@ -2287,7 +2411,10 @@ ApplicationWindow {
                                     onClicked: rentalsModel.statusFilter = modelData
                                     background: Rectangle {
                                         radius: 8
-                                        color: rentalsModel.statusFilter === parent.modelData ? navy : ice
+                                        color: rentalsModel.statusFilter === parent.modelData ? navy :
+                                               parent.hovered ? designTokens.neutralHover : ice
+                                        border.width: parent.activeFocus ? designTokens.focusWidth : 0
+                                        border.color: navy
                                     }
                                     contentItem: Text {
                                         text: parent.text
@@ -2324,12 +2451,16 @@ ApplicationWindow {
                                     { value: "Overdue", label: "Overdue" },
                                     { value: "DueToday", label: "Due today" }
                                 ]
+                                id: rentalDueRepeater
                                 delegate: Button {
                                     required property var modelData
+                                    required property int index
                                     objectName: "rentalFilter" + modelData.value
                                     text: modelData.label
                                     activeFocusOnTab: true
-                                    Layout.minimumHeight: 36
+                                    hoverEnabled: true
+                                    Keys.onPressed: (event) => window.rentalDueKey(event,index)
+                                    Layout.minimumHeight: 44
                                     Accessible.role: Accessible.RadioButton
                                     Accessible.name: modelData.label + " rentals"
                                     Accessible.checkable: true
@@ -2338,7 +2469,10 @@ ApplicationWindow {
                                     onClicked: rentalsModel.statusFilter = modelData.value
                                     background: Rectangle {
                                         radius: 8
-                                        color: rentalsModel.statusFilter === parent.modelData.value ? navy : ice
+                                        color: rentalsModel.statusFilter === parent.modelData.value ? navy :
+                                               parent.hovered ? designTokens.neutralHover : ice
+                                        border.width: parent.activeFocus ? designTokens.focusWidth : 0
+                                        border.color: navy
                                     }
                                     contentItem: Text {
                                         text: parent.text
@@ -2379,12 +2513,31 @@ ApplicationWindow {
                                     Layout.minimumWidth: 150
                                     onTextEdited: window.rentalLookupFeedback = ""
                                     onAccepted: window.findRentalById()
+                                    Keys.onPressed: (event) => {
+                                        // Down exits a single-line field only when it
+                                        // is not composing text; Left/Right stay native.
+                                        if (event.key === Qt.Key_Down &&
+                                                event.modifiers === Qt.NoModifier &&
+                                                !inputMethodComposing &&
+                                                window.enterRentalRecords())
+                                            event.accepted = true
+                                    }
                                 }
                                 Button {
                                     objectName: "rentalLookupButton"
                                     text: "Find rental"
                                     activeFocusOnTab: true
-                                    Layout.minimumHeight: 40
+                                    Layout.minimumHeight: 44
+                                    hoverEnabled: true
+                                    Keys.onPressed: (event) => {
+                                        if (event.modifiers !== Qt.NoModifier) return
+                                        if (event.key === Qt.Key_Left) {
+                                            rentalLookupField.forceActiveFocus(Qt.TabFocusReason)
+                                            event.accepted = true
+                                        } else if (event.key === Qt.Key_Down &&
+                                                   window.enterRentalRecords())
+                                            event.accepted = true
+                                    }
                                     Accessible.name: "Find rental by rental or vehicle ID"
                                     onClicked: window.findRentalById()
                                 }
@@ -2452,6 +2605,7 @@ ApplicationWindow {
                                     // The ListView is the single keyboard Tab stop; arrow keys
                                     // select records and rows remain pointer-clickable.
                                     activeFocusOnTab: false
+                                    hoverEnabled: true
                                     // Include all the visible record context and selection
                                     // in one spoken name; never expose customer PII here.
                                     Accessible.name: (rentalRow.rentalId === rentalsModel.selectedRentalId
@@ -2462,6 +2616,7 @@ ApplicationWindow {
                                                      ", total R " + Number(total).toFixed(2)
                                     onClicked: rentalsModel.selectById(rentalId)
                                     background: FocusFrame {
+                                        hovered: rentalRow.hovered
                                         objectName: "rentalRowFocus"
                                         cornerRadius: 10
                                         idleSurface: designTokens.ice
@@ -2553,12 +2708,12 @@ ApplicationWindow {
                                     id: showContractDetailsButton
                                     objectName: "rentalDetailsButton"
                                     text: "View contract details"
-                                    Layout.minimumHeight: 36
+                                    Layout.minimumHeight: 44
                                     activeFocusOnTab: true
                                     enabled: rentalsModel.selectedContract.rentalId !== undefined
                                     Accessible.name: "View selected rental contract details"
                                     Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
-                                    onClicked: contractDetailsDialog.open()
+                                    onClicked: window.openSelectedRentalDetails(false)
                                 }
                             }
                         }

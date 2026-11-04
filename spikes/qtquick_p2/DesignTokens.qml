@@ -12,6 +12,16 @@ QtObject {
     readonly property color ink: "#5F6F82"
     readonly property color border: "#D8E2E8"
     readonly property color rented: "#1D4ED8"
+    // Owner-approved UX-CTRL-002 semantic states, not a new competing theme.
+    readonly property color primaryHover: "#0C625C"
+    readonly property color warningSurface: "#FFF2D5"
+    readonly property color warningInk: "#965A0A"
+    readonly property color danger: "#B42318"
+    readonly property color dangerHover: "#912018"
+    readonly property color dangerSoft: "#FEECEB"
+    readonly property color neutralHover: "#DCE8EF"
+    readonly property color disabledSurface: "#E6EAEE"
+    readonly property color disabledInk: "#6B7580"
     readonly property int focusWidth: 3
     readonly property int selectedWidth: 2
     readonly property int minimumTouchTarget: 44

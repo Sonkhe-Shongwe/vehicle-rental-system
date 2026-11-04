@@ -86,7 +86,7 @@ Dialog {
             objectName: "fleetRemoveReviewWarning"
             visible: removeDialog.reviewInvalidated
             Layout.fillWidth: true
-            color: "#9B3E24"
+            color: "#B42318"
             text: removeDialog.reviewInvalidationReason +
                   " Close and reopen to review this removal."
             wrapMode: Text.WordWrap
@@ -111,7 +111,7 @@ Dialog {
                 onClicked: removeDialog.close()
             }
             Item { Layout.fillWidth: true }
-            Button {
+            DangerButton {
                 objectName: "fleetRemoveConfirm"
                 text: "Remove vehicle"
                 activeFocusOnTab: true

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 // Native Button retains Enter/Space activation, Tab order and accessibility.
-// Group-local Up/Down and Fleet Right are the only additional key mappings.
+// Group-local arrows move focus; Enter/Space activates the native Button.
 Button {
     id: nav
     required property string modelData
@@ -15,13 +15,14 @@ Button {
     objectName: "workspaceNav" + modelData
     text: modelData
     activeFocusOnTab: true
+    hoverEnabled: true
     // Workspace choices are mutually exclusive; expose active state without
     // changing native Button activation or the existing C++ workspace routing.
     Accessible.role: Accessible.RadioButton
     Accessible.name: modelData + " workspace"
     Accessible.checkable: true
     Accessible.checked: nav.currentWorkspace
-    Accessible.description: "Use Up and Down to navigate workspace names"
+    Accessible.description: "Up and Down focus workspace names; Enter activates. Right enters the active workspace."
     Keys.onPressed: (event) => {
         if (event.modifiers !== Qt.NoModifier || !nav.activeFocus)
             return
@@ -31,7 +32,7 @@ Button {
         else if (event.key === Qt.Key_Down &&
                  nav.index < (nav.workspaceItems ? nav.workspaceItems.count - 1 : 2))
             target = nav.index + 1
-        else if (event.key === Qt.Key_Right && nav.index === 1) {
+        else if (event.key === Qt.Key_Right && nav.currentWorkspace) {
             nav.enterContent()
             event.accepted = true
             return
@@ -46,10 +47,11 @@ Button {
     }
     background: Rectangle {
         radius: 10
-        color: nav.currentWorkspace ? colors.navy : "transparent"
+        color: nav.currentWorkspace ? colors.navy :
+               nav.hovered ? colors.neutralHover : "transparent"
         // White-on-Navy focus avoids confusing the selected workspace
         // state with keyboard focus; unfocused active workspace remains Navy.
-        border.width: nav.activeFocus ? 2 : 0
+        border.width: nav.activeFocus ? colors.focusWidth : 0
         border.color: nav.currentWorkspace ? "white" : colors.navy
     }
     contentItem: Text {

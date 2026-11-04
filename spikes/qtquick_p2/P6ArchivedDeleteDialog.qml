@@ -87,7 +87,7 @@ Dialog {
             Layout.fillWidth: true
             text: deleteDialog.reviewInvalidationReason +
                   " Close and reopen to review this deletion."
-            color: "#9B3E24"
+            color: "#B42318"
             wrapMode: Text.WordWrap
             Accessible.name: text
         }
@@ -110,7 +110,7 @@ Dialog {
                 onClicked: deleteDialog.close()
             }
             Item { Layout.fillWidth: true }
-            Button {
+            DangerButton {
                 objectName: "rentalDeleteConfirm"
                 text: "Delete archived record"
                 activeFocusOnTab: true
