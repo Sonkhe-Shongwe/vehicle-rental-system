@@ -14,8 +14,8 @@ bool safeId(const QString &id) {
     static const QRegularExpression pattern(QStringLiteral("^[CM][0-9]{3,8}$"));
     return pattern.match(id).hasMatch();
 }
-QString seed(const QString &id,const QPair<QString,QString> &identity) {
-    if(!id.startsWith(QLatin1Char('C')))return {};
+QString seed(const QString &id,const QPair<QString,QString> &identity,
+             bool portfolioShowcase) {
     const QString make=identity.first.trimmed();
     const QString model=identity.second.trimmed();
     // Explicit representative model association, never an ID-number alias.
@@ -29,6 +29,7 @@ QString seed(const QString &id,const QPair<QString,QString> &identity) {
     if(make.compare(QStringLiteral("Hyundai"),Qt::CaseInsensitive)==0 &&
        model.compare(QStringLiteral("i20"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/hyundai_i20.jpg");
+    if(!portfolioShowcase)return {};
     // Portfolio photos are embedded, rights-audited representatives.
     // When not downloaded, the existing offline silhouette is used.
     static const QHash<QString,QString> portfolioImages=[] {
@@ -85,7 +86,7 @@ bool FleetPhotoStore::hasLiveVehicle(const QString &id) const {
 }
 QString FleetPhotoStore::seededResource(const QString &id) const {
     if(!hasLiveVehicle(id))return {};
-    return seed(id,m_vehicleIdentityLookup(id));
+    return seed(id,m_vehicleIdentityLookup(id),m_portfolioShowcase);
 }
 QString FleetPhotoStore::imagePath(const QString &id) const {
     return QDir(m_root).filePath(QStringLiteral("fleet_images/%1.png").arg(id));

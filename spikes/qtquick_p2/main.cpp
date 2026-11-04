@@ -826,6 +826,7 @@ int main(int argc, char *argv[]) {
     // The default demo root is disposed on process exit. Domain records are
     // not modified to contain arbitrary file paths or customer media.
     FleetPhotoStore fleetPhotos(dataDirectory);
+    fleetPhotos.setPortfolioShowcase(portfolioShowcase);
     // C++ RentalSystem is the identity authority. No default photo is
     // supplied for an unknown ID, a stale ID, or a mismatched vehicle model.
     const FleetPhotoStore::IdentityLookup livePhotoIdentity=[&system](

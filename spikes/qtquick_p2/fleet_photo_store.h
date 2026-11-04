@@ -19,6 +19,9 @@ public:
     using IdentityLookup = std::function<QPair<QString,QString>(const QString &)>;
     void setVehicleIdentityLookup(IdentityLookup lookup);
     bool hasStaged() const { return !m_staged.isNull(); }
+    // The legacy 5-vehicle native checks keep their original no-bike-photo
+    // baseline. Only the 100-vehicle showcase opts into CC0 representatives.
+    void setPortfolioShowcase(bool enabled) { m_portfolioShowcase=enabled; }
     QString feedback() const { return m_feedback; }
     int revision() const { return m_revision; }
     Q_INVOKABLE bool chooseFile(const QUrl &file);
@@ -52,6 +55,7 @@ private:
     QImage m_staged;
     int m_revision=0;
     bool m_replacementEnabled=false;
+    bool m_portfolioShowcase=false;
 };
 
 class FleetPhotoProvider final : public QQuickImageProvider {

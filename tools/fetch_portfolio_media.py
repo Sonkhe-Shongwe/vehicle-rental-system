@@ -102,6 +102,8 @@ def main():
             (page or {}).get("title", title).replace(" ", "_"), safe=":_()-'.")
         remote = info.get("thumburl") or info.get("url", "")
         if not remote.startswith("https://upload.wikimedia.org/"):
+            print("Commons image URL shape:", item["slug"],
+                  repr(remote[:280]), "imageinfo keys:", sorted(info.keys()), flush=True)
             failures.append((item["slug"], "non-Wikimedia asset URL"))
             continue
         try:
