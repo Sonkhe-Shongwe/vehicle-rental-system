@@ -40,9 +40,13 @@ RentalReturnController::RentalReturnController(
             &RentalReturnController::stateChanged);
     connect(&m_rentals, &QAbstractItemModel::modelReset, this,
             &RentalReturnController::stateChanged);
+    connect(&m_rentals, &RentalListModel::snapshotAvailabilityChanged, this,
+            &RentalReturnController::stateChanged);
 }
 
 bool RentalReturnController::canReturnSelected() const {
+    if (!m_rentals.snapshotAvailable())
+        return false;
     const QString id = m_rentals.selectedRentalId();
     if (id.isEmpty() || m_rentals.selectedRow() < 0)
         return false;
@@ -64,6 +68,13 @@ bool RentalReturnController::returnSelectedFor(const QString &expectedRentalId) 
 }
 
 bool RentalReturnController::returnSelected() {
+    if (!m_rentals.snapshotAvailable()) {
+        m_lastMessage = QStringLiteral(
+            "Rental data unavailable. Retry the read before returning.");
+        emit stateChanged();
+        emit returnRejected(RentalReturnError::MissingRental);
+        return false;
+    }
     // The controller never acts on a stale or invisible selection.
     const QString id = m_rentals.selectedRentalId();
     const RentalReturnResult result =

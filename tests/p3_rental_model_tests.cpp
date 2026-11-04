@@ -461,6 +461,79 @@ int main(int argc, char **argv) {
               "deleted selected rental revokes details after authoritative refresh");
     }
 
+    // UX-S11: failed provider reads retain their known-good buffer, but
+    // neither public Qt roles nor direct C++ navigation may treat it as
+    // verified. Recovery restores the exact selected contract read-only.
+    {
+        RentalSystem recoveredDomain(disposable.path());
+        RentalReadService recoveredRead(recoveredDomain);
+        bool failProvider=false;
+        RentalListModel guarded([&]() -> std::optional<QList<RentalRecordSummary>> {
+            if(failProvider)return std::nullopt;
+            return recoveredRead.records();
+        });
+        int resets=0, availabilitySignals=0, detailSignals=0, metricSignals=0;
+        QObject::connect(&guarded,&QAbstractItemModel::modelReset,
+                         [&]{++resets;});
+        QObject::connect(&guarded,&RentalListModel::snapshotAvailabilityChanged,
+                         [&]{++availabilitySignals;});
+        QObject::connect(&guarded,&RentalListModel::selectedContractChanged,
+                         [&]{++detailSignals;});
+        QObject::connect(&guarded,&RentalListModel::metricsChanged,
+                         [&]{++metricSignals;});
+        check(guarded.snapshotAvailable() && guarded.count()==1 &&
+              guarded.selectById("R001") &&
+              guarded.selectedContract().value("rentalId")=="R001" &&
+              guarded.data(guarded.index(0,0),
+                           RentalListModel::RentalIdRole)=="R001",
+              "baseline verified fictional return receipt");
+        const auto originalSelection=guarded.selectedRentalId();
+        const auto originalCount=guarded.count();
+        const auto fleetBytes=readBytes(vehiclesPath);
+        const auto rentalBytes=readBytes(rentalsPath);
+        const int initialDetails=detailSignals;
+        failProvider=true;
+        guarded.refresh();
+        check(!guarded.snapshotAvailable() &&
+              guarded.count()==originalCount &&
+              guarded.selectedRentalId()==originalSelection &&
+              guarded.statusFilter()=="All" &&
+              guarded.selectedContract().isEmpty() &&
+              guarded.recentActivities().isEmpty() &&
+              guarded.oldestOverdueRentalId().isEmpty() &&
+              !guarded.data(guarded.index(0,0),
+                            RentalListModel::RentalIdRole).isValid() &&
+              !guarded.selectById("R001") &&
+              !guarded.selectVisibleRow(0) &&
+              !guarded.locateById("R001") &&
+              !guarded.locateActiveReturn("R001") &&
+              !guarded.selectOldestOverdue() &&
+              guarded.selectedRentalId()==originalSelection &&
+              availabilitySignals==1 && detailSignals==initialDetails+1 &&
+              resets==0 && metricSignals==0 &&
+              readBytes(vehiclesPath)==fleetBytes &&
+              readBytes(rentalsPath)==rentalBytes,
+              "failed read hides retained roles/details and blocks all lookup routes without writes");
+        guarded.refresh();
+        check(availabilitySignals==1 && detailSignals==initialDetails+1 &&
+              resets==0 && guarded.count()==originalCount,
+              "repeated failed reads never emit false resets or empty database");
+        failProvider=false;
+        guarded.refresh();
+        check(guarded.snapshotAvailable() && guarded.count()==originalCount &&
+              guarded.selectedRentalId()==originalSelection &&
+              guarded.selectedContract().value("rentalId")=="R001" &&
+              guarded.data(guarded.index(0,0),
+                           RentalListModel::RentalIdRole)=="R001" &&
+              guarded.selectById("R001") &&
+              guarded.locateById("r001") &&
+              availabilitySignals==2 && resets==1 &&
+              metricSignals==1 &&
+              readBytes(vehiclesPath)==fleetBytes &&
+              readBytes(rentalsPath)==rentalBytes,
+              "successful retry restores verified roles, navigation and no-write persistence");
+    }
+
     {
         RentalSystem reopened(disposable.path());
         RentalReadService service(reopened);

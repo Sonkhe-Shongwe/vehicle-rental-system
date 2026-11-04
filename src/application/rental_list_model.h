@@ -20,7 +20,9 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(QString selectedRentalId READ selectedRentalId NOTIFY selectionChanged)
     Q_PROPERTY(int selectedRow READ selectedRow NOTIFY selectionChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
-    // False means the last provider read failed; retained figures may be stale.
+    // False means the last provider read failed. Buffered rows/counts stay
+    // intact for recovery, but role data, contract details and navigation are
+    // denied until a successful new read.
     Q_PROPERTY(bool snapshotAvailable READ snapshotAvailable NOTIFY snapshotAvailabilityChanged)
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
     // Derived from the complete C++ snapshot, never the filtered Rentals view.

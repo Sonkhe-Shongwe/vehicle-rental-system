@@ -69,6 +69,43 @@ int main(int argc, char **argv) {
           "no selection cannot return, refresh or write");
     check(bytes(ledgerFile)==originalLedger, "empty selection strictly read-only");
 
+    // UX-S11: the selected ID survives a provider failure internally,
+    // but Return is disabled and the domain command must not be attempted.
+    {
+        bool refuse=false;
+        RentalListModel stale([&]() -> std::optional<QList<RentalRecordSummary>> {
+            if(refuse)return std::nullopt;
+            return read.records();
+        });
+        int guardRefresh=0,guardRejected=0,guardStateChanged=0;
+        RentalReturnController guard(system,read,stale,
+                                     [&]{++guardRefresh;});
+        QObject::connect(&guard,&RentalReturnController::returnRejected,
+                         [&](RentalReturnError){++guardRejected;});
+        QObject::connect(&guard,&RentalReturnController::stateChanged,
+                         [&]{++guardStateChanged;});
+        check(stale.selectById("R001") && guard.canReturnSelected(),
+              "verified active rental eligible before read failure");
+        refuse=true;
+        stale.refresh();
+        check(!stale.snapshotAvailable() && !guard.canReturnSelected() &&
+              stale.selectedRentalId()=="R001" &&
+              !guard.returnSelectedFor("R001") &&
+              guard.lastReturnMessage().contains("data unavailable") &&
+              guardRejected==1 && guardRefresh==0 &&
+              guardStateChanged>=2 &&
+              !system.findRentalById("R001")->getIsReturned() &&
+              bytes(ledgerFile)==originalLedger &&
+              bytes(fleetFile)==sourceFleet,
+              "failed provider denies stale return and preserves files");
+        refuse=false;
+        stale.refresh();
+        check(stale.snapshotAvailable() && guard.canReturnSelected() &&
+              stale.selectedRentalId()=="R001" &&
+              bytes(ledgerFile)==originalLedger,
+              "verified retry restores eligibility without auto-return");
+    }
+
     check(model.selectById(" r001 ") && action.canReturnSelected(),
           "selected active real ID eligible");
     // UX-S7: both R001 and R002 are eligible Active rentals. Consent for

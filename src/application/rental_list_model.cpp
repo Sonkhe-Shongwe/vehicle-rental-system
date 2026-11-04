@@ -66,6 +66,8 @@ double RentalListModel::activeBookedValue() const {
 }
 
 QString RentalListModel::oldestOverdueRentalId() const {
+    if (!m_snapshotAvailable)
+        return {}; // Never route operators using a failed read's cached due state.
     const RentalRecordSummary *oldest=nullptr;
     for(const auto &item:m_allItems) {
         if(item.status!=RentalRecordStatus::Active ||
@@ -80,6 +82,8 @@ QString RentalListModel::oldestOverdueRentalId() const {
 }
 
 QVariantList RentalListModel::recentActivities() const {
+    if (!m_snapshotAvailable)
+        return {}; // Cached records are kept for recovery, not presented as verified.
     // This is latest *contract start date*, not an event/audit log. Do not
     // treat return/archive state changes as a new chronological event.
     QList<RentalRecordSummary> ordered=m_allItems;
@@ -104,7 +108,8 @@ QVariantList RentalListModel::recentActivities() const {
 }
 
 QVariantMap RentalListModel::selectedContract() const {
-    if (m_selectedRentalId.isEmpty() || rowForId(m_selectedRentalId) < 0)
+    if (!m_snapshotAvailable || m_selectedRentalId.isEmpty() ||
+        rowForId(m_selectedRentalId) < 0)
         return {}; // Never disclose stale or hidden rental selection.
     for (const auto &record : m_allItems) {
         if (record.rentalId != m_selectedRentalId)
@@ -151,6 +156,8 @@ int RentalListModel::rowCount(const QModelIndex &parent) const {
 }
 
 QVariant RentalListModel::data(const QModelIndex &index, int role) const {
+    if (!m_snapshotAvailable)
+        return {}; // A retained row is not a verified record after read failure.
     if (!index.isValid() || index.model() != this || index.column() != 0 ||
         index.row() < 0 || index.row() >= m_items.size())
         return {};
@@ -241,12 +248,14 @@ void RentalListModel::setStatusFilter(const QString &filter) {
 }
 
 bool RentalListModel::selectVisibleRow(int row) {
-    if (row < 0 || row >= m_items.size())
+    if (!m_snapshotAvailable || row < 0 || row >= m_items.size())
         return false;
     return selectById(m_items.at(row).rentalId);
 }
 
 bool RentalListModel::selectOldestOverdue() {
+    if (!m_snapshotAvailable)
+        return false;
     const QString id=oldestOverdueRentalId();
     if(id.isEmpty())return false;
     // The user may currently be viewing History. Restore Active before
@@ -271,6 +280,8 @@ int RentalListModel::selectedRow() const {
 }
 
 bool RentalListModel::selectById(const QString &id) {
+    if (!m_snapshotAvailable)
+        return false;
     const int row = rowForId(id);
     if (row < 0)
         return false; // An unknown or hidden ID never changes current selection.
@@ -284,6 +295,8 @@ bool RentalListModel::selectById(const QString &id) {
 }
 
 bool RentalListModel::locateById(const QString &rentalId) {
+    if (!m_snapshotAvailable)
+        return false;
     const QString requested = rentalId.trimmed();
     if (requested.isEmpty())
         return false;
@@ -304,6 +317,8 @@ bool RentalListModel::locateById(const QString &rentalId) {
 }
 
 bool RentalListModel::locateActiveReturn(const QString &identifier) {
+    if (!m_snapshotAvailable)
+        return false; // Preserve cached selection for recovery, but deny actions.
     const QString id = identifier.trimmed();
     QString matchedRental;
     int matchCount = 0;
@@ -353,6 +368,7 @@ void RentalListModel::refresh() {
         if(m_snapshotAvailable) {
             m_snapshotAvailable=false;
             emit snapshotAvailabilityChanged();
+            emit selectedContractChanged(); // Revoke previously exposed detail.
         }
         return; // Do not reset, emit metrics, or imply an empty ledger.
     }

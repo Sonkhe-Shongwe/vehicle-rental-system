@@ -51,6 +51,38 @@ int main(int argc,char **argv) {
     check(action.canArchiveSelected() && model.selectedRentalId()=="R001",
           "returned record eligible with stable selection");
     const QByteArray returnedLedger=read(ledger);
+    // UX-S11: a retained selected returned rental is NOT eligible when the
+    // authoritative read provider fails, even though the domain is healthy.
+    {
+        bool refuse=false;
+        RentalListModel stale([&]() -> std::optional<QList<RentalRecordSummary>> {
+            if(refuse)return std::nullopt;
+            return reads.records();
+        });
+        int blocked=0,signals=0;
+        RentalArchiveController guard(system,reads,stale);
+        QObject::connect(&guard,&RentalArchiveController::archiveRejected,
+                         [&](RentalArchiveError){++blocked;});
+        QObject::connect(&guard,&RentalArchiveController::stateChanged,
+                         [&]{++signals;});
+        check(stale.selectById("R001") && guard.canArchiveSelected(),
+              "verified returned contract may be archived");
+        refuse=true;
+        stale.refresh();
+        check(!stale.snapshotAvailable() && !guard.canArchiveSelected() &&
+              stale.selectedRentalId()=="R001" &&
+              !guard.archiveSelectedFor("R001") &&
+              guard.lastArchiveMessage().contains("data unavailable") &&
+              blocked==1 && signals>=2 &&
+              !system.findRentalById("R001")->getIsArchived() &&
+              read(ledger)==returnedLedger && read(fleet)==sourceFleet,
+              "failed snapshot denies stale archive without writing");
+        refuse=false;
+        stale.refresh();
+        check(stale.snapshotAvailable() && guard.canArchiveSelected() &&
+              read(ledger)==returnedLedger,
+              "successful provider retry restores eligibility without archiving");
+    }
     // Protect initial ledger by using a directory as the QSaveFile target.
     check(QFile::rename(ledger,tmp.filePath("rentals-backup.txt")),"backup ledger");
     check(QDir().mkdir(ledger),"block ledger writer");

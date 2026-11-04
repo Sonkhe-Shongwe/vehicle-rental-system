@@ -29,9 +29,13 @@ RentalArchiveController::RentalArchiveController(
             this,&RentalArchiveController::stateChanged);
     connect(&m_rentals,&QAbstractItemModel::modelReset,
             this,&RentalArchiveController::stateChanged);
+    connect(&m_rentals,&RentalListModel::snapshotAvailabilityChanged,
+            this,&RentalArchiveController::stateChanged);
 }
 
 bool RentalArchiveController::canArchiveSelected() const {
+    if(!m_rentals.snapshotAvailable())
+        return false;
     const QString id=m_rentals.selectedRentalId();
     if (id.isEmpty() || m_rentals.selectedRow()<0)
         return false;
@@ -53,6 +57,13 @@ bool RentalArchiveController::archiveSelectedFor(const QString &expectedRentalId
 }
 
 bool RentalArchiveController::archiveSelected() {
+    if(!m_rentals.snapshotAvailable()) {
+        m_message=QStringLiteral(
+            "Rental data unavailable. Retry the read before archiving.");
+        emit stateChanged();
+        emit archiveRejected(RentalArchiveError::MissingRental);
+        return false;
+    }
     const QString id=m_rentals.selectedRentalId();
     const auto result=(id.isEmpty() || m_rentals.selectedRow()<0)
             ? RentalArchiveResult{RentalArchiveError::MissingRental,{}}
