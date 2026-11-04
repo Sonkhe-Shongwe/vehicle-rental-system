@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Verification policy and current evidence
 
+**NEWEST VERIFIED NATIVE QT TEST MATRIX UX-CTRL-003, 4 Nov 2026:** [compiled `922674c9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/922674c9e253fca2c8ef75b1c3e95fe51a8dd94b), [completed successful run 41839473216](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41839473216): **127/127 CTests Ubuntu GCC and 127/127 hosted Windows MSVC** Qt6.8.3, zero failures; actual QML UX-CTRL-002 #61/#62 and added bidirectional UX-CTRL-003 #63/#64 each PASS on both. Hosted Windows relocated functional **8/8** and PS5.1 verification PASS. [Dated full native report](UX_CTRL_003_SEAMLESS_BIDIRECTIONAL_KEYBOARD_NATIVE_VERIFIED_2026-11-04.md). Core code/fixture integrity and no automatic writes exercised. **Owner current MinGW build, physical keyboard experience, screen-scale 100/125/150% and Narrator NOT TESTED** at this source. Formal 45/74, 70.6%, P7 0/8 unchanged. Former UX-CTRL-003 CI-pending line below is superseded.
+
+---
+
+
 **UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
 
 ---

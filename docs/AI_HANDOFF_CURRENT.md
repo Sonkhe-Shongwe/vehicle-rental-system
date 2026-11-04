@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**LATEST ENGINEERING HANDOFF: UX-CTRL-003, 4 Nov 2026.** Exact compiled source [`922674c9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/922674c9e253fca2c8ef75b1c3e95fe51a8dd94b) / [successful Actions #41839473216](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41839473216): **127/127 each Ubuntu GCC and hosted Windows MSVC Qt6.8.3**, existing UX-CTRL-002 #61/#62 and new bidirectional #63/#64 pass, Windows portable fictional **8/8**, PS5.1 pass. [Owner-approved directional contract](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) and [full verified report](UX_CTRL_003_SEAMLESS_BIDIRECTIONAL_KEYBOARD_NATIVE_VERIFIED_2026-11-04.md). Source implements reversible All↔Return lookup, Find↔first rental, top Fleet row↔Gallery/Table, valid group focus memory, scroll-to-reveal, cautious Enter/Escape, native caret exceptions. **NEXT: owner GitHub Desktop Pull on existing P7 branch and Qt Creator 6.10.2 MinGW Build/Run, then physical feel/scale/Narrator signoff, with no new QA ZIP needed.** Hosted CI is not physical acceptance. Formal **45/74, fixed 70.6%, P7 0/8**, main unchanged, all draft PRs unmerged. Previous 'CI running' entry is historical.
+
+---
+
+
 **UX-CTRL-003 (4 November 2026):** Owner approved [seamless bidirectional arrow navigation](UX_CTRL_003_OWNER_APPROVED_SEAMLESS_BIDIRECTIONAL_NAVIGATION_2026-11-04.md) after physical Windows review. Required reverse routes include All Up -> Return lookup, first rental Up -> Find rental, first Fleet card Up -> Gallery, plus remembered valid group focus, scrolling to reveal focus and native text-input exceptions. This design takes precedence over the older one-way Fleet Search Down route by entering Gallery/Table choice before collection. QML source and **two additional native wide/compact tests** are under exact-source CI verification; **do not claim PASS before the new run completes**. Owner physical review and formal **45/74, 70.6%, P7 0/8** unchanged.
 
 ---

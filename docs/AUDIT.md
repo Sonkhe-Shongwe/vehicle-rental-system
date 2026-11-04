@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Documentation and evidence index
 
+**UX-CTRL-003 EXACT-SOURCE SUCCESS | 4 Nov 2026:** [`922674c9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/922674c9e253fca2c8ef75b1c3e95fe51a8dd94b) compiled and tested in [GitHub Actions #41839473216](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41839473216) **127/127 real native Qt6.8.3 CTests each** on Ubuntu GCC and hosted Windows MSVC, zero failures. Updated old UX-CTRL-002 wide/compact #61/#62 and new UX-CTRL-003 wide/compact #63/#64 all PASS on both, hosted Windows fictional packaged **8/8** and PS5.1 PASS. Exact test logs, artifact IDs and manual limits in [dated report](UX_CTRL_003_SEAMLESS_BIDIRECTIONAL_KEYBOARD_NATIVE_VERIFIED_2026-11-04.md). No new Windows owner MinGW or narrator/scaling/real-world visual signoff; **45/74 weighted 70.6%, P7 0/8** unchanged. This docs-only sync does not replace compiled SHA.
+
+---
+
+
 **UX-CTRL-002 audited current-source entry, 4 Nov 2026:** [`f273d038`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/f273d038be2bce0398241f6e5950f3938a13f6d1) / [GitHub Actions #41815907017](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41815907017) **125/125 native Qt CTests each Ubuntu GCC and hosted Windows MSVC**, genuine QML #61/#62 wide/compact PASS, Windows fictional kit **8/8** and PS5.1 PASS. Three failed intermediate runs **41813106258, 41813946359, 41814762509** are explicitly traced, not erased. [Dated implementation, failure-correction and artifact audit](UX_CTRL_002_IMPLEMENTATION_AND_NATIVE_VERIFICATION_2026-11-04.md) links code/logs and notes reviewed 64-image Windows screenshot ZIP without an open new contract dialog. Hosted engineering PASS only; physical Qt Creator/MinGW, 100/125/150% actual scale, Narrator, owner visual/keyboard signoff **OPEN**. Formal **45/74, 70.6%, P7 0/8** unchanged; draft PR #17 and main protected by owner governance.
 
 ---
