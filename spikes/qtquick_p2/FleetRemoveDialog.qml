@@ -5,23 +5,54 @@ import QtQuick.Layouts
 Dialog {
     id: removeDialog
     property var command
+    property var fleet
     property var focusReturn
     property var fallbackFocusReturn
     property string targetId: ""
     property string targetName: ""
+    property bool reviewInvalidated: false
+    property string reviewInvalidationReason: ""
+    function invalidateReview(reason) {
+        // The selection reviewed for permanent removal must remain
+        // continuous. A -> B -> A cannot resurrect an older approval.
+        if (!removeDialog.visible || removeDialog.reviewInvalidated)
+            return
+        removeDialog.reviewInvalidationReason = reason
+        removeDialog.reviewInvalidated = true
+    }
+    Connections {
+        target: removeDialog.fleet
+        function onSelectionChanged() {
+            if (removeDialog.visible &&
+                    removeDialog.targetId !== removeDialog.fleet.selectedId)
+                removeDialog.invalidateReview("Selection changed.")
+        }
+        function onFleetChanged() {
+            // A C++ refresh may update the selected vehicle without its ID
+            // changing, including its availability or rental references.
+            removeDialog.invalidateReview("Fleet data refreshed.")
+        }
+    }
     title: "Remove fictional fleet vehicle"
     modal: true
     focus: true
     width: Math.min(520, parent ? parent.width-60 : 500)
     standardButtons: Dialog.NoButton
     closePolicy: Popup.CloseOnEscape
-    onOpened: Qt.callLater(function() {
-        if(removeDialog.visible) confirmationField.forceActiveFocus(Qt.TabFocusReason)
-    })
+    onOpened: {
+        reviewInvalidated = false
+        reviewInvalidationReason = ""
+        Qt.callLater(function() {
+            if(removeDialog.visible)
+                confirmationField.forceActiveFocus(Qt.TabFocusReason)
+        })
+    }
     onClosed: {
         confirmationField.clear()
         targetId = ""
         targetName = ""
+        reviewInvalidated = false
+        reviewInvalidationReason = ""
         Qt.callLater(function() {
             if(focusReturn && focusReturn.visible && focusReturn.enabled)
                 focusReturn.forceActiveFocus(Qt.TabFocusReason)
@@ -51,6 +82,16 @@ Dialog {
             color: "#5F6F82"
             Layout.fillWidth: true
         }
+        Label {
+            objectName: "fleetRemoveReviewWarning"
+            visible: removeDialog.reviewInvalidated
+            Layout.fillWidth: true
+            color: "#9B3E24"
+            text: removeDialog.reviewInvalidationReason +
+                  " Close and reopen to review this removal."
+            wrapMode: Text.WordWrap
+            Accessible.name: text
+        }
         AccessibleTextField {
             id: confirmationField
             objectName: "fleetRemoveConfirmation"
@@ -74,8 +115,19 @@ Dialog {
                 objectName: "fleetRemoveConfirm"
                 text: "Remove vehicle"
                 activeFocusOnTab: true
-                enabled: command && command.canRemove && targetId !== ""
+                enabled: command && command.canRemove && targetId !== "" &&
+                         !removeDialog.reviewInvalidated &&
+                         removeDialog.fleet &&
+                         targetId === removeDialog.fleet.selectedId &&
+                         command.canRemoveVehicle(targetId)
                 onClicked: {
+                    // Re-check the selected ID and domain eligibility at the
+                    // click boundary; do not rely only on a bound button state.
+                    if(removeDialog.reviewInvalidated ||
+                            !removeDialog.fleet ||
+                            targetId !== removeDialog.fleet.selectedId ||
+                            !command.canRemoveVehicle(targetId))
+                        return
                     if(command.removeVehicle(targetId, confirmationField.text))
                         removeDialog.close()
                 }

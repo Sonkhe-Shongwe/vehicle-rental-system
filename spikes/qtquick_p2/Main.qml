@@ -1769,6 +1769,7 @@ ApplicationWindow {
                         objectName: "fleetRemoveDialog"
                         anchors.centerIn: parent
                         command: fleetRemove
+                        fleet: fleet
                         focusReturn: removeSelectedFleetButton
                         fallbackFocusReturn: fleetAddButton
                     }

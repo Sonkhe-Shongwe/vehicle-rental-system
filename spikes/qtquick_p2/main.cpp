@@ -5998,6 +5998,76 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6 removal dialog target missing";
                 app.exit(400);return;
             }
+            // UX-S15: an in-progress typed REMOVE C003 must never survive
+            // a change in the independently selected Fleet card. Returning
+            // to C003 must not re-arm the original consent.
+            if(!confirm->isEnabled() ||
+               find(find,root,"fleetRemoveReviewWarning")) {
+                qCritical()<<"UX-S15 fresh Fleet removal confirmation not armed";
+                app.exit(871);return;
+            }
+            field->setProperty("text",QStringLiteral("REMOVE C003"));
+            fleet.clearSelection();
+            QCoreApplication::processEvents();
+            QTest::qWait(55);
+            auto *warning=find(find,root,"fleetRemoveReviewWarning");
+            if(confirm->isEnabled() || !warning ||
+               !warning->property("text").toString().contains("Selection changed.") ||
+               !target->property("text").toString().contains("C003") ||
+               fleet.selectedId()!="" ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"UX-S15 selection change did not invalidate Fleet removal";
+                app.exit(872);return;
+            }
+            fleet.selectById("C003");
+            QCoreApplication::processEvents();
+            if(!fleetRemove.canRemoveVehicle("C003") ||
+               confirm->isEnabled() ||
+               !warning->property("text").toString().contains(
+                   "Close and reopen to review this removal.") ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"UX-S15 A-B-A restored stale Fleet deletion consent";
+                app.exit(873);return;
+            }
+            press(cancel);
+            press(remove);
+            field=find(find,root,"fleetRemoveConfirmation");
+            confirm=find(find,root,"fleetRemoveConfirm");
+            if(!field||!confirm||!confirm->isEnabled() ||
+               !field->property("text").toString().isEmpty() ||
+               find(find,root,"fleetRemoveReviewWarning")) {
+                qCritical()<<"UX-S15 fresh Fleet removal review not armed";
+                app.exit(874);return;
+            }
+            // A domain Fleet refresh that retains the selected ID must also
+            // expire the old review, without removing any fictional record.
+            fleet.refreshAfterCommit();
+            QCoreApplication::processEvents();
+            QTest::qWait(55);
+            warning=find(find,root,"fleetRemoveReviewWarning");
+            if(fleet.selectedId()!="C003" ||
+               confirm->isEnabled() || !warning ||
+               !warning->property("text").toString().contains(
+                   "Fleet data refreshed.") ||
+               !readFile(ledger,&vehiclesCurrent) ||
+               vehiclesCurrent!=vehiclesInitial) {
+                qCritical()<<"UX-S15 Fleet refresh did not invalidate review";
+                app.exit(875);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            QTest::qWait(80);
+            press(remove);
+            field=find(find,root,"fleetRemoveConfirmation");
+            confirm=find(find,root,"fleetRemoveConfirm");
+            if(!field||!confirm||!confirm->isEnabled() ||
+               !field->property("text").toString().isEmpty() ||
+               find(find,root,"fleetRemoveReviewWarning")) {
+                qCritical()<<"UX-S15 Fleet refresh recovery skipped new review";
+                app.exit(876);return;
+            }
             press(confirm); // Empty phrase.
             field->setProperty("text",QStringLiteral("remove C003")); // wrong case
             press(confirm);
