@@ -1,0 +1,9 @@
+# Rental Studio 2.0 | R0 portfolio showcase seed
+
+**Exactly 100 fictional vehicles** are embedded locally in the Qt Quick executable's read-only resources: **90 cars + 10 motorcycles**. Cars C001–C003 and motorcycles M001–M002 preserve the original 5 demo IDs and their values; the other 95 are generated fictional examples. Original `demo/vehicles.txt` and `demo/rentals.txt` are **unchanged**, and all existing automated CLI tests still use their protected five-vehicle seed.
+
+**Normal no-argument launch** uses this 100-vehicle, temporary fictional fleet and the existing two fictional rental contracts (C002 is rented). Close the app and changes reset; booking, returns, creating and removing vehicles still go through the existing real C++ controllers and confirmations. `--portfolio-catalog-smoke` is a CI-only check of the actual Qt Quick fleet. The existing `--persistent-fictional-demo` and isolated `--p7-fictional-sql-lab` remain separate and unchanged.
+
+`photo_map.tsv` maps a vehicle *make/model* to a **representative category/model image resource**, never a photo of an actual owned vehicle. Some names intentionally share type-matched images because this is an unpaid portfolio, not an authenticity database. Only curated, successfully downloaded **CC0 files** in `assets/portfolio/` can appear. Any missing source retains the existing offline silhouette. User-added vehicles can still import an actual local photo. The three existing demo JPEGs remain unchanged. Image source and author records are recorded in `assets/portfolio/IMAGE_CREDITS.md` when image download succeeds.
+
+No paid APIs, no remote runtime image requests, no operational customer data, no P7 production SQLite, no release/install authorization, no changes to main. This is a **portfolio showcase**, not actual fleet inventory.
