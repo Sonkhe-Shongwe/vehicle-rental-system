@@ -1827,6 +1827,30 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P7 real app fictional Lab failed to load isolated read models";
                 app.exit(604);return;
             }
+            // UX-S16: PageDown/PageUp must reach the Lab's lower records
+            // with native keyboard input at both window sizes. This is
+            // navigation only; the verified SQLite read/command models
+            // remain unmodified until an explicit operation is clicked.
+            lab->setProperty("contentY",0.0);
+            nav->forceActiveFocus(Qt::TabFocusReason);
+            QCoreApplication::processEvents();
+            const qreal maxScroll = qMax(0.0,
+                lab->property("contentHeight").toDouble() - lab->height());
+            QTest::keyClick(window,Qt::Key_PageDown);
+            QCoreApplication::processEvents();
+            const qreal scrolled = lab->property("contentY").toDouble();
+            if(maxScroll < 140.0 || scrolled < 100.0 ||
+               scrolled > maxScroll + 1.0) {
+                qCritical()<<"UX-S16 Lab PageDown failed to reveal lower content"
+                           <<scrolled<<maxScroll;
+                app.exit(866);return;
+            }
+            QTest::keyClick(window,Qt::Key_PageUp);
+            QCoreApplication::processEvents();
+            if(lab->property("contentY").toDouble()>1.0) {
+                qCritical()<<"UX-S16 Lab PageUp failed to return to top";
+                app.exit(867);return;
+            }
             const auto click=[&](const QString &name) {
                 auto *target=find(find,root,name);
                 if(!target||!target->isEnabled()||target->width()<10||

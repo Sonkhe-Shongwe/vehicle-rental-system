@@ -555,23 +555,35 @@ ApplicationWindow {
         }
     }
 
-    // Page keys scroll hidden controls without stealing rental arrow selection.
+    // Page keys scroll the active operations page without changing rental
+    // selection or business state. The SQLite Lab is opt-in and fictional only.
+    function scrollOperationsPage(direction) {
+        const page = window.workspace === 2 ? rentalsPageScroll :
+                     (p7SqlLabEnabled && window.workspace === 3
+                      ? p7SqlLabLoader.item : null)
+        if (!page)
+            return
+        const limit = Math.max(0, page.contentHeight - page.height)
+        const distance = Math.max(140, page.height * 0.8)
+        page.contentY = Math.max(0, Math.min(limit, page.contentY + direction * distance))
+    }
     Shortcut {
         sequence: "PgDown"
-        enabled: window.workspace === 2 && !bookingDialog.visible &&
-                 !returnConfirmation.visible && !archiveConfirmation.visible &&
-                 !archivedDeleteDialog.visible && !contractDetailsDialog.visible
-        onActivated: rentalsPageScroll.contentY = Math.min(
-            Math.max(0, rentalsPageScroll.contentHeight - rentalsPageScroll.height),
-            rentalsPageScroll.contentY + Math.max(140, rentalsPageScroll.height * 0.8))
+        enabled: (window.workspace === 2 ||
+                  (p7SqlLabEnabled && window.workspace === 3)) &&
+                 !bookingDialog.visible && !returnConfirmation.visible &&
+                 !archiveConfirmation.visible && !archivedDeleteDialog.visible &&
+                 !contractDetailsDialog.visible
+        onActivated: window.scrollOperationsPage(1)
     }
     Shortcut {
         sequence: "PgUp"
-        enabled: window.workspace === 2 && !bookingDialog.visible &&
-                 !returnConfirmation.visible && !archiveConfirmation.visible &&
-                 !archivedDeleteDialog.visible && !contractDetailsDialog.visible
-        onActivated: rentalsPageScroll.contentY = Math.max(
-            0, rentalsPageScroll.contentY - Math.max(140, rentalsPageScroll.height * 0.8))
+        enabled: (window.workspace === 2 ||
+                  (p7SqlLabEnabled && window.workspace === 3)) &&
+                 !bookingDialog.visible && !returnConfirmation.visible &&
+                 !archiveConfirmation.visible && !archivedDeleteDialog.visible &&
+                 !contractDetailsDialog.visible
+        onActivated: window.scrollOperationsPage(-1)
     }
     RowLayout {
         anchors.fill: parent
@@ -2631,6 +2643,7 @@ ApplicationWindow {
                 // mode. The three legacy workspaces retain their exact data
                 // services, operational commands and default indices.
                 Loader {
+                    id: p7SqlLabLoader
                     objectName: "p7SqlLabLoader"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
