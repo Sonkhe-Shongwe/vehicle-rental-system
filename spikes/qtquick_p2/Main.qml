@@ -910,6 +910,8 @@ ApplicationWindow {
                     objectName: "sessionModeSidebar"
                     text: p7SqlLabEnabled
                           ? "Fictional SQLite Lab\nSeparate from the demo fleet"
+                          : portfolioShowcase
+                          ? "100-vehicle portfolio demo\nChanges reset when you close"
                           : persistentFictionalDemo
                           ? "Fictional demo\nBookings survive restart"
                           : "Fictional demo\nChanges reset when you close"
@@ -938,6 +940,7 @@ ApplicationWindow {
                 Label {
                     objectName: "sessionModeNotice"
                     text: p7SqlLabEnabled ? "FICTIONAL · ISOLATED SQLITE LAB"
+                          : portfolioShowcase ? "FICTIONAL · 100-VEHICLE SHOWCASE"
                           : persistentFictionalDemo ? "FICTIONAL · BOOKINGS SAVED"
                           : "FICTIONAL · RESETS ON EXIT"
                     color: ink; font.pixelSize: 12
