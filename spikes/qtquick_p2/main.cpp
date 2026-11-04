@@ -5587,6 +5587,67 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-C archive did not persist";
                 app.exit(418);return;
             }
+            // UX-S12: the irreversible archived-delete presentation adapter
+            // must fail closed when its last rental snapshot is unavailable.
+            // A retained selected archived ID is NOT valid permission.
+            {
+                bool refuseRentalRead=false;
+                RentalListModel isolated([&]() -> std::optional<QList<RentalRecordSummary>> {
+                    if(refuseRentalRead)return std::nullopt;
+                    return rentalRead.records();
+                });
+                P6ArchivedDeleteController guarded(
+                    system,rentalRead,isolated,true);
+                int observedStateChanges=0;
+                QObject::connect(&guarded,&P6ArchivedDeleteController::stateChanged,
+                    [&]{++observedStateChanges;});
+                if(!isolated.snapshotAvailable() ||
+                   !isolated.selectById("R002") ||
+                   !guarded.canDeleteSelected()) {
+                    qCritical()<<"UX-S12 verified archived record not eligible";
+                    app.exit(855);return;
+                }
+                const int beforeOutage=observedStateChanges;
+                refuseRentalRead=true;
+                isolated.refresh();
+                if(isolated.snapshotAvailable() ||
+                   isolated.selectedRentalId()!="R002" ||
+                   guarded.canDeleteSelected() ||
+                   observedStateChanges!=beforeOutage+1 ||
+                   guarded.permanentlyDelete("R002","DELETE R002") ||
+                   !guarded.lastMessage().contains("data unavailable") ||
+                   !system.findRentalById("R002") ||
+                   !system.findRentalById("R002")->getIsArchived() ||
+                   !readFile(ledger,&now) || now!=archivedBytes ||
+                   !readFile(disposable.filePath("vehicles.txt"),&vehicleNow) ||
+                   vehicleNow!=vehicleInitial) {
+                    qCritical()<<"UX-S12 stale snapshot permitted irreversible delete";
+                    app.exit(856);return;
+                }
+                // Further failed reads must stay blocked. Recovery may only
+                // restore eligibility, never perform a deferred deletion.
+                isolated.refresh();
+                if(guarded.canDeleteSelected() ||
+                   observedStateChanges!=beforeOutage+2) {
+                    // Exactly one additional stateChanged is from the rejected
+                    // direct command above, not the repeated failed refresh.
+                    qCritical()<<"UX-S12 repeated failed read changed delete state";
+                    app.exit(857);return;
+                }
+                refuseRentalRead=false;
+                isolated.refresh();
+                if(!isolated.snapshotAvailable() ||
+                   isolated.selectedRentalId()!="R002" ||
+                   !guarded.canDeleteSelected() ||
+                   !guarded.lastMessage().contains("data unavailable") ||
+                   !system.findRentalById("R002") ||
+                   !readFile(ledger,&now) || now!=archivedBytes ||
+                   !readFile(disposable.filePath("vehicles.txt"),&vehicleNow) ||
+                   vehicleNow!=vehicleInitial) {
+                    qCritical()<<"UX-S12 successful retry did not restore safe eligibility";
+                    app.exit(858);return;
+                }
+            }
             const QPointF pos=remove->mapToScene(QPointF(0,0));
             if(pos.x()<0 || pos.y()<0 ||
                pos.x()+remove->width()>window->width()-2 ||

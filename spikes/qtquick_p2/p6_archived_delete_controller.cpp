@@ -12,10 +12,15 @@ P6ArchivedDeleteController::P6ArchivedDeleteController(
             this,&P6ArchivedDeleteController::stateChanged);
     connect(&m_rentals,&QAbstractItemModel::modelReset,
             this,&P6ArchivedDeleteController::stateChanged);
+    // A read outage can retain the selected ID without a model reset.
+    // Rebind the irreversible action's enabled state on availability changes.
+    connect(&m_rentals,&RentalListModel::snapshotAvailabilityChanged,
+            this,&P6ArchivedDeleteController::stateChanged);
 }
 
 bool P6ArchivedDeleteController::canDeleteSelected() const {
-    if(!m_disposable || m_rentals.selectedRow()<0)return false;
+    if(!m_disposable || !m_rentals.snapshotAvailable() ||
+       m_rentals.selectedRow()<0)return false;
     const auto record=m_reads.recordById(m_rentals.selectedRentalId());
     return record && record->status==RentalRecordStatus::Archived;
 }
@@ -30,6 +35,12 @@ bool P6ArchivedDeleteController::permanentlyDelete(
     const QString &rentalId,const QString &confirmation) {
     if(!m_disposable) {
         m_message=QStringLiteral("Permanent deletion is disabled in the persistent fictional-only session.");
+        emit stateChanged();
+        return false;
+    }
+    if(!m_rentals.snapshotAvailable()) {
+        m_message=QStringLiteral(
+            "Rental data unavailable. Retry the read before permanently deleting.");
         emit stateChanged();
         return false;
     }
