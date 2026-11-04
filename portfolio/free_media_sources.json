@@ -1,0 +1,66 @@
+{
+  "purpose": "Rental Studio R0 local portfolio illustrative vehicles",
+  "license_policy": "Only Wikimedia Commons files whose live LicenseShortName is CC0; save source metadata; fail closed",
+  "sources": [
+    {
+      "slug": "suzuki_swift",
+      "file_title": "Suzuki Swift Sport ZC33S.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "kia_picanto",
+      "file_title": "Kia Picanto 143619.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "toyota_hilux",
+      "file_title": "Toyota Hilux (50722639491).jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "toyota_fortuner",
+      "file_title": "Toyota Fortuner.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "toyota_corolla_cross",
+      "file_title": "Toyota Corolla Cross Z '25 (2).jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "honda_civic",
+      "file_title": "Honda Civic 075226749.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "bmw_3series",
+      "file_title": "BMW3Series2025.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "hyundai_staria",
+      "file_title": "Hyundai Staria in Basel.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "yamaha_mt07",
+      "file_title": "YAMAHA MT-07.JPG",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "honda_cb500",
+      "file_title": "Honda CB500 (47070844324).jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "ktm_duke",
+      "file_title": "Moscow, KTM Duke 390 with Crazy Iron cage, Oct 2026 05.jpg",
+      "expected_license": "CC0"
+    },
+    {
+      "slug": "ford_ranger",
+      "file_title": "Ford Ranger US-Spec (52180290118).jpg",
+      "expected_license": "CC0"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+name: Acquire free CC0 images for the fictional portfolio catalogue
+on:
+  push:
+    branches:
+      - feature/p7-sqlite-sandbox-20261102
+    paths:
+      - '.github/workflows/portfolio-free-media.yml'
+      - 'portfolio/free_media_sources.json'
+      - 'tools/fetch_portfolio_media.py'
+permissions:
+  contents: write
+concurrency:
+  group: portfolio-cc0-curation
+  cancel-in-progress: false
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image conversion dependency
+        run: python -m pip install --quiet pillow
+      - name: Verify Commons CC0 metadata and download optimized offline photos
+        run: python tools/fetch_portfolio_media.py
+      - name: Commit vetted offline images with source credits to existing feature branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/portfolio
+          if git diff --cached --quiet; then
+            echo "Assets already up to date."
+          else
+            git commit -m "assets(portfolio): bundle verified Wikimedia CC0 illustrative vehicle photos [skip ci]"
+            git push origin HEAD:feature/p7-sqlite-sandbox-20261102
+          fi
