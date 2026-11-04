@@ -14,7 +14,7 @@ import sys
 import time
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlencode, quote
+from urllib.parse import urlencode, quote, urlsplit
 from urllib.request import Request, urlopen
 
 from PIL import Image, ImageOps
@@ -101,9 +101,12 @@ def main():
         source = "https://commons.wikimedia.org/wiki/" + quote(
             (page or {}).get("title", title).replace(" ", "_"), safe=":_()-'.")
         remote = info.get("thumburl") or info.get("url", "")
-        if not remote.startswith("https://upload.wikimedia.org/"):
-            print("Commons image URL shape:", item["slug"],
-                  repr(remote[:280]), "imageinfo keys:", sorted(info.keys()), flush=True)
+        parsed = urlsplit(remote)
+        # Commons now issues thumbnails from thumb.wikimedia.org as well as
+        # upload.wikimedia.org. Both must serve the fixed Commons media path.
+        if parsed.scheme != "https" or parsed.netloc not in (
+            "thumb.wikimedia.org", "upload.wikimedia.org"
+        ) or not parsed.path.startswith("/wikipedia/commons/"):
             failures.append((item["slug"], "non-Wikimedia asset URL"))
             continue
         try:
