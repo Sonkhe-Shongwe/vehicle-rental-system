@@ -3178,6 +3178,19 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P6-F empty lookup changed selection";
                 app.exit(115);return;
             }
+            // UX-S17: the real Find rental button resolves a unique vehicle
+            // ID, including its hidden historical rental, via typed C++.
+            rentalModel.setStatusFilter("Active");
+            lookupField->setProperty("text"," c001 ");
+            press(lookupButton);
+            QCoreApplication::processEvents();
+            if(rentalModel.statusFilter()!="All" ||
+               rentalModel.selectedRentalId()!="R002" ||
+               rentalModel.selectedRow()!=1 ||
+               !lookupFeedback->property("text").toString().contains("Selected R002")) {
+                qCritical()<<"UX-S17 unique vehicle ID did not reveal historical rental";
+                app.exit(868);return;
+            }
             // UX-S10: a successful lookup response must never falsely
             // describe an earlier contract after keyboard/pointer navigation
             // or an authoritative C++ refresh of the same selected ID.

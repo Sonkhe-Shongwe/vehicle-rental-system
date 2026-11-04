@@ -203,6 +203,35 @@ int main(int argc, char **argv) {
               readBytes(rentalsPath) == rentalsBefore,
               "failed/read-only lookups preserve selection and storage");
 
+        // UX-S17: normal Find rental accepts a uniquely matched vehicle ID,
+        // including history hidden by a status filter, but never guesses
+        // between multiple contracts for the same vehicle.
+        lookup.setStatusFilter("History");
+        check(lookup.locateById("  c002  ") &&
+              lookup.statusFilter()=="All" &&
+              lookup.selectedRentalId()=="R002" &&
+              lookup.selectedRow()==1,
+              "unique vehicle ID reveals hidden contract without writes");
+        QList<RentalRecordSummary> overlapping=service.records();
+        auto returnedCopy=overlapping.first();
+        returnedCopy.rentalId="R004";
+        returnedCopy.status=RentalRecordStatus::Returned;
+        overlapping.append(returnedCopy);
+        RentalListModel ambiguous([overlapping]() -> std::optional<QList<RentalRecordSummary>> {
+            return overlapping;
+        });
+        ambiguous.setStatusFilter("Active");
+        check(ambiguous.selectById("R001") &&
+              !ambiguous.locateById(" c001 ") &&
+              ambiguous.selectedRentalId()=="R001" &&
+              ambiguous.statusFilter()=="Active" &&
+              ambiguous.locateById("r004") &&
+              ambiguous.selectedRentalId()=="R004" &&
+              ambiguous.statusFilter()=="All" &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "ambiguous vehicle lookup preserves selection and filter, exact rental ID remains usable");
+
         // UX-S13: reusable rental ID/vehicle ID search composes with
         // lifecycle filters, never filters PII and never changes KPIs/files.
         RentalListModel searchModel(service);

@@ -333,10 +333,21 @@ bool RentalListModel::locateById(const QString &rentalId) {
     if (requested.isEmpty())
         return false;
     QString canonical;
+    // An exact rental ID wins even when the same input could be a vehicle
+    // identifier. Never guess which historical contract belongs to a vehicle.
     for (const auto &item : m_allItems) {
         if (item.rentalId.compare(requested, Qt::CaseInsensitive) == 0) {
             canonical = item.rentalId;
             break;
+        }
+    }
+    if (canonical.isEmpty()) {
+        for (const auto &item : m_allItems) {
+            if (item.vehicleId.compare(requested, Qt::CaseInsensitive) != 0)
+                continue;
+            if (!canonical.isEmpty())
+                return false; // Several contracts: require the exact rental ID.
+            canonical = item.rentalId;
         }
     }
     if (canonical.isEmpty())

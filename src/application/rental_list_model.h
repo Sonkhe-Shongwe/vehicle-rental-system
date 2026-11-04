@@ -86,9 +86,10 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool selectById(const QString &rentalId);
-    // Explicit, read-only operator lookup across lifecycle filters. An
-    // existing hidden match is revealed before selection; misses do nothing.
-    Q_INVOKABLE bool locateById(const QString &rentalId);
+    // Read-only operator lookup by exact rental ID or uniquely matched vehicle
+    // ID across ALL lifecycle states. Multiple contracts for one vehicle
+    // require an explicit rental ID; misses/ambiguity do not change selection.
+    Q_INVOKABLE bool locateById(const QString &rentalOrVehicleId);
     // Only selects a uniquely matched ACTIVE rental, identified by rental
     // ID or vehicle ID. Failed lookups disarm any previous return selection.
     // Never completes a return, reads contact details, or writes any file.

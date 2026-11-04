@@ -406,11 +406,11 @@ ApplicationWindow {
     function findRentalById() {
         const id = rentalLookupField.text.trim()
         if (id === "") {
-            window.rentalLookupFeedback = "Enter a rental ID."
+            window.rentalLookupFeedback = "Enter a rental ID or vehicle ID."
             return
         }
         if (!rentalsModel.locateById(id)) {
-            window.rentalLookupFeedback = "Rental ID not found."
+            window.rentalLookupFeedback = "ID not found or vehicle has multiple contracts. Use a rental ID."
             return
         }
         window.rentalLookupFeedback = "Selected " + rentalsModel.selectedRentalId
@@ -2355,13 +2355,13 @@ ApplicationWindow {
                                 text: "Find rental"
                                 color: ink
                                 font.pixelSize: 12
-                                Accessible.name: "Find rental by its ID"
+                                Accessible.name: "Find rental by rental or vehicle ID"
                             }
                             AccessibleTextField {
                                 id: rentalLookupField
                                 objectName: "rentalLookupField"
-                                fieldPurpose: "Find rental by ID"
-                                placeholderText: "Rental ID, e.g. R001"
+                                fieldPurpose: "Find rental by rental or vehicle ID"
+                                placeholderText: "Rental or vehicle ID"
                                 Layout.preferredWidth: 220
                                 Layout.minimumWidth: 150
                                 onTextEdited: window.rentalLookupFeedback = ""
@@ -2372,7 +2372,7 @@ ApplicationWindow {
                                 text: "Find rental"
                                 activeFocusOnTab: true
                                 Layout.minimumHeight: 40
-                                Accessible.name: "Find rental by ID"
+                                Accessible.name: "Find rental by rental or vehicle ID"
                                 onClicked: window.findRentalById()
                             }
                             Label {
