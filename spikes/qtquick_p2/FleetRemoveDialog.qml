@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Dialog {
     id: removeDialog
     property var command
-    property var fleet
+    property var fleetController
     property var focusReturn
     property var fallbackFocusReturn
     property string targetId: ""
@@ -21,10 +21,10 @@ Dialog {
         removeDialog.reviewInvalidated = true
     }
     Connections {
-        target: removeDialog.fleet
+        target: removeDialog.fleetController
         function onSelectionChanged() {
             if (removeDialog.visible &&
-                    removeDialog.targetId !== removeDialog.fleet.selectedId)
+                    removeDialog.targetId !== removeDialog.fleetController.selectedId)
                 removeDialog.invalidateReview("Selection changed.")
         }
         function onFleetChanged() {
@@ -117,15 +117,15 @@ Dialog {
                 activeFocusOnTab: true
                 enabled: command && command.canRemove && targetId !== "" &&
                          !removeDialog.reviewInvalidated &&
-                         removeDialog.fleet &&
-                         targetId === removeDialog.fleet.selectedId &&
+                         removeDialog.fleetController &&
+                         targetId === removeDialog.fleetController.selectedId &&
                          command.canRemoveVehicle(targetId)
                 onClicked: {
                     // Re-check the selected ID and domain eligibility at the
                     // click boundary; do not rely only on a bound button state.
                     if(removeDialog.reviewInvalidated ||
-                            !removeDialog.fleet ||
-                            targetId !== removeDialog.fleet.selectedId ||
+                            !removeDialog.fleetController ||
+                            targetId !== removeDialog.fleetController.selectedId ||
                             !command.canRemoveVehicle(targetId))
                         return
                     if(command.removeVehicle(targetId, confirmationField.text))
