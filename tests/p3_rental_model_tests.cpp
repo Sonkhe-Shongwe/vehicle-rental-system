@@ -555,6 +555,8 @@ int main(int argc, char **argv) {
         const auto fleetBytes=readBytes(vehiclesPath);
         const auto rentalBytes=readBytes(rentalsPath);
         const int initialDetails=detailSignals;
+        const int beforeOutageResets=resets;
+        const int beforeOutageMetrics=metricSignals;
         failProvider=true;
         guarded.refresh();
         check(!guarded.snapshotAvailable() &&
@@ -574,13 +576,14 @@ int main(int argc, char **argv) {
               !guarded.selectOldestOverdue() &&
               guarded.selectedRentalId()==originalSelection &&
               availabilitySignals==1 && detailSignals==initialDetails+1 &&
-              resets==0 && metricSignals==0 &&
+              resets==beforeOutageResets &&
+              metricSignals==beforeOutageMetrics &&
               readBytes(vehiclesPath)==fleetBytes &&
               readBytes(rentalsPath)==rentalBytes,
               "failed read hides retained roles/details and blocks all lookup routes without writes");
         guarded.refresh();
         check(availabilitySignals==1 && detailSignals==initialDetails+1 &&
-              resets==0 && guarded.count()==originalCount,
+              resets==beforeOutageResets && guarded.count()==originalCount,
               "repeated failed reads never emit false resets or empty database");
         failProvider=false;
         guarded.refresh();
@@ -592,8 +595,8 @@ int main(int argc, char **argv) {
                            RentalListModel::RentalIdRole)=="R001" &&
               guarded.selectById("R001") &&
               guarded.locateById("r001") &&
-              availabilitySignals==2 && resets==1 &&
-              metricSignals==1 &&
+              availabilitySignals==2 && resets==beforeOutageResets+1 &&
+              metricSignals==beforeOutageMetrics+1 &&
               readBytes(vehiclesPath)==fleetBytes &&
               readBytes(rentalsPath)==rentalBytes,
               "successful retry restores verified roles, navigation and no-write persistence");
