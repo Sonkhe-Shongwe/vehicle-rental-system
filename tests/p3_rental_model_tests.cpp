@@ -254,7 +254,8 @@ int main(int argc, char **argv) {
               searchModel.selectedRentalId()=="R002",
               "explicit ID lookup reveals search-hidden record without writes");
         searchModel.setSearchText("R001");
-        check(searchModel.locateActiveReturn("C003") &&
+        // R003 is the fictional motorcycle M001, not a third car.
+        check(searchModel.locateActiveReturn("M001") &&
               searchModel.searchText().isEmpty() &&
               searchModel.selectedRentalId()=="R003" &&
               readBytes(vehiclesPath)==fleetBefore &&
