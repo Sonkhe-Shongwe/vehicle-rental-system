@@ -844,7 +844,8 @@ ApplicationWindow {
                             Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.overdueCount)
                             note: "From current C++ due-state"
-                            accent: rentalsModel.overdueCount > 0 ? "#B45309" : teal
+                            accent: rentalsModel.overdueCount > 0
+                                    ? designTokens.warningInk : teal
                         }
                         OverviewMetricCard {
                             objectName: "overviewValueCard"
@@ -940,7 +941,8 @@ ApplicationWindow {
                             hoverEnabled: true
                             background: Rectangle {
                                 radius: 8
-                                color: overviewFleetButton.hovered ? ice : "#FFFFFF"
+                                color: overviewFleetButton.hovered
+                                       ? designTokens.neutralHover : "#FFFFFF"
                                 border.color: overviewFleetButton.activeFocus ? navy : designTokens.border
                                 border.width: overviewFleetButton.activeFocus ? 3 : 1
                             }
@@ -964,15 +966,17 @@ ApplicationWindow {
                             hoverEnabled: true
                             background: Rectangle {
                                 radius: 8
-                                color: overviewOverdueAction.enabled
-                                    ? (overviewOverdueAction.hovered ? mint : "#FFFFFF")
-                                    : "#E6EAEE"
+                                color: !overviewOverdueAction.enabled
+                                    ? designTokens.disabledSurface
+                                    : overviewOverdueAction.hovered
+                                      ? designTokens.warningSurface : "#FFFFFF"
                                 border.color: overviewOverdueAction.activeFocus ? navy : teal
                                 border.width: overviewOverdueAction.activeFocus ? 3 : 1
                             }
                             contentItem: Text {
                                 text: overviewOverdueAction.text
-                                color: overviewOverdueAction.enabled ? teal : ink
+                                color: overviewOverdueAction.enabled
+                                    ? designTokens.warningInk : designTokens.disabledInk
                                 font.bold: true
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
@@ -1180,7 +1184,8 @@ ApplicationWindow {
                                     hoverEnabled: true
                                     background: Rectangle {
                                         radius: 8
-                                        color: window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        color: window.gallery ? mint :
+                                               (parent.hovered ? designTokens.neutralHover : "#FFFFFF")
                                         border.width: window.gallery || parent.activeFocus ? 2 : 1
                                         border.color: parent.activeFocus ? navy : window.gallery ? teal : designTokens.border
                                     }
@@ -1210,7 +1215,8 @@ ApplicationWindow {
                                     hoverEnabled: true
                                     background: Rectangle {
                                         radius: 8
-                                        color: !window.gallery ? mint : (parent.hovered ? ice : "#FFFFFF")
+                                        color: !window.gallery ? mint :
+                                               (parent.hovered ? designTokens.neutralHover : "#FFFFFF")
                                         border.width: !window.gallery || parent.activeFocus ? 2 : 1
                                         border.color: parent.activeFocus ? navy : !window.gallery ? teal : designTokens.border
                                     }
@@ -1566,6 +1572,7 @@ ApplicationWindow {
                                     width: tableView.width
                                     height: 60
                                     activeFocusOnTab: false
+                                    hoverEnabled: true
                                     onClicked: {
                                         tableView.currentIndex = index
                                         fleet.selectById(vehicleId)
@@ -1574,6 +1581,7 @@ ApplicationWindow {
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: "Select " + displayName + ", " + vehicleId
                                     background: FocusFrame {
+                                        hovered: vehicleRow.hovered
                                         objectName: "fleetTableFocus"
                                         cornerRadius: 8
                                         keyboardFocused: tableView.activeFocus &&
@@ -2536,6 +2544,13 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     Layout.minimumHeight: 44
                                     hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: parent.hovered ? designTokens.neutralHover : ice
+                                        border.width: parent.activeFocus
+                                                      ? designTokens.focusWidth : 1
+                                        border.color: parent.activeFocus ? navy : designTokens.border
+                                    }
                                     Keys.onPressed: (event) => {
                                         if (event.modifiers !== Qt.NoModifier) return
                                         if (event.key === Qt.Key_Left) {
@@ -2652,7 +2667,10 @@ ApplicationWindow {
                                         Label {
                                             objectName: "rentalDueLabel" + rentalRow.rentalId
                                             text: window.dueStateLabel(rentalRow.dueState)
-                                            color: ink
+                                            color: rentalRow.dueState === "Overdue" ||
+                                                   rentalRow.dueState === "DueToday"
+                                                ? designTokens.warningInk : ink
+                                            font.bold: rentalRow.dueState === "Overdue"
                                             Layout.fillWidth: true
                                             Accessible.name: "Return due: " + text
                                         }
@@ -2717,6 +2735,25 @@ ApplicationWindow {
                                     text: "View contract details"
                                     Layout.minimumHeight: 44
                                     activeFocusOnTab: true
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: !showContractDetailsButton.enabled
+                                            ? designTokens.disabledSurface
+                                            : showContractDetailsButton.hovered
+                                              ? designTokens.neutralHover : designTokens.ice
+                                        border.width: showContractDetailsButton.activeFocus
+                                                      ? designTokens.focusWidth : 1
+                                        border.color: showContractDetailsButton.activeFocus
+                                                      ? navy : designTokens.border
+                                    }
+                                    contentItem: Text {
+                                        text: showContractDetailsButton.text
+                                        color: showContractDetailsButton.enabled
+                                            ? navy : designTokens.disabledInk
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
                                     enabled: rentalsModel.selectedContract.rentalId !== undefined
                                     Accessible.name: "View selected rental contract details"
                                     Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
