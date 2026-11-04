@@ -3100,6 +3100,45 @@ int main(int argc, char *argv[]) {
                 qCritical() << "P6-F empty lookup changed selection";
                 app.exit(115);return;
             }
+            // UX-S10: a successful lookup response must never falsely
+            // describe an earlier contract after keyboard/pointer navigation
+            // or an authoritative C++ refresh of the same selected ID.
+            lookupField->setProperty("text", "R002");
+            press(lookupButton);
+            if(rentalModel.selectedRentalId()!="R002" ||
+               !lookupFeedback->property("text").toString().contains("Selected R002")) {
+                qCritical()<<"UX-S10 successful visible rental lookup missing feedback";
+                app.exit(837);return;
+            }
+            if(!rentalModel.selectById("R001") ||
+               !lookupFeedback->property("text").toString().isEmpty()) {
+                qCritical()<<"UX-S10 old rental lookup success persisted after selection changed";
+                app.exit(838);return;
+            }
+            lookupField->setProperty("text", "R002");
+            press(lookupButton);
+            rentalModel.refresh();
+            QCoreApplication::processEvents();
+            if(rentalModel.selectedRentalId()!="R002" ||
+               !lookupFeedback->property("text").toString().isEmpty()) {
+                qCritical()<<"UX-S10 stale lookup success after same-ID model refresh";
+                app.exit(839);return;
+            }
+            lookupField->setProperty("text", "R999");
+            press(lookupButton);
+            if(!lookupFeedback->property("text").toString().contains("not found") ||
+               rentalModel.selectedRentalId()!="R002") {
+                qCritical()<<"UX-S10 unknown lookup baseline unexpectedly changed selection";
+                app.exit(840);return;
+            }
+            rentalModel.setStatusFilter("Active");
+            QCoreApplication::processEvents();
+            if(!lookupFeedback->property("text").toString().isEmpty() ||
+               rentalModel.statusFilter()!="Active" ||
+               !rentalModel.selectedRentalId().isEmpty()) {
+                qCritical()<<"UX-S10 stale lookup miss after lifecycle filter changed";
+                app.exit(841);return;
+            }
             QByteArray originalFleet, originalRentals;
             if (!readFile(vehicles,&originalFleet) || !readFile(rentals,&originalRentals) ||
                 originalFleet!=beforeVehicles || originalRentals!=beforeRentals) {
@@ -3169,6 +3208,22 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-H vehicle ID lookup did not safely reveal active rental";
                 app.exit(122);return;
             }
+            // UX-S10: a successful active-return lookup gives accurate
+            // feedback, but a filter change that retains the selected ID
+            // must clear that one-time success instead of showing stale UI.
+            if(!returnLookupFeedback->property("text").toString().contains(
+                   "Ready to review return for R001")) {
+                qCritical()<<"UX-S10 return lookup success message missing";
+                app.exit(842);return;
+            }
+            rentalModel.setStatusFilter("All");
+            QCoreApplication::processEvents();
+            if(rentalModel.selectedRentalId()!="R001" ||
+               !returnLookupFeedback->property("text").toString().isEmpty()) {
+                qCritical()<<"UX-S10 stale return lookup success after filter changed";
+                app.exit(843);return;
+            }
+            rentalModel.setStatusFilter("Active");
             // Unknown/historical target must disable any previous return.
             returnLookupField->setProperty("text", "R002");
             press(returnLookupButton);

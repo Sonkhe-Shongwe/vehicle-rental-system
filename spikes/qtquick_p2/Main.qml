@@ -466,6 +466,10 @@ ApplicationWindow {
     Connections {
         target: rentalsModel
         function onSelectionChanged() {
+            // Lookup feedback describes the result of a specific deliberate
+            // selection. Pointer, keyboard, or domain navigation elsewhere
+            // must not keep claiming an older record is selected.
+            window.rentalLookupFeedback = ""
             window.returnLookupFeedback = ""
             // A temporary selection switch cannot revive previous consent,
             // even when it returns to the original rental ID.
@@ -486,10 +490,20 @@ ApplicationWindow {
         // A clock rollover or any authoritative model refresh can alter the
         // visible contract details without emitting selectionChanged.
         function onModelReset() {
+            // A reset may preserve selected ID while changing its state.
+            // Neither lookup's earlier success/miss is current afterward.
+            window.rentalLookupFeedback = ""
+            window.returnLookupFeedback = ""
             window.invalidateOpenRentalReviews("Rental data refreshed.")
             Qt.callLater(window.syncCurrentRental)
         }
-        function onStatusFilterChanged() { Qt.callLater(window.syncCurrentRental) }
+        function onStatusFilterChanged() {
+            // A filter change can retain the selected ID without emitting
+            // selectionChanged. Clear old lookup feedback in that case too.
+            window.rentalLookupFeedback = ""
+            window.returnLookupFeedback = ""
+            Qt.callLater(window.syncCurrentRental)
+        }
     }
 
     function handleVehicleArrow(event) {
