@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Latest verified checkpoint
 
+**P7-U CROSS-RECORD SQL INTEGRITY NATIVE VERIFIED (4 Nov 2026):** [Exact-source `680df6bb`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/680df6bb6e4f68a2664de62803ac8f3d428422f7) / [completed SUCCESS Actions #41853608167](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41853608167): **128/128 CTests each** Ubuntu GCC and hosted Windows MSVC Qt6.8.3, including new #125 synthetic active-on-retired/orphan/repair fail-closed test; Windows relocated fictional **8/8** and PowerShell5.1 PASS. [Detailed dated report](P7_U_FICTIONAL_CROSS_RECORD_FAIL_CLOSED_NATIVE_VERIFIED_2026-11-04.md). Shared Fleet and Rentals SQLite projections reject inconsistent relational snapshots rather than publishing misleading C++ verified values. D1 fictional-only; no P7 D2–D8 approval. Owner UX comment "feels okay" is preliminary feedback, **not** formal physical acceptance. **45/74, fixed 70.6%, P7 0/8 unchanged**; draft PR stack/main protected.
+
+---
+
+
 **UX-CTRL-003 IMPLEMENTED AND HOSTED-NATIVE VERIFIED, 4 Nov 2026:** Last compiled source [`922674c9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/922674c9e253fca2c8ef75b1c3e95fe51a8dd94b) with [exact-source Actions #41839473216](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41839473216) **127/127 genuine Qt6.8.3 native CTests on EACH Ubuntu GCC and hosted Windows MSVC**, including the two new reversible navigation tests #63/#64 and prior UX-CTRL-002 #61/#62, all PASS, zero failures. Hosted Windows relocated fictional **8/8** and PowerShell5.1 PASS. [Full native verification report](UX_CTRL_003_SEAMLESS_BIDIRECTIONAL_KEYBOARD_NATIVE_VERIFIED_2026-11-04.md) records source, focus memory and reverse routes, no-write assertions, artifacts and limitations. Physical owner keyboard/Narrator/display scaling/Qt Creator 6.10.2 MinGW and final visual review **OPEN**; use local GitHub Desktop Pull -> Qt Creator Build/Run, not another QA ZIP. Formal **45/74, 70.6%, P7 0/8** unchanged. Older 'CI pending' entry below is superseded engineering status.
 
 ---

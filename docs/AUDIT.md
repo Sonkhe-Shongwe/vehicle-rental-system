@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Documentation and evidence index
 
+**P7-U CROSS-RECORD SQL INTEGRITY NATIVE VERIFIED (4 Nov 2026):** [Exact-source `680df6bb`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/680df6bb6e4f68a2664de62803ac8f3d428422f7) / [completed SUCCESS Actions #41853608167](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41853608167): **128/128 CTests each** Ubuntu GCC and hosted Windows MSVC Qt6.8.3, including new #125 synthetic active-on-retired/orphan/repair fail-closed test; Windows relocated fictional **8/8** and PowerShell5.1 PASS. [Detailed dated report](P7_U_FICTIONAL_CROSS_RECORD_FAIL_CLOSED_NATIVE_VERIFIED_2026-11-04.md). Shared Fleet and Rentals SQLite projections reject inconsistent relational snapshots rather than publishing misleading C++ verified values. D1 fictional-only; no P7 D2–D8 approval. Owner UX comment "feels okay" is preliminary feedback, **not** formal physical acceptance. **45/74, fixed 70.6%, P7 0/8 unchanged**; draft PR stack/main protected.
+
+---
+
+
 **UX-CTRL-003 EXACT-SOURCE SUCCESS | 4 Nov 2026:** [`922674c9`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/922674c9e253fca2c8ef75b1c3e95fe51a8dd94b) compiled and tested in [GitHub Actions #41839473216](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41839473216) **127/127 real native Qt6.8.3 CTests each** on Ubuntu GCC and hosted Windows MSVC, zero failures. Updated old UX-CTRL-002 wide/compact #61/#62 and new UX-CTRL-003 wide/compact #63/#64 all PASS on both, hosted Windows fictional packaged **8/8** and PS5.1 PASS. Exact test logs, artifact IDs and manual limits in [dated report](UX_CTRL_003_SEAMLESS_BIDIRECTIONAL_KEYBOARD_NATIVE_VERIFIED_2026-11-04.md). No new Windows owner MinGW or narrator/scaling/real-world visual signoff; **45/74 weighted 70.6%, P7 0/8** unchanged. This docs-only sync does not replace compiled SHA.
 
 ---
