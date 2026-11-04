@@ -4815,7 +4815,18 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"UX-CTRL-002 Right stole native search caret";
                 app.exit(886);return;
             }
-            fleet.query="";
+            search->setProperty("text","");
+            key(Qt::Key_Down);
+            auto *gallery=get("fleetGallery");
+            if(!gallery || !gallery->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 Fleet Search Down missed Gallery";
+                app.exit(900);return;
+            }
+            key(Qt::Key_Return);
+            if(fleet.selectedId().isEmpty()) {
+                qCritical()<<"UX-CTRL-002 Fleet Enter did not inspect a vehicle";
+                app.exit(901);return;
+            }
             overviewNav->forceActiveFocus(Qt::TabFocusReason);
             key(Qt::Key_Return);
             key(Qt::Key_Right);
