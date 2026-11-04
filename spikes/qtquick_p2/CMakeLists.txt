@@ -35,6 +35,21 @@ qt_add_resources(rental_studio_qtquick_spike "fleet_demo_photo_candidates"
         "${PROJECT_SOURCE_DIR}/assets/toyota_corolla.jpg"
         "${PROJECT_SOURCE_DIR}/assets/ford_ranger.jpg"
         "${PROJECT_SOURCE_DIR}/assets/hyundai_i20.jpg")
+# R0 portfolio: embedded fingerprint-guarded demo and optional local CC0 photos.
+qt_add_resources(rental_studio_qtquick_spike "portfolio_seed"
+    PREFIX "/portfolio-demo"
+    BASE "${PROJECT_SOURCE_DIR}/portfolio"
+    FILES
+        "${PROJECT_SOURCE_DIR}/portfolio/vehicles.txt"
+        "${PROJECT_SOURCE_DIR}/portfolio/photo_map.tsv")
+file(GLOB PORTFOLIO_CC0_IMAGES CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/assets/portfolio/*.jpg")
+if(PORTFOLIO_CC0_IMAGES)
+    qt_add_resources(rental_studio_qtquick_spike "portfolio_cc0_images"
+        PREFIX "/portfolio-photos"
+        BASE "${PROJECT_SOURCE_DIR}/assets/portfolio"
+        FILES ${PORTFOLIO_CC0_IMAGES})
+endif()
 # Explicit fictional-only integration into this REAL Qt Quick executable.
 # NOT the default workspace, not commercial storage and not a Widgets change.
 if(BUILD_P7_SQLITE_SANDBOX)
@@ -52,10 +67,12 @@ endif()
 # Neither a portable kit nor Qt Creator may ingest arbitrary operational records.
 file(SHA256 "${PROJECT_SOURCE_DIR}/demo/vehicles.txt" P2_VEHICLES_SHA256)
 file(SHA256 "${PROJECT_SOURCE_DIR}/demo/rentals.txt" P2_RENTALS_SHA256)
+file(SHA256 "${PROJECT_SOURCE_DIR}/portfolio/vehicles.txt" PORTFOLIO_VEHICLES_SHA256)
 target_compile_definitions(rental_studio_qtquick_spike PRIVATE
     RENTAL_STUDIO_DEMO_DIR="${PROJECT_SOURCE_DIR}/demo"
     RENTAL_STUDIO_DEMO_VEHICLES_SHA256="${P2_VEHICLES_SHA256}"
-    RENTAL_STUDIO_DEMO_RENTALS_SHA256="${P2_RENTALS_SHA256}")
+    RENTAL_STUDIO_DEMO_RENTALS_SHA256="${P2_RENTALS_SHA256}"
+    RENTAL_STUDIO_PORTFOLIO_VEHICLES_SHA256="${PORTFOLIO_VEHICLES_SHA256}")
 target_include_directories(rental_studio_qtquick_spike PRIVATE "${PROJECT_SOURCE_DIR}")
 target_sources(rental_studio_qtquick_spike PRIVATE
     "${PROJECT_SOURCE_DIR}/vehicle.cpp"
@@ -84,6 +101,17 @@ if(BUILD_TESTING)
                 PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
         endforeach()
     endif()
+    # R0 actual 100-entry gallery at two sizes, original five-vehicle tests intact.
+    foreach(SIZE wide compact)
+        set(PORTFOLIO_ARGS --portfolio-catalog-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND PORTFOLIO_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_portfolio_catalog_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${PORTFOLIO_ARGS})
+        set_tests_properties(rental_studio_portfolio_catalog_${SIZE}
+            PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
     # Real separate executable processes, opt-in fixed Qt TEST location.
     # Cleanup has its own fixture so CTest also runs it after failures.
     add_test(NAME rental_studio_p5_session_seed

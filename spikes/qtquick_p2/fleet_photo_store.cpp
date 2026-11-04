@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFile>
+#include <QHash>
 #include <QImageReader>
 #include <QRegularExpression>
 #include <QSaveFile>
@@ -28,8 +29,28 @@ QString seed(const QString &id,const QPair<QString,QString> &identity) {
     if(make.compare(QStringLiteral("Hyundai"),Qt::CaseInsensitive)==0 &&
        model.compare(QStringLiteral("i20"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/hyundai_i20.jpg");
-    // Motorcycles and unapproved makes/models use the original silhouette.
-    return {};
+    // Portfolio photos are embedded, rights-audited representatives.
+    // When not downloaded, the existing offline silhouette is used.
+    static const QHash<QString,QString> portfolioImages=[] {
+        QHash<QString,QString> mapping;
+        QFile file(QStringLiteral(":/portfolio-demo/photo_map.tsv"));
+        if(!file.open(QIODevice::ReadOnly))return mapping;
+        for(const auto &line:QString::fromUtf8(file.readAll()).split('\n')) {
+            const auto fields=line.trimmed().split('|');
+            if(fields.size()!=3)continue;
+            static const QRegularExpression safeSlug(QStringLiteral("^[a-z0-9_]+$"));
+            if(!safeSlug.match(fields.at(2)).hasMatch())continue;
+            mapping.insert(fields.at(0).trimmed().toCaseFolded()+
+                QLatin1Char('|')+fields.at(1).trimmed().toCaseFolded(),
+                fields.at(2));
+        }
+        return mapping;
+    }();
+    const QString key=make.toCaseFolded()+QLatin1Char('|')+model.toCaseFolded();
+    const QString slug=portfolioImages.value(key);
+    const QString resource=QStringLiteral(":/portfolio-photos/")+slug+
+        QStringLiteral(".jpg");
+    return !slug.isEmpty() && QFile::exists(resource)?resource:QString{};
 }
 // Only app-reencoded fictional sidecars are expected on disk. Validate
 // bounds from image headers before ever asking Qt to decompress the pixels.

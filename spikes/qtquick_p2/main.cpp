@@ -368,6 +368,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p6-contract-detail-smoke", "Test no-PII selected rental contract details and safe close on native Qt Quick."});
     parser.addOption({"ux-ctrl-002-smoke", "Verify owner-approved Qt directional keys, semantic danger and read-only contract Enter."});
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
+    parser.addOption({"portfolio-catalog-smoke", "CI-only real 100-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
@@ -438,6 +439,8 @@ int main(int argc, char *argv[]) {
     const bool sessionTest=seedTest || reopenTest || uiSeedTest ||
                            uiReopenTest || cleanupTest || tamperTest || lockProbeTest;
     const bool persistentDemo=parser.isSet("persistent-fictional-demo") || sessionTest;
+    const bool portfolioShowcase=parser.optionNames().isEmpty() ||
+        parser.isSet("portfolio-catalog-smoke");
     if(sessionTest) {
         // The UI and non-UI fixture sequences have separate test roots.
         QStandardPaths::setTestModeEnabled(true);
@@ -794,6 +797,25 @@ int main(int argc, char *argv[]) {
         qCritical()<<"Cannot create disposable demo copies"; return 3;
     }
     if(p6Child||p6JourneyChild)dataDirectory=QDir::currentPath();
+    if(portfolioShowcase) {
+        QFile catalog(QStringLiteral(":/portfolio-demo/vehicles.txt"));
+        if(!catalog.open(QIODevice::ReadOnly)) {
+            qCritical()<<"Missing embedded fictional portfolio catalogue";return 711;
+        }
+        const QByteArray seed=catalog.readAll();
+        const QByteArray sha=QCryptographicHash::hash(
+            seed,QCryptographicHash::Sha256).toHex();
+        if(sha!=QByteArray(RENTAL_STUDIO_PORTFOLIO_VEHICLES_SHA256)) {
+            qCritical()<<"Portfolio catalogue fingerprint mismatch";return 712;
+        }
+        // Isolated temporary session only; never change the source fixtures.
+        QFile copy(QDir(dataDirectory).filePath(QStringLiteral("vehicles.txt")));
+        if(!copy.open(QIODevice::WriteOnly|QIODevice::Truncate) ||
+           copy.write(seed)!=seed.size()) {
+            qCritical()<<"Unable to seed disposable portfolio fleet";return 713;
+        }
+        copy.close();
+    }
     RentalSystem system(
         dataDirectory,
         failureTest ? std::static_pointer_cast<RentalStorage>(
@@ -1082,6 +1104,7 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("fleetPhotos", &fleetPhotos);
     engine.rootContext()->setContextProperty("motionPolicy", &motion);
     engine.rootContext()->setContextProperty("persistentFictionalDemo",persistentDemo);
+    engine.rootContext()->setContextProperty("portfolioShowcase",portfolioShowcase);
     engine.rootContext()->setContextProperty("fleet", &fleet);
     engine.rootContext()->setContextProperty("fleetAdmin", &fleetAdmin);
     engine.rootContext()->setContextProperty("fleetRemove", &fleetRemove);
@@ -1126,6 +1149,53 @@ int main(int argc, char *argv[]) {
     startupWindow->setPosition(startupArea.x()+
             std::max(0,(startupArea.width()-startupW)/2),
         startupArea.y()+std::max(0,(startupArea.height()-startupH)/2));
+    if(parser.isSet("portfolio-catalog-smoke")) {
+        startupWindow->resize(parser.isSet("compact")?1280:1500,
+                              parser.isSet("compact")?720:860);
+        QTimer::singleShot(800,&app,[&,startupWindow] {
+            QByteArray originalVehicles,originalRentals;
+            const bool protectedBytes=
+                readFile(vehicles,&originalVehicles) &&
+                readFile(rentals,&originalRentals) &&
+                originalVehicles==beforeVehicles &&
+                originalRentals==beforeRentals;
+            if(!protectedBytes || fleet.totalCount()!=100 ||
+               fleet.carCount()!=90 || fleet.motorcycleCount()!=10 ||
+               fleet.availableCount()!=99 || fleet.rentedCount()!=1 ||
+               rentalModel.count()!=2 || !fleetPhotos.hasPhoto("C001")) {
+                qCritical()<<"Portfolio source, counts or base photo invalid";
+                app.exit(714);return;
+            }
+            startupWindow->setProperty("workspace",1);
+            QCoreApplication::processEvents();
+            auto *gallery=startupWindow->findChild<QQuickItem*>("fleetGallery");
+            if(!gallery || gallery->property("count").toInt()!=100) {
+                qCritical()<<"Portfolio 100-entry actual QML Gallery missing";
+                app.exit(715);return;
+            }
+            fleet.setQuery("Toyota");
+            fleet.selectById("C001");
+            if(fleet.selectedId()!="C001" || fleet.selectedVisibleIndex()<0) {
+                qCritical()<<"Portfolio C++ filtering/selection failed";
+                app.exit(716);return;
+            }
+            fleet.setQuery("NotAnExistingVehicleModel");
+            if(fleet.selectedVisibleIndex()>=0 ||
+               gallery->property("count").toInt()!=0) {
+                qCritical()<<"Portfolio empty search failed";
+                app.exit(717);return;
+            }
+            fleet.setQuery("");
+            if(gallery->property("count").toInt()!=100 ||
+               fleet.totalCount()!=100) {
+                qCritical()<<"Portfolio gallery search reset failed";
+                app.exit(718);return;
+            }
+            qInfo()<<"PORTFOLIO fictional 100-vehicle native Fleet PASS"
+                   <<(parser.isSet("compact")?"1280x720":"1500x860");
+            app.exit(0);
+        });
+    }
     if(parser.isSet("startup-fit-smoke")) {
         QTimer::singleShot(300,&app,[&,startupWindow] {
             if(!startupWindow->isVisible() ||
