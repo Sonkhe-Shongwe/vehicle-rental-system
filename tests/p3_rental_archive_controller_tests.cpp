@@ -59,12 +59,12 @@ int main(int argc,char **argv) {
             if(refuse)return std::nullopt;
             return reads.records();
         });
-        int blocked=0,signals=0;
+        int blocked=0,stateChanges=0;
         RentalArchiveController guard(system,reads,stale);
         QObject::connect(&guard,&RentalArchiveController::archiveRejected,
                          [&](RentalArchiveError){++blocked;});
         QObject::connect(&guard,&RentalArchiveController::stateChanged,
-                         [&]{++signals;});
+                         [&]{++stateChanges;});
         check(stale.selectById("R001") && guard.canArchiveSelected(),
               "verified returned contract may be archived");
         refuse=true;
@@ -73,7 +73,7 @@ int main(int argc,char **argv) {
               stale.selectedRentalId()=="R001" &&
               !guard.archiveSelectedFor("R001") &&
               guard.lastArchiveMessage().contains("data unavailable") &&
-              blocked==1 && signals>=2 &&
+              blocked==1 && stateChanges>=2 &&
               !system.findRentalById("R001")->getIsArchived() &&
               read(ledger)==returnedLedger && read(fleet)==sourceFleet,
               "failed snapshot denies stale archive without writing");
