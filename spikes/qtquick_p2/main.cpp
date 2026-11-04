@@ -366,6 +366,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p5-overview-smoke", "Exercise real C++ operational overview, committed booking/return and safe navigation."});
     parser.addOption({"p6-recent-activity-smoke", "Test C++-backed bounded recent contracts, scrolling and read-only routing in real QML."});
     parser.addOption({"p6-contract-detail-smoke", "Test no-PII selected rental contract details and safe close on native Qt Quick."});
+    parser.addOption({"ux-ctrl-002-smoke", "Verify owner-approved Qt directional keys, semantic danger and read-only contract Enter."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
@@ -4746,6 +4747,174 @@ int main(int argc, char *argv[]) {
                 app.exit(346);return;
             }
             qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("ux-ctrl-002-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 880;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1200,&app,[&,window,compact] {
+            const auto get=[&](const QString &name) {
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *overviewNav=get("workspaceNavOverview");
+            auto *fleetNav=get("workspaceNavFleet");
+            auto *rentalsNav=get("workspaceNavRentals");
+            auto *search=get("fleetSearchField");
+            auto *active=get("overviewOpenActive");
+            auto *fleetAction=get("overviewOpenFleet");
+            auto *overdue=get("overviewReviewOverdue");
+            auto *filterAll=get("rentalFilterAll");
+            auto *filterActive=get("rentalFilterActive");
+            auto *filterOverdue=get("rentalFilterOverdue");
+            auto *lookup=get("rentalLookupField");
+            auto *list=get("rentalList");
+            if(!overviewNav||!fleetNav||!rentalsNav||!search||!active||
+               !fleetAction||!overdue||!filterAll||!filterActive||
+               !filterOverdue||!lookup||!list) {
+                qCritical()<<"UX-CTRL-002 missing keyboard targets";
+                app.exit(881);return;
+            }
+            const auto key=[&](Qt::Key k) {
+                QTest::keyClick(window,k);
+                QCoreApplication::processEvents();
+            };
+            QByteArray originalFleet,originalRentals;
+            if(!readFile(vehicles,&originalFleet)||
+               !readFile(rentals,&originalRentals)||
+               originalFleet!=beforeVehicles || originalRentals!=beforeRentals) {
+                qCritical()<<"UX-CTRL-002 source fiction data invalid";
+                app.exit(882);return;
+            }
+            overviewNav->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Down);
+            if(!fleetNav->hasActiveFocus() ||
+               window->property("workspace").toInt()!=0) {
+                qCritical()<<"UX-CTRL-002 Down changed page or missed Fleet";
+                app.exit(883);return;
+            }
+            key(Qt::Key_Return);
+            if(window->property("workspace").toInt()!=1) {
+                qCritical()<<"UX-CTRL-002 Enter did not open Fleet";
+                app.exit(884);return;
+            }
+            fleetNav->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Right);
+            if(!search->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 Fleet Right did not focus search";
+                app.exit(885);return;
+            }
+            search->setProperty("text","AB");
+            search->setProperty("cursorPosition",0);
+            key(Qt::Key_Right);
+            if(!search->hasActiveFocus() ||
+               search->property("cursorPosition").toInt()!=1) {
+                qCritical()<<"UX-CTRL-002 Right stole native search caret";
+                app.exit(886);return;
+            }
+            fleet.query="";
+            overviewNav->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Return);
+            key(Qt::Key_Right);
+            if(window->property("workspace").toInt()!=0 ||
+               !active->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 Overview right missed first action";
+                app.exit(887);return;
+            }
+            key(Qt::Key_Right);
+            if(!fleetAction->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 overview second quick action missing";
+                app.exit(888);return;
+            }
+            key(Qt::Key_Right);
+            if(!overdue->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 overview third quick action missing";
+                app.exit(889);return;
+            }
+            key(Qt::Key_Left);key(Qt::Key_Left);key(Qt::Key_Left);
+            if(!overviewNav->hasActiveFocus() ||
+               window->property("workspace").toInt()!=0) {
+                qCritical()<<"UX-CTRL-002 Overview Left did not reach sidebar";
+                app.exit(890);return;
+            }
+            rentalsNav->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Return);
+            key(Qt::Key_Right);
+            if(window->property("workspace").toInt()!=2 ||
+               !filterAll->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 Rentals Right missed All";
+                app.exit(891);return;
+            }
+            key(Qt::Key_Right);
+            if(!filterActive->hasActiveFocus() ||
+               rentalModel.statusFilter()!="All") {
+                qCritical()<<"UX-CTRL-002 status arrow changed filter";
+                app.exit(892);return;
+            }
+            key(Qt::Key_Left);
+            key(Qt::Key_Down);
+            if(!filterOverdue->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 All Down missed Overdue";
+                app.exit(893);return;
+            }
+            key(Qt::Key_Down);
+            if(!lookup->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 Overdue Down missed Find";
+                app.exit(894);return;
+            }
+            key(Qt::Key_Down);
+            if(!list->hasActiveFocus() ||
+               rentalModel.selectedRentalId()!="R001") {
+                qCritical()<<"UX-CTRL-002 Find Down missed first rental";
+                app.exit(895);return;
+            }
+            key(Qt::Key_Return);
+            auto *dialog=window->findChild<QObject*>("rentalContractDetailsDialog");
+            auto *id=get("rentalDetailIdentity");
+            auto *total=get("rentalDetailTotal");
+            auto *panel=get("rentalDetailTotalPanel");
+            auto *close=get("rentalDetailsClose");
+            if(!dialog||!dialog->property("visible").toBool()||
+               !id||id->property("text").toString()!="R001" ||
+               !total||total->property("text").toString()!="R 1,400.00"||
+               !panel||panel->property("color").value<QColor>()!=QColor("#E8F5F0")||
+               !close||!close->hasActiveFocus()) {
+                qCritical()<<"UX-CTRL-002 rental Enter or layout failed"
+                           <<(dialog?dialog->property("visible"):QVariant{})
+                           <<(id?id->property("text"):QVariant{})
+                           <<(total?total->property("text"):QVariant{});
+                app.exit(896);return;
+            }
+            key(Qt::Key_Escape);
+            QTest::qWait(90);
+            if(dialog->property("visible").toBool() ||
+               !list->hasActiveFocus() ||
+               rentalModel.selectedRentalId()!="R001") {
+                qCritical()<<"UX-CTRL-002 modal Escape did not restore list";
+                app.exit(897);return;
+            }
+            window->setProperty("workspace",1);
+            fleet.selectById("C003");
+            QCoreApplication::processEvents();
+            auto *remove=get("fleetRemoveSelectedButton");
+            auto *background=remove ? remove->property("background").value<QQuickItem*>() : nullptr;
+            if(!remove||!remove->isEnabled()||!background||
+               background->property("color").value<QColor>()!=QColor("#B42318")) {
+                qCritical()<<"UX-CTRL-002 destructive action not red";
+                app.exit(898);return;
+            }
+            QByteArray finalFleet,finalRentals;
+            if(!readFile(vehicles,&finalFleet) ||
+               !readFile(rentals,&finalRentals) ||
+               finalFleet!=originalFleet || finalRentals!=originalRentals) {
+                qCritical()<<"UX-CTRL-002 keyboard navigation wrote to source";
+                app.exit(899);return;
+            }
+            qInfo()<<"UX-CTRL-002 real Qt focus, contract and destructive colors PASS"
+                   <<(compact?"1280x720":"1500x860");
             app.exit(0);
         });
     }

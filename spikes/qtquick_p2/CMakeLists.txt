@@ -284,6 +284,15 @@ if(BUILD_TESTING)
         rental_studio_p5_fleet_booking_wide
         rental_studio_p5_fleet_booking_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 60)
+    # UX-CTRL-002 owner-confirmed keyboard routes, contract Enter and danger colors.
+    add_test(NAME rental_studio_ux_ctrl_002_wide
+        COMMAND rental_studio_qtquick_spike --ux-ctrl-002-smoke)
+    add_test(NAME rental_studio_ux_ctrl_002_compact
+        COMMAND rental_studio_qtquick_spike --ux-ctrl-002-smoke --compact)
+    set_tests_properties(
+        rental_studio_ux_ctrl_002_wide
+        rental_studio_ux_ctrl_002_compact PROPERTIES
+        ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     # P6-K: purpose-limited native contract detail dialog, true actual dates,
     # hidden-selection guards, modal Escape/focus and no accidental writes.
     add_test(NAME rental_studio_p6_contract_detail_wide
