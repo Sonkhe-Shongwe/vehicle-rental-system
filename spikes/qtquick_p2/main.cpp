@@ -3165,17 +3165,21 @@ int main(int argc, char *argv[]) {
             }
             lookupField->setProperty("text", "R999");
             press(lookupButton);
+            QCoreApplication::processEvents();
             if(rentalModel.statusFilter()!="All" ||
                rentalModel.selectedRentalId()!="R001" ||
-               !lookupFeedback->property("text").toString().contains("not found")) {
-                qCritical() << "P6-F missing ID changed selection or feedback";
+               lookupFeedback->property("text").toString()!="Rental or vehicle ID not found." ||
+               !lookupFeedback->isVisible() ||
+               lookupFeedback->width()<320 ||
+               lookupFeedback->height()<10) {
+                qCritical() << "UX-S18 precise and fully visible missing-ID feedback failed";
                 app.exit(114);return;
             }
             lookupField->setProperty("text", "");
             press(lookupButton);
             if(rentalModel.selectedRentalId()!="R001" ||
-               !lookupFeedback->property("text").toString().contains("Enter a rental ID")) {
-                qCritical() << "P6-F empty lookup changed selection";
+               lookupFeedback->property("text").toString()!="Enter a rental ID or vehicle ID.") {
+                qCritical() << "UX-S18 empty lookup did not give precise guidance";
                 app.exit(115);return;
             }
             // UX-S17: the real Find rental button resolves a unique vehicle

@@ -326,12 +326,17 @@ bool RentalListModel::selectById(const QString &id) {
     return true;
 }
 
-bool RentalListModel::locateById(const QString &rentalId) {
+bool RentalListModel::locateById(const QString &rentalOrVehicleId) {
+    return locateForOperator(rentalOrVehicleId) == QStringLiteral("Selected");
+}
+
+QString RentalListModel::locateForOperator(const QString &rentalOrVehicleId) {
+    // Do not mistake a failed read for an empty or missing ledger.
     if (!m_snapshotAvailable)
-        return false;
-    const QString requested = rentalId.trimmed();
+        return QStringLiteral("Unavailable");
+    const QString requested = rentalOrVehicleId.trimmed();
     if (requested.isEmpty())
-        return false;
+        return QStringLiteral("Empty");
     QString canonical;
     // An exact rental ID wins even when the same input could be a vehicle
     // identifier. Never guess which historical contract belongs to a vehicle.
@@ -346,19 +351,20 @@ bool RentalListModel::locateById(const QString &rentalId) {
             if (item.vehicleId.compare(requested, Qt::CaseInsensitive) != 0)
                 continue;
             if (!canonical.isEmpty())
-                return false; // Several contracts: require the exact rental ID.
+                return QStringLiteral("Ambiguous"); // Require a rental ID.
             canonical = item.rentalId;
         }
     }
     if (canonical.isEmpty())
-        return false; // Failed lookup preserves both filter and selection.
+        return QStringLiteral("NotFound"); // Never disturb selection/filter.
     // Explicit lookup must also reveal a record hidden by the optional
     // search text, not just an excluding lifecycle filter.
     if (rowForId(canonical) < 0 && !m_searchText.isEmpty())
         setSearchText(QString{});
     if (rowForId(canonical) < 0)
         setStatusFilter(QStringLiteral("All"));
-    return selectById(canonical);
+    return selectById(canonical)
+        ? QStringLiteral("Selected") : QStringLiteral("Unavailable");
 }
 
 bool RentalListModel::locateActiveReturn(const QString &identifier) {

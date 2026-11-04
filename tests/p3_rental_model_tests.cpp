@@ -203,6 +203,15 @@ int main(int argc, char **argv) {
               readBytes(rentalsPath) == rentalsBefore,
               "failed/read-only lookups preserve selection and storage");
 
+        // UX-S18: rejected general lookups expose precise operator outcomes,
+        // preserving the current selection/filter without silent guesses.
+        lookup.setStatusFilter("Active");
+        check(lookup.locateForOperator("  ")=="Empty" &&
+              lookup.locateForOperator("R999")=="NotFound" &&
+              lookup.statusFilter()=="Active" &&
+              lookup.selectedRentalId().isEmpty(),
+              "blank and unknown lookup outcomes are distinct and read-only");
+
         // UX-S17: normal Find rental accepts a uniquely matched vehicle ID,
         // including history hidden by a status filter, but never guesses
         // between multiple contracts for the same vehicle.
@@ -222,6 +231,7 @@ int main(int argc, char **argv) {
         });
         ambiguous.setStatusFilter("Active");
         check(ambiguous.selectById("R001") &&
+              ambiguous.locateForOperator(" c001 ")=="Ambiguous" &&
               !ambiguous.locateById(" c001 ") &&
               ambiguous.selectedRentalId()=="R001" &&
               ambiguous.statusFilter()=="Active" &&
@@ -601,6 +611,7 @@ int main(int argc, char **argv) {
               !guarded.selectById("R001") &&
               !guarded.selectVisibleRow(0) &&
               !guarded.locateById("R001") &&
+              guarded.locateForOperator("R001")=="Unavailable" &&
               !guarded.locateActiveReturn("R001") &&
               !guarded.selectOldestOverdue() &&
               guarded.selectedRentalId()==originalSelection &&
@@ -624,6 +635,7 @@ int main(int argc, char **argv) {
                            RentalListModel::RentalIdRole)=="R001" &&
               guarded.selectById("R001") &&
               guarded.locateById("r001") &&
+              guarded.locateForOperator("r001")=="Selected" &&
               availabilitySignals==2 && resets==beforeOutageResets+1 &&
               metricSignals==beforeOutageMetrics+1 &&
               readBytes(vehiclesPath)==fleetBytes &&

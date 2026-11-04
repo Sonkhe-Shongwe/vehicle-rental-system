@@ -404,13 +404,15 @@ ApplicationWindow {
     // A deliberate lookup can reveal an ID hidden by the current filter.
     // Domain history and financial data are never modified by this route.
     function findRentalById() {
-        const id = rentalLookupField.text.trim()
-        if (id === "") {
-            window.rentalLookupFeedback = "Enter a rental ID or vehicle ID."
-            return
-        }
-        if (!rentalsModel.locateById(id)) {
-            window.rentalLookupFeedback = "ID not found or vehicle has multiple contracts. Use a rental ID."
+        const result = rentalsModel.locateForOperator(rentalLookupField.text)
+        if (result !== "Selected") {
+            window.rentalLookupFeedback = result === "Empty"
+                ? "Enter a rental ID or vehicle ID."
+                : result === "Ambiguous"
+                  ? "Multiple rentals use that vehicle ID. Enter the exact rental ID."
+                  : result === "Unavailable"
+                    ? "Rental data unavailable. Lookup requires a verified refresh."
+                    : "Rental or vehicle ID not found."
             return
         }
         window.rentalLookupFeedback = "Selected " + rentalsModel.selectedRentalId
@@ -503,6 +505,14 @@ ApplicationWindow {
             window.rentalLookupFeedback = ""
             window.returnLookupFeedback = ""
             Qt.callLater(window.syncCurrentRental)
+        }
+        function onSnapshotAvailabilityChanged() {
+            // A failed read leaves a last-known selection buffered but no
+            // verified record. Never retain a misleading "Selected" receipt.
+            window.rentalLookupFeedback = ""
+            window.returnLookupFeedback = ""
+            if (!rentalsModel.snapshotAvailable)
+                window.invalidateOpenRentalReviews("Rental data unavailable.")
         }
     }
 
@@ -2347,41 +2357,47 @@ ApplicationWindow {
                                 Accessible.name: text
                             }
                         }
-                        RowLayout {
+                        ColumnLayout {
                             objectName: "rentalLookupRow"
                             Layout.fillWidth: true
-                            spacing: 10
-                            Label {
-                                text: "Find rental"
-                                color: ink
-                                font.pixelSize: 12
-                                Accessible.name: "Find rental by rental or vehicle ID"
-                            }
-                            AccessibleTextField {
-                                id: rentalLookupField
-                                objectName: "rentalLookupField"
-                                fieldPurpose: "Find rental by rental or vehicle ID"
-                                placeholderText: "Rental or vehicle ID"
-                                Layout.preferredWidth: 220
-                                Layout.minimumWidth: 150
-                                onTextEdited: window.rentalLookupFeedback = ""
-                                onAccepted: window.findRentalById()
-                            }
-                            Button {
-                                objectName: "rentalLookupButton"
-                                text: "Find rental"
-                                activeFocusOnTab: true
-                                Layout.minimumHeight: 40
-                                Accessible.name: "Find rental by rental or vehicle ID"
-                                onClicked: window.findRentalById()
+                            spacing: 4
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+                                Label {
+                                    text: "Find rental"
+                                    color: ink
+                                    font.pixelSize: 12
+                                    Accessible.name: "Find rental by rental or vehicle ID"
+                                }
+                                AccessibleTextField {
+                                    id: rentalLookupField
+                                    objectName: "rentalLookupField"
+                                    fieldPurpose: "Find rental by rental or vehicle ID"
+                                    placeholderText: "Rental or vehicle ID"
+                                    Layout.preferredWidth: 220
+                                    Layout.minimumWidth: 150
+                                    onTextEdited: window.rentalLookupFeedback = ""
+                                    onAccepted: window.findRentalById()
+                                }
+                                Button {
+                                    objectName: "rentalLookupButton"
+                                    text: "Find rental"
+                                    activeFocusOnTab: true
+                                    Layout.minimumHeight: 40
+                                    Accessible.name: "Find rental by rental or vehicle ID"
+                                    onClicked: window.findRentalById()
+                                }
+                                Item { Layout.fillWidth: true }
                             }
                             Label {
                                 objectName: "rentalLookupFeedback"
                                 Layout.fillWidth: true
                                 text: window.rentalLookupFeedback
+                                visible: text !== ""
                                 color: ink
                                 font.pixelSize: 12
-                                elide: Text.ElideRight
+                                wrapMode: Text.WordWrap
                                 Accessible.name: text
                             }
                         }

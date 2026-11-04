@@ -90,6 +90,10 @@ public:
     // ID across ALL lifecycle states. Multiple contracts for one vehicle
     // require an explicit rental ID; misses/ambiguity do not change selection.
     Q_INVOKABLE bool locateById(const QString &rentalOrVehicleId);
+    // Same read-only lookup, returning one explicit machine-readable result:
+    // Selected, Empty, NotFound, Ambiguous or Unavailable. No PII or writes.
+    // Both entry points share exactly one authoritative resolution path.
+    Q_INVOKABLE QString locateForOperator(const QString &rentalOrVehicleId);
     // Only selects a uniquely matched ACTIVE rental, identified by rental
     // ID or vehicle ID. Failed lookups disarm any previous return selection.
     // Never completes a return, reads contact details, or writes any file.
