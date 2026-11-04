@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Qt/C++ Windows rental-management application
 
+**NEW R0 100-vehicle free portfolio showcase (4 Nov 2026):** Normal no-argument Qt Creator launches include 100 fictional vehicle entries and 12 locally bundled Wikimedia Commons CC0 representative photos, with no subscription or runtime image API. [Verified 130/130 Linux + 130/130 Windows, plus Windows 8/8 QA](docs/PORTFOLIO_100_VEHICLES_FREE_CC0_OFFLINE_NATIVE_VERIFIED_2026-11-04.md) at source [`75b9b8d`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/75b9b8d751860dd773e462cc38e29121412f3845), [Actions #41868916532](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41868916532). 90 cars/10 motorcycles, owner can still add temporary demo vehicles; original five-vehicle test fixtures preserved. [Image credits](assets/portfolio/IMAGE_CREDITS.md). Portfolio-only: user photo matching is illustrative, not necessarily an exact year/trim. Physical Qt Creator photo/layout approval open; acceptance ledger stays 45/74, 70.6%, P7 0/8. No commercial rollout, no main changes.
+
+---
+
+
 **New local development workflow (4 November 2026):** [One-time Qt Creator setup, CMake preset and complete Windows script audit](docs/LOCAL_QT_CREATOR_WORKFLOW_AND_SCRIPT_AUDIT_2026-11-04.md). For everyday changes, use the existing P7 feature branch in GitHub Desktop, pull, then **Build/Run `rental_studio_qtquick_spike`** in the configured Qt 6.10.2 MinGW Qt Creator kit. Do not download a new QA ZIP for every commit. The four existing packaged QA verification scripts are still required by GitHub Actions; no redundant tracked batch file was identified. Actual local MinGW validation and UX-CTRL-002 physical owner acceptance remain OPEN. The older historical compiled-source references below are not the latest checkpoint; follow [LATEST_CHECKPOINT](docs/LATEST_CHECKPOINT.md).
 
 ---
