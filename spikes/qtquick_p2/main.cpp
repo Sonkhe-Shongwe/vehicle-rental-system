@@ -1163,7 +1163,10 @@ int main(int argc, char *argv[]) {
             if(!protectedBytes || fleet.totalCount()!=100 ||
                fleet.carCount()!=90 || fleet.motorcycleCount()!=10 ||
                fleet.availableCount()!=99 || fleet.rentedCount()!=1 ||
-               rentalModel.count()!=2 || !fleetPhotos.hasPhoto("C001")) {
+               rentalModel.count()!=2 || !fleetPhotos.hasPhoto("C001") ||
+               !fleetPhotos.hasPhoto("C004") ||
+               !fleetPhotos.hasPhoto("C005") ||
+               !fleetPhotos.hasPhoto("M001")) {
                 qCritical()<<"Portfolio source, counts or base photo invalid";
                 app.exit(714);return;
             }

@@ -11,6 +11,10 @@ on:
     paths:
       - CMakeLists.txt
       - 'spikes/qtquick_p2/**'
+      # Portfolio data and bundled CC0 images change the native executable.
+      - 'portfolio/**'
+      - 'assets/portfolio/**'
+      - 'tools/fetch_portfolio_media.py'
       # Application-controller fixes and P3 regression tests must receive the
       # same native Windows/Linux checks even if PR synchronize is delayed.
       - 'src/application/**'
