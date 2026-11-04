@@ -203,6 +203,64 @@ int main(int argc, char **argv) {
               readBytes(rentalsPath) == rentalsBefore,
               "failed/read-only lookups preserve selection and storage");
 
+        // UX-S13: reusable rental ID/vehicle ID search composes with
+        // lifecycle filters, never filters PII and never changes KPIs/files.
+        RentalListModel searchModel(service);
+        int searchNotices=0, searchResets=0, searchCounts=0;
+        QObject::connect(&searchModel,&RentalListModel::searchTextChanged,
+                         [&]{++searchNotices;});
+        QObject::connect(&searchModel,&QAbstractItemModel::modelReset,
+                         [&]{++searchResets;});
+        QObject::connect(&searchModel,&RentalListModel::countChanged,
+                         [&]{++searchCounts;});
+        check(searchModel.selectById("R001") && searchModel.count()==3 &&
+              searchModel.searchText().isEmpty(), "search baseline");
+        searchModel.setSearchText("  c002  ");
+        check(searchModel.searchText()=="c002" &&
+              searchModel.count()==1 &&
+              searchModel.data(searchModel.index(0,0),
+                  RentalListModel::RentalIdRole)=="R002" &&
+              searchModel.selectedRentalId().isEmpty() &&
+              searchModel.activeCount()==3 &&
+              searchModel.historyCount()==0 &&
+              searchCounts==1 && searchNotices==1 && searchResets==1,
+              "vehicle ID case-insensitive search clears hidden selection, retains full KPIs");
+        searchModel.setSearchText("C002");
+        check(searchModel.searchText()=="C002" &&
+              searchModel.count()==1 && searchNotices==2,
+              "case-only search refreshes normalized query without changing count");
+        searchModel.setStatusFilter("History");
+        check(searchModel.count()==0 && searchModel.historyCount()==0 &&
+              !searchModel.selectById("R002"),
+              "search and lifecycle filter combine without hidden-row navigation");
+        searchModel.setStatusFilter("Active");
+        check(searchModel.count()==1 && searchModel.selectById("r002"),
+              "active search selects verified matching ID");
+        searchModel.setSearchText("R003");
+        check(searchModel.count()==1 &&
+              searchModel.data(searchModel.index(0,0),
+                  RentalListModel::RentalIdRole)=="R003" &&
+              searchModel.selectedRentalId().isEmpty(),
+              "rental ID search rebinds filtered rows and clears stale selection");
+        searchModel.setSearchText("unknown");
+        check(searchModel.count()==0 && searchModel.selectedRow()==-1 &&
+              !searchModel.selectVisibleRow(0) && searchModel.activeCount()==3,
+              "unknown ID safely shows no matches, not empty operational fleet");
+        check(searchModel.locateById("r001") &&
+              searchModel.searchText().isEmpty() &&
+              searchModel.statusFilter()=="Active" &&
+              searchModel.selectedRentalId()=="R001" &&
+              searchModel.locateActiveReturn("C002") &&
+              searchModel.selectedRentalId()=="R002",
+              "explicit ID lookup reveals search-hidden record without writes");
+        searchModel.setSearchText("R001");
+        check(searchModel.locateActiveReturn("C003") &&
+              searchModel.searchText().isEmpty() &&
+              searchModel.selectedRentalId()=="R003" &&
+              readBytes(vehiclesPath)==fleetBefore &&
+              readBytes(rentalsPath)==rentalsBefore,
+              "active return lookup reveals search-hidden target and never mutates files");
+
         // P6-H: return search is a read-only active-only navigation step.
         // An unknown, empty or historical ID disarms a stale selection.
         RentalListModel returnRoute(service);
@@ -487,6 +545,10 @@ int main(int argc, char **argv) {
               guarded.data(guarded.index(0,0),
                            RentalListModel::RentalIdRole)=="R001",
               "baseline verified fictional return receipt");
+        guarded.setSearchText("  c001 ");
+        check(guarded.searchText()=="c001" &&
+              guarded.selectedRentalId()=="R001" &&
+              guarded.count()==1, "verified search retained before read outage");
         const auto originalSelection=guarded.selectedRentalId();
         const auto originalCount=guarded.count();
         const auto fleetBytes=readBytes(vehiclesPath);
@@ -498,6 +560,7 @@ int main(int argc, char **argv) {
               guarded.count()==originalCount &&
               guarded.selectedRentalId()==originalSelection &&
               guarded.statusFilter()=="All" &&
+              guarded.searchText()=="c001" &&
               guarded.selectedContract().isEmpty() &&
               guarded.recentActivities().isEmpty() &&
               guarded.oldestOverdueRentalId().isEmpty() &&
@@ -521,6 +584,7 @@ int main(int argc, char **argv) {
         failProvider=false;
         guarded.refresh();
         check(guarded.snapshotAvailable() && guarded.count()==originalCount &&
+              guarded.searchText()=="c001" &&
               guarded.selectedRentalId()==originalSelection &&
               guarded.selectedContract().value("rentalId")=="R001" &&
               guarded.data(guarded.index(0,0),

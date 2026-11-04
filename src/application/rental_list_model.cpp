@@ -196,12 +196,14 @@ QHash<int, QByteArray> RentalListModel::roleNames() const {
 
 QList<RentalRecordSummary> RentalListModel::filtered(
         const QList<RentalRecordSummary> &all) const {
-    if (m_statusFilter == QStringLiteral("All"))
+    if (m_statusFilter == QStringLiteral("All") && m_searchText.isEmpty())
         return all;
     QList<RentalRecordSummary> result;
     for (const auto &item : all) {
         const bool active = item.status == RentalRecordStatus::Active;
-        if ((m_statusFilter == QStringLiteral("Active") && active) ||
+        const bool matchingStatus =
+            m_statusFilter == QStringLiteral("All") ||
+            (m_statusFilter == QStringLiteral("Active") && active) ||
             (m_statusFilter == QStringLiteral("Returned") &&
              item.status == RentalRecordStatus::Returned) ||
             (m_statusFilter == QStringLiteral("Archived") &&
@@ -210,7 +212,13 @@ QList<RentalRecordSummary> RentalListModel::filtered(
             (m_statusFilter == QStringLiteral("Overdue") && active &&
              item.dueState == RentalDueState::Overdue) ||
             (m_statusFilter == QStringLiteral("DueToday") && active &&
-             item.dueState == RentalDueState::DueToday))
+             item.dueState == RentalDueState::DueToday);
+        // Search only stable, non-contact identifiers. Never filter using
+        // customer name, phone, price, notes or unverified SQL text.
+        const bool matchingId = m_searchText.isEmpty() ||
+            item.rentalId.contains(m_searchText, Qt::CaseInsensitive) ||
+            item.vehicleId.contains(m_searchText, Qt::CaseInsensitive);
+        if (matchingStatus && matchingId)
             result.append(item);
     }
     return result;
@@ -239,6 +247,30 @@ void RentalListModel::setStatusFilter(const QString &filter) {
         m_selectedRentalId.clear();
     endResetModel();
     emit statusFilterChanged();
+    if (m_items.size() != oldCount)
+        emit countChanged();
+    if (oldId != m_selectedRentalId || oldRow != selectedRow()) {
+        emit selectionChanged();
+        emit selectedContractChanged();
+    }
+}
+
+void RentalListModel::setSearchText(const QString &text) {
+    // A bounded, read-only filter for verified rental and vehicle IDs.
+    const QString normalized = text.trimmed().left(80);
+    if (normalized == m_searchText)
+        return;
+    const int oldCount = m_items.size();
+    const int oldRow = selectedRow();
+    const QString oldId = m_selectedRentalId;
+    m_searchText = normalized;
+    QList<RentalRecordSummary> visible = filtered(m_allItems);
+    beginResetModel();
+    m_items = std::move(visible);
+    if (rowForId(oldId) < 0)
+        m_selectedRentalId.clear();
+    endResetModel();
+    emit searchTextChanged();
     if (m_items.size() != oldCount)
         emit countChanged();
     if (oldId != m_selectedRentalId || oldRow != selectedRow()) {
@@ -309,8 +341,10 @@ bool RentalListModel::locateById(const QString &rentalId) {
     }
     if (canonical.isEmpty())
         return false; // Failed lookup preserves both filter and selection.
-    // Existing operators can find any rental ID, even when currently viewing
-    // Active or History. Only an explicit successful lookup resets the filter.
+    // Explicit lookup must also reveal a record hidden by the optional
+    // search text, not just an excluding lifecycle filter.
+    if (rowForId(canonical) < 0 && !m_searchText.isEmpty())
+        setSearchText(QString{});
     if (rowForId(canonical) < 0)
         setStatusFilter(QStringLiteral("All"));
     return selectById(canonical);
@@ -339,9 +373,11 @@ bool RentalListModel::locateActiveReturn(const QString &identifier) {
         clearSelection(); // Explicitly disarm a previously eligible return.
         return false;     // Failed lookup cannot mutate filter or storage.
     }
-    // A successful explicit return lookup reveals only active contracts;
-    // the separate RentalReturnService revalidates before any commit.
+    // A successful explicit return lookup reveals only active contracts,
+    // including those hidden by an optional read-only ID search.
     setStatusFilter(QStringLiteral("Active"));
+    if (rowForId(matchedRental) < 0 && !m_searchText.isEmpty())
+        setSearchText(QString{});
     return selectById(matchedRental);
 }
 

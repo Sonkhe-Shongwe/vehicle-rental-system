@@ -1800,6 +1800,7 @@ int main(int argc, char *argv[]) {
             auto *lab=find(find,root,"p7AppSqlLab");
             auto *fleetSelection=find(find,root,"p7AppFleetSelected");
             auto *fleetSearch=find(find,root,"p7AppFleetSearch");
+            auto *rentalSearch=find(find,root,"p7AppRentalSearch");
             auto *rentalSelection=find(find,root,"p7AppRentalSelected");
             auto *fleetVisible=find(find,root,"p7AppFleetVisibleCount");
             auto *rentalVisible=find(find,root,"p7AppRentalVisibleCount");
@@ -1808,7 +1809,8 @@ int main(int argc, char *argv[]) {
                !fleetCard||!rentalsCard||
                !overviewFleet||!overviewRentals||!overviewValue||
                !fleetText||!rentalsText||!receipt||!lab||
-               !fleetSelection||!fleetSearch||!rentalSelection||!fleetVisible||!rentalVisible||
+               !fleetSelection||!fleetSearch||!rentalSearch||
+               !rentalSelection||!fleetVisible||!rentalVisible||
                !fleetText->property("text").toString().contains("1 available") ||
                !rentalsText->property("text").toString().contains("Active: 0") ||
                !p7SqlOverview->snapshotAvailable() ||
@@ -1914,6 +1916,53 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P7 SQL C++ read-only history/status filter mismatch";
                 app.exit(611);return;
             }
+            // UX-S13: true C++ RentalListModel text filter in the actual
+            // P7 application explorer. Match contract and vehicle IDs only,
+            // combine with History, preserve full-snapshot Overview metrics.
+            rentalSearch->setProperty("text",QStringLiteral("not-found-in-demo"));
+            QCoreApplication::processEvents();
+            if(p7SqlRentals->searchText()!="not-found-in-demo" ||
+               p7SqlRentals->count()!=0 ||
+               !p7SqlRentals->selectedRentalId().isEmpty() ||
+               p7SqlRentals->historyCount()!=1 ||
+               p7SqlOverview->historyRentals()!=1 ||
+               p7SqlRentals->selectById("R001") ||
+               !rentalSelection->property("text").toString().contains(
+                   "Select a contract to inspect")) {
+                qCritical()<<"UX-S13 search showed hidden record or changed Overview";
+                app.exit(860);return;
+            }
+            rentalSearch->setProperty("text",QStringLiteral("  c001  "));
+            QCoreApplication::processEvents();
+            if(p7SqlRentals->searchText()!="c001" ||
+               p7SqlRentals->count()!=1 ||
+               !p7SqlRentals->selectById("r001") ||
+               p7SqlRentals->selectedRentalId()!="R001" ||
+               !rentalSelection->property("text").toString().contains(
+                   "Archived")) {
+                qCritical()<<"UX-S13 case-insensitive vehicle ID search failed";
+                app.exit(861);return;
+            }
+            rentalSearch->setProperty("text",QStringLiteral("r001"));
+            QCoreApplication::processEvents();
+            if(p7SqlRentals->searchText()!="r001" ||
+               p7SqlRentals->count()!=1 ||
+               p7SqlRentals->selectedRentalId()!="R001" ||
+               !rentalSelection->property("text").toString().contains(
+                   "1350.00")) {
+                qCritical()<<"UX-S13 contract ID search lost verified receipt";
+                app.exit(862);return;
+            }
+            p7SqlRentals->setStatusFilter("Active");
+            QCoreApplication::processEvents();
+            if(p7SqlRentals->count()!=0 ||
+               !p7SqlRentals->selectedRentalId().isEmpty() ||
+               p7SqlRentals->historyCount()!=1) {
+                qCritical()<<"UX-S13 lifecycle and ID filter do not compose";
+                app.exit(863);return;
+            }
+            p7SqlRentals->setStatusFilter("History");
+            p7SqlRentals->selectById("R001");
             // Actual QML search filters verified C++ Fleet DTOs in conjunction
             // with availability; hidden selection never leaks through.
             fleetSearch->setProperty("text",QStringLiteral("not-a-fictional-car"));
@@ -1958,6 +2007,9 @@ int main(int argc, char *argv[]) {
                p7SqlFleet->totalCount()!=1 || p7SqlRentals->count()!=1 ||
                !fleetSelection->property("text").toString().contains("snapshot unavailable") ||
                !rentalSelection->property("text").toString().contains("snapshot unavailable") ||
+               rentalSearch->isEnabled() ||
+               p7SqlRentals->searchText()!="r001" ||
+               p7SqlRentals->selectById("R001") ||
                !fleetVisible->property("text").toString().contains("Unverified") ||
                !rentalVisible->property("text").toString().contains("Unverified")) {
                 qCritical()<<"P7 real app SQL read failure leaked stale inspector";
@@ -1984,6 +2036,8 @@ int main(int argc, char *argv[]) {
                !p7SqlOverview->snapshotAvailable() ||
                p7SqlOverview->activeBookedLabel()!="R 0.00" ||
                p7SqlFleet->visibleCount()!=1 || p7SqlRentals->count()!=1 ||
+               !rentalSearch->isEnabled() ||
+               p7SqlRentals->searchText()!="r001" ||
                !fleetSelection->property("text").toString().contains("4 doors") ||
                !rentalSelection->property("text").toString().contains("Archived")) {
                 qCritical()<<"P7 actual-app SQL read recovery did not restore verified inspector";

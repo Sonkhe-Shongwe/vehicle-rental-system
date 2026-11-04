@@ -322,13 +322,26 @@ Flickable {
                     font.bold: true
                     Accessible.name: text
                 }
-                ComboBox {
-                    objectName: "p7AppRentalFilter"
+                RowLayout {
                     Layout.fillWidth: true
-                    model: ["All", "Active", "History"]
-                    enabled: p7SqlRentals.snapshotAvailable
-                    onActivated: p7SqlRentals.statusFilter = currentText
-                    Accessible.name: "Filter fictional SQLite rental contracts by status"
+                    spacing: 7
+                    ComboBox {
+                        objectName: "p7AppRentalFilter"
+                        Layout.fillWidth: true
+                        model: ["All", "Active", "History"]
+                        enabled: p7SqlRentals.snapshotAvailable
+                        onActivated: p7SqlRentals.statusFilter = currentText
+                        Accessible.name: "Filter fictional SQLite rental contracts by status"
+                    }
+                    TextField {
+                        objectName: "p7AppRentalSearch"
+                        Layout.fillWidth: true
+                        enabled: p7SqlRentals.snapshotAvailable
+                        placeholderText: "Find rental or vehicle ID"
+                        maximumLength: 80
+                        onTextChanged: p7SqlRentals.searchText = text
+                        Accessible.name: "Search verified fictional rental or vehicle IDs"
+                    }
                 }
                 ListView {
                     objectName: "p7AppRentalList"

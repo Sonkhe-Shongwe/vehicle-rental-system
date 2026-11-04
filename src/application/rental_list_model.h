@@ -25,6 +25,9 @@ class RentalListModel final : public QAbstractListModel {
     // denied until a successful new read.
     Q_PROPERTY(bool snapshotAvailable READ snapshotAvailable NOTIFY snapshotAvailabilityChanged)
     Q_PROPERTY(QString statusFilter READ statusFilter WRITE setStatusFilter NOTIFY statusFilterChanged)
+    // Operator-only ID search; no contact fields or SQL queries. The full
+    // C++ snapshot continues to determine all operational KPI metrics.
+    Q_PROPERTY(QString searchText READ searchText WRITE setSearchText NOTIFY searchTextChanged)
     // Derived from the complete C++ snapshot, never the filtered Rentals view.
     Q_PROPERTY(int activeCount READ activeCount NOTIFY metricsChanged)
     Q_PROPERTY(int historyCount READ historyCount NOTIFY metricsChanged)
@@ -76,6 +79,8 @@ public:
     QVariantMap selectedContract() const;
     QString statusFilter() const { return m_statusFilter; }
     void setStatusFilter(const QString &filter);
+    QString searchText() const { return m_searchText; }
+    void setSearchText(const QString &text);
     QString selectedRentalId() const { return m_selectedRentalId; }
     int selectedRow() const;
 
@@ -98,6 +103,7 @@ signals:
     void selectionChanged();
     void countChanged();
     void statusFilterChanged();
+    void searchTextChanged();
     void metricsChanged();
     void snapshotAvailabilityChanged();
     void selectedContractChanged();
@@ -111,6 +117,7 @@ private:
     QList<RentalRecordSummary> m_allItems;
     QList<RentalRecordSummary> m_items;
     QString m_statusFilter = QStringLiteral("All");
+    QString m_searchText;
     QString m_selectedRentalId;
 };
 
