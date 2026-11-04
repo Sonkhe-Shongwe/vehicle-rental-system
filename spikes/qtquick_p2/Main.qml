@@ -433,11 +433,22 @@ ApplicationWindow {
             return focusEnabled(rentalStatusRepeater.itemAt(0))
         return false // Lab is a separate opt-in surface with its own focus.
     }
+    function activateFocusedButton(event, button) {
+        if (event.modifiers !== Qt.NoModifier ||
+            (event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter) ||
+            !button || !button.visible || !button.enabled)
+            return false
+        button.clicked()
+        event.accepted = true
+        return true
+    }
     function overviewQuickKey(event, index) {
         if (event.modifiers !== Qt.NoModifier)
             return
         const controls = [overviewActiveButton, overviewFleetButton,
                           overviewOverdueAction]
+        if (activateFocusedButton(event,controls[index]))
+            return
         if (event.key === Qt.Key_Left) {
             if (index === 0)
                 focusSidebar()
@@ -454,6 +465,8 @@ ApplicationWindow {
     function rentalStatusKey(event, index) {
         if (event.modifiers !== Qt.NoModifier)
             return
+        if (activateFocusedButton(event,rentalStatusRepeater.itemAt(index)))
+            return
         if (event.key === Qt.Key_Left) {
             if (index === 0) focusSidebar()
             else focusEnabled(rentalStatusRepeater.itemAt(index-1))
@@ -466,6 +479,8 @@ ApplicationWindow {
     }
     function rentalDueKey(event, index) {
         if (event.modifiers !== Qt.NoModifier)
+            return
+        if (activateFocusedButton(event,rentalDueRepeater.itemAt(index)))
             return
         if (event.key === Qt.Key_Left) {
             if (index === 0) focusSidebar()
@@ -492,6 +507,9 @@ ApplicationWindow {
     }
     function fleetViewToggleKey(event, useGallery) {
         if (event.modifiers !== Qt.NoModifier)
+            return
+        if (activateFocusedButton(event,
+                useGallery ? fleetGalleryToggle : fleetTableToggle))
             return
         if (event.key === Qt.Key_Down) {
             if (focusFleetCollection())
@@ -2575,6 +2593,7 @@ ApplicationWindow {
                                     }
                                 }
                                 Button {
+                                    id: rentalLookupButton
                                     objectName: "rentalLookupButton"
                                     text: "Find rental"
                                     activeFocusOnTab: true
@@ -2588,6 +2607,8 @@ ApplicationWindow {
                                         border.color: parent.activeFocus ? navy : designTokens.border
                                     }
                                     Keys.onPressed: (event) => {
+                                        if (window.activateFocusedButton(event, rentalLookupButton))
+                                            return
                                         if (event.modifiers !== Qt.NoModifier) return
                                         if (event.key === Qt.Key_Left) {
                                             rentalLookupField.forceActiveFocus(Qt.TabFocusReason)
@@ -2794,6 +2815,8 @@ ApplicationWindow {
                                     Accessible.name: "View selected rental contract details"
                                     Accessible.description: "Read-only dates, status, duration and booked amount. No customer contact."
                                     onClicked: window.openSelectedRentalDetails(false)
+                                    Keys.onPressed: (event) =>
+                                        window.activateFocusedButton(event,showContractDetailsButton)
                                 }
                             }
                         }

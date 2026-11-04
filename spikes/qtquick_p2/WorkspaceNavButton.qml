@@ -26,6 +26,13 @@ Button {
     Keys.onPressed: (event) => {
         if (event.modifiers !== Qt.NoModifier || !nav.activeFocus)
             return
+        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            // Qt Quick Buttons may activate Space but not Return without
+            // default-button policy. Explicitly mirror mouse click here.
+            nav.clicked()
+            event.accepted = true
+            return
+        }
         let target = -1
         if (event.key === Qt.Key_Up && nav.index > 0)
             target = nav.index - 1
