@@ -2216,6 +2216,7 @@ ApplicationWindow {
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         command: archivedDelete
+                        rentals: rentalsModel
                         focusReturn: deleteArchivedButton
                         fallbackFocusReturn: rentalList
                     }

@@ -5719,6 +5719,72 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-C exact-target deletion modal not visible";
                 app.exit(420);return;
             }
+            // UX-S14: confirmed permanent deletion cannot silently re-arm
+            // after selection leaves the reviewed ID and comes back.
+            auto *warning=find(find,root,"rentalDeleteReviewWarning");
+            if(!confirm->isEnabled() || warning) {
+                qCritical()<<"UX-S14 fresh archived-delete review not armed";
+                app.exit(865);return;
+            }
+            field->setProperty("text",QStringLiteral("DELETE R002"));
+            rentalModel.clearSelection();
+            QCoreApplication::processEvents();
+            QTest::qWait(65);
+            warning=find(find,root,"rentalDeleteReviewWarning");
+            if(confirm->isEnabled() || !warning ||
+               !warning->property("text").toString().contains("Selection changed.") ||
+               !target->property("text").toString().contains("R002") ||
+               !rentalModel.selectById("R002")) {
+                qCritical()<<"UX-S14 selection-away confirmation did not invalidate";
+                app.exit(866);return;
+            }
+            QCoreApplication::processEvents();
+            if(!archivedDelete.canDeleteSelected() ||
+               confirm->isEnabled() ||
+               !warning->property("text").toString().contains(
+                   "Close and reopen to review this deletion.") ||
+               !system.findRentalById("R002") ||
+               !readFile(ledger,&now)||now!=archivedBytes ||
+               !readFile(disposable.filePath("vehicles.txt"),&vehicleNow)||
+               vehicleNow!=vehicleInitial) {
+                qCritical()<<"UX-S14 A-B-A revived archived-delete review or changed files";
+                app.exit(867);return;
+            }
+            press(cancel);
+            press(remove);
+            field=find(find,root,"rentalDeletePhrase");
+            confirm=find(find,root,"rentalDeleteConfirm");
+            if(!field||!confirm||!confirm->isEnabled() ||
+               !field->property("text").toString().isEmpty() ||
+               find(find,root,"rentalDeleteReviewWarning")) {
+                qCritical()<<"UX-S14 fresh review after selection change not armed";
+                app.exit(868);return;
+            }
+            // A model refresh with the same selected ID also invalidates the
+            // reviewed snapshot; neither selection nor domain writes change.
+            rentalModel.refresh();
+            QCoreApplication::processEvents();
+            QTest::qWait(65);
+            warning=find(find,root,"rentalDeleteReviewWarning");
+            if(rentalModel.selectedRentalId()!="R002" ||
+               !archivedDelete.canDeleteSelected() ||
+               confirm->isEnabled() || !warning ||
+               !warning->property("text").toString().contains("Rental data refreshed.") ||
+               !readFile(ledger,&now)||now!=archivedBytes) {
+                qCritical()<<"UX-S14 model reset did not invalidate archived-delete review";
+                app.exit(869);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QCoreApplication::processEvents();
+            QTest::qWait(90);
+            press(remove);
+            field=find(find,root,"rentalDeletePhrase");
+            confirm=find(find,root,"rentalDeleteConfirm");
+            if(!field||!confirm||!confirm->isEnabled() ||
+               find(find,root,"rentalDeleteReviewWarning")) {
+                qCritical()<<"UX-S14 refresh recovery did not require fresh review";
+                app.exit(870);return;
+            }
             press(confirm); // Blank phrase.
             field->setProperty("text",QStringLiteral("delete R002"));
             press(confirm); // Case mismatch.

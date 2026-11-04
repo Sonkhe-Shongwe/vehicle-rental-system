@@ -5,22 +5,54 @@ import QtQuick.Layouts
 Dialog {
     id: deleteDialog
     property var command
+    property var rentals
     property var focusReturn
     property var fallbackFocusReturn
     property string targetId: ""
+    property bool reviewInvalidated: false
+    property string reviewInvalidationReason: ""
+    function invalidateReview(reason) {
+        // A reviewed target is valid only while its verified context remains
+        // continuous. Never re-arm the same modal after A -> B -> A selection.
+        if (!deleteDialog.visible || deleteDialog.reviewInvalidated)
+            return
+        deleteDialog.reviewInvalidationReason = reason
+        deleteDialog.reviewInvalidated = true
+    }
+    Connections {
+        target: deleteDialog.rentals
+        function onSelectionChanged() {
+            if (deleteDialog.visible &&
+                    deleteDialog.targetId !== deleteDialog.rentals.selectedRentalId)
+                deleteDialog.invalidateReview("Selection changed.")
+        }
+        function onModelReset() {
+            deleteDialog.invalidateReview("Rental data refreshed.")
+        }
+        function onSnapshotAvailabilityChanged() {
+            if (deleteDialog.rentals && !deleteDialog.rentals.snapshotAvailable)
+                deleteDialog.invalidateReview("Rental data unavailable.")
+        }
+    }
     title: "Permanently delete archived rental"
     modal: true
     focus: true
     width: Math.min(520, parent ? parent.width - 64 : 500)
     standardButtons: Dialog.NoButton
     closePolicy: Popup.CloseOnEscape
-    onOpened: Qt.callLater(function() {
-        if(deleteDialog.visible)
-            deletePhrase.forceActiveFocus(Qt.TabFocusReason)
-    })
+    onOpened: {
+        reviewInvalidated = false
+        reviewInvalidationReason = ""
+        Qt.callLater(function() {
+            if(deleteDialog.visible)
+                deletePhrase.forceActiveFocus(Qt.TabFocusReason)
+        })
+    }
     onClosed: {
         deletePhrase.clear()
         targetId = ""
+        reviewInvalidated = false
+        reviewInvalidationReason = ""
         Qt.callLater(function() {
             if(focusReturn && focusReturn.visible && focusReturn.enabled)
                 focusReturn.forceActiveFocus(Qt.TabFocusReason)
@@ -49,6 +81,16 @@ Dialog {
             color: "#5F6F82"
             Layout.fillWidth: true
         }
+        Label {
+            objectName: "rentalDeleteReviewWarning"
+            visible: deleteDialog.reviewInvalidated
+            Layout.fillWidth: true
+            text: deleteDialog.reviewInvalidationReason +
+                  " Close and reopen to review this deletion."
+            color: "#9B3E24"
+            wrapMode: Text.WordWrap
+            Accessible.name: text
+        }
         AccessibleTextField {
             id: deletePhrase
             objectName: "rentalDeletePhrase"
@@ -72,7 +114,10 @@ Dialog {
                 objectName: "rentalDeleteConfirm"
                 text: "Delete archived record"
                 activeFocusOnTab: true
-                enabled: command && command.canDeleteSelected && targetId !== ""
+                enabled: command && command.canDeleteSelected &&
+                         targetId !== "" && !deleteDialog.reviewInvalidated &&
+                         deleteDialog.rentals &&
+                         targetId === deleteDialog.rentals.selectedRentalId
                 Accessible.name: "Permanently delete selected archived rental"
                 onClicked: {
                     if(command.permanentlyDelete(targetId,deletePhrase.text))
