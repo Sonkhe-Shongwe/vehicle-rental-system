@@ -3146,8 +3146,10 @@ int main(int argc, char *argv[]) {
                                             "rentalLookupField");
             auto *lookupButton = findVisual(findVisual,window->contentItem(),
                                              "rentalLookupButton");
-            auto *lookupFeedback = findVisual(findVisual,window->contentItem(),
-                                               "rentalLookupFeedback");
+            // The response label is intentionally invisible until a
+            // lookup returns. Discover the real QML object by QObject ID,
+            // then assert that the native UI actually shows it after input.
+            auto *lookupFeedback = window->findChild<QQuickItem*>("rentalLookupFeedback");
             if(!lookupField || !lookupButton || !lookupFeedback) {
                 qCritical() << "P6-F rental lookup control missing";
                 app.exit(112);return;
