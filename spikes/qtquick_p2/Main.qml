@@ -479,6 +479,31 @@ ApplicationWindow {
         else return
         event.accepted = true
     }
+    function focusFleetCollection() {
+        const view = window.gallery ? galleryView : tableView
+        if (!view || !view.visible)
+            return false
+        if (view.count > 0) {
+            const selected = fleet.selectedVisibleIndex()
+            view.currentIndex = selected >= 0 ? selected : 0
+            view.positionViewAtIndex(view.currentIndex, GridView.Contain)
+        }
+        return focusEnabled(view)
+    }
+    function fleetViewToggleKey(event, useGallery) {
+        if (event.modifiers !== Qt.NoModifier)
+            return
+        if (event.key === Qt.Key_Down) {
+            if (focusFleetCollection())
+                event.accepted = true
+        } else if (event.key === Qt.Key_Right && useGallery) {
+            if (focusEnabled(fleetTableToggle))
+                event.accepted = true
+        } else if (event.key === Qt.Key_Left && !useGallery) {
+            if (focusEnabled(fleetGalleryToggle))
+                event.accepted = true
+        }
+    }
     function enterRentalRecords() {
         if (!rentalsModel.snapshotAvailable)
             return false
@@ -1127,6 +1152,13 @@ ApplicationWindow {
                                     }
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
+                                    Keys.onPressed: (event) => {
+                                        if (event.modifiers === Qt.NoModifier &&
+                                            event.key === Qt.Key_Down &&
+                                            !inputMethodComposing &&
+                                            window.focusFleetCollection())
+                                            event.accepted = true
+                                    }
                                 }
                                 ComboBox {
                                     id: fleetStatusCombo
@@ -1176,8 +1208,10 @@ ApplicationWindow {
                                 }
                                 Item { Layout.fillWidth: true }
                                 Button {
+                                    id: fleetGalleryToggle
                                     objectName: "fleetGalleryToggle"
                                     text: "Gallery"
+                                    Keys.onPressed: (event) => window.fleetViewToggleKey(event,true)
                                     property bool visuallySelected: window.gallery
                                     Layout.minimumHeight: 44
                                     Layout.preferredWidth: 102
@@ -1207,8 +1241,10 @@ ApplicationWindow {
                                     Accessible.description: "Choose the vehicle gallery presentation"
                                 }
                                 Button {
+                                    id: fleetTableToggle
                                     objectName: "fleetTableToggle"
                                     text: "Table"
+                                    Keys.onPressed: (event) => window.fleetViewToggleKey(event,false)
                                     property bool visuallySelected: !window.gallery
                                     Layout.minimumHeight: 44
                                     Layout.preferredWidth: 94
