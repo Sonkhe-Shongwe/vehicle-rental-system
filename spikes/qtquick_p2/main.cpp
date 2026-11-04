@@ -4757,7 +4757,20 @@ int main(int argc, char *argv[]) {
         window->resize(compact?1280:1500,compact?720:860);
         window->setProperty("workspace",0);
         QTimer::singleShot(1200,&app,[&,window,compact] {
-            const auto get=[&](const QString &name) {
+            // Repeater delegates may be visual children rather than QObject
+            // children. Also inspect initially hidden StackLayout pages:
+            // the route itself makes them visible after Enter navigation.
+            const auto findItem=[](const auto &self,QQuickItem *item,
+                                   const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name) -> QQuickItem* {
+                if(auto *item=findItem(findItem,window->contentItem(),name))
+                    return item;
                 return window->findChild<QQuickItem*>(name);
             };
             auto *overviewNav=get("workspaceNavOverview");
@@ -4775,7 +4788,15 @@ int main(int argc, char *argv[]) {
             if(!overviewNav||!fleetNav||!rentalsNav||!search||!active||
                !fleetAction||!overdue||!filterAll||!filterActive||
                !filterOverdue||!lookup||!list) {
-                qCritical()<<"UX-CTRL-002 missing keyboard targets";
+                qCritical()<<"UX-CTRL-002 missing keyboard targets"
+                           <<"overview"<<(overviewNav!=nullptr)
+                           <<"fleet"<<(fleetNav!=nullptr)
+                           <<"rentals"<<(rentalsNav!=nullptr)
+                           <<"search"<<(search!=nullptr)
+                           <<"actions"<<(active!=nullptr)<< (fleetAction!=nullptr) <<(overdue!=nullptr)
+                           <<"filters"<<(filterAll!=nullptr)<<(filterActive!=nullptr)
+                                      <<(filterOverdue!=nullptr)
+                           <<"lookup/list"<<(lookup!=nullptr)<<(list!=nullptr);
                 app.exit(881);return;
             }
             const auto key=[&](Qt::Key k) {
