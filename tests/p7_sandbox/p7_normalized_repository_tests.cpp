@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <memory>
 #include "src/application/p7_sandbox/sqlite_repository.h"
+#include "src/application/p7_sandbox/sqlite_read_projection.h"
 using p7fiction::Repository;using p7fiction::Status;
 namespace {
 bool ok(bool b,const char *why){if(!b)qCritical()<<"P7-H FAIL:"<<why;return b;}
@@ -141,6 +142,66 @@ bool fleet_snapshot(){
               after->rentals.front().status=="RETURNED",
               "new Fleet snapshot reflects later committed return");
 }
+// P7-U tests deliberately tamper only one disposable fictional SQLite file.
+bool cross_record_integrity() {
+    Temp t; auto r=t.open();
+    if(!seed(*r))return false;
+    auto quote=r->quote("C001",3,day);
+    if(!ok(quote && r->book(*quote,day).status==Status::Ok,
+           "seed fictional active rental"))return false;
+    const auto accepted=[&]() {
+        const p7fiction::ReadProjection projection(*r);
+        const auto snapshot=r->fleetRows();
+        const auto fleet=projection.fleet();
+        const auto rentals=projection.rentals(day);
+        return snapshot && fleet && rentals &&
+               snapshot->vehicles.size()==2 && snapshot->rentals.size()==1 &&
+               fleet->size()==2 && rentals->size()==1 &&
+               rentals->front().rentalId=="R001";
+    };
+    const auto denied=[&]() {
+        const p7fiction::ReadProjection projection(*r);
+        return r->rentalRows().has_value() &&
+               !r->fleetRows().has_value() &&
+               !projection.fleet().has_value() &&
+               !projection.rentals(day).has_value();
+    };
+    const auto alter=[&](const QString &sql,bool fkOff=false) {
+        const QString name="p7u-"+QUuid::createUuid().toString(QUuid::WithoutBraces);
+        bool success=false;
+        {
+            auto db=QSqlDatabase::addDatabase("QSQLITE",name);
+            db.setDatabaseName(t.dir.filePath("fictional.sqlite"));
+            if(db.open()) {
+                {
+                    QSqlQuery q(db);
+                    success=(!fkOff||q.exec("PRAGMA foreign_keys=OFF"))&&q.exec(sql);
+                }
+                db.close();
+            }
+        }
+        QSqlDatabase::removeDatabase(name);
+        return success;
+    };
+    QFile marker(t.dir.filePath(".fictional-only"));
+    if(!ok(marker.open(QIODevice::ReadOnly),"open generated marker"))return false;
+    const QByteArray original=marker.readAll(); marker.close();
+    if(!ok(accepted(),"valid baseline cross-record read"))return false;
+    if(!ok(alter("UPDATE vehicles SET state='RETIRED' WHERE id='C001'"),
+           "inject active-on-retired synthetic relationship"))return false;
+    if(!ok(r->integrity()&&denied(),
+           "fail closed even if SQLite integrity_check passes"))return false;
+    if(!ok(alter("UPDATE vehicles SET state='ACTIVE' WHERE id='C001'")&&
+           accepted(),"restore verified Fleet and Rentals after repair"))return false;
+    if(!ok(alter("UPDATE rentals SET vehicle_id='C999' WHERE id='R001'",true),
+           "inject synthetic orphan reference"))return false;
+    if(!ok(denied(),"fail closed on orphaned rental reference"))return false;
+    if(!ok(alter("UPDATE rentals SET vehicle_id='C001' WHERE id='R001'",true)&&
+           accepted()&&r->integrity(),"recover after orphan repair"))return false;
+    if(!ok(marker.open(QIODevice::ReadOnly),"reopen marker"))return false;
+    const QByteArray finalMarker=marker.readAll();
+    return ok(finalMarker==original,"protected fictional-only marker unchanged");
+}
 bool future(){
     Temp t;auto r=t.open();if(!seed(*r))return false;r.reset();
     const QString name="p7h-"+QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -178,7 +239,8 @@ int main(int argc,char**argv){
     bool pass=mode=="lifecycle"?lifecycle():mode=="rollback"?rollback():
        mode=="money_ids"?numbers():mode=="future_schema"?future():
        mode=="contention"?contention():mode=="fleet_snapshot"?fleet_snapshot():
-       mode=="invalid_return_date"?invalid_return_date():false;
+       mode=="invalid_return_date"?invalid_return_date():
+       mode=="cross_record_integrity"?cross_record_integrity():false;
     if(pass)qInfo()<<"P7-H normalized fictional-only repository PASS"<<mode;
     return pass?0:1;
 }

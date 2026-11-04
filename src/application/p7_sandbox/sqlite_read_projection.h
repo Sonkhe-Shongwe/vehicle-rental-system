@@ -34,10 +34,12 @@ public:
     }
     std::optional<QList<RentalRecordSummary>> rentals(const QDate &today) const {
         if(!today.isValid())return {};
-        auto source=m_repo.rentalRows();
+        // Fleet and Rentals expose the same cross-validated transaction.
+        // Do not publish orphaned or active-on-retired contracts as verified.
+        auto source=m_repo.fleetRows();
         if(!source)return {};
         QList<RentalRecordSummary> out;
-        for(const auto &r:*source) {
+        for(const auto &r:source->rentals) {
             RentalRecordSummary row;
             row.rentalId=r.id;row.vehicleId=r.vehicleId;
             row.startDate=r.start;row.expectedReturnDate=r.expected;

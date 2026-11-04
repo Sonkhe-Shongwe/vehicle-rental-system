@@ -7,6 +7,7 @@
 #include <QList>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QString>
@@ -333,6 +334,29 @@ public:
         if(!vehicles || !rentals) {
             transaction.exec("ROLLBACK");
             return {};
+        }
+        // P7-U: structural SQLite integrity does not necessarily guarantee
+        // valid business relationships after external fixture tampering.
+        // Refuse whole snapshot rather than publishing misleading KPIs.
+        QSet<QString> vehicleIds, activeVehicles, occupied;
+        for(const auto &v:*vehicles) {
+            const QString id=v.id.toUpper();
+            if(vehicleIds.contains(id)) {
+                transaction.exec("ROLLBACK");
+                return {};
+            }
+            vehicleIds.insert(id);
+            if(v.state=="ACTIVE")activeVehicles.insert(id);
+        }
+        for(const auto &r:*rentals) {
+            const QString id=r.vehicleId.toUpper();
+            if(!vehicleIds.contains(id) ||
+               (r.status=="ACTIVE" &&
+                (!activeVehicles.contains(id) || occupied.contains(id)))) {
+                transaction.exec("ROLLBACK");
+                return {};
+            }
+            if(r.status=="ACTIVE")occupied.insert(id);
         }
         if(!transaction.exec("COMMIT")) {
             transaction.exec("ROLLBACK");
