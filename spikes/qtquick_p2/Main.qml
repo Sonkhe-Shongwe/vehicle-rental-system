@@ -375,6 +375,13 @@ ApplicationWindow {
         }
     }
 
+    // Presentation formatting only; the C++ value is authoritative.
+    function rentalMoney(value) {
+        const parts = Number(value || 0).toFixed(2).split(".")
+        return "R " + parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+               "." + parts[1]
+    }
+
     // Rental Arrow navigation follows only C++-filtered visible rows. Text
     // input, filter buttons, Tab and Escape retain native key behaviour.
     function navigateRentals(delta) {
@@ -2721,87 +2728,273 @@ ApplicationWindow {
                     Dialog {
                         id: contractDetailsDialog
                         objectName: "rentalContractDetailsDialog"
-                        title: "Rental contract details"
-                        width: Math.min(540, window.width - 64)
+                        title: "Rental contract"
+                        width: Math.min(600, window.width - 48)
+                        height: Math.min(650, window.height - 64)
                         parent: Overlay.overlay
                         anchors.centerIn: Overlay.overlay
                         modal: true
                         focus: true
+                        padding: window.width < 1100 ? 16 : 24
                         closePolicy: Popup.CloseOnEscape
                         standardButtons: Dialog.NoButton
                         onOpened: Qt.callLater(function() {
                             if (contractDetailsDialog.visible)
                                 detailsCloseButton.forceActiveFocus(Qt.TabFocusReason)
                         })
-                        onClosed: Qt.callLater(function() {
-                            if (showContractDetailsButton.visible && showContractDetailsButton.enabled)
-                                showContractDetailsButton.forceActiveFocus(Qt.TabFocusReason)
-                            else if (rentalList.visible)
-                                rentalList.forceActiveFocus(Qt.TabFocusReason)
-                        })
+                        onClosed: {
+                            window.contractDetailsOpenedId = ""
+                            Qt.callLater(function() {
+                                if (window.workspace !== 2) return
+                                if (window.contractDetailsFromRow && rentalList.visible)
+                                    rentalList.forceActiveFocus(Qt.TabFocusReason)
+                                else if (showContractDetailsButton.visible &&
+                                         showContractDetailsButton.enabled)
+                                    showContractDetailsButton.forceActiveFocus(Qt.TabFocusReason)
+                                else if (rentalList.visible)
+                                    rentalList.forceActiveFocus(Qt.TabFocusReason)
+                            })
+                        }
+                        background: Rectangle {
+                            color: designTokens.surface
+                            radius: 14
+                            border.width: 1
+                            border.color: designTokens.border
+                        }
                         contentItem: ColumnLayout {
-                            spacing: 10
-                            Label {
-                                text: "Read-only contract data from C++. No customer contact or payment details."
-                                color: ink
+                            spacing: 12
+                            RowLayout {
                                 Layout.fillWidth: true
-                                wrapMode: Text.WordWrap
+                                Layout.preferredHeight: 92
+                                spacing: 14
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 3
+                                    Label {
+                                        text: "RENTAL CONTRACT"
+                                        color: ink
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                        Accessible.name: text
+                                    }
+                                    Label {
+                                        objectName: "rentalDetailIdentity"
+                                        text: rentalsModel.selectedContract.rentalId || "No contract"
+                                        color: navy
+                                        font.pixelSize: 26
+                                        font.bold: true
+                                        Accessible.name: "Rental ID: " + text
+                                    }
+                                    Label {
+                                        objectName: "rentalDetailVehicle"
+                                        text: "Vehicle " +
+                                              (rentalsModel.selectedContract.vehicleId || "not selected")
+                                        color: ink
+                                        font.pixelSize: 14
+                                        Accessible.name: text
+                                    }
+                                }
+                                ColumnLayout {
+                                    spacing: 5
+                                    Layout.alignment: Qt.AlignTop
+                                    Rectangle {
+                                        Layout.alignment: Qt.AlignRight
+                                        implicitWidth: Math.max(92, rentalDetailStatus.implicitWidth + 22)
+                                        implicitHeight: 30
+                                        radius: 15
+                                        color: rentalsModel.selectedContract.status === "Active" ? mint : ice
+                                        Label {
+                                            id: rentalDetailStatus
+                                            objectName: "rentalDetailStatus"
+                                            anchors.centerIn: parent
+                                            text: rentalsModel.selectedContract.status || "Unavailable"
+                                            color: text === "Active" ? teal : navy
+                                            font.pixelSize: 12
+                                            font.bold: true
+                                            Accessible.name: "Rental status: " + text
+                                        }
+                                    }
+                                    Rectangle {
+                                        objectName: "rentalDetailDueChip"
+                                        visible: rentalsModel.selectedContract.dueState === "Overdue" ||
+                                                 rentalsModel.selectedContract.dueState === "DueToday"
+                                        Layout.alignment: Qt.AlignRight
+                                        implicitWidth: Math.max(92, dueChipText.implicitWidth + 22)
+                                        implicitHeight: 28
+                                        radius: 14
+                                        color: designTokens.warningSurface
+                                        Label {
+                                            id: dueChipText
+                                            anchors.centerIn: parent
+                                            text: window.dueStateLabel(rentalsModel.selectedContract.dueState)
+                                            color: designTokens.warningInk
+                                            font.bold: true
+                                            font.pixelSize: 12
+                                            Accessible.name: "Return timing: " + text
+                                        }
+                                    }
+                                }
                             }
-                            Label {
-                                objectName: "rentalDetailIdentity"
-                                text: "Rental: " + (rentalsModel.selectedContract.rentalId || "None") +
-                                      "  ·  Vehicle: " + (rentalsModel.selectedContract.vehicleId || "None")
-                                color: navy; font.bold: true
-                                Accessible.name: text
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                color: designTokens.border
                             }
-                            Label {
-                                objectName: "rentalDetailStatus"
-                                text: "Status: " + (rentalsModel.selectedContract.status || "Not selected") +
-                                      "  ·  Due: " + window.dueStateLabel(
-                                          rentalsModel.selectedContract.dueState)
-                                color: navy
-                                Accessible.name: text
+                            GridLayout {
+                                objectName: "rentalDetailGrid"
+                                Layout.fillWidth: true
+                                columns: width < 460 ? 1 : 2
+                                columnSpacing: 12
+                                rowSpacing: 12
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 76
+                                    color: ice
+                                    radius: 12
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        spacing: 4
+                                        Label { text: "Rental duration"; color: ink; font.pixelSize: 12 }
+                                        Label {
+                                            objectName: "rentalDetailDuration"
+                                            text: String(rentalsModel.selectedContract.days || 0) + " days"
+                                            color: navy; font.bold: true; font.pixelSize: 16
+                                            Accessible.name: "Rental duration: " + text
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 76
+                                    color: ice
+                                    radius: 12
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        spacing: 4
+                                        Label { text: "Daily rate"; color: ink; font.pixelSize: 12 }
+                                        Label {
+                                            objectName: "rentalDetailRate"
+                                            text: window.rentalMoney(rentalsModel.selectedContract.dailyRate)
+                                            color: navy; font.bold: true; font.pixelSize: 16
+                                            Accessible.name: "Daily rate: " + text
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 76
+                                    color: ice
+                                    radius: 12
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        spacing: 4
+                                        Label { text: "Start date"; color: ink; font.pixelSize: 12 }
+                                        Label {
+                                            objectName: "rentalDetailStart"
+                                            text: rentalsModel.selectedContract.startDate || "Not recorded"
+                                            color: navy; font.pixelSize: 16
+                                            Accessible.name: "Start date: " + text
+                                        }
+                                    }
+                                }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 76
+                                    color: ice
+                                    radius: 12
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        spacing: 4
+                                        Label { text: "Expected return"; color: ink; font.pixelSize: 12 }
+                                        Label {
+                                            objectName: "rentalDetailExpected"
+                                            text: rentalsModel.selectedContract.expectedReturnDate || "Not recorded"
+                                            color: navy; font.pixelSize: 16
+                                            Accessible.name: "Expected return: " + text
+                                        }
+                                    }
+                                }
                             }
-                            Label {
-                                objectName: "rentalDetailStart"
-                                text: "Start date: " + (rentalsModel.selectedContract.startDate || "Not recorded")
-                                color: ink; Accessible.name: text
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 68
+                                color: ice
+                                radius: 12
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 12
+                                    spacing: 3
+                                    Label { text: "Actual return"; color: ink; font.pixelSize: 12 }
+                                    Label {
+                                        objectName: "rentalDetailActual"
+                                        text: rentalsModel.selectedContract.actualReturnDate || "Not returned"
+                                        color: navy; font.pixelSize: 16
+                                        Accessible.name: "Actual return: " + text
+                                    }
+                                }
                             }
-                            Label {
-                                objectName: "rentalDetailExpected"
-                                text: "Expected return: " + (rentalsModel.selectedContract.expectedReturnDate || "Not recorded")
-                                color: ink; Accessible.name: text
-                            }
-                            Label {
-                                objectName: "rentalDetailActual"
-                                text: "Actual return: " + (rentalsModel.selectedContract.actualReturnDate || "Not returned")
-                                color: ink; Accessible.name: text
-                            }
-                            Label {
-                                objectName: "rentalDetailDuration"
-                                text: "Rental days: " + (rentalsModel.selectedContract.days || 0)
-                                color: ink; Accessible.name: text
-                            }
-                            Label {
-                                objectName: "rentalDetailRate"
-                                text: "Daily rate: R " + Number(rentalsModel.selectedContract.dailyRate || 0).toFixed(2)
-                                color: ink; Accessible.name: text
-                            }
-                            Label {
-                                objectName: "rentalDetailTotal"
-                                text: "Booked contract total: R " + Number(rentalsModel.selectedContract.total || 0).toFixed(2)
-                                color: navy; font.bold: true
-                                Accessible.name: text
+                            Rectangle {
+                                objectName: "rentalDetailTotalPanel"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 110
+                                color: mint
+                                radius: 12
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 14
+                                    spacing: 3
+                                    Label {
+                                        text: "BOOKED CONTRACT TOTAL"
+                                        color: navy
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                    }
+                                    Label {
+                                        objectName: "rentalDetailTotal"
+                                        text: window.rentalMoney(rentalsModel.selectedContract.total)
+                                        color: navy
+                                        font.pixelSize: 26
+                                        font.bold: true
+                                        Accessible.name: "Booked contract total: " + text
+                                    }
+                                    Label {
+                                        text: "Booked value, not a payment receipt"
+                                        color: ink
+                                        font.pixelSize: 12
+                                        Accessible.name: text
+                                    }
+                                }
                             }
                             RowLayout {
                                 Layout.fillWidth: true
-                                Item { Layout.fillWidth: true }
+                                spacing: 12
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: "Read-only verified rental summary"
+                                    color: ink
+                                    font.pixelSize: 12
+                                    wrapMode: Text.WordWrap
+                                    Accessible.name: text
+                                }
                                 Button {
                                     id: detailsCloseButton
                                     objectName: "rentalDetailsClose"
                                     text: "Close"
-                                    Layout.minimumHeight: 36
+                                    Layout.minimumHeight: 44
                                     activeFocusOnTab: true
+                                    hoverEnabled: true
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: detailsCloseButton.hovered
+                                               ? designTokens.neutralHover : ice
+                                        border.width: detailsCloseButton.activeFocus ? 3 : 1
+                                        border.color: detailsCloseButton.activeFocus ? navy :
+                                                      designTokens.border
+                                    }
                                     Accessible.name: "Close rental contract details"
                                     onClicked: contractDetailsDialog.close()
                                 }
