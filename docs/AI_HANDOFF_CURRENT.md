@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**FREE 70-MODEL PORTFOLIO CATALOGUE PLAN (4 Nov 2026):** Owner chose 60+ free, offline, recognizable model images; [70-model candidate catalogue and 10-step acquisition procedure](PORTFOLIO_70_MODEL_FREE_IMAGE_ACQUISITION_PLAN_2026-11-04.md) inventories 39 current + 31 proposed, existing 100 fictional units, 12 Commons CC0 images + 3 legacy, 25 wrong-model assignments affecting 66 records, and 11 individual free photo-page candidates. **Milestone floor: 60 visually approved, licensed local photos; 70 stretch. NO new media or application modifications from this planning change.** Licensed acquisition must use permitted individual downloads/official APIs, not prohibited site scraping. Current formal 45/74, 70.6%, P7 0/8 unchanged. 
+
+---
+
+
 **R0 FREE PORTFOLIO SHOWCASE | 4 Nov 2026:** Normal no-argument Qt Quick launch now embeds **100 fictional vehicles (90 cars, 10 motorcycles)** and **12 locally bundled, live-verified CC0 Wikimedia Commons illustrative photos**. Portfolio has no paid image API or online runtime fetch; source and photographer credits are recorded in `assets/portfolio/IMAGE_CREDITS.md`. **Exact photo-inclusive source [`75b9b8d`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/75b9b8d751860dd773e462cc38e29121412f3845) passed [completed GitHub Actions #41868916532](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/41868916532): 130/130 genuine Qt6.8.3 CTests each Linux GCC and Windows MSVC**, including new actual QML 100-vehicle wide/compact and free-photo asset assertions, plus hosted Windows relocated fictional **8/8** and PS5.1 PASS. [Complete dated evidence](PORTFOLIO_100_VEHICLES_FREE_CC0_OFFLINE_NATIVE_VERIFIED_2026-11-04.md). Original five-vehicle demo fixtures and other CI modes untouched. **NEXT:** owner GitHub Desktop Pull -> Qt Creator Build/Run `rental_studio_qtquick_spike` without args; review photos/layout/scroll physically. Portfolio, not commercialization. **Owner-accepted 45/74, 70.6%, P7 0/8 unchanged**, main untouched, PR draft.
 
 ---
