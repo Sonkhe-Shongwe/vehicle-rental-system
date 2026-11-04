@@ -209,8 +209,8 @@ int main(int argc, char **argv) {
         check(lookup.locateForOperator("  ")=="Empty" &&
               lookup.locateForOperator("R999")=="NotFound" &&
               lookup.statusFilter()=="Active" &&
-              lookup.selectedRentalId().isEmpty(),
-              "blank and unknown lookup outcomes are distinct and read-only");
+              lookup.selectedRentalId()=="R003",
+              "blank and unknown lookup outcomes preserve existing selection and filter");
 
         // UX-S17: normal Find rental accepts a uniquely matched vehicle ID,
         // including history hidden by a status filter, but never guesses
