@@ -1,0 +1,77 @@
+{
+  "batch": "05",
+  "date": "2026-11-05",
+  "scope": "Ten proposed free offline mainstream/luxury/bakkie image candidates, isolated staging only, no Qt mapping changes",
+  "sources": [
+    {
+      "slug": "land_rover_range_rover_sport",
+      "make": "Land Rover",
+      "model": "Range Rover Sport",
+      "file_title": "Range Rover Sport 2025.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "toyota_land_cruiser_prado",
+      "make": "Toyota",
+      "model": "Land Cruiser Prado",
+      "file_title": "Moscow, Toyota Land Cruiser Prado (J250) July 2026 01.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "lexus_rx",
+      "make": "Lexus",
+      "model": "RX",
+      "file_title": "Lexus RX.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "bmw_x5",
+      "make": "BMW",
+      "model": "X5",
+      "file_title": "BMW X5 F15.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mercedes_benz_glc",
+      "make": "Mercedes-Benz",
+      "model": "GLC",
+      "file_title": "Mercedes Benz GLC.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "audi_q5",
+      "make": "Audi",
+      "model": "Q5",
+      "file_title": "Moscow, Audi Q5 blue, Mar 2026 01.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mini_cooper",
+      "make": "MINI",
+      "model": "Cooper",
+      "file_title": "2025 MINI Cooper.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "renault_kwid",
+      "make": "Renault",
+      "model": "Kwid",
+      "file_title": "Renault Kwid (front).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mitsubishi_triton",
+      "make": "Mitsubishi",
+      "model": "Triton",
+      "file_title": "Mitsubishi Triton's (1).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "hyundai_tucson",
+      "make": "Hyundai",
+      "model": "Tucson",
+      "file_title": "Hyundai-Tucson(1).jpg",
+      "expected_license": "FREE_CC"
+    }
+  ]
+}
