@@ -1064,7 +1064,7 @@ ApplicationWindow {
                     spacing: 3
                     Label {
                         objectName: "workspacePageHeading"
-                        text: window.workspace === 0 ? "Overview" :
+                        text: window.workspace === 0 ? "Your fleet. Your next move." :
                               window.workspace === 1 ? "Fleet" :
                               window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
                         font.pixelSize: window.height < 800 ?
@@ -1077,7 +1077,7 @@ ApplicationWindow {
                     Label {
                         objectName: "workspacePageSubtitle"
                         text: window.workspace === 0
-                            ? "Fleet, rentals and daily operations at a glance"
+                            ? "An immediate view of what is ready, active and needs attention"
                             : window.workspace === 1
                             ? "Browse, search and manage your vehicle fleet"
                             : window.workspace === 2
@@ -1133,83 +1133,95 @@ ApplicationWindow {
                         id: overviewContent
                         width: overviewScroll.width
                         spacing: window.height < 800 ? 10 : 12
-                    RowLayout {
+                    Rectangle {
+                        id: editorialOverviewHero
+                        objectName: "editorialOverviewHero"
+                        property var overduePreview: rentalsModel.oldestOverduePreview
+                        readonly property bool needsAttention:
+                            rentalsModel.snapshotAvailable &&
+                            rentalsModel.oldestOverdueRentalId !== ""
                         Layout.fillWidth: true
-                        spacing: 10
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 3
-                            Label {
-                                text: "Your operations, at a glance"
-                                color: navy
-                                font.pixelSize: window.height < 800 ? 17 : 19
-                                font.weight: Font.DemiBold
+                        Layout.preferredHeight: window.height < 800 ? 210 : 244
+                        color: "#0C2538"
+                        radius: 16
+                        clip: true
+                        Accessible.role: Accessible.Grouping
+                        Accessible.name: needsAttention
+                            ? "Return exception for contract " + rentalsModel.oldestOverdueRentalId
+                            : "Overview: no overdue returns"
+                        Rectangle {
+                            width: 315
+                            height: 315
+                            radius: 158
+                            x: parent.width - 248
+                            y: -78
+                            color: "transparent"
+                            border.color: "#294E61"
+                            border.width: 1
+                        }
+                        Rectangle {
+                            width: 235
+                            height: 235
+                            radius: 118
+                            x: parent.width - 208
+                            y: -36
+                            color: "transparent"
+                            border.color: "#294E61"
+                            border.width: 1
+                        }
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: window.height < 800 ? 20 : 28
+                            anchors.rightMargin: window.height < 800 ? 14 : 24
+                            anchors.topMargin: window.height < 800 ? 14 : 20
+                            anchors.bottomMargin: window.height < 800 ? 12 : 19
+                            spacing: 20
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                            }
-                            Label {
-                                text: "Live figures from the fictional fleet and confirmed contracts"
-                                color: ink
-                                font.pixelSize: 12
-                                Layout.fillWidth: true
-                                elide: Text.ElideRight
-                            }
-                        }
-                        Label {
-                            text: "LIVE · OFFLINE"
-                            color: designTokens.teal
-                            font.pixelSize: 11
-                            font.weight: Font.DemiBold
-                            Layout.alignment: Qt.AlignTop
-                        }
-                    }
-                    GridLayout {
-                        objectName: "overviewMetricGrid"
-                        Layout.fillWidth: true
-                        columns: window.width < 1180 ? 2 : 4
-                        rowSpacing: 10
-                        columnSpacing: 12
-                        OverviewMetricCard {
-                            objectName: "overviewTotalCard"
-                            metricLabel: "Total vehicles"
-                            value: String(fleet.totalCount)
-                            note: "Fictional fleet"
-                            metricIcon: "Fleet"
-                            accent: navy
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewAvailableCard"
-                            metricLabel: "Available vehicles"
-                            value: String(fleet.availableCount)
-                            note: "Ready to rent"
-                            metricIcon: "check"
-                            accent: teal
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewActiveCard"
-                            metricLabel: "Active rentals"
-                            value: String(rentalsModel.activeCount)
-                            note: "Confirmed contracts"
-                            metricIcon: "Rentals"
-                            accent: navy
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewOverdueCard"
-                            metricLabel: "Overdue returns"
-                            value: String(rentalsModel.overdueCount)
-                            note: "From C++ due dates"
-                            metricIcon: "clock"
-                            accent: rentalsModel.overdueCount > 0
-                                ? designTokens.warningInk : teal
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                    }
+                                Layout.minimumWidth: 0
+                                spacing: 5
+                                Label {
+                                    text: editorialOverviewHero.needsAttention
+                                        ? "RETURN EXCEPTION  ·  OPERATIONAL PRIORITY"
+                                        : "FLEET OPERATIONS  ·  LIVE SNAPSHOT"
+                                    color: "#88DECE"
+                                    font.pixelSize: 11
+                                    font.letterSpacing: 1
+                                    font.weight: Font.DemiBold
+                                }
+                                Label {
+                                    text: editorialOverviewHero.needsAttention
+                                        ? "One rental needs\nattention."
+                                        : "Make your next\nmove with confidence."
+                                    font.pixelSize: window.height < 800 ? 25 : 31
+                                    lineHeight: 0.97
+                                    font.weight: Font.DemiBold
+                                    color: "#FFFFFF"
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                }
+                                Label {
+                                    text: editorialOverviewHero.needsAttention
+                                        ? editorialOverviewHero.overduePreview.rentalId +
+                                          "  ·  Vehicle " + editorialOverviewHero.overduePreview.vehicleId
+                                        : fleet.availableCount + " vehicles ready for the next rental"
+                                    color: "#DCEAEF"
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: editorialOverviewHero.needsAttention
+                                        ? "Expected return: " +
+                                          editorialOverviewHero.overduePreview.expectedReturnDate
+                                        : "Current fictional fleet and confirmed contracts"
+                                    color: "#B2CAD6"
+                                    font.pixelSize: 11
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                Item { Layout.fillHeight: true }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 12
@@ -1314,6 +1326,106 @@ ApplicationWindow {
                                     rentalList.forceActiveFocus(Qt.TabFocusReason)
                                 })
                             }
+                        }
+                    }
+                            }
+                            Item {
+                                id: overviewHeroPhotoBox
+                                Layout.preferredWidth: window.height < 800 ? 235 : 300
+                                Layout.preferredHeight: window.height < 800 ? 152 : 192
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: 13
+                                    color: "#183D53"
+                                    border.color: "#406579"
+                                    clip: true
+                                    Image {
+                                        id: overviewHeroPhoto
+                                        anchors.fill: parent
+                                        anchors.margins: 3
+                                        source: editorialOverviewHero.needsAttention &&
+                                                editorialOverviewHero.overduePreview.vehicleId !== undefined &&
+                                                fleetPhotos.revision >= 0 &&
+                                                fleetPhotos.hasPhoto(editorialOverviewHero.overduePreview.vehicleId)
+                                            ? "image://fleetphotos/" +
+                                              editorialOverviewHero.overduePreview.vehicleId +
+                                              "?v=" + fleetPhotos.revision : ""
+                                        asynchronous: true
+                                        fillMode: Image.PreserveAspectFit
+                                        visible: status === Image.Ready && source !== ""
+                                        Accessible.ignored: true
+                                    }
+                                    VehicleSilhouette {
+                                        anchors.centerIn: parent
+                                        scale: window.height < 800 ? 0.8 : 1.1
+                                        vehicleType: "Car"
+                                        visible: !overviewHeroPhoto.visible
+                                    }
+                                    Label {
+                                        visible: overviewHeroPhoto.visible
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.margins: 8
+                                        text: "MODEL REFERENCE"
+                                        font.pixelSize: 9
+                                        font.weight: Font.DemiBold
+                                        color: "#17324D"
+                                        padding: 4
+                                        background: Rectangle {
+                                            color: "#F6F8FA"
+                                            radius: 5
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GridLayout {
+                        objectName: "overviewMetricGrid"
+                        Layout.fillWidth: true
+                        columns: window.width < 1180 ? 2 : 4
+                        rowSpacing: 10
+                        columnSpacing: 12
+                        OverviewMetricCard {
+                            objectName: "overviewTotalCard"
+                            metricLabel: "Total vehicles"
+                            value: String(fleet.totalCount)
+                            note: "Fictional fleet"
+                            metricIcon: "Fleet"
+                            accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewAvailableCard"
+                            metricLabel: "Available vehicles"
+                            value: String(fleet.availableCount)
+                            note: "Ready to rent"
+                            metricIcon: "check"
+                            accent: teal
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewActiveCard"
+                            metricLabel: "Active rentals"
+                            value: String(rentalsModel.activeCount)
+                            note: "Confirmed contracts"
+                            metricIcon: "Rentals"
+                            accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewOverdueCard"
+                            metricLabel: "Overdue returns"
+                            value: String(rentalsModel.overdueCount)
+                            note: "From C++ due dates"
+                            metricIcon: "clock"
+                            accent: rentalsModel.overdueCount > 0
+                                ? designTokens.warningInk : teal
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
                         }
                     }
                     Label {
