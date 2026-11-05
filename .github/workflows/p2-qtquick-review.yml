@@ -125,6 +125,7 @@ jobs:
             build-p2/spikes/qtquick_p2/pa-shell-001-*.png
             build-p2/spikes/qtquick_p2/pa-overview-002-*.png
             build-p2/spikes/qtquick_p2/pa-fleet-003-*.png
+            build-p2/spikes/qtquick_p2/pa-rentals-004-*.png
             build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7
@@ -274,6 +275,7 @@ jobs:
             build-p2/spikes/qtquick_p2/pa-shell-001-*.png
             build-p2/spikes/qtquick_p2/pa-overview-002-*.png
             build-p2/spikes/qtquick_p2/pa-fleet-003-*.png
+            build-p2/spikes/qtquick_p2/pa-rentals-004-*.png
             build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7

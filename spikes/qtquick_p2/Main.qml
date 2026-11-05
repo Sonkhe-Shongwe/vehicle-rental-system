@@ -2762,6 +2762,22 @@ ApplicationWindow {
                             objectName: "rentalReturnButton"
                             text: "Return selected rental"
                             activeFocusOnTab: true
+                            hoverEnabled: true
+                            Layout.minimumHeight: 44
+                            background: Rectangle {
+                                radius: 8
+                                color: !returnSelectedButton.enabled ? designTokens.disabledSurface :
+                                       returnSelectedButton.hovered ? mint : designTokens.surface
+                                border.color: returnSelectedButton.activeFocus ? navy : teal
+                                border.width: returnSelectedButton.activeFocus ? designTokens.focusWidth : 1
+                            }
+                            contentItem: Text {
+                                text: returnSelectedButton.text
+                                color: returnSelectedButton.enabled ? teal : designTokens.disabledInk
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             onActiveFocusChanged: {
                                 if (activeFocus) window.lastRentalActionFocus = 1
                             }
@@ -2780,6 +2796,22 @@ ApplicationWindow {
                             objectName: "rentalArchiveButton"
                             text: "Archive returned"
                             activeFocusOnTab: true
+                            hoverEnabled: true
+                            Layout.minimumHeight: 44
+                            background: Rectangle {
+                                radius: 8
+                                color: !archiveActionButton.enabled ? designTokens.disabledSurface :
+                                       archiveActionButton.hovered ? designTokens.neutralHover : designTokens.surface
+                                border.color: archiveActionButton.activeFocus ? navy : designTokens.border
+                                border.width: archiveActionButton.activeFocus ? designTokens.focusWidth : 1
+                            }
+                            contentItem: Text {
+                                text: archiveActionButton.text
+                                color: archiveActionButton.enabled ? navy : designTokens.disabledInk
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
                             onActiveFocusChanged: {
                                 if (activeFocus) window.lastRentalActionFocus = 2
                             }
@@ -2815,6 +2847,7 @@ ApplicationWindow {
                         }
                         DomainMessage {
                             objectName: "rentalReturnMessage"
+                            visible: text !== ""
                             text: rentalActions.lastReturnMessage
                         }
                     }
@@ -2956,10 +2989,12 @@ ApplicationWindow {
                     }
                     DomainMessage {
                         objectName: "rentalDeleteMessage"
+                            visible: text !== ""
                         text: archivedDelete.lastMessage
                     }
                     DomainMessage {
                         objectName: "rentalArchiveMessage"
+                            visible: text !== ""
                         text: archiveActions.lastArchiveMessage
                     }
                     // Quality-first compact desktop layout: filters and
@@ -3021,14 +3056,15 @@ ApplicationWindow {
                                     onClicked: rentalsModel.statusFilter = modelData
                                     background: Rectangle {
                                         radius: 8
-                                        color: rentalsModel.statusFilter === parent.modelData ? navy :
-                                               parent.hovered ? designTokens.neutralHover : ice
-                                        border.width: parent.activeFocus ? designTokens.focusWidth : 0
-                                        border.color: navy
+                                        color: rentalsModel.statusFilter === parent.modelData ? mint :
+                                               parent.hovered ? designTokens.quietSurface : designTokens.ice
+                                        border.width: parent.activeFocus ? designTokens.focusWidth :
+                                                      (rentalsModel.statusFilter === parent.modelData ? 1 : 0)
+                                        border.color: parent.activeFocus ? navy : teal
                                     }
                                     contentItem: Text {
                                         text: parent.text
-                                        color: rentalsModel.statusFilter === parent.modelData ? "white" : navy
+                                        color: rentalsModel.statusFilter === parent.modelData ? teal : navy
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                         font.bold: rentalsModel.statusFilter === parent.modelData
@@ -3082,14 +3118,16 @@ ApplicationWindow {
                                     onClicked: rentalsModel.statusFilter = modelData.value
                                     background: Rectangle {
                                         radius: 8
-                                        color: rentalsModel.statusFilter === parent.modelData.value ? navy :
-                                               parent.hovered ? designTokens.neutralHover : ice
-                                        border.width: parent.activeFocus ? designTokens.focusWidth : 0
-                                        border.color: navy
+                                        color: rentalsModel.statusFilter === parent.modelData.value
+                                               ? designTokens.warningSurface :
+                                               parent.hovered ? designTokens.quietSurface : designTokens.ice
+                                        border.width: parent.activeFocus ? designTokens.focusWidth :
+                                                      (rentalsModel.statusFilter === parent.modelData.value ? 1 : 0)
+                                        border.color: parent.activeFocus ? navy : designTokens.warningInk
                                     }
                                     contentItem: Text {
                                         text: parent.text
-                                        color: rentalsModel.statusFilter === parent.modelData.value ? "white" : navy
+                                        color: rentalsModel.statusFilter === parent.modelData.value ? designTokens.warningInk : navy
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                         font.bold: rentalsModel.statusFilter === parent.modelData.value
