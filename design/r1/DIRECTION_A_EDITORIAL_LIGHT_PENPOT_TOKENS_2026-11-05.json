@@ -1,0 +1,120 @@
+{
+  "Rental Studio / Editorial Light": {
+    "color": {
+      "navy": {
+        "$value": "#17324D",
+        "$type": "color"
+      },
+      "teal": {
+        "$value": "#0F766E",
+        "$type": "color"
+      },
+      "canvas": {
+        "$value": "#F6F8FA",
+        "$type": "color"
+      },
+      "surface": {
+        "$value": "#FFFFFF",
+        "$type": "color"
+      },
+      "ice": {
+        "$value": "#EAF0F4",
+        "$type": "color"
+      },
+      "mint": {
+        "$value": "#E8F5F0",
+        "$type": "color"
+      },
+      "muted": {
+        "$value": "#5F6F82",
+        "$type": "color"
+      },
+      "border": {
+        "$value": "#D8E2E8",
+        "$type": "color"
+      },
+      "rented": {
+        "$value": "#1D4ED8",
+        "$type": "color"
+      },
+      "warning": {
+        "$value": "#965A0A",
+        "$type": "color"
+      },
+      "warningSurface": {
+        "$value": "#FFF2D5",
+        "$type": "color"
+      }
+    },
+    "space": {
+      "4": {
+        "$value": "4px",
+        "$type": "dimension"
+      },
+      "8": {
+        "$value": "8px",
+        "$type": "dimension"
+      },
+      "12": {
+        "$value": "12px",
+        "$type": "dimension"
+      },
+      "14": {
+        "$value": "14px",
+        "$type": "dimension"
+      },
+      "16": {
+        "$value": "16px",
+        "$type": "dimension"
+      },
+      "20": {
+        "$value": "20px",
+        "$type": "dimension"
+      },
+      "24": {
+        "$value": "24px",
+        "$type": "dimension"
+      },
+      "32": {
+        "$value": "32px",
+        "$type": "dimension"
+      },
+      "40": {
+        "$value": "40px",
+        "$type": "dimension"
+      },
+      "48": {
+        "$value": "48px",
+        "$type": "dimension"
+      }
+    },
+    "radius": {
+      "control": {
+        "$value": "10px",
+        "$type": "dimension"
+      },
+      "card": {
+        "$value": "14px",
+        "$type": "dimension"
+      },
+      "feature": {
+        "$value": "17px",
+        "$type": "dimension"
+      }
+    },
+    "size": {
+      "sidebarExpanded": {
+        "$value": "218px",
+        "$type": "dimension"
+      },
+      "sidebarCollapsed": {
+        "$value": "76px",
+        "$type": "dimension"
+      },
+      "actionMin": {
+        "$value": "44px",
+        "$type": "dimension"
+      }
+    }
+  }
+}
