@@ -3021,7 +3021,17 @@ ApplicationWindow {
                     Dialog {
                         id: contractDetailsDialog
                         objectName: "rentalContractDetailsDialog"
+                        // Keep the semantic title for assistive technology, but suppress
+                        // Qt's default small title bar. The approved contract card already
+                        // provides its own prominent RENTAL CONTRACT heading.
                         title: "Rental contract"
+                        Accessible.name: "Rental contract details for " +
+                                         (rentalsModel.selectedContract.rentalId || "selected rental")
+                        header: Item {
+                            objectName: "rentalContractSuppressedDefaultHeader"
+                            implicitHeight: 0
+                            visible: false
+                        }
                         width: Math.min(600, window.width - 48)
                         height: Math.min(650, window.height - 64)
                         parent: Overlay.overlay

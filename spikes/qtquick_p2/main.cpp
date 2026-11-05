@@ -5346,6 +5346,18 @@ int main(int argc, char *argv[]) {
             auto *panel=find(find,root,"rentalDetailTotalPanel");
             auto *duration=find(find,root,"rentalDetailDuration");
             auto *rate=find(find,root,"rentalDetailRate");
+            // UX-VIS-002: the accessible Dialog retains its title, but Qt's
+            // redundant default visible title bar must not precede the custom
+            // RENTAL CONTRACT header. Check the real popup component.
+            auto *chromeHeader=find(find,root,"rentalContractSuppressedDefaultHeader");
+            if(!chromeHeader || chromeHeader->isVisible() ||
+               dialog->property("title").toString()!="Rental contract") {
+                qCritical()<<"UX-VIS-002 duplicate contract title chrome not suppressed"
+                           <<"header"<<chromeHeader
+                           <<"visible"<<(chromeHeader?chromeHeader->isVisible():true)
+                           <<"semantic title"<<dialog->property("title");
+                app.exit(573);return;
+            }
             const auto fitsWindow=[window](QQuickItem *item)->bool {
                 if(!item || !item->isVisible() || item->width()<=0 ||
                    item->height()<=0)return false;
