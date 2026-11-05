@@ -1616,7 +1616,7 @@ ApplicationWindow {
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 // Photo-led cards need enough vertical room to retain
                                 // recognisable vehicle framing at compact widths.
-                                cellHeight: 230
+                                cellHeight: 282
                                 ScrollBar.vertical: ScrollBar {}
                                 Column {
                                     objectName: "fleetGalleryEmpty"
@@ -1665,7 +1665,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 214
+                                    height: 264
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -1688,7 +1688,7 @@ ApplicationWindow {
                                         anchors.margins: 10
                                         Rectangle {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 112
+                                            Layout.preferredHeight: 160
                                             color: window.ice
                                             radius: 9
                                             clip: true
@@ -1711,7 +1711,7 @@ ApplicationWindow {
                                                       + "?v=" + fleetPhotos.revision : ""
 
                                                 visible: photoAvailable && status === Image.Ready
-                                                fillMode: Image.PreserveAspectCrop
+                                                fillMode: Image.PreserveAspectFit
                                                 cache: false
                                                 Accessible.name: "Illustrative photo for " + vehicleCard.displayName
                                             }
@@ -1913,7 +1913,7 @@ ApplicationWindow {
                     }
                     Rectangle {
                         objectName: "vehicleInspector"
-                        Layout.preferredWidth: 258
+                        Layout.preferredWidth: 282
                         Layout.fillHeight: true
                         color: "white"
                         border.color: "#D8E2E8"
@@ -1956,8 +1956,8 @@ ApplicationWindow {
                                 visible: fleet.selectedId !== ""
                                 Layout.fillWidth: true
                                 // Keep a useful image area even in the 720px Inspector.
-                                Layout.preferredHeight: window.height < 800 ? 96 : 120
-                                Layout.minimumHeight: window.height < 800 ? 86 : 112
+                                Layout.preferredHeight: window.height < 800 ? 170 : 194
+                                Layout.minimumHeight: window.height < 800 ? 160 : 180
                                 color: ice
                                 radius: 10
                                 clip: true
@@ -1980,7 +1980,7 @@ ApplicationWindow {
                                     // Failed or loading image cannot conceal the fallback silhouette.
 
                                     visible: photoAvailable && status === Image.Ready
-                                    fillMode: Image.PreserveAspectCrop
+                                    fillMode: Image.PreserveAspectFit
                                     cache: false
                                     Accessible.name: "Illustrative model photo for " + fleet.selectedName
                                     Accessible.description: "Reference picture only, not the actual rental vehicle"
