@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Latest verified checkpoint
 
+**UX-VIS-002 SINGLE CONTRACT HEADING, EXACT-SOURCE VERIFIED (5 Nov 2026):** [Executable source `509692a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/509692a2e39b391bec5ff7653b50d7206ad3e807) passed [native GitHub Actions #42022249850](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42022249850): **130/130 CTests on EACH Ubuntu GCC and Windows MSVC / Qt 6.8.3**, zero failures, Windows packaged fictional **8/8**, PowerShell 5.1 **PASS**. The real contract dialog now suppresses redundant Qt title chrome while retaining its semantic title; actual 1280x720 and 1500x860 Windows screenshot ZIP #13411829588 was inspected, with single header, card order, Mint booked-total panel, and Close visible without clipping. [Full dated evidence](UX_VIS_002_SINGLE_CONTRACT_HEADING_NATIVE_VERIFIED_2026-11-05.md) records two failed intermediate runs, corrections, hashes, limits and manual review path. **Owner physical Windows Qt Creator MinGW, OS scaling and Narrator NOT accepted; 45/74 owner-accepted, 70.6% weighted, P7 0/8 unchanged; main untouched, PR #17 DRAFT.**
+
+---
+
+
 **FREE CATALOGUE PHOTO BATCH 05 SUCCESS (5 Nov 2026):** [10 newly acquired candidate photos](../catalogue_acquisition/batch05/PREVIEW.md) checked for individual CC0/CC BY/CC BY-SA rights, image source and file SHA256. [Completed successful #42016092532](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42016092532). [Five-batch acquisition index](../catalogue_acquisition/INDEX.md) now covers **50 unique model-photo staging assets**, **25/25 original wrong-model assignments** with replacement candidates, **25/31 proposed showcase models** with sourced photos, **six proposed models remaining**. **0/50 newly visually accepted or integrated into Qt Fleet**; current demo and photo map unchanged, 45/74 formal owner acceptance, 70.6%, P7 0/8 unchanged.
 
 ---
