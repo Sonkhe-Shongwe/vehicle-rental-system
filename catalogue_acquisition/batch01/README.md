@@ -1,11 +1,11 @@
 # Free model-matched photo acquisition | Batch 01
 
-**Target:** Ten actual, distinct local model photographs for Hyundai Creta, Volkswagen Polo, Haval Jolion, Nissan Navara, Isuzu D-Max, Mazda CX-5, Honda CBR500R, Kawasaki Ninja 400, Mercedes-Benz G-Class and Volkswagen Golf GTI.
+**State: ACQUIRED AND SOURCE-LICENCE VERIFIED on 5 November 2026; visual owner review still OPEN.** Ten source photographs are downloaded, optimized, hash-recorded, and separately staged. [View the ten real acquired files in the preview](PREVIEW.md).
 
-**State at this commit:** Named Wikimedia Commons File: pages selected and source manifest saved. Actual downloaded photos, licences and hashes require the GitHub acquisition workflow to complete successfully before any acquired status is claimed.
+**Vehicles:** Hyundai Creta, Volkswagen Polo, Haval Jolion, Nissan Navara, Isuzu D-Max, Mazda CX-5, Honda CBR500R, Kawasaki Ninja 400, Mercedes-Benz G-Class and Volkswagen Golf GTI.
 
-**Method:** The tool uses the official Commons MediaWiki API to verify the individually nominated file title, the free CC0/CC BY/CC BY-SA licence metadata, author and image URL; images are downloaded from official Wikimedia hosts, resized without stretching to 1024×680, and stored in `images/`. It records the original Commons link, creator, original image licence, notice of derivative resizing and SHA256 in `IMAGE_CREDITS.md` and `source_manifest.json`. It rejects any source whose metadata fails these checks.
+**Acquisition:** GitHub Actions [#42007433964](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42007433964), completed SUCCESS. The official Commons MediaWiki API checked file and live CC0/CC BY-SA metadata. All **10/10** passed, with 10 different SHA256 hashes. Files were resized and padded without stretching to 1024 × 680 offline JPEGs; `IMAGE_CREDITS.md` retains photographer, exact source, licence, licence link and derivative notice. The full machine-readable source and file hashes appear in `source_manifest.json`.
 
-**Isolation:** This folder is outside `assets/portfolio/` and no CMake Qt resource list includes it. The existing gallery still shows its old catalogue mapping. **This is research and collection, NOT an implementation of new Fleet photos.**
+**Scope:** These new photos reside in `catalogue_acquisition/batch01/images/`, outside the compiled Qt asset directory `assets/portfolio/`. They are **not yet wired into Fleet**. Existing representative image errors will be fixed only after visual review and a separate tested implementation. No paid APIs, runtime downloads, operational customer data, main-branch changes or release.
 
-**Next gate:** Visually inspect the ten locally acquired images, reject weak matches, and only then propose a mapping change for the owner's review. No paid service, operational customer data or main-branch change.
+**Owner visual gate:** inspect [PREVIEW.md](PREVIEW.md) and identify any composition/match problems. Licence metadata verification is not a substitute for the human visual decision.
