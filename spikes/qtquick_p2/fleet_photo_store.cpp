@@ -30,6 +30,30 @@ QString seed(const QString &id,const QPair<QString,QString> &identity,
        model.compare(QStringLiteral("i20"),Qt::CaseInsensitive)==0)
         return QStringLiteral(":/fleet-demo-photos/hyundai_i20.jpg");
     if(!portfolioShowcase)return {};
+    // Model-matched local Commons resources, never generic brand substitutes.
+    // Two low-quality compositions and six unsourced models use silhouettes.
+    static const QHash<QString,QString> catalogueImages=[] {
+        QHash<QString,QString> map;
+        QFile file(QStringLiteral(":/catalogue-photos/model_photo_map.tsv"));
+        if(!file.open(QIODevice::ReadOnly))return map;
+        static const QRegularExpression safePath(
+            QStringLiteral("^batch0[1-5]/images/[a-z0-9_]+$"));
+        for(const auto &line:QString::fromUtf8(file.readAll()).split('\n')) {
+            const auto fields=line.trimmed().split('|');
+            if(fields.size()!=3 || !safePath.match(fields.at(2)).hasMatch())continue;
+            map.insert(fields.at(0).trimmed().toCaseFolded()+
+                QLatin1Char('|')+fields.at(1).trimmed().toCaseFolded(),fields.at(2));
+        }
+        return map;
+    }();
+    const QString key=make.toCaseFolded()+QLatin1Char('|')+model.toCaseFolded();
+    const QString candidate=catalogueImages.value(key);
+    if(!candidate.isEmpty()) {
+        const QString resource=QStringLiteral(":/catalogue-photos/")+
+                               candidate+QStringLiteral(".jpg");
+        if(QFile::exists(resource))return resource;
+    }
+    // Preserve earlier CC0 model-specific references, never wrong-brand maps.
     // Portfolio photos are embedded, rights-audited representatives.
     // When not downloaded, the existing offline silhouette is used.
     static const QHash<QString,QString> portfolioImages=[] {
@@ -47,7 +71,6 @@ QString seed(const QString &id,const QPair<QString,QString> &identity,
         }
         return mapping;
     }();
-    const QString key=make.toCaseFolded()+QLatin1Char('|')+model.toCaseFolded();
     const QString slug=portfolioImages.value(key);
     const QString resource=QStringLiteral(":/portfolio-photos/")+slug+
         QStringLiteral(".jpg");

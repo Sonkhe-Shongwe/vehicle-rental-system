@@ -50,6 +50,33 @@ if(PORTFOLIO_CC0_IMAGES)
         BASE "${PROJECT_SOURCE_DIR}/assets/portfolio"
         FILES ${PORTFOLIO_CC0_IMAGES})
 endif()
+# Only intentionally model-matched candidate files enter the QA executable.
+# Attribution and per-file licences are shipped with the Windows review ZIP.
+file(STRINGS "${PROJECT_SOURCE_DIR}/catalogue_acquisition/model_photo_map.tsv"
+    CURATED_PHOTO_MAP_LINES)
+set(CURATED_PHOTO_FILES)
+foreach(CURATED_PHOTO_MAP_LINE IN LISTS CURATED_PHOTO_MAP_LINES)
+    string(REPLACE "|" ";" CURATED_PHOTO_FIELDS "${CURATED_PHOTO_MAP_LINE}")
+    list(LENGTH CURATED_PHOTO_FIELDS CURATED_PHOTO_FIELDS_COUNT)
+    if(NOT CURATED_PHOTO_FIELDS_COUNT EQUAL 3)
+        message(FATAL_ERROR "Invalid curated model image map row")
+    endif()
+    list(GET CURATED_PHOTO_FIELDS 2 CURATED_PHOTO_RELATIVE)
+    if(NOT CURATED_PHOTO_RELATIVE MATCHES "^batch0[1-5]/images/[a-z0-9_]+$")
+        message(FATAL_ERROR "Unsafe model image path")
+    endif()
+    set(CURATED_PHOTO_SOURCE "${PROJECT_SOURCE_DIR}/catalogue_acquisition/${CURATED_PHOTO_RELATIVE}.jpg")
+    if(NOT EXISTS "${CURATED_PHOTO_SOURCE}")
+        message(FATAL_ERROR "Curated model reference image missing")
+    endif()
+    list(APPEND CURATED_PHOTO_FILES "${CURATED_PHOTO_SOURCE}")
+endforeach()
+qt_add_resources(rental_studio_qtquick_spike "curated_model_family_photos"
+    PREFIX "/catalogue-photos"
+    BASE "${PROJECT_SOURCE_DIR}/catalogue_acquisition"
+    FILES
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/model_photo_map.tsv"
+        ${CURATED_PHOTO_FILES})
 # Explicit fictional-only integration into this REAL Qt Quick executable.
 # NOT the default workspace, not commercial storage and not a Widgets change.
 if(BUILD_P7_SQLITE_SANDBOX)

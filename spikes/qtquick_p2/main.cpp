@@ -369,7 +369,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ux-ctrl-002-smoke", "Verify owner-approved Qt directional keys, semantic danger and read-only contract Enter."});
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
     parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
-    parser.addOption({"portfolio-catalog-smoke", "CI-only real 100-vehicle offline portfolio demo check."});
+    parser.addOption({"portfolio-catalog-smoke", "CI-only real 131-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
     parser.addOption({"p6-fleet-remove-smoke", "Native confirmed fictional vehicle removal test."});
@@ -1161,21 +1161,33 @@ int main(int argc, char *argv[]) {
                 readFile(rentals,&originalRentals) &&
                 originalVehicles==beforeVehicles &&
                 originalRentals==beforeRentals;
-            if(!protectedBytes || fleet.totalCount()!=100 ||
-               fleet.carCount()!=90 || fleet.motorcycleCount()!=10 ||
-               fleet.availableCount()!=99 || fleet.rentedCount()!=1 ||
+            if(!protectedBytes || fleet.totalCount()!=131 ||
+               fleet.carCount()!=121 || fleet.motorcycleCount()!=10 ||
+               fleet.availableCount()!=130 || fleet.rentedCount()!=1 ||
                rentalModel.count()!=2 || !fleetPhotos.hasPhoto("C001") ||
                !fleetPhotos.hasPhoto("C004") ||
                !fleetPhotos.hasPhoto("C005") ||
-               !fleetPhotos.hasPhoto("M001")) {
+               !fleetPhotos.hasPhoto("M001") ||
+               !fleetPhotos.hasPhoto("C012") ||
+               !fleetPhotos.hasPhoto("C017") ||
+               !fleetPhotos.hasPhoto("C091") ||
+               !fleetPhotos.hasPhoto("C121") ||
+               fleetPhotos.hasPhoto("C019") ||
+               fleetPhotos.hasPhoto("C022") ||
+               fleetPhotos.hasPhoto("C099") ||
+               fleetPhotos.hasPhoto("C103") ||
+               fleetPhotos.hasPhoto("C114") ||
+               fleetPhotos.hasPhoto("C117") ||
+               fleetPhotos.hasPhoto("C118") ||
+               fleetPhotos.hasPhoto("C120")) {
                 qCritical()<<"Portfolio source, counts or base photo invalid";
                 app.exit(714);return;
             }
             startupWindow->setProperty("workspace",1);
             QCoreApplication::processEvents();
             auto *gallery=startupWindow->findChild<QQuickItem*>("fleetGallery");
-            if(!gallery || gallery->property("count").toInt()!=100) {
-                qCritical()<<"Portfolio 100-entry actual QML Gallery missing";
+            if(!gallery || gallery->property("count").toInt()!=131) {
+                qCritical()<<"Portfolio 131-entry actual QML Gallery missing";
                 app.exit(715);return;
             }
             fleet.setQuery("Toyota");
@@ -1191,12 +1203,41 @@ int main(int argc, char *argv[]) {
                 app.exit(717);return;
             }
             fleet.setQuery("");
-            if(gallery->property("count").toInt()!=100 ||
-               fleet.totalCount()!=100) {
+            if(gallery->property("count").toInt()!=131 ||
+               fleet.totalCount()!=131) {
                 qCritical()<<"Portfolio gallery search reset failed";
                 app.exit(718);return;
             }
-            qInfo()<<"PORTFOLIO fictional 100-vehicle native Fleet PASS"
+            // Actual QML Gallery/Inspector screenshot of three distinct
+            // make/model sources at each physical CI logical window size.
+            for(const QString &id : QStringList{
+                    QStringLiteral("C017"),QStringLiteral("C091"),
+                    QStringLiteral("C121")}) {
+                fleet.setQuery(id);
+                fleet.selectById(id);
+                QTest::qWait(250);
+                if(fleet.selectedId()!=id ||
+                   gallery->property("count").toInt()!=1 ||
+                   !fleetPhotos.hasPhoto(id)) {
+                    qCritical()<<"Catalogue model/photo identity mismatch"<<id;
+                    app.exit(719);return;
+                }
+                const QString size=parser.isSet("compact")
+                    ? QStringLiteral("1280x720") : QStringLiteral("1500x860");
+                const QImage photoShot=startupWindow->grabWindow();
+                if(photoShot.isNull() || photoShot.size()!=startupWindow->size() ||
+                   !photoShot.save(QStringLiteral("catalogue-qt-%1-%2.png")
+                                   .arg(id,size),"PNG")) {
+                    qCritical()<<"Curated photo QML screenshot invalid"<<id;
+                    app.exit(720);return;
+                }
+            }
+            fleet.setQuery("");
+            if(gallery->property("count").toInt()!=131) {
+                qCritical()<<"Catalogue photo review did not restore full Gallery";
+                app.exit(721);return;
+            }
+            qInfo()<<"PORTFOLIO fictional 131-vehicle model-photo Fleet PASS"
                    <<(parser.isSet("compact")?"1280x720":"1500x860");
             app.exit(0);
         });

@@ -122,6 +122,7 @@ jobs:
             build-p2/spikes/qtquick_p2/ux-s1-rentals-bottom-*.png
             # UX-SHELL-004: actual expanded/collapsed icon-sidebar captures.
             build-p2/spikes/qtquick_p2/ux-shell-004-*.png
+            build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7
 
@@ -186,6 +187,9 @@ jobs:
           Copy-Item "spikes/qtquick_p2/START_HERE_FUNCTIONAL_DEMO.md" "$dest/START_HERE_FUNCTIONAL_DEMO.md"
           Copy-Item "spikes/qtquick_p2/Verify-P4-Windows.ps1" "$dest/Verify-P4-Windows.ps1"
           Copy-Item "spikes/qtquick_p2/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md" "$dest/P4_WINDOWS_ACCESSIBILITY_ACCEPTANCE.md"
+          New-Item -ItemType Directory -Path "$dest/PHOTO_CREDITS" -Force | Out-Null
+          Copy-Item "catalogue_acquisition/ACTIVE_ASSET_CREDITS.md" "$dest/PHOTO_CREDITS/CATALOGUE_IMAGE_CREDITS.md"
+          Copy-Item "assets/portfolio/IMAGE_CREDITS.md" "$dest/PHOTO_CREDITS/ORIGINAL_CC0_IMAGE_CREDITS.md"
           Set-Content -Path "$dest/SOURCE_COMMIT.txt" -NoNewline -Value "$env:GITHUB_SHA"
           $deployer = Join-Path $env:QT_ROOT_DIR "bin/windeployqt.exe"
           if (-not (Test-Path $deployer)) { throw "windeployqt unavailable" }
@@ -264,5 +268,6 @@ jobs:
             build-p2/spikes/qtquick_p2/ux-s1-rentals-bottom-*.png
             # UX-SHELL-004: actual expanded/collapsed icon-sidebar captures.
             build-p2/spikes/qtquick_p2/ux-shell-004-*.png
+            build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7
