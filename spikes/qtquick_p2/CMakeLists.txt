@@ -140,6 +140,17 @@ if(BUILD_TESTING)
         set_tests_properties(rental_studio_pa_fleet_003_${SIZE}
             PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
     endforeach()
+    # Phase 1D: real Rentals QML hierarchy, screenshot and fixture integrity.
+    foreach(SIZE wide compact)
+        set(PA_RENTALS_ARGS --pa-rentals-004-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND PA_RENTALS_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_pa_rentals_004_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${PA_RENTALS_ARGS})
+        set_tests_properties(rental_studio_pa_rentals_004_${SIZE}
+            PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
     # Precision Automotive Light dashboard: real totals, availability ring,
     # latest contracts, 1280/1500 captures and no fixture modification.
     foreach(SIZE wide compact)

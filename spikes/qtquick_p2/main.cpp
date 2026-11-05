@@ -372,6 +372,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"pa-shell-001-smoke", "Precision Automotive Light real booking shortcut, icon rail and focus restoration."});
     parser.addOption({"pa-overview-002-smoke", "Native Precision Automotive Overview real C++ totals, availability ring and recent panel."});
     parser.addOption({"pa-fleet-003-smoke", "Native Precision Automotive Fleet gallery/table/inspector presentation and data-safety proof."});
+    parser.addOption({"pa-rentals-004-smoke", "Inspect the actual Precision Automotive Rentals contract panels, register and status."});
     parser.addOption({"portfolio-catalog-smoke", "CI-only real 131-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
@@ -4994,6 +4995,84 @@ int main(int argc, char *argv[]) {
             qInfo()<<"Precision Automotive Light real Fleet PASS"
                    <<(compact?"1280x720":"1500x860")
                    <<"identity, status pills, rate, table header, no writes";
+            app.exit(0);
+        });
+    }
+    // Precision Automotive Light Rentals: inspect real Qt object geometry,
+    // status rows, screenshots and immutable source fixtures. No domain write.
+    if (parser.isSet("pa-rentals-004-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 1080;
+        const bool compact=parser.isSet("compact");
+        const QSize expected(compact?1280:1500,compact?720:860);
+        window->resize(expected);
+        window->setProperty("workspace",2);
+        QTimer::singleShot(1350,&app,[&,window,compact,expected] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name)->QQuickItem* {
+                if(auto *item=find(find,window->contentItem(),name))return item;
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *scroll=get("rentalsPageScroll");
+            auto *heading=get("rentalSectionHeading");
+            auto *actions=get("rentalActionPanel");
+            auto *filters=get("rentalFilterPanel");
+            auto *records=get("rentalRecordsPanel");
+            auto *header=get("rentalTableHeader");
+            auto *count=get("rentalRegisterCount");
+            auto *booking=get("rentalNewBookingButton");
+            auto *returnAction=get("rentalReturnButton");
+            auto *archiveAction=get("rentalArchiveButton");
+            if(!scroll||!heading||!actions||!filters||!records||
+               !header||!count||!booking||!returnAction||!archiveAction||
+               heading->property("text").toString()!=QStringLiteral("Contract management")||
+               actions->width()<300||filters->width()<300||
+               records->width()<300||!booking->isVisible()||
+               !count->property("text").toString().contains(QStringLiteral("record"))) {
+                qCritical()<<"PA Rentals 004 missing rendered controls";
+                app.exit(1081);return;
+            }
+            const auto capture=[&](const QString &state)->bool {
+                const QString size=compact?QStringLiteral("1280x720"):
+                                           QStringLiteral("1500x860");
+                const QImage shot=window->grabWindow();
+                return !shot.isNull()&&shot.size()==expected&&
+                       shot.save(QStringLiteral("pa-rentals-004-%1-%2.png")
+                                     .arg(state,size),"PNG");
+            };
+            scroll->setProperty("contentY",0);
+            QTest::qWait(130);
+            if(!capture("controls")) {
+                qCritical()<<"PA Rentals controls screenshot unavailable";
+                app.exit(1082);return;
+            }
+            const qreal maxY=qMax(0.0,scroll->property("contentHeight").toReal()-
+                                      scroll->height());
+            scroll->setProperty("contentY",maxY);
+            QTest::qWait(180);
+            auto *pill=get("rentalStatusPill");
+            if(!header->isVisible()||!records->isVisible()||
+               !pill||pill->property("statusValue").toString().isEmpty()||
+               !capture("register")) {
+                qCritical()<<"PA Rentals register / status screenshot unavailable";
+                app.exit(1083);return;
+            }
+            QByteArray afterFleet,afterRentals;
+            if(!readFile(vehicles,&afterFleet)||!readFile(rentals,&afterRentals)||
+               afterFleet!=beforeVehicles||afterRentals!=beforeRentals) {
+                qCritical()<<"PA Rentals appearance changed protected fixtures";
+                app.exit(1084);return;
+            }
+            qInfo()<<"Precision Automotive Rentals source PASS"
+                   <<(compact?"1280x720":"1500x860")
+                   <<"real contract panels and unchanged fixtures";
             app.exit(0);
         });
     }
