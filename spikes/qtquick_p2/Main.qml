@@ -1130,99 +1130,84 @@ ApplicationWindow {
                     boundsBehavior: Flickable.StopAtBounds
                     ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
                     ColumnLayout {
-                    id: overviewContent
-                    width: overviewScroll.width
-                    spacing: 16
-                    Label {
-                        text: "Operations at a glance"
-                        font.pixelSize: 21; font.bold: true; color: navy
-                    }
-                    Label {
-                        text: "Live from the C++ rental records in this fictional demo."
-                        color: ink; wrapMode: Text.WordWrap
+                        id: overviewContent
+                        width: overviewScroll.width
+                        spacing: window.height < 800 ? 10 : 12
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 3
+                            Label {
+                                text: "Your operations, at a glance"
+                                color: navy
+                                font.pixelSize: window.height < 800 ? 17 : 19
+                                font.weight: Font.DemiBold
+                                Layout.fillWidth: true
+                            }
+                            Label {
+                                text: "Live figures from the fictional fleet and confirmed contracts"
+                                color: ink
+                                font.pixelSize: 12
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                            }
+                        }
+                        Label {
+                            text: "LIVE · OFFLINE"
+                            color: designTokens.teal
+                            font.pixelSize: 11
+                            font.weight: Font.DemiBold
+                            Layout.alignment: Qt.AlignTop
+                        }
                     }
                     GridLayout {
+                        objectName: "overviewMetricGrid"
                         Layout.fillWidth: true
-                        columns: window.width < 1350 ? 2 : 4
-                        rowSpacing: 12; columnSpacing: 12
+                        columns: window.width < 1180 ? 2 : 4
+                        rowSpacing: 10
+                        columnSpacing: 12
+                        OverviewMetricCard {
+                            objectName: "overviewTotalCard"
+                            metricLabel: "Total vehicles"
+                            value: String(fleet.totalCount)
+                            note: "Fictional fleet"
+                            metricIcon: "Fleet"
+                            accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
+                        }
                         OverviewMetricCard {
                             objectName: "overviewAvailableCard"
                             metricLabel: "Available vehicles"
-                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(fleet.availableCount)
-                            note: "Of " + fleet.totalCount + " in Fleet"
+                            note: "Ready to rent"
+                            metricIcon: "check"
                             accent: teal
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
                         }
                         OverviewMetricCard {
                             objectName: "overviewActiveCard"
                             metricLabel: "Active rentals"
-                            Layout.preferredHeight: window.height < 800 ? 114 : 134
                             value: String(rentalsModel.activeCount)
-                            note: "Confirmed rental contracts"
+                            note: "Confirmed contracts"
+                            metricIcon: "Rentals"
                             accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
                         }
                         OverviewMetricCard {
                             objectName: "overviewOverdueCard"
-                            metricLabel: "Overdue rentals"
-                            Layout.preferredHeight: window.height < 800 ? 114 : 134
+                            metricLabel: "Overdue returns"
                             value: String(rentalsModel.overdueCount)
-                            note: "From current C++ due-state"
+                            note: "From C++ due dates"
+                            metricIcon: "clock"
                             accent: rentalsModel.overdueCount > 0
-                                    ? designTokens.warningInk : teal
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewValueCard"
-                            metricLabel: "Active booked value"
-                            Layout.preferredHeight: window.height < 800 ? 114 : 134
-                            value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
-                            note: "Contract totals, not payments"
-                            accent: navy
-                        }
-                    }
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 138
-                        radius: 12
-                        color: mint
-                        border.color: designTokens.border
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 16
-                            spacing: 9
-                            Label {
-                                text: "Rental lifecycle"
-                                color: navy; font.bold: true; font.pixelSize: 17
-                            }
-                            RowLayout {
-                                spacing: 20
-                                Label {
-                                    objectName: "overviewDueTodayText"
-                                    text: "Due today: " + rentalsModel.dueTodayCount
-                                    color: navy
-                                    Accessible.name: text
-                                }
-                                Label {
-                                    objectName: "overviewHistoryText"
-                                    text: "Returned or archived: " + rentalsModel.historyCount
-                                    color: navy
-                                    Accessible.name: text
-                                }
-                            }
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 12
-                                Label {
-                                    objectName: "overviewOldestOverdueText"
-                                    text: rentalsModel.oldestOverdueRentalId !== ""
-                                          ? "Oldest overdue contract: " + rentalsModel.oldestOverdueRentalId
-                                          : "No overdue returns need attention"
-                                    color: navy
-                                    font.bold: true
-                                    Accessible.name: text
-                                }
-                                Item { Layout.fillWidth: true }
-
-                            }
+                                ? designTokens.warningInk : teal
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 104 : 116
                         }
                     }
                     RowLayout {
@@ -1336,10 +1321,27 @@ ApplicationWindow {
                         text: "Demo-only operations. No payment, deposit or realized revenue reporting."
                         color: ink; wrapMode: Text.WordWrap
                     }
+                    GridLayout {
+                        objectName: "overviewInsightGrid"
+                        Layout.fillWidth: true
+                        columns: window.width < 1180 ? 1 : 2
+                        rowSpacing: 12
+                        columnSpacing: 12
+                        OverviewAvailabilityPanel {
+                            objectName: "overviewAvailabilityPanel"
+                            total: fleet.totalCount
+                            available: fleet.availableCount
+                            rented: fleet.rentedCount
+                            dueToday: rentalsModel.dueTodayCount
+                            history: rentalsModel.historyCount
+                            oldestOverdueId: rentalsModel.oldestOverdueRentalId
+                            bookedValue: rentalsModel.activeBookedValue
+                            compact: window.height < 800
+                        }
                     Rectangle {
                         objectName: "overviewRecentPanel"
                         Layout.fillWidth: true
-                        Layout.preferredHeight: recentContent.implicitHeight + 28
+                        Layout.preferredHeight: window.height < 800 ? 272 : 294
                         radius: 12
                         color: "white"
                         border.color: designTokens.border
@@ -1430,6 +1432,7 @@ ApplicationWindow {
                                 }
                             }
                         }
+                    }
                     }
                     }
                 }

@@ -128,6 +128,18 @@ if(BUILD_TESTING)
                 PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
         endforeach()
     endif()
+    # Precision Automotive Light dashboard: real totals, availability ring,
+    # latest contracts, 1280/1500 captures and no fixture modification.
+    foreach(SIZE wide compact)
+        set(PA_OVERVIEW_ARGS --pa-overview-002-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND PA_OVERVIEW_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_pa_overview_002_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${PA_OVERVIEW_ARGS})
+        set_tests_properties(rental_studio_pa_overview_002_${SIZE}
+            PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
     # Precision Automotive real native shell: sidebar action, booking modal,
     # visible screenshots and untouched protected five-fixture records.
     foreach(SIZE wide compact)

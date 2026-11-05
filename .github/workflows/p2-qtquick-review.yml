@@ -123,6 +123,7 @@ jobs:
             # UX-SHELL-004: actual expanded/collapsed icon-sidebar captures.
             build-p2/spikes/qtquick_p2/ux-shell-004-*.png
             build-p2/spikes/qtquick_p2/pa-shell-001-*.png
+            build-p2/spikes/qtquick_p2/pa-overview-002-*.png
             build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7
@@ -270,6 +271,7 @@ jobs:
             # UX-SHELL-004: actual expanded/collapsed icon-sidebar captures.
             build-p2/spikes/qtquick_p2/ux-shell-004-*.png
             build-p2/spikes/qtquick_p2/pa-shell-001-*.png
+            build-p2/spikes/qtquick_p2/pa-overview-002-*.png
             build-p2/spikes/qtquick_p2/catalogue-qt-*.png
           if-no-files-found: ignore
           retention-days: 7

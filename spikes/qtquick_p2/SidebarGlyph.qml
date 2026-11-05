@@ -41,6 +41,14 @@ Canvas {
             ctx.moveTo(8, 13);ctx.lineTo(14, 13)
             ctx.moveTo(8, 17);ctx.lineTo(12, 17)
             ctx.stroke()
+        } else if (kind === "check") {
+            ctx.beginPath(); ctx.arc(11, 11, 8, 0, Math.PI * 2)
+            ctx.moveTo(7, 11); ctx.lineTo(10, 14); ctx.lineTo(16, 8)
+            ctx.stroke()
+        } else if (kind === "clock") {
+            ctx.beginPath(); ctx.arc(11, 11, 8, 0, Math.PI * 2)
+            ctx.moveTo(11, 6); ctx.lineTo(11, 11); ctx.lineTo(15, 13)
+            ctx.stroke()
         } else if (kind === "add") {
             ctx.beginPath()
             ctx.moveTo(11, 4); ctx.lineTo(11, 18)

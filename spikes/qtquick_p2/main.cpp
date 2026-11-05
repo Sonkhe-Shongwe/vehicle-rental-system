@@ -370,6 +370,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
     parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
     parser.addOption({"pa-shell-001-smoke", "Precision Automotive Light real booking shortcut, icon rail and focus restoration."});
+    parser.addOption({"pa-overview-002-smoke", "Native Precision Automotive Overview real C++ totals, availability ring and recent panel."});
     parser.addOption({"portfolio-catalog-smoke", "CI-only real 131-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
@@ -4874,6 +4875,99 @@ int main(int argc, char *argv[]) {
     }
     // Precision Automotive Light: native shell and the existing real booking
     // modal. This is a presentation-only shortcut, not a new domain action.
+    // Precision Automotive 1B: protect the operational semantics while
+    // rendering the genuine Light dashboard and accessible availability ring.
+    if (parser.isSet("pa-overview-002-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 1020;
+        const bool compact=parser.isSet("compact");
+        const QSize expected(compact?1280:1500,compact?720:860);
+        window->resize(expected);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1350,&app,[&,window,compact,expected] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name)->QQuickItem* {
+                if(auto *item=find(find,window->contentItem(),name))return item;
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *total=get("overviewTotalCard");
+            auto *available=get("overviewAvailableCard");
+            auto *active=get("overviewActiveCard");
+            auto *overdue=get("overviewOverdueCard");
+            auto *donut=get("overviewAvailabilityPanel");
+            auto *ring=get("overviewAvailabilityRing");
+            auto *percent=get("overviewAvailablePercent");
+            auto *value=get("overviewValueCard");
+            auto *due=get("overviewDueTodayText");
+            auto *history=get("overviewHistoryText");
+            auto *recent=get("overviewRecentPanel");
+            auto *row=get("overviewRecentRow0");
+            auto *review=get("overviewReviewOverdue");
+            auto *disclosure=get("overviewDemoDisclosure");
+            if(!total||!available||!active||!overdue||!donut||!ring||
+               !percent||!value||!due||!history||!recent||!row||
+               !review||!disclosure) {
+                qCritical()<<"PA Overview controls or real history row missing";
+                app.exit(1021);return;
+            }
+            const QString expectedPercent=QString::number(
+                fleet.totalCount()>0
+                  ? qRound(100.0*fleet.availableCount()/fleet.totalCount())
+                  : 0)+QStringLiteral("%");
+            if(total->property("value").toString()!=QString::number(fleet.totalCount()) ||
+               available->property("value").toString()!=QString::number(fleet.availableCount()) ||
+               active->property("value").toString()!=QString::number(rentalModel.activeCount()) ||
+               overdue->property("value").toString()!=QString::number(rentalModel.overdueCount()) ||
+               donut->property("total").toInt()!=fleet.totalCount() ||
+               donut->property("available").toInt()!=fleet.availableCount() ||
+               donut->property("rented").toInt()!=fleet.rentedCount() ||
+               percent->property("text").toString()!=expectedPercent ||
+               value->property("value").toString()!=
+                    QStringLiteral("R %1").arg(rentalModel.activeBookedValue(),0,'f',2) ||
+               !row->property("text").toString().contains("R001") ||
+               !disclosure->property("text").toString().contains("No payment")) {
+                qCritical()<<"PA Overview data mismatch"<<expectedPercent
+                           <<percent->property("text")<<donut->property("rented");
+                app.exit(1022);return;
+            }
+            // Existing compact P5 tests require immediate visibility of these
+            // controls rather than accidental placement below the fold.
+            for(QQuickItem *item:{review,disclosure}) {
+                const auto pos=item->mapToScene(QPointF(0,0));
+                if(!item->isVisible() || pos.y()<0 ||
+                   pos.y()+item->height()>window->height()-2) {
+                    qCritical()<<"PA Overview safety action/disclosure clipped"
+                               <<item->objectName()<<pos;
+                    app.exit(1023);return;
+                }
+            }
+            const QString size=compact?QStringLiteral("1280x720"):
+                QStringLiteral("1500x860");
+            const QImage shot=window->grabWindow();
+            if(shot.isNull() || shot.size()!=expected ||
+               !shot.save(QStringLiteral("pa-overview-002-%1.png").arg(size),"PNG")) {
+                qCritical()<<"PA Overview screenshot failed";
+                app.exit(1024);return;
+            }
+            QByteArray vehicleSource,rentalSource;
+            if(!readFile(vehicles,&vehicleSource)||
+               !readFile(rentals,&rentalSource)||
+               vehicleSource!=beforeVehicles||rentalSource!=beforeRentals) {
+                qCritical()<<"PA Overview mutated protected demo fixtures";
+                app.exit(1025);return;
+            }
+            qInfo()<<"Precision Automotive Light operational Overview PASS"<<size
+                   <<"real source KPIs, available ring, recent records, no writes";
+            app.exit(0);
+        });
+    }
     if (parser.isSet("pa-shell-001-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window) return 1001;
