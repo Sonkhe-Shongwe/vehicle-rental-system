@@ -1458,8 +1458,9 @@ ApplicationWindow {
                         Layout.fillWidth: true; Layout.fillHeight: true
                         spacing: 14
                         ColumnLayout {
+                            objectName: "fleetToolbar"
                             Layout.fillWidth: true
-                            spacing: 7
+                            spacing: 9
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
@@ -1523,13 +1524,20 @@ ApplicationWindow {
                                     objectName: "fleetSearchField"
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 150
-                                    placeholderText: "Search model or vehicle ID"
-                                    leftPadding: 12
+                                    placeholderText: "Search make, model or vehicle ID"
+                                    leftPadding: 36
                                     background: Rectangle {
-                                        radius: 8
-                                        color: "#FFFFFF"
+                                        radius: 9
+                                        color: designTokens.surface
                                         border.color: search.activeFocus ? navy : designTokens.border
                                         border.width: search.activeFocus ? 2 : 1
+                                        SidebarGlyph {
+                                            kind: "search"
+                                            glyphColor: designTokens.ink
+                                            width: 17; height: 17
+                                            x: 11
+                                            anchors.verticalCenter: parent.verticalCenter
+                                        }
                                     }
                                     text: fleet.query
                                     onTextEdited: fleet.query = text
@@ -1555,9 +1563,10 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Label {
-                                    text: window.gallery ? "Vehicle gallery" : "Vehicle table"
-                                    color: ink
-                                    font.pixelSize: 12
+                                    text: window.gallery ? "Gallery" : "Table"
+                                    color: navy
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
                                 }
                                 Label {
                                     objectName: "fleetShownCount"
@@ -1643,16 +1652,16 @@ ApplicationWindow {
                                     enabled: fleetAdmin.canAdd
                                     background: Rectangle {
                                         radius: 8
-                                        color: !fleetAddButton.enabled ? "#E6EAEE" :
-                                               fleetAddButton.down ? "#0C625C" :
-                                               fleetAddButton.hovered ? "#0C625C" : teal
-                                        border.width: fleetAddButton.activeFocus ? 3 : 0
-                                        border.color: navy
+                                        color: !fleetAddButton.enabled ? designTokens.disabledSurface :
+                                               fleetAddButton.hovered || fleetAddButton.down ?
+                                               designTokens.neutralHover : designTokens.surface
+                                        border.width: fleetAddButton.activeFocus ? 3 : 1
+                                        border.color: fleetAddButton.activeFocus ? navy : designTokens.border
                                     }
                                     contentItem: Text {
                                         text: fleetAddButton.text
                                         font.bold: true
-                                        color: fleetAddButton.enabled ? "#FFFFFF" : ink
+                                        color: fleetAddButton.enabled ? navy : designTokens.disabledInk
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                     }
@@ -1710,7 +1719,7 @@ ApplicationWindow {
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 // Photo-led cards need enough vertical room to retain
                                 // recognisable vehicle framing at compact widths.
-                                cellHeight: 282
+                                cellHeight: 304
                                 ScrollBar.vertical: ScrollBar {}
                                 Column {
                                     objectName: "fleetGalleryEmpty"
@@ -1759,7 +1768,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 264
+                                    height: 286
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -1772,18 +1781,19 @@ ApplicationWindow {
                                     }
                                     background: FocusFrame {
                                         hovered: vehicleCard.hovered
+                                        cornerRadius: 14
                                         objectName: "fleetGalleryFocus"
                                         keyboardFocused: galleryView.activeFocus &&
                                                          galleryView.currentIndex === vehicleCard.index
                                         selected: fleet.selectedId === vehicleCard.vehicleId
                                     }
                                     contentItem: ColumnLayout {
-                                        spacing: 4
-                                        anchors.margins: 10
+                                        spacing: 6
+                                        anchors.margins: 11
                                         Rectangle {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 160
-                                            color: window.ice
+                                            Layout.preferredHeight: 166
+                                            color: designTokens.quietSurface
                                             radius: 9
                                             clip: true
                                             Image {
@@ -1870,30 +1880,38 @@ ApplicationWindow {
                                         }
                                         Label {
                                             text: vehicleCard.displayName
-                                            font.pixelSize: 15
-                                            font.bold: true; color: navy
+                                            font.pixelSize: 16
+                                            font.weight: Font.DemiBold
+                                            color: navy
                                             elide: Text.ElideRight
                                             Layout.fillWidth: true
                                         }
                                         Label {
-                                            text: vehicleCard.vehicleId + " · " + vehicleCard.vehicleType
+                                            text: vehicleCard.vehicleId + "  ·  " + vehicleCard.vehicleType
                                             color: ink
-                                            font.pixelSize: 12
+                                            font.pixelSize: 11
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
                                         }
                                         RowLayout {
                                             Layout.fillWidth: true
-                                            spacing: 8
+                                            spacing: 4
                                             Label {
-                                                text: vehicleCard.available ? "Available" : "Rented"
-                                                font.bold: true
-                                                color: vehicleCard.available ? teal : navy
-                                                font.pixelSize: 12
+                                                objectName: "fleetCardRate"
+                                                text: "R " + vehicleCard.dailyRate.toFixed(2)
+                                                color: navy
+                                                font.pixelSize: 16
+                                                font.weight: Font.DemiBold
+                                            }
+                                            Label {
+                                                text: "/ day"
+                                                color: ink
+                                                font.pixelSize: 11
                                             }
                                             Item { Layout.fillWidth: true }
-                                            Label {
-                                                text: "R " + vehicleCard.dailyRate.toFixed(2) + "/day"
-                                                color: navy
-                                                font.pixelSize: 12
+                                            FleetStatusPill {
+                                                objectName: "fleetCardStatusPill"
+                                                available: vehicleCard.available
                                             }
                                         }
                                     }
@@ -1916,6 +1934,52 @@ ApplicationWindow {
                                 }
                                 model: fleet.visibleModel
                                 spacing: 6
+                                // Column headers are part of the real scroll view,
+                                // never an invented spreadsheet or separate screen.
+                                header: Rectangle {
+                                    objectName: "fleetTableHeader"
+                                    width: tableView.width
+                                    height: 42
+                                    radius: 8
+                                    color: designTokens.quietSurface
+                                    border.color: designTokens.border
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12
+                                        spacing: 10
+                                        Label {
+                                            text: "VEHICLE"
+                                            Layout.fillWidth: true
+                                            color: ink; font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            text: "ID"
+                                            Layout.preferredWidth: 70
+                                            color: ink; font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            text: "TYPE"
+                                            visible: tableView.width > 560
+                                            Layout.preferredWidth: 76
+                                            color: ink; font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            text: "RATE / DAY"
+                                            Layout.preferredWidth: 102
+                                            color: ink; font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            text: "STATUS"
+                                            Layout.preferredWidth: 80
+                                            color: ink; font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                    }
+                                }
                                 ScrollBar.vertical: ScrollBar {}
                                 Column {
                                     objectName: "fleetTableEmpty"
@@ -1966,6 +2030,8 @@ ApplicationWindow {
                                     required property bool available
                                     width: tableView.width
                                     height: 60
+                                    leftPadding: 12
+                                    rightPadding: 12
                                     activeFocusOnTab: false
                                     hoverEnabled: true
                                     onClicked: {
@@ -1984,21 +2050,40 @@ ApplicationWindow {
                                         selected: fleet.selectedId === vehicleRow.vehicleId
                                     }
                                     contentItem: RowLayout {
-                                        spacing: 14
+                                        spacing: 10
                                         Label {
                                             text: vehicleRow.displayName
                                             Layout.fillWidth: true
-                                            color: navy; font.bold: true
+                                            Layout.minimumWidth: 65
+                                            color: navy
+                                            font.pixelSize: 13
+                                            font.weight: Font.DemiBold
                                             elide: Text.ElideRight
                                         }
-                                        Label { text: vehicleRow.vehicleId; color: ink }
-                                        Label { text: vehicleRow.vehicleType; color: ink }
+                                        Label {
+                                            text: vehicleRow.vehicleId
+                                            Layout.preferredWidth: 70
+                                            color: ink
+                                            font.pixelSize: 12
+                                        }
+                                        Label {
+                                            text: vehicleRow.vehicleType
+                                            visible: tableView.width > 560
+                                            Layout.preferredWidth: 76
+                                            color: ink
+                                            font.pixelSize: 12
+                                            elide: Text.ElideRight
+                                        }
                                         Label {
                                             text: "R " + vehicleRow.dailyRate.toFixed(2)
+                                            Layout.preferredWidth: 102
                                             color: navy
+                                            font.pixelSize: 12
                                         }
-                                        RentalStatusLabel {
-                                            statusValue: vehicleRow.available ? "Available" : "Rented"
+                                        FleetStatusPill {
+                                            objectName: "fleetTableStatusPill"
+                                            available: vehicleRow.available
+                                            Layout.preferredWidth: 80
                                         }
                                     }
                                 }
@@ -2009,17 +2094,17 @@ ApplicationWindow {
                         objectName: "vehicleInspector"
                         Layout.preferredWidth: 282
                         Layout.fillHeight: true
-                        color: "white"
-                        border.color: "#D8E2E8"
+                        color: designTokens.surface
+                        border.color: designTokens.border
                         radius: 12
                         ColumnLayout {
                             anchors.fill: parent
-                            anchors.margins: 18
-                            spacing: 12
+                            anchors.margins: window.height < 800 ? 14 : 18
+                            spacing: window.height < 800 ? 8 : 11
                             RowLayout {
                                 Label {
                                     text: "Vehicle details"; color: navy; font.pixelSize: 17
-                                    font.bold: true
+                                    font.weight: Font.DemiBold
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
                                 }
@@ -2198,8 +2283,10 @@ ApplicationWindow {
                                 }
                             }
                             Label {
-                                text: fleet.selectedId === "" ? "Ready to explore" : fleet.selectedName
-                                color: navy; font.pixelSize: 21; font.bold: true
+                                text: fleet.selectedId === "" ? "Select a vehicle" : fleet.selectedName
+                                color: navy
+                                font.pixelSize: window.height < 800 ? 18 : 20
+                                font.weight: Font.DemiBold
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                             }
@@ -2214,15 +2301,42 @@ ApplicationWindow {
                                 text: fleet.selectedId === "" ? "" : fleet.selectedDetails
                                 color: ink; wrapMode: Text.WordWrap
                             }
-                            Label {
-                                text: fleet.selectedId === "" ? "" :
-                                    "R " + fleet.selectedRate + " / day"
-                                color: navy; font.pixelSize: 18; font.bold: true
-                            }
-                            Label {
-                                text: fleet.selectedId === "" ? "" :
-                                    (fleet.selectedAvailable ? "Available" : "Rented")
-                                color: fleet.selectedAvailable ? teal : navy
+                            Rectangle {
+                                objectName: "fleetInspectorRateBand"
+                                visible: fleet.selectedId !== ""
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: window.height < 800 ? 60 : 66
+                                radius: 10
+                                color: fleet.selectedAvailable ? designTokens.mint :
+                                       designTokens.quietSurface
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 11
+                                    spacing: 7
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 1
+                                        Label {
+                                            text: "DAILY RENTAL RATE"
+                                            color: ink
+                                            font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                        }
+                                        Label {
+                                            objectName: "fleetInspectorRateValue"
+                                            text: "R " + fleet.selectedRate
+                                            color: navy
+                                            font.pixelSize: 19
+                                            font.weight: Font.DemiBold
+                                            Accessible.name: "Daily rental rate " + text +
+                                                ". No payment has been collected."
+                                        }
+                                    }
+                                    FleetStatusPill {
+                                        objectName: "fleetInspectorStatusPill"
+                                        available: fleet.selectedAvailable
+                                    }
+                                }
                             }
                             Item { Layout.fillHeight: true }
                             Label {

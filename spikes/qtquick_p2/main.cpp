@@ -371,6 +371,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
     parser.addOption({"pa-shell-001-smoke", "Precision Automotive Light real booking shortcut, icon rail and focus restoration."});
     parser.addOption({"pa-overview-002-smoke", "Native Precision Automotive Overview real C++ totals, availability ring and recent panel."});
+    parser.addOption({"pa-fleet-003-smoke", "Native Precision Automotive Fleet gallery/table/inspector presentation and data-safety proof."});
     parser.addOption({"portfolio-catalog-smoke", "CI-only real 131-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
@@ -4877,6 +4878,124 @@ int main(int argc, char *argv[]) {
     // modal. This is a presentation-only shortcut, not a new domain action.
     // Precision Automotive 1B: protect the operational semantics while
     // rendering the genuine Light dashboard and accessible availability ring.
+    // Precision Automotive Light: real Qt Fleet, not a generated picture.
+    // Validate selected identity, status, photo-aware cards, table headers,
+    // source-safe keyboard switching and both logical desktop sizes.
+    if (parser.isSet("pa-fleet-003-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 1060;
+        const bool compact=parser.isSet("compact");
+        const QSize expected(compact?1280:1500,compact?720:860);
+        window->resize(expected);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1350,&app,[&,window,compact,expected] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name)->QQuickItem* {
+                if(auto *item=find(find,window->contentItem(),name))return item;
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *toolbar=get("fleetToolbar");
+            auto *gallery=get("fleetGallery");
+            auto *table=get("fleetTable");
+            auto *inspector=get("vehicleInspector");
+            auto *rateBand=get("fleetInspectorRateBand");
+            auto *rate=get("fleetInspectorRateValue");
+            auto *status=get("fleetInspectorStatusPill");
+            auto *cardRate=get("fleetCardRate");
+            auto *cardPill=get("fleetCardStatusPill");
+            auto *search=get("fleetSearchField");
+            auto *switchToTable=get("fleetTableToggle");
+            if(!toolbar||!gallery||!table||!inspector||!rateBand||
+               !rate||!status||!cardRate||!cardPill||!search||
+               !switchToTable || gallery->property("count").toInt()<1 ||
+               !gallery->isVisible() ||
+               search->property("placeholderText").toString()!=
+                  QStringLiteral("Search make, model or vehicle ID")) {
+                qCritical()<<"PA Fleet 003 real Gallery/Inspector controls missing";
+                app.exit(1061);return;
+            }
+            QByteArray initialFleet,initialRentals;
+            if(!readFile(vehicles,&initialFleet) ||
+               !readFile(rentals,&initialRentals) ||
+               initialFleet!=beforeVehicles || initialRentals!=beforeRentals) {
+                qCritical()<<"PA Fleet 003 protected source baseline mismatch";
+                app.exit(1062);return;
+            }
+            if(!fleet.selectById("C001")) {
+                qCritical()<<"PA Fleet 003 cannot select real demo car";
+                app.exit(1063);return;
+            }
+            QTest::qWait(120);
+            if(!rateBand->isVisible() ||
+               rate->property("text").toString()!=
+                   QStringLiteral("R ")+fleet.selectedRate() ||
+               status->property("available").toBool()!=fleet.selectedAvailable() ||
+               !cardRate->property("text").toString().startsWith("R ") ||
+               cardPill->property("statusText").toString().isEmpty()) {
+                qCritical()<<"PA Fleet 003 fake or stale rate/status state"
+                           <<rate->property("text")<<status->property("available");
+                app.exit(1064);return;
+            }
+            const QPointF galleryX=gallery->mapToScene(QPointF(0,0));
+            const QPointF inspectorX=inspector->mapToScene(QPointF(0,0));
+            if(gallery->width()<280 || inspector->width()<260 ||
+               galleryX.x()<0 || inspectorX.x()<galleryX.x()+gallery->width()-2 ||
+               inspectorX.x()+inspector->width()>window->width()-5) {
+                qCritical()<<"PA Fleet 003 columns clipped or overlapping"
+                           <<galleryX<<gallery->width()<<inspectorX
+                           <<inspector->width();
+                app.exit(1065);return;
+            }
+            const auto capture=[&](const QString &state)->bool {
+                const QString size=compact?QStringLiteral("1280x720"):
+                                           QStringLiteral("1500x860");
+                const QImage shot=window->grabWindow();
+                return !shot.isNull() && shot.size()==expected &&
+                    shot.save(QStringLiteral("pa-fleet-003-%1-%2.png")
+                                  .arg(state,size),"PNG");
+            };
+            if(!capture("gallery")) {
+                qCritical()<<"PA Fleet 003 gallery screenshot failed";
+                app.exit(1066);return;
+            }
+            switchToTable->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(140);
+            auto *header=get("fleetTableHeader");
+            auto *row=get("fleetTableRow");
+            auto *rowStatus=get("fleetTableStatusPill");
+            if(window->property("gallery").toBool() ||
+               !table->isVisible() || table->property("count").toInt()<1 ||
+               !header||!header->isVisible()||!row||!rowStatus ||
+               rowStatus->property("statusText").toString().isEmpty() ||
+               fleet.selectedId()!="C001") {
+                qCritical()<<"PA Fleet 003 Gallery/Table switch broke selection/header";
+                app.exit(1067);return;
+            }
+            if(!capture("table")) {
+                qCritical()<<"PA Fleet 003 table screenshot failed";
+                app.exit(1068);return;
+            }
+            QByteArray finalFleet,finalRentals;
+            if(!readFile(vehicles,&finalFleet)||
+               !readFile(rentals,&finalRentals)||
+               finalFleet!=initialFleet || finalRentals!=initialRentals) {
+                qCritical()<<"PA Fleet 003 visual switch changed protected fixtures";
+                app.exit(1069);return;
+            }
+            qInfo()<<"Precision Automotive Light real Fleet PASS"
+                   <<(compact?"1280x720":"1500x860")
+                   <<"identity, status pills, rate, table header, no writes";
+            app.exit(0);
+        });
+    }
     if (parser.isSet("pa-overview-002-smoke")) {
         auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
         if(!window) return 1020;

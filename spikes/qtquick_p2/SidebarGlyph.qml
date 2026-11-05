@@ -49,6 +49,11 @@ Canvas {
             ctx.beginPath(); ctx.arc(11, 11, 8, 0, Math.PI * 2)
             ctx.moveTo(11, 6); ctx.lineTo(11, 11); ctx.lineTo(15, 13)
             ctx.stroke()
+        } else if (kind === "search") {
+            ctx.beginPath()
+            ctx.arc(9.5, 9.5, 5.2, 0, Math.PI * 2)
+            ctx.moveTo(13.3, 13.3); ctx.lineTo(19, 19)
+            ctx.stroke()
         } else if (kind === "add") {
             ctx.beginPath()
             ctx.moveTo(11, 4); ctx.lineTo(11, 18)

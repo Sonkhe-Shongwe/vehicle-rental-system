@@ -128,6 +128,18 @@ if(BUILD_TESTING)
                 PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
         endforeach()
     endif()
+    # Precision Automotive Light Fleet: gallery, table headings, inspector,
+    # read-only availability, photo framing and protected demo sources.
+    foreach(SIZE wide compact)
+        set(PA_FLEET_ARGS --pa-fleet-003-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND PA_FLEET_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_pa_fleet_003_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${PA_FLEET_ARGS})
+        set_tests_properties(rental_studio_pa_fleet_003_${SIZE}
+            PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
     # Precision Automotive Light dashboard: real totals, availability ring,
     # latest contracts, 1280/1500 captures and no fixture modification.
     foreach(SIZE wide compact)
