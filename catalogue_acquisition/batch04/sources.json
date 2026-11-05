@@ -1,0 +1,77 @@
+{
+  "batch": "04",
+  "date": "2026-11-05",
+  "scope": "Ten proposed mainstream, sport and luxury models; research staging only, no Qt resource integration",
+  "sources": [
+    {
+      "slug": "ford_mustang_gt",
+      "make": "Ford",
+      "model": "Mustang GT",
+      "file_title": "Ford S550 Mustang GT.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "toyota_gr_supra",
+      "make": "Toyota",
+      "model": "GR Supra",
+      "file_title": "Toyota GR Supra (2021).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "nissan_gtr",
+      "make": "Nissan",
+      "model": "GT-R",
+      "file_title": "Nissan GT R.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "bmw_m3",
+      "make": "BMW",
+      "model": "M3",
+      "file_title": "BMW M3.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "audi_r8",
+      "make": "Audi",
+      "model": "R8",
+      "file_title": "Audi r8.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "toyota_gr_yaris",
+      "make": "Toyota",
+      "model": "GR Yaris",
+      "file_title": "GR2VL2.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "honda_civic_type_r",
+      "make": "Honda",
+      "model": "Civic Type R",
+      "file_title": "Honda Civic Type R ph25 1.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "land_rover_defender",
+      "make": "Land Rover",
+      "model": "Defender",
+      "file_title": "Land Rover Defender (CAL 24G) - 7 June 2026.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "tesla_model3",
+      "make": "Tesla",
+      "model": "Model 3",
+      "file_title": "Tesla Model3.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "volvo_xc60",
+      "make": "Volvo",
+      "model": "XC60",
+      "file_title": "Volvo XC60 II 2025 facelift 001.jpg",
+      "expected_license": "FREE_CC"
+    }
+  ]
+}
