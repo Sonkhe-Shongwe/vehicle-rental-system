@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Latest verified checkpoint
 
+**FREE CATALOGUE PHOTO BATCH 05 SUCCESS (5 Nov 2026):** [10 newly acquired candidate photos](../catalogue_acquisition/batch05/PREVIEW.md) checked for individual CC0/CC BY/CC BY-SA rights, image source and file SHA256. [Completed successful #42016092532](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42016092532). [Five-batch acquisition index](../catalogue_acquisition/INDEX.md) now covers **50 unique model-photo staging assets**, **25/25 original wrong-model assignments** with replacement candidates, **25/31 proposed showcase models** with sourced photos, **six proposed models remaining**. **0/50 newly visually accepted or integrated into Qt Fleet**; current demo and photo map unchanged, 45/74 formal owner acceptance, 70.6%, P7 0/8 unchanged.
+
+---
+
+
 **FREE PHOTO CATALOGUE BATCH 04 COMPLETED (5 Nov 2026):** [10 free source-verified model photographs](../catalogue_acquisition/batch04/PREVIEW.md) added to isolated staging, each with original author/licence and unique SHA256. [Completed successful #42012804875](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42012804875). [Four-batch acquisition index](../catalogue_acquisition/INDEX.md) now records **40 uniquely acquired candidates**: all **25 original wrongly pictured models** have sourced replacements and **15 of 31 new proposed models** have photos; **16 proposed models outstanding**. **0/40 are newly visually approved or mapped to Fleet**. Original 100-unit app and 39 models unchanged. Formal 45/74 acceptance, weighted 70.6%, P7 0/8 unchanged; PR draft and main untouched.
 
 ---

@@ -1,34 +1,44 @@
 # Rental Studio 2.0 | Free vehicle-photo acquisition index
 
-**Research checkpoint:** 5 November 2026. **Portfolio only, R0 offline.** Goal: minimum 60, stretch 70 distinct **visually approved** models. Research list: 70 make/model candidates (39 current + 31 proposed). Application still holds 39 distinct model names and 100 fictional inventory records.
+**Research checkpoint:** 5 November 2026. **R0, offline portfolio project.** Goal: at least 60, stretch 70 distinct models with photos that pass visual owner review. Research shortlist contains 70 model keys: 39 current + 31 proposed. Current application still displays the original 100 fictional inventory records using 39 models and old photo mappings.
 
-## Source acquisition progress
+## Current acquisition ledger
 
-| Measure | Current |
+| Measure | Verified source status |
 |---|---:|
-| Successfully downloaded, individually free-licensed and hashed candidate photos | **40** |
-| Unique model associations / unique downloaded hashes | **40 / 40** |
-| Of 25 existing wrong-photo models, with acquired replacement candidates | **25 / 25** |
-| Newly proposed models with acquired image candidates | **15 / 31** |
-| Newly proposed model names still without acquired candidates | **16** |
-| New photos visually approved by the owner | **0** |
-| New photos integrated into the Qt Fleet UI | **0** |
+| Newly downloaded free-licensed, locally stored photo candidates | **50** |
+| Distinct model labels and distinct file SHA256 hashes | **50 / 50** |
+| Existing wrongly pictured models with acquired replacement candidates | **25 / 25** |
+| New proposed models with acquired photo candidates | **25 / 31** |
+| Remaining proposed models requiring acquisition | **6** |
+| Newly acquired photos approved in the actual UI by owner | **0** |
+| Newly acquired photos integrated into compiled Qt Fleet images | **0** |
 
-The original compiled demo images (12 Commons CC0 plus three legacy images) are tracked separately; do **not** conflate 40 new staged images with 40 newly displayed images. Those 25 existing wrong-photo assignments are **still present in the live application**.
+**Important:** The previously embedded 12 Commons CC0 photographs and 3 older demonstration pictures are **separate** from these 50 new staging files; the latter have not replaced any actual UI image. "Acquired and metadata-verified" is not the same as "visually accepted and installed".
 
-## Acquired source batches and photo previews
+## Browse all five contact sheets
 
-| Batch | Models covered | Download/licence status | Actual contact sheet |
+| Batch | Acquired model candidates | Sources verified | Actual staged images |
 |---|---|---|---|
-| 01 | Creta, Polo, Jolion, Navara, D-Max, CX-5, CBR500R, Ninja 400, G-Class, Golf GTI | 10/10 | [View batch 01](batch01/PREVIEW.md) |
-| 02 | Jimny, Tiggo 4, Wrangler, Caddy, Almera, Starlet, C-Class, EcoSport, BMW M4, Audi RS6 Avant | 10/10 | [View batch 02](batch02/PREVIEW.md) |
-| 03 | Kiger, Mazda3, Grand i10, Magnite, Urban Cruiser, T-Cross, V-Strom 650, G 310 R, Tenere 700, Porsche 911 | 10/10 | [View batch 03](batch03/PREVIEW.md) |
-| 04 | Mustang GT, GR Supra, Nissan GT-R, BMW M3, Audi R8, GR Yaris, Civic Type R, Defender, Model 3, Volvo XC60 | 10/10 | [View batch 04](batch04/PREVIEW.md) |
+| 01 | Creta, Polo, Jolion, Navara, D-Max, CX-5, CBR500R, Ninja 400, G-Class, Golf GTI | 10/10 | [Contact sheet](batch01/PREVIEW.md) |
+| 02 | Jimny, Tiggo 4, Wrangler, Caddy, Almera, Starlet, C-Class, EcoSport, M4, RS6 Avant | 10/10 | [Contact sheet](batch02/PREVIEW.md) |
+| 03 | Kiger, Mazda3, Grand i10, Magnite, Urban Cruiser, T-Cross, V-Strom 650, G 310 R, Tenere 700, Porsche 911 | 10/10 | [Contact sheet](batch03/PREVIEW.md) |
+| 04 | Mustang GT, GR Supra, GT-R, M3, R8, GR Yaris, Civic Type R, Defender, Model 3, XC60 | 10/10 | [Contact sheet](batch04/PREVIEW.md) |
+| 05 | Range Rover Sport, Land Cruiser Prado, RX, X5, GLC, Q5, MINI Cooper, Kwid, Triton, Tucson | 10/10 | [Contact sheet](batch05/PREVIEW.md) |
 
-**Actual source/rights records:** [01](batch01/source_manifest.json) · [02](batch02/source_manifest.json) · [03](batch03/source_manifest.json) · [04](batch04/source_manifest.json). Each includes original Wikimedia file link, author, Creative Commons licence, resizing note and local SHA256. All four Commons-acquisition GitHub Actions runs completed successfully: [01 #42007433964](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42007433964), [02 #42010192161](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42010192161), [03 #42011389574](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42011389574), [04 #42012804875](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42012804875).
+**Workflow evidence:** [Batch01](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42007433964) · [Batch02](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42010192161) · [Batch03](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42011389574) · [Batch04](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42012804875) · [Batch05](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42016092532). All five acquisition jobs completed SUCCESS. Each batch stores [source_manifest.json] and [IMAGE_CREDITS.md] in its own folder, including author, original file page, licence, adaptation note and SHA256.
 
-## Required quality gate, before app integration
+## Final six proposed models to source
 
-The acquired photos are genuine separate local JPEG files, and their rights metadata passed. They are **candidates only**, not owner-accepted images. Each must be reviewed for actual make/model identity, photograph crop, perspective and visual consistency. Preserve licences and credit information for any CC BY/CC BY-SA adapted files, and ensure one model never displays an unrelated vehicle.
+- Mercedes-AMG A 45
+- Volkswagen Golf R
+- BYD Atto 3
+- Opel Corsa
+- Nissan Qashqai
+- Toyota Quantum
 
-Next: source the **16 proposed models still missing** and review staged contact sheets. Then make a **separate, tested Qt integration** patch only after the selected images are visually accepted. No production SQLite cutover, customer details, recurring fees, main-branch merges or release. Formal owner acceptance unchanged 45/74, weighted 70.6%, P7 0/8.
+## Approval and integration boundary
+
+The 50 images still require actual visual review for correct make/model, image quality, cropping and presentation. Incompatible or misleading images must be replaced, not relabelled. Model year, trim and colour need not be exact.
+
+Only after a separate owner review should a new change update the Qt image map, compiled assets, and 100-unit fictional gallery. Regression tests must preserve the original protected five-vehicle fixture. No paid API, online runtime photo fetching, real customer data, commercial launch, or `main` changes. Formal owner acceptance stays 45/74, fixed-weight 70.6%, P7 SQLite 0/8.
