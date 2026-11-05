@@ -4937,6 +4937,20 @@ int main(int argc, char *argv[]) {
                            <<percent->property("text")<<donut->property("rented");
                 app.exit(1022);return;
             }
+            // Native geometric proof against a QML implicit-width feedback
+            // loop: both panels must fill their allotted desktop columns,
+            // not merely be focusable at 150px width.
+            const auto availabilityTopLeft=donut->mapToScene(QPointF(0,0));
+            const auto recentTopLeft=recent->mapToScene(QPointF(0,0));
+            if(donut->width()<400 || recent->width()<450 ||
+               availabilityTopLeft.x()<0 || availabilityTopLeft.y()<0 ||
+               recentTopLeft.x()<availabilityTopLeft.x()+donut->width()-2 ||
+               recentTopLeft.x()+recent->width()>window->width()-5) {
+                qCritical()<<"PA Overview insight panels too narrow or clipped"
+                           <<donut->width()<<recent->width()
+                           <<availabilityTopLeft<<recentTopLeft;
+                app.exit(1026);return;
+            }
             // Existing compact P5 tests require immediate visibility of these
             // controls rather than accidental placement below the fold.
             for(QQuickItem *item:{review,disclosure}) {

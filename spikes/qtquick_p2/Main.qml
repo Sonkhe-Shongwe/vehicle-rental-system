@@ -1333,8 +1333,8 @@ ApplicationWindow {
                             // Explicit column bounds avoid implicit-width feedback
                             // from nested cards pushing Recent Contracts offscreen.
                             Layout.preferredWidth: window.width < 1180
-                                ? overviewInsightGrid.width
-                                : (overviewInsightGrid.width - 12) * 0.45
+                                ? overviewScroll.width
+                                : (overviewScroll.width - 12) * 0.45
                             Layout.maximumWidth: Layout.preferredWidth
                             Layout.minimumWidth: 300
                             total: fleet.totalCount
@@ -1351,8 +1351,8 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         Layout.preferredWidth: window.width < 1180
-                            ? overviewInsightGrid.width
-                            : (overviewInsightGrid.width - 12) * 0.55
+                            ? overviewScroll.width
+                            : (overviewScroll.width - 12) * 0.55
                         Layout.maximumWidth: Layout.preferredWidth
                         Layout.preferredHeight: window.height < 800 ? 272 : 294
                         clip: true
