@@ -1329,6 +1329,13 @@ ApplicationWindow {
                         columnSpacing: 12
                         OverviewAvailabilityPanel {
                             objectName: "overviewAvailabilityPanel"
+                            // Explicit column bounds avoid implicit-width feedback
+                            // from nested cards pushing Recent Contracts offscreen.
+                            Layout.preferredWidth: window.width < 1180
+                                ? overviewInsightGrid.width
+                                : (overviewInsightGrid.width - 12) * 0.45
+                            Layout.maximumWidth: Layout.preferredWidth
+                            Layout.minimumWidth: 300
                             total: fleet.totalCount
                             available: fleet.availableCount
                             rented: fleet.rentedCount
@@ -1341,7 +1348,13 @@ ApplicationWindow {
                     Rectangle {
                         objectName: "overviewRecentPanel"
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.preferredWidth: window.width < 1180
+                            ? overviewInsightGrid.width
+                            : (overviewInsightGrid.width - 12) * 0.55
+                        Layout.maximumWidth: Layout.preferredWidth
                         Layout.preferredHeight: window.height < 800 ? 272 : 294
+                        clip: true
                         radius: 12
                         color: "white"
                         border.color: designTokens.border
@@ -1380,6 +1393,7 @@ ApplicationWindow {
                                     activeFocusOnTab: true
                                     Keys.onPressed: (event) => window.overviewRecentKey(event,index)
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 0
                                     Layout.minimumHeight: 44
                                     hoverEnabled: true
                                     background: Rectangle {
