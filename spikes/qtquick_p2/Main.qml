@@ -1322,6 +1322,7 @@ ApplicationWindow {
                         color: ink; wrapMode: Text.WordWrap
                     }
                     GridLayout {
+                        id: overviewInsightGrid
                         objectName: "overviewInsightGrid"
                         Layout.fillWidth: true
                         columns: window.width < 1180 ? 1 : 2
