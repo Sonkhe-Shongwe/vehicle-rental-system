@@ -1,0 +1,77 @@
+{
+  "batch": "02",
+  "date": "2026-11-05",
+  "scope": "Second separate offline model image acquisition, not yet linked to QML",
+  "sources": [
+    {
+      "slug": "suzuki_jimny",
+      "make": "Suzuki",
+      "model": "Jimny",
+      "file_title": "Jimny Front.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "chery_tiggo4",
+      "make": "Chery",
+      "model": "Tiggo 4",
+      "file_title": "2025 Chery Tiggo 4 silver front.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "jeep_wrangler",
+      "make": "Jeep",
+      "model": "Wrangler",
+      "file_title": "Jeep Wrangler 2024.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "volkswagen_caddy",
+      "make": "Volkswagen",
+      "model": "Caddy",
+      "file_title": "Volkswagen Caddy.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "nissan_almera",
+      "make": "Nissan",
+      "model": "Almera",
+      "file_title": "Nissan Almera 115030.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "toyota_starlet",
+      "make": "Toyota",
+      "model": "Starlet",
+      "file_title": "Toyota Starlet 1.5 XR Auto (2022).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mercedes_c_class",
+      "make": "Mercedes-Benz",
+      "model": "C-Class",
+      "file_title": "Mercedes C Class.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "ford_ecosport",
+      "make": "Ford",
+      "model": "EcoSport",
+      "file_title": "Ford EcoSport 183608225.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "bmw_m4",
+      "make": "BMW",
+      "model": "M4",
+      "file_title": "BMW M4.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "audi_rs6_avant",
+      "make": "Audi",
+      "model": "RS6 Avant",
+      "file_title": "Audi RS6 Avant C8.jpg",
+      "expected_license": "FREE_CC"
+    }
+  ]
+}

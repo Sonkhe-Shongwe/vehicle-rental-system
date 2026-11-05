@@ -1,0 +1,43 @@
+name: Acquire free vehicle images batch 02
+on:
+  push:
+    branches: [feature/p7-sqlite-sandbox-20261102]
+    paths:
+      - '.github/workflows/catalogue-batch02-free-images.yml'
+      - 'catalogue_acquisition/batch02/sources.json'
+      - 'tools/acquire_catalogue_batch02.py'
+      - 'tools/catalogue_batch02_contact_sheet.py'
+permissions:
+  contents: write
+concurrency:
+  group: rental-studio-catalogue-batch02
+  cancel-in-progress: false
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free photo processing dependency
+        run: python -m pip install --quiet pillow
+      - name: Check acquisition and contact-sheet scripts
+        run: python -m py_compile tools/acquire_catalogue_batch02.py tools/catalogue_batch02_contact_sheet.py
+      - name: Acquire ten named photos using Commons API and individual licences
+        run: python tools/acquire_catalogue_batch02.py
+      - name: Render a SHA256-verified contact sheet from acquired images
+        run: python tools/catalogue_batch02_contact_sheet.py
+      - name: Commit verified photographs and attribution, not Qt mapping
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalogue_acquisition/batch02/images catalogue_acquisition/batch02/IMAGE_CREDITS.md catalogue_acquisition/batch02/source_manifest.json catalogue_acquisition/batch02/CONTACT_SHEET.jpg
+          if git diff --cached --quiet; then
+            echo "Source photos already captured."
+          else
+            git commit -m "assets(catalogue): stage ten verified batch02 vehicle photos [skip ci]"
+            git push origin HEAD:feature/p7-sqlite-sandbox-20261102
+          fi
