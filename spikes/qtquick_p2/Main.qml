@@ -1394,6 +1394,8 @@ ApplicationWindow {
                             total: fleet.totalCount
                             available: fleet.availableCount
                             rented: fleet.rentedCount
+                            carCount: fleet.carCount
+                            motorcycleCount: fleet.motorcycleCount
                             dueToday: rentalsModel.dueTodayCount
                             history: rentalsModel.historyCount
                             oldestOverdueId: rentalsModel.oldestOverdueRentalId
