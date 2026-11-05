@@ -5117,9 +5117,7 @@ int main(int argc, char *argv[]) {
                 return window->findChild<QQuickItem*>(name);
             };
             auto *total=get("overviewTotalCard");
-            auto *available=get("overviewAvailableCard");
             auto *active=get("overviewActiveCard");
-            auto *overdue=get("overviewOverdueCard");
             auto *donut=get("overviewAvailabilityPanel");
             auto *ring=get("overviewAvailabilityRing");
             auto *percent=get("overviewAvailablePercent");
@@ -5130,7 +5128,7 @@ int main(int argc, char *argv[]) {
             auto *row=get("overviewRecentRow0");
             auto *review=get("overviewReviewOverdue");
             auto *disclosure=get("overviewDemoDisclosure");
-            if(!total||!available||!active||!overdue||!donut||!ring||
+            if(!total||!active||!donut||!ring||
                !percent||!value||!due||!history||!recent||!row||
                !review||!disclosure) {
                 qCritical()<<"PA Overview controls or real history row missing";
@@ -5141,9 +5139,7 @@ int main(int argc, char *argv[]) {
                   ? qRound(100.0*fleet.availableCount()/fleet.totalCount())
                   : 0)+QStringLiteral("%");
             if(total->property("value").toString()!=QString::number(fleet.totalCount()) ||
-               available->property("value").toString()!=QString::number(fleet.availableCount()) ||
                active->property("value").toString()!=QString::number(rentalModel.activeCount()) ||
-               overdue->property("value").toString()!=QString::number(rentalModel.overdueCount()) ||
                donut->property("total").toInt()!=fleet.totalCount() ||
                donut->property("available").toInt()!=fleet.availableCount() ||
                donut->property("rented").toInt()!=fleet.rentedCount() ||
@@ -5156,18 +5152,31 @@ int main(int argc, char *argv[]) {
                            <<percent->property("text")<<donut->property("rented");
                 app.exit(1022);return;
             }
-            // Native geometric proof against a QML implicit-width feedback
-            // loop: both panels must fill their allotted desktop columns,
-            // not merely be focusable at 150px width.
+            // The actual 1280 and 1500 desktop compositions must preserve
+            // both side-by-side rows and the source-backed vehicle teaser.
+            auto *hero=get("editorialOverviewHero");
+            auto *ready=get("overviewReadyPanel");
+            auto *readyVehicle=get("overviewReadyVehicle0");
+            if(!hero||!ready||!readyVehicle||fleet.availableHighlights().isEmpty()||
+               readyVehicle->property("vehicleId").toString()!=
+                 fleet.availableHighlights().first().toMap().value("vehicleId").toString()) {
+                qCritical()<<"Direction A preview not backed by actual C++ fleet";
+                app.exit(1027);return;
+            }
             const auto availabilityTopLeft=donut->mapToScene(QPointF(0,0));
             const auto recentTopLeft=recent->mapToScene(QPointF(0,0));
-            if(donut->width()<400 || recent->width()<450 ||
-               availabilityTopLeft.x()<0 || availabilityTopLeft.y()<0 ||
-               recentTopLeft.x()<availabilityTopLeft.x()+donut->width()-2 ||
-               recentTopLeft.x()+recent->width()>window->width()-5) {
-                qCritical()<<"PA Overview insight panels too narrow or clipped"
-                           <<donut->width()<<recent->width()
-                           <<availabilityTopLeft<<recentTopLeft;
+            const auto heroTopLeft=hero->mapToScene(QPointF(0,0));
+            const auto readyTopLeft=ready->mapToScene(QPointF(0,0));
+            if(donut->width()<290||recent->width()<440||
+               hero->width()<430||ready->width()<290||
+               heroTopLeft.x()<0||heroTopLeft.y()<0||
+               availabilityTopLeft.x()<heroTopLeft.x()+hero->width()-2||
+               recentTopLeft.x()<0||recentTopLeft.y()<heroTopLeft.y()||
+               readyTopLeft.x()<recentTopLeft.x()+recent->width()-2||
+               readyTopLeft.x()+ready->width()>window->width()-5) {
+                qCritical()<<"Direction A panels too narrow or clipped"
+                           <<hero->width()<<donut->width()<<recent->width()
+                           <<ready->width();
                 app.exit(1026);return;
             }
             // Existing compact P5 tests require immediate visibility of these
@@ -6564,11 +6573,11 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P6-M independent process 3 final reconstruction failed";
                 app.exit(502);return;
             }
-            auto *available=find(find,root,"overviewAvailableCard");
+            auto *available=find(find,root,"overviewAvailabilityPanel");
             auto *active=find(find,root,"overviewActiveCard");
             auto *recent=find(find,root,"overviewRecentRow0");
             if(!available||!active||!recent ||
-               available->property("value").toString()!="4"||
+               available->property("available").toInt()!=4||
                active->property("value").toString()!="1"||
                !recent->property("text").toString().contains("R001")) {
                 qCritical()<<"P6-M final QML Overview inconsistent with disk";
