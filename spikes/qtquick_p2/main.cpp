@@ -4928,7 +4928,8 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"PA Fleet 003 protected source baseline mismatch";
                 app.exit(1062);return;
             }
-            if(!fleet.selectById("C001")) {
+            fleet.selectById("C001");
+            if(fleet.selectedId()!="C001") {
                 qCritical()<<"PA Fleet 003 cannot select real demo car";
                 app.exit(1063);return;
             }
