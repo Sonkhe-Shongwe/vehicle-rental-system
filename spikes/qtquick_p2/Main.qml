@@ -1133,6 +1133,10 @@ ApplicationWindow {
                         id: overviewContent
                         width: overviewScroll.width
                         spacing: window.height < 800 ? 10 : 12
+                    RowLayout {
+                        objectName: "overviewHeroGrid"
+                        Layout.fillWidth: true
+                        spacing: 12
                     Rectangle {
                         id: editorialOverviewHero
                         objectName: "editorialOverviewHero"
@@ -1141,7 +1145,8 @@ ApplicationWindow {
                             rentalsModel.snapshotAvailable &&
                             rentalsModel.oldestOverdueRentalId !== ""
                         Layout.fillWidth: true
-                        Layout.preferredHeight: window.height < 800 ? 210 : 244
+                        Layout.minimumWidth: 0
+                        Layout.preferredHeight: window.height < 800 ? 198 : 226
                         color: "#0C2538"
                         radius: 16
                         clip: true
@@ -1331,7 +1336,7 @@ ApplicationWindow {
                             }
                             Item {
                                 id: overviewHeroPhotoBox
-                                Layout.preferredWidth: window.height < 800 ? 235 : 300
+                                Layout.preferredWidth: window.height < 800 ? 158 : 212
                                 Layout.preferredHeight: window.height < 800 ? 152 : 192
                                 Rectangle {
                                     anchors.fill: parent
@@ -1380,75 +1385,12 @@ ApplicationWindow {
                             }
                         }
                     }
-                    GridLayout {
-                        objectName: "overviewMetricGrid"
-                        Layout.fillWidth: true
-                        columns: window.width < 1180 ? 2 : 4
-                        rowSpacing: 10
-                        columnSpacing: 12
-                        OverviewMetricCard {
-                            objectName: "overviewTotalCard"
-                            metricLabel: "Total vehicles"
-                            value: String(fleet.totalCount)
-                            note: "Fictional fleet"
-                            metricIcon: "Fleet"
-                            accent: navy
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewAvailableCard"
-                            metricLabel: "Available vehicles"
-                            value: String(fleet.availableCount)
-                            note: "Ready to rent"
-                            metricIcon: "check"
-                            accent: teal
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewActiveCard"
-                            metricLabel: "Active rentals"
-                            value: String(rentalsModel.activeCount)
-                            note: "Confirmed contracts"
-                            metricIcon: "Rentals"
-                            accent: navy
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                        OverviewMetricCard {
-                            objectName: "overviewOverdueCard"
-                            metricLabel: "Overdue returns"
-                            value: String(rentalsModel.overdueCount)
-                            note: "From C++ due dates"
-                            metricIcon: "clock"
-                            accent: rentalsModel.overdueCount > 0
-                                ? designTokens.warningInk : teal
-                            compact: window.height < 800
-                            Layout.preferredHeight: window.height < 800 ? 104 : 116
-                        }
-                    }
-                    Label {
-                        objectName: "overviewDemoDisclosure"
-                        text: "Demo-only operations. No payment, deposit or realized revenue reporting."
-                        color: ink; wrapMode: Text.WordWrap
-                    }
-                    GridLayout {
-                        id: overviewInsightGrid
-                        objectName: "overviewInsightGrid"
-                        Layout.fillWidth: true
-                        columns: window.width < 1180 ? 1 : 2
-                        rowSpacing: 12
-                        columnSpacing: 12
                         OverviewAvailabilityPanel {
                             objectName: "overviewAvailabilityPanel"
-                            // Explicit column bounds avoid implicit-width feedback
-                            // from nested cards pushing Recent Contracts offscreen.
-                            Layout.preferredWidth: window.width < 1180
-                                ? overviewScroll.width
-                                : (overviewScroll.width - 12) * 0.45
+                            Layout.preferredWidth: window.height < 800 ? 305 : 340
+                            Layout.minimumWidth: 290
                             Layout.maximumWidth: Layout.preferredWidth
-                            Layout.minimumWidth: 300
+                            Layout.preferredHeight: window.height < 800 ? 198 : 226
                             total: fleet.totalCount
                             available: fleet.availableCount
                             rented: fleet.rentedCount
@@ -1458,13 +1400,59 @@ ApplicationWindow {
                             bookedValue: rentalsModel.activeBookedValue
                             compact: window.height < 800
                         }
+                    }
+                    GridLayout {
+                        objectName: "overviewMetricGrid"
+                        Layout.fillWidth: true
+                        columns: 3
+                        rowSpacing: 8
+                        columnSpacing: 12
+                        OverviewMetricCard {
+                            objectName: "overviewTotalCard"
+                            metricLabel: "Total vehicles"
+                            value: String(fleet.totalCount)
+                            note: fleet.carCount + " cars · " + fleet.motorcycleCount + " motorcycles"
+                            metricIcon: "Fleet"
+                            accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 81 : 94
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewActiveCard"
+                            metricLabel: "Active rentals"
+                            value: String(rentalsModel.activeCount)
+                            note: "Confirmed contracts"
+                            metricIcon: "Rentals"
+                            accent: navy
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 81 : 94
+                        }
+                        OverviewMetricCard {
+                            objectName: "overviewValueCard"
+                            metricLabel: "Active booked value"
+                            value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
+                            note: "Contract value, not payments"
+                            metricIcon: "Rentals"
+                            accent: teal
+                            compact: window.height < 800
+                            Layout.preferredHeight: window.height < 800 ? 81 : 94
+                        }
+                    }
+                    Label {
+                        objectName: "overviewDemoDisclosure"
+                        text: "Demo-only operations. No payment, deposit or realized revenue reporting."
+                        color: ink; wrapMode: Text.WordWrap
+                    }
+                    RowLayout {
+                        id: overviewInsightGrid
+                        objectName: "overviewInsightGrid"
+                        Layout.fillWidth: true
+                        spacing: 12
                     Rectangle {
                         objectName: "overviewRecentPanel"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        Layout.preferredWidth: window.width < 1180
-                            ? overviewScroll.width
-                            : (overviewScroll.width - 12) * 0.55
+                        Layout.preferredWidth: (overviewScroll.width - 12) * 0.60
                         Layout.maximumWidth: Layout.preferredWidth
                         Layout.preferredHeight: window.height < 800 ? 272 : 294
                         clip: true
@@ -1557,6 +1545,84 @@ ApplicationWindow {
                                         })
                                     }
                                 }
+                            }
+                        }
+                    }
+                    Rectangle {
+                        objectName: "overviewReadyPanel"
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        Layout.preferredWidth: (overviewScroll.width - 12) * 0.40
+                        Layout.maximumWidth: Layout.preferredWidth
+                        Layout.preferredHeight: window.height < 800 ? 272 : 294
+                        radius: 12
+                        color: "white"
+                        border.color: designTokens.border
+                        clip: true
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 5
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "READY FOR THE NEXT RENTAL"
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                    font.letterSpacing: 0.5
+                                    color: navy
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                Label {
+                                    text: "SEE FLEET  ›"
+                                    color: teal
+                                    font.pixelSize: 10
+                                    font.weight: Font.DemiBold
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                color: designTokens.border
+                            }
+                            Label {
+                                text: "No available vehicles in the fictional fleet."
+                                visible: fleet.availableHighlights.length === 0
+                                color: ink
+                                font.pixelSize: 12
+                            }
+                            Repeater {
+                                id: overviewReadyRepeater
+                                model: fleet.availableHighlights
+                                delegate: EditorialVehiclePreview {
+                                    objectName: "overviewReadyVehicle" + index
+                                    vehicleId: modelData.vehicleId
+                                    vehicleName: modelData.displayName
+                                    vehicleType: modelData.vehicleType
+                                    dailyRate: modelData.dailyRate
+                                    photoRevision: fleetPhotos.revision
+                                    hasPhoto: fleetPhotos.revision >= 0 &&
+                                              fleetPhotos.hasPhoto(modelData.vehicleId)
+                                    compact: window.height < 800
+                                    onSelected: (vehicleId) => {
+                                        fleet.query = ""
+                                        fleet.status = "All"
+                                        window.gallery = true
+                                        fleet.selectById(vehicleId)
+                                        window.workspace = 1
+                                    }
+                                }
+                            }
+                            Item { Layout.fillHeight: true }
+                            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: designTokens.border }
+                            Label {
+                                text: Math.min(2, fleet.availableCount) + " shown · " +
+                                      fleet.availableCount + " available in the fictional fleet"
+                                color: ink
+                                font.pixelSize: 11
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                             }
                         }
                     }
