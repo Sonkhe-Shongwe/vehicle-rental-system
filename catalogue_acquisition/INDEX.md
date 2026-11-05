@@ -1,20 +1,25 @@
-# Rental Studio 2.0 | Free vehicle-photo acquisition index
+# Rental Studio 2.0 | Free model-photo acquisition and actual integration
 
-**Research checkpoint:** 5 November 2026. **R0, offline portfolio project.** Goal: at least 60, stretch 70 distinct models with photos that pass visual owner review. Research shortlist contains 70 model keys: 39 current + 31 proposed. Current application still displays the original 100 fictional inventory records using 39 models and old photo mappings.
+**Current checkpoint, 5 November 2026:** The actual compiled QA application now contains **131 fictional vehicles (121 cars, 10 motorcycles) across 70 distinct make/model families**. This supersedes the original research-only 100-vehicle status. The five original fixture records remain unchanged. **48 newly acquired and visually screened source candidates are embedded and mapped in the real Qt Fleet**, while **two unsuitable photos** are withheld. These are still owner-review references, not approved final photography.
 
-## Current acquisition ledger
+## Verified integration ledger
 
-| Measure | Verified source status |
+| Measure | Latest engineering evidence |
 |---|---:|
-| Newly downloaded free-licensed, locally stored photo candidates | **50** |
-| Distinct model labels and distinct file SHA256 hashes | **50 / 50** |
-| Existing wrongly pictured models with acquired replacement candidates | **25 / 25** |
-| New proposed models with acquired photo candidates | **25 / 31** |
-| Remaining proposed models requiring acquisition | **6** |
-| Newly acquired photos approved in the actual UI by owner | **0** |
-| Newly acquired photos integrated into compiled Qt Fleet images | **0** |
+| Downloaded and source/sha/licence-checked candidates | **50** |
+| Newly compiled model-photo references with explicit make/model keys | **48** |
+| Existing wrong-model photo assignments corrected with new references | **23 / 25** |
+| Other two wrong-model assignments removed for accurate silhouettes | **2 / 25** |
+| Proposed additional models now present as fictional cars | **31 / 31** |
+| Additional proposed models with correct-family photos in this build | **25 / 31** |
+| New proposed models with honest silhouettes pending sources | **6** |
+| Distinct make/model families in Qt Fleet | **70** |
+| Actual fictional inventory records in Qt Fleet | **131** |
+| New photo candidates explicitly accepted by the owner on physical Windows | **0** |
 
-**Important:** The previously embedded 12 Commons CC0 photographs and 3 older demonstration pictures are **separate** from these 50 new staging files; the latter have not replaced any actual UI image. "Acquired and metadata-verified" is not the same as "visually accepted and installed".
+**Source:** [model-photo map](model_photo_map.tsv) and [full credits with original author, licence and SHA256](ACTIVE_ASSET_CREDITS.md). [Native Actions #42055392137](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42055392137) passed 132/132 native tests on each platform and 8/8 packaged Windows functional checks, source [`6c1b852`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6c1b852cdc5b9b34c820a6a1244131bfb2dc4226). Source and visual correctness require separate gates: licensing/CI success is not owner photography signoff.
+
+**Two images withheld after visual contact-sheet review:** Jeep Wrangler (cropped partial car) and Toyota Starlet (car too distant). Neither should be mapped to a different car. Their cards correctly show silhouettes.
 
 ## Browse all five contact sheets
 
@@ -37,8 +42,11 @@
 - Nissan Qashqai
 - Toyota Quantum
 
-## Approval and integration boundary
+## Six remaining model-photo acquisitions
 
-The 50 images still require actual visual review for correct make/model, image quality, cropping and presentation. Incompatible or misleading images must be replaced, not relabelled. Model year, trim and colour need not be exact.
+Mercedes-AMG A 45, Volkswagen Golf R, BYD Atto 3, Opel Corsa, Nissan Qashqai and Toyota Quantum. Two other replacements are needed for Jeep Wrangler and Toyota Starlet due to unsuitable composition. **Do not use a wrong-model substitute** or falsely label a sourced candidate as owner-approved.
 
-Only after a separate owner review should a new change update the Qt image map, compiled assets, and 100-unit fictional gallery. Regression tests must preserve the original protected five-vehicle fixture. No paid API, online runtime photo fetching, real customer data, commercial launch, or `main` changes. Formal owner acceptance stays 45/74, fixed-weight 70.6%, P7 SQLite 0/8.
+## Acceptance and ownership boundary
+
+The expanded catalogue, 48 new photo mappings and photo-fit layout are native-tested engineering progress, not final owner approval. Original `demo/vehicles.txt` and `demo/rentals.txt` remain protected; no public commercial data, payments, installer or `main` merge. Formal owner acceptance stays **45/74, weighted 70.6%, P7 SQLite 0/8** until explicitly updated after physical QA.
+

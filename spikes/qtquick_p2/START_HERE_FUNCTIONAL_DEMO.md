@@ -1,6 +1,6 @@
 # Rental Studio 2.0 | First hands-on Windows functionality preview
 
-**Status:** Functional **fictional-only QA preview**, NOT a Windows installer, final fleet population, production-data import or release certification. Exact tested commit in `SOURCE_COMMIT.txt`. The application comes with its Qt runtime libraries and **five generated fictional test vehicles**, not a finished vehicle catalogue.
+**Status:** Functional **fictional-only QA preview**, NOT a Windows installer, final fleet population, production-data import or release certification. Exact tested commit in `SOURCE_COMMIT.txt`. The normal graphical launcher comes with **131 offline fictional showcase vehicles (121 cars, 10 motorcycles) across 70 models** and Qt runtime libraries. The **five protected fictional source vehicles** are reserved for automated regression tests and verification, not the normal showroom size. This is a provisional image/visual review, not final owner photo approval.
 
 ## Launch the application
 
@@ -14,12 +14,12 @@
 | Step | Action to perform | What a successful preview should do |
 |---|---|---|
 | 1 | Open **Overview**, then **Fleet** and **Rentals** | All three workspaces show nonempty, correctly labelled fictional information |
-| 2 | In Fleet switch **Gallery/Table**, search/filter and select a vehicle | The selected Inspector agrees with the C++ vehicle ID and availability |
+| 2 | In Fleet switch **Gallery/Table**, search/filter and select a vehicle | The 131-vehicle showroom, model-matched reference photo or neutral silhouette and selected Inspector agree with the C++ vehicle ID and availability |
 | 3 | Select **Add vehicle**, add one fictional car or motorcycle | A valid temporary vehicle appears without replacing any of the protected five source fixtures |
 | 4 | Select an **available** vehicle and choose **Create rental** | Guided quote uses authoritative C++ daily rate; review and confirm with **fictional** contact values only |
 | 5 | In Rentals locate the new ID, review active status and **Return** | Availability and rental/Overview metrics refresh only after a successful C++ commit |
 | 6 | Try empty or invalid input, duplicate booking, and Cancel/Escape | Invalid operations refuse success; Cancel/Escape do not fabricate a booking receipt |
-| 7 | Close and reopen **this default launcher** | It intentionally **resets to the original five fictional records**; everything you created in this preview is temporary |
+| 7 | Close and reopen **this default launcher** | It intentionally **resets to the original 131-vehicle fictional showcase**; everything you created in this preview is temporary |
 
 **Important functional mode distinction:** The default double-click launcher uses disposable, isolated data to let you test Add Vehicle and complete the full fictional lifecycle. **It does not retain changes across launches.** Separately, the executable's existing opt-in `--persistent-fictional-demo` mode supports a fixed fictional-only booking session, **but Fleet creation is intentionally disabled there** pending formal persistent-data rules. Do not interpret one mode as a real business database.
 
@@ -31,7 +31,7 @@ The launcher adjusts the Qt desktop window to the *available logical screen size
 
 ## Boundaries
 
-Existing Fleet/Booking/Return workflows are P5/P6 owner-accepted only for **fictional** demo operations. No final five-photo set, final fleet size, real imports, commercial-data policy, signed installer or release exists yet. No task here modifies `main`, merges draft PRs or authorises operating a real rental business.
+Existing Fleet/Booking/Return workflows are P5/P6 owner-accepted only for **fictional** demo operations. The current 70-model fictional catalogue is **not yet owner visually accepted** and has eight silhouette placeholders; no real imports, commercial-data policy, signed installer or release exists yet. No task here modifies `main`, merges draft PRs or authorises operating a real rental business.
 
 ## Optional one-click automated functionality check
 
