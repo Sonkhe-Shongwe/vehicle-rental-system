@@ -114,7 +114,7 @@ qt_add_qml_module(rental_studio_qtquick_spike
     VERSION 1.0
     QML_FILES Main.qml DesignTokens.qml PrecisionPrimaryButton.qml OverviewAvailabilityPanel.qml FleetStatusPill.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
-              ConfirmActionDialog.qml OverviewMetricCard.qml P7FictionalSqlLab.qml P7LabSnapshotCard.qml)
+              ConfirmActionDialog.qml OverviewMetricCard.qml EditorialVehiclePreview.qml P7FictionalSqlLab.qml P7LabSnapshotCard.qml)
 if(BUILD_TESTING)
     if(BUILD_P7_SQLITE_SANDBOX)
         foreach(SIZE wide compact)

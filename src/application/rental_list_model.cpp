@@ -81,6 +81,22 @@ QString RentalListModel::oldestOverdueRentalId() const {
     return oldest ? oldest->rentalId : QString{};
 }
 
+QVariantMap RentalListModel::oldestOverduePreview() const {
+    const QString id = oldestOverdueRentalId();
+    if (id.isEmpty())
+        return {};
+    for (const auto &record : m_allItems) {
+        if (record.rentalId == id)
+            return {
+                {QStringLiteral("rentalId"), record.rentalId},
+                {QStringLiteral("vehicleId"), record.vehicleId},
+                {QStringLiteral("expectedReturnDate"),
+                    record.expectedReturnDate.toString(Qt::ISODate)}
+            };
+    }
+    return {};
+}
+
 QVariantList RentalListModel::recentActivities() const {
     if (!m_snapshotAvailable)
         return {}; // Cached records are kept for recovery, not presented as verified.

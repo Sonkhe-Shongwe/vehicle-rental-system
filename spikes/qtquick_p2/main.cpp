@@ -25,6 +25,8 @@
 #include <QSaveFile>
 #include "p5_synthetic_session.h"
 #include <QVariant>
+#include <QVariantList>
+#include <QVariantMap>
 #include <cmath>
 #include <algorithm>
 #include "rentalsystem.h"
@@ -73,6 +75,22 @@ public:
                 return &item;
         }
         return nullptr;
+    }
+    QVariantList availableHighlights(int limit = 2) const {
+        QVariantList rows;
+        for (const auto &vehicle : m_vehicles) {
+            if (!vehicle.available)
+                continue;
+            rows.append(QVariantMap{
+                {QStringLiteral("vehicleId"), vehicle.id},
+                {QStringLiteral("displayName"), vehicle.displayName()},
+                {QStringLiteral("vehicleType"), vehicle.type},
+                {QStringLiteral("dailyRate"), vehicle.legacyDailyRate}
+            });
+            if (rows.size() >= limit)
+                break;
+        }
+        return rows;
     }
     int availableCount() const {
         int count = 0;
@@ -179,6 +197,7 @@ class FleetController final : public QObject {
     Q_PROPERTY(bool selectedAvailable READ selectedAvailable NOTIFY selectionChanged)
     Q_PROPERTY(int totalCount READ totalCount NOTIFY fleetChanged)
     Q_PROPERTY(int availableCount READ availableCount NOTIFY fleetChanged)
+    Q_PROPERTY(QVariantList availableHighlights READ availableHighlights NOTIFY fleetChanged)
     Q_PROPERTY(int carCount READ carCount NOTIFY fleetChanged)
     Q_PROPERTY(int motorcycleCount READ motorcycleCount NOTIFY fleetChanged)
     Q_PROPERTY(int rentedCount READ rentedCount NOTIFY fleetChanged)
@@ -237,6 +256,7 @@ public:
     }
     int totalCount() const { return m_source.rowCount(); }
     int availableCount() const { return m_source.availableCount(); }
+    QVariantList availableHighlights() const { return m_source.availableHighlights(); }
     int carCount() const { return m_source.countType(QStringLiteral("Car")); }
     int motorcycleCount() const { return m_source.countType(QStringLiteral("Motorcycle")); }
     int rentedCount() const { return totalCount() - availableCount(); }

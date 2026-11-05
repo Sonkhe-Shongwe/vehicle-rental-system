@@ -35,6 +35,7 @@ class RentalListModel final : public QAbstractListModel {
     Q_PROPERTY(int dueTodayCount READ dueTodayCount NOTIFY metricsChanged)
     Q_PROPERTY(double activeBookedValue READ activeBookedValue NOTIFY metricsChanged)
     Q_PROPERTY(QString oldestOverdueRentalId READ oldestOverdueRentalId NOTIFY metricsChanged)
+    Q_PROPERTY(QVariantMap oldestOverduePreview READ oldestOverduePreview NOTIFY metricsChanged)
     // At most four latest rental START dates, then ID descending. Purpose-
     // limited maps: no customer/contact details, payment or event timestamps.
     Q_PROPERTY(QVariantList recentActivities READ recentActivities NOTIFY metricsChanged)
@@ -75,6 +76,7 @@ public:
     int dueTodayCount() const;
     double activeBookedValue() const;
     QString oldestOverdueRentalId() const;
+    QVariantMap oldestOverduePreview() const;
     QVariantList recentActivities() const;
     QVariantMap selectedContract() const;
     QString statusFilter() const { return m_statusFilter; }
