@@ -2,13 +2,16 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Read-only, C++-bound real overview; no generated KPI values or fake events.
+// Direction A: compact readiness readout. The authoritative C++ snapshot
+// supplies the numerator, denominator and all due/contract summaries.
 Rectangle {
     id: panel
     objectName: "overviewAvailabilityPanel"
     property int total: 0
     property int available: 0
     property int rented: 0
+    property int carCount: 0
+    property int motorcycleCount: 0
     property int dueToday: 0
     property int history: 0
     property string oldestOverdueId: ""
@@ -16,42 +19,35 @@ Rectangle {
     property bool compact: false
     readonly property real availableShare: total > 0
         ? Math.max(0, Math.min(1, available / total)) : 0
-    readonly property int availablePercent: Math.round(availableShare * 100)
+    readonly property int availablePercent: Math.round(100 * availableShare)
     Layout.fillWidth: true
-    Layout.minimumWidth: 300
-    Layout.preferredHeight: compact ? 272 : 294
-    radius: 12
+    Layout.minimumWidth: 290
+    radius: 15
     color: colors.surface
     border.width: 1
     border.color: colors.border
     Accessible.role: Accessible.StaticText
-    Accessible.name: "Fleet availability: " + available + " available of " +
-        total + ", " + rented + " rented, " + availablePercent + " percent."
+    Accessible.name: "Fleet readiness: " + availablePercent + "%; " +
+        available + " available, " + rented + " rented of " + total
     DesignTokens { id: colors }
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: panel.compact ? 12 : 16
-        spacing: panel.compact ? 6 : 8
+        anchors.margins: panel.compact ? 11 : 15
+        spacing: panel.compact ? 3 : 5
         Label {
-            text: "Fleet availability"
-            Layout.fillWidth: true
-            color: colors.navy
-            font.pixelSize: 17
-            font.weight: Font.DemiBold
-        }
-        Label {
-            text: "Current fictional inventory, not a revenue forecast"
-            Layout.fillWidth: true
-            font.pixelSize: 11
+            text: "FLEET READINESS"
             color: colors.ink
-            elide: Text.ElideRight
+            font.pixelSize: 11
+            font.letterSpacing: 1
+            font.weight: Font.DemiBold
+            Layout.fillWidth: true
         }
         RowLayout {
             Layout.fillWidth: true
-            spacing: panel.compact ? 8 : 12
+            spacing: 9
             Item {
-                Layout.preferredWidth: panel.compact ? 116 : 132
-                Layout.preferredHeight: panel.compact ? 116 : 132
+                Layout.preferredHeight: panel.compact ? 60 : 73
+                Layout.preferredWidth: panel.compact ? 70 : 85
                 Canvas {
                     id: availabilityRing
                     objectName: "overviewAvailabilityRing"
@@ -62,20 +58,17 @@ Rectangle {
                     onPaint: {
                         const ctx = getContext("2d")
                         ctx.clearRect(0, 0, width, height)
-                        const mid = Math.min(width, height) / 2
-                        const radius = mid - 12
-                        const start = -Math.PI / 2
-                        ctx.lineWidth = 12
-                        ctx.lineCap = "round"
-                        ctx.strokeStyle = "#DFE8ED"
+                        const radius = Math.min(width, height) / 2 - 6
+                        ctx.lineWidth = 6
+                        ctx.strokeStyle = "#DCE8E8"
                         ctx.beginPath()
-                        ctx.arc(width/2, height/2, radius, 0, Math.PI*2)
+                        ctx.arc(width/2, height/2, radius, 0, 2 * Math.PI)
                         ctx.stroke()
                         if (share > 0) {
                             ctx.strokeStyle = "#0F766E"
                             ctx.beginPath()
-                            ctx.arc(width/2, height/2, radius, start,
-                                    start + Math.PI*2*share)
+                            ctx.arc(width/2, height/2, radius,
+                                -Math.PI / 2, -Math.PI / 2 + share * 2 * Math.PI)
                             ctx.stroke()
                         }
                     }
@@ -84,73 +77,95 @@ Rectangle {
                     objectName: "overviewAvailablePercent"
                     anchors.centerIn: parent
                     text: panel.availablePercent + "%"
-                    color: colors.navy
-                    font.pixelSize: 22
+                    font.pixelSize: panel.compact ? 20 : 24
                     font.weight: Font.DemiBold
-                    Accessible.name: text + " of vehicles available"
+                    color: colors.teal
+                    Accessible.name: text + " of the fleet available"
                 }
             }
             ColumnLayout {
                 Layout.fillWidth: true
-                Layout.minimumWidth: 130
-                spacing: 3
-                RowLayout {
-                    spacing: 6
-                    Rectangle { width: 8; height: 8; radius: 4; color: colors.teal }
-                    Label { text: "Available: " + panel.available; color: colors.navy; font.pixelSize: 11 }
+                spacing: 2
+                Label {
+                    text: "of your fictional fleet"
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: colors.navy
                 }
-                RowLayout {
-                    spacing: 6
-                    Rectangle { width: 8; height: 8; radius: 4; color: colors.rented }
-                    Label { text: "Rented: " + panel.rented; color: colors.navy; font.pixelSize: 11 }
+                Label {
+                    text: "is ready to rent"
+                    font.pixelSize: 12
+                    color: colors.ink
                 }
-                RowLayout {
-                    spacing: 6
-                    Rectangle { width: 8; height: 8; radius: 4; color: colors.border }
-                    Label { text: "Fleet total: " + panel.total; color: colors.navy; font.pixelSize: 11 }
-                }
-                OverviewMetricCard {
-                    objectName: "overviewValueCard"
-                    metricLabel: "Active booked value"
-                    value: "R " + Number(panel.bookedValue).toFixed(2)
-                    note: "Contracts, not payments"
-                    metricIcon: "Rentals"
-                    compact: true
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 138
-                    Layout.preferredHeight: 88
-                }
+            }
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 7
+            radius: 4
+            color: colors.quietSurface
+            Rectangle {
+                width: parent.width * panel.availableShare
+                height: parent.height
+                radius: 4
+                color: colors.teal
             }
         }
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
+            Label {
+                text: panel.available + " available"
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+                color: colors.teal
+                Layout.fillWidth: true
+            }
+            Label {
+                text: panel.rented + " rented"
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+                color: colors.rented
+            }
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: colors.border
+        }
+        Label {
+            text: panel.carCount + " cars · " +
+                  panel.motorcycleCount + " motorcycles · " + panel.total + " total"
+            font.pixelSize: 11
+            color: colors.navy
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+        }
+        RowLayout {
+            Layout.fillWidth: true
             Label {
                 objectName: "overviewDueTodayText"
                 text: "Due today: " + panel.dueToday
-                color: colors.navy
-                font.pixelSize: 12
-                Accessible.name: text
+                font.pixelSize: 10
+                color: colors.ink
             }
             Label {
                 objectName: "overviewHistoryText"
-                text: "Returned or archived: " + panel.history
-                color: colors.navy
-                font.pixelSize: 12
+                text: "Returned / archived: " + panel.history
+                font.pixelSize: 10
+                color: colors.ink
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                Accessible.name: text
             }
         }
         Label {
             objectName: "overviewOldestOverdueText"
-            Layout.fillWidth: true
             text: panel.oldestOverdueId !== ""
                 ? "Oldest overdue contract: " + panel.oldestOverdueId
                 : "No overdue returns need attention"
-            color: panel.oldestOverdueId !== "" ? colors.warningInk : colors.ink
-            font.pixelSize: 12
+            font.pixelSize: 10
             font.weight: Font.DemiBold
+            color: panel.oldestOverdueId !== "" ? colors.warningInk : colors.teal
+            Layout.fillWidth: true
             elide: Text.ElideRight
             Accessible.name: text
         }
