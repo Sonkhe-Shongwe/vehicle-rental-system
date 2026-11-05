@@ -5336,6 +5336,51 @@ int main(int argc, char *argv[]) {
                            <<"focused"<<(close?close->hasActiveFocus():false);
                 app.exit(564);return;
             }
+            // UX-VIS-001: the actual popup must fit its window, preserve
+            // the approved two-column card order, and reveal the Close action
+            // without clipping. A full-window capture below retains proof
+            // while the modal is OPEN, unlike background Rentals captures.
+            auto *identity=find(find,root,"rentalDetailIdentity");
+            auto *vehicle=find(find,root,"rentalDetailVehicle");
+            auto *grid=find(find,root,"rentalDetailGrid");
+            auto *panel=find(find,root,"rentalDetailTotalPanel");
+            auto *duration=find(find,root,"rentalDetailDuration");
+            auto *rate=find(find,root,"rentalDetailRate");
+            const auto fitsWindow=[window](QQuickItem *item)->bool {
+                if(!item || !item->isVisible() || item->width()<=0 ||
+                   item->height()<=0)return false;
+                const QPointF a=item->mapToScene(QPointF(0,0));
+                const QPointF b=item->mapToScene(QPointF(item->width(),item->height()));
+                return a.x()>=-1 && a.y()>=-1 &&
+                       b.x()<=window->width()+1 && b.y()<=window->height()+1;
+            };
+            if(!identity||!vehicle||!grid||!panel||!duration||!rate||
+               !fitsWindow(identity)||!fitsWindow(vehicle)||
+               !fitsWindow(grid)||!fitsWindow(panel)||
+               !fitsWindow(start)||!fitsWindow(expected)||
+               !fitsWindow(actual)||!fitsWindow(total)||
+               !fitsWindow(close)||
+               grid->property("columns").toInt()!=2 ||
+               identity->property("text").toString()!="R001"||
+               vehicle->property("text").toString()!="Vehicle C002"||
+               duration->property("text").toString()!="2 days"||
+               rate->property("text").toString()!="R 700.00"||
+               panel->property("color").value<QColor>()!=QColor("#E8F5F0")||
+               std::abs(start->mapToScene(QPointF(0,0)).y()-
+                        expected->mapToScene(QPointF(0,0)).y())>8.0 ||
+               !(actual->mapToScene(QPointF(0,0)).y() >
+                 start->mapToScene(QPointF(0,0)).y()) ||
+               !(total->mapToScene(QPointF(0,0)).y() >
+                 actual->mapToScene(QPointF(0,0)).y()) ||
+               !(close->mapToScene(QPointF(0,0)).y() >
+                 total->mapToScene(QPointF(0,0)).y())) {
+                qCritical()<<"UX-VIS-001 real contract dialog geometry or card order failed"
+                           <<"size"<<window->size()
+                           <<"grid columns"<<(grid?grid->property("columns"):QVariant{})
+                           <<"panel"<<(panel?panel->property("color"):QVariant{})
+                           <<"identity"<<(identity?identity->property("text"):QVariant{});
+                app.exit(572);return;
+            }
             const QString size=compact?"1280x720":"1500x860";
             const QImage shot=window->grabWindow();
             if(shot.isNull()||shot.size()!=QSize(compact?1280:1500,compact?720:860)||
