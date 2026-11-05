@@ -1,0 +1,67 @@
+name: Catalogue visual and licence review bundle
+on:
+  push:
+    branches: [feature/p7-sqlite-sandbox-20261102]
+    paths:
+      - '.github/workflows/catalogue-visual-review.yml'
+      - 'catalogue_acquisition/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    name: Verify all staged image files and export review bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify local model-photo provenance and integrity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, re
+          root=pathlib.Path('catalogue_acquisition')
+          models=set()
+          sha256s=set()
+          total=0
+          for batch_num in range(1,6):
+              folder=root/f'batch{batch_num:02d}'
+              assert (folder/'CONTACT_SHEET.jpg').is_file(), f'Missing {folder} contact sheet'
+              assert (folder/'IMAGE_CREDITS.md').is_file(), f'Missing {folder} licence credits'
+              entries=json.loads((folder/'source_manifest.json').read_text(encoding='utf-8'))['images']
+              assert len(entries)==10, f'{folder}: expected 10 model candidates'
+              for item in entries:
+                  slug=item['slug']
+                  assert re.fullmatch(r'[a-z0-9_]+',slug),slug
+                  assert item['model'] not in models, f'Duplicate model {item["model"]}'
+                  assert item['licence'].startswith(('CC0','CC BY')), f'Unapproved licence {item["licence"]}'
+                  assert item['licence_url'].startswith(('https://','http://')), slug
+                  assert item['source_page'].startswith('https://commons.wikimedia.org/wiki/File:'),slug
+                  assert item['creator'].strip(),slug
+                  photo=pathlib.Path(item['local_file'])
+                  assert photo.parent==folder/'images' and photo.name==f'{slug}.jpg',slug
+                  assert photo.is_file() and photo.stat().st_size>10_000,slug
+                  digest=hashlib.sha256(photo.read_bytes()).hexdigest()
+                  assert digest==item['sha256'],f'Image hash mismatch: {slug}'
+                  assert digest not in sha256s,f'Duplicate image: {slug}'
+                  sha256s.add(digest)
+                  models.add(item['model'])
+                  total+=1
+              print(f'{folder.name}: 10 source/provenance/hash checks PASS',flush=True)
+          assert total==len(models)==len(sha256s)==50
+          print('VERIFIED REVIEW BUNDLE: 50 distinct images, model keys, authors, licences and SHA-256 hashes')
+          print('NOTE: automated metadata validation is NOT owner visual/model-match approval')
+          PY
+      - name: Upload actual staged images, five contact sheets and attribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalogue-50-visual-owner-review
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            catalogue_acquisition/INDEX.md
+            catalogue_acquisition/batch0*/CONTACT_SHEET.jpg
+            catalogue_acquisition/batch0*/images/*.jpg
+            catalogue_acquisition/batch0*/source_manifest.json
+            catalogue_acquisition/batch0*/IMAGE_CREDITS.md
+            catalogue_acquisition/batch0*/PREVIEW.md
