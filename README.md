@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Qt/C++ Windows rental-management application
 
+**DAILY REVIEW: NO MORE REPEATED 30–50 MB ZIPS.** [Open the 4-step GitHub Desktop → Qt Creator guide](docs/DAILY_UI_REVIEW_NO_ZIPS.md). Pull the existing feature branch, then build/run the modern `rental_studio_qtquick_spike` target locally. [Phase 1B actual Light Overview source `05cf7fa`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/05cf7fa0bebae8c9fd203f31ffdd66fceee153b6), [verified 136/136 each OS + Windows 8/8](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42080938894); owner physical testing still open.
+
+---
+
+
 **CURRENT 5 November 2026, 70-MODEL OFFLINE FLEET CATALOGUE:** The normal fictional Qt Quick demo now contains **131 vehicles (121 cars, 10 motorcycles) across 70 distinct models**. The active image map embeds **48 new model-matched Commons candidates**, retains the original model-specific pictures and honestly shows **eight silhouettes** where imagery needs replacement or acquisition. Two poor compositions are withheld. [Executable source `6c1b852`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/6c1b852cdc5b9b34c820a6a1244131bfb2dc4226) was [verified at 132/132 each native Windows/Linux plus packaged Windows 8/8](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42055392137). Card and inspector photos now preserve the whole model rather than crop it. [Full new verification report](docs/CATALOGUE_70_MODEL_VISUAL_INTEGRATION_NATIVE_VERIFIED_2026-11-05.md) and [active licence credits](catalogue_acquisition/ACTIVE_ASSET_CREDITS.md). This is a fictional owner-review build, not the final accepted aesthetic or a commercial release. Formal owner signoff **45/74, weighted 70.6%, P7 0/8** unchanged; draft PR #17 unmerged and `main` untouched.
 
 ---
