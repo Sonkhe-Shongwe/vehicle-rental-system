@@ -5349,8 +5349,12 @@ int main(int argc, char *argv[]) {
             // UX-VIS-002: the accessible Dialog retains its title, but Qt's
             // redundant default visible title bar must not precede the custom
             // RENTAL CONTRACT header. Check the real popup component.
-            auto *chromeHeader=find(find,root,"rentalContractSuppressedDefaultHeader");
-            if(!chromeHeader || chromeHeader->isVisible() ||
+            // The standard find() helper deliberately excludes hidden items.
+            // Inspect Dialog.header directly so the regression is meaningful.
+            auto *chromeHeader=dialog->property("header").value<QQuickItem*>();
+            if(!chromeHeader ||
+               chromeHeader->objectName()!="rentalContractSuppressedDefaultHeader" ||
+               chromeHeader->isVisible() ||
                dialog->property("title").toString()!="Rental contract") {
                 qCritical()<<"UX-VIS-002 duplicate contract title chrome not suppressed"
                            <<"header"<<chromeHeader
