@@ -15,6 +15,7 @@ Rectangle {
     property int dueToday: 0
     property int history: 0
     property string oldestOverdueId: ""
+    property bool rentalSnapshotAvailable: true
     property real bookedValue: 0
     property bool compact: false
     readonly property real availableShare: total > 0
@@ -144,13 +145,13 @@ Rectangle {
             Layout.fillWidth: true
             Label {
                 objectName: "overviewDueTodayText"
-                text: "Due today: " + panel.dueToday
+                text: panel.rentalSnapshotAvailable ? "Due today: " + panel.dueToday : "Due data unavailable"
                 font.pixelSize: 10
                 color: colors.ink
             }
             Label {
                 objectName: "overviewHistoryText"
-                text: "Returned / archived: " + panel.history
+                text: panel.rentalSnapshotAvailable ? "Returned / archived: " + panel.history : ""
                 font.pixelSize: 10
                 color: colors.ink
                 Layout.fillWidth: true
@@ -159,7 +160,9 @@ Rectangle {
         }
         Label {
             objectName: "overviewOldestOverdueText"
-            text: panel.oldestOverdueId !== ""
+            text: !panel.rentalSnapshotAvailable
+                ? "Rental snapshot is unavailable"
+                : panel.oldestOverdueId !== ""
                 ? "Oldest overdue contract: " + panel.oldestOverdueId
                 : "No overdue returns need attention"
             font.pixelSize: 10

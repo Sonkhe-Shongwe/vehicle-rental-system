@@ -1186,7 +1186,9 @@ ApplicationWindow {
                                 Layout.minimumWidth: 0
                                 spacing: 5
                                 Label {
-                                    text: editorialOverviewHero.needsAttention
+                                    text: !rentalsModel.snapshotAvailable
+                                        ? "RENTAL SNAPSHOT UNAVAILABLE"
+                                        : editorialOverviewHero.needsAttention
                                         ? "RETURN EXCEPTION  ·  OPERATIONAL PRIORITY"
                                         : "FLEET OPERATIONS  ·  LIVE SNAPSHOT"
                                     color: "#88DECE"
@@ -1195,7 +1197,9 @@ ApplicationWindow {
                                     font.weight: Font.DemiBold
                                 }
                                 Label {
-                                    text: editorialOverviewHero.needsAttention
+                                    text: !rentalsModel.snapshotAvailable
+                                        ? "Rental records cannot\nbe verified."
+                                        : editorialOverviewHero.needsAttention
                                         ? "One rental needs\nattention."
                                         : "Make your next\nmove with confidence."
                                     font.pixelSize: window.height < 800 ? 25 : 31
@@ -1206,7 +1210,9 @@ ApplicationWindow {
                                     wrapMode: Text.WordWrap
                                 }
                                 Label {
-                                    text: editorialOverviewHero.needsAttention
+                                    text: !rentalsModel.snapshotAvailable
+                                        ? "Check the read-only rental source before acting"
+                                        : editorialOverviewHero.needsAttention
                                         ? editorialOverviewHero.overduePreview.rentalId +
                                           "  ·  Vehicle " + editorialOverviewHero.overduePreview.vehicleId
                                         : fleet.availableCount + " vehicles ready for the next rental"
@@ -1399,6 +1405,7 @@ ApplicationWindow {
                             dueToday: rentalsModel.dueTodayCount
                             history: rentalsModel.historyCount
                             oldestOverdueId: rentalsModel.oldestOverdueRentalId
+                            rentalSnapshotAvailable: rentalsModel.snapshotAvailable
                             bookedValue: rentalsModel.activeBookedValue
                             compact: window.height < 800
                         }
