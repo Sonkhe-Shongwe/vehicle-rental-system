@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**PORTFOLIO IMAGE ACQUISITION BATCH 02 PASS (5 Nov 2026):** [10 more model-matched photo candidates](../catalogue_acquisition/batch02/PREVIEW.md) from Commons were downloaded into **separate staging**, all individually free-licence verified, optimized, with SHA256, photographer and attribution. [Batch02 acquisition run #42010192161](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42010192161) SUCCESS. [Combined catalogue acquisition index](../catalogue_acquisition/INDEX.md): **20 unique staged photos**, spanning **16 existing wrong-model assignments** and **4 proposed new models**; **9 existing wrong-image models remain**. Photos are **NOT visually approved nor integrated**. The current 100-inventory/39-model Qt showcase is unchanged. Formal 45/74, 70.6%, P7 0/8; main untouched.
+
+---
+
+
 **CATALOGUE BATCH 01 SOURCE ACQUISITION PASS (5 Nov 2026):** [10 actual model-matched Commons JPEGs](../catalogue_acquisition/batch01/PREVIEW.md) downloaded to separate staging with **10 individually verified CC0/CC BY-SA licences, original author/source, derivative note and 10 unique SHA256s**. [Completed successful GitHub Actions #42007433964](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42007433964); [full acquisition report](PORTFOLIO_CATALOGUE_BATCH01_ACQUIRED_2026-11-05.md). **Human visual quality approval OPEN; no new image attached to Fleet, no source/test change.** 70-model research continues, current 100 inventory unchanged, formal **45/74 accepted, 70.6%, P7 0/8** unchanged.
 
 ---
