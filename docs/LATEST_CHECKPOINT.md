@@ -1,5 +1,10 @@
 # Rental Studio 2.0 | Latest verified checkpoint
 
+**FREE IMAGE ACQUISITION BATCH 03 SUCCESS (5 Nov 2026):** [Batch 03's 10 actual acquired model photos](../catalogue_acquisition/batch03/PREVIEW.md) passed [GitHub Actions #42011389574](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42011389574), with 10 individually accepted Creative Commons licences and 10 unique SHA256 files. [Combined index](../catalogue_acquisition/INDEX.md): **30 newly staged, source-checked model photos** across three batches. All **25 original wrong-image models** now have acquired replacement candidates, plus **five** new model candidates (G-Class, Golf GTI, BMW M4, Audi RS6, Porsche 911). **No new images visually owner-approved or integrated into the actual Qt Fleet gallery yet**; original 100 demo units and original image mapping unchanged. [Batch 03 audit](PORTFOLIO_CATALOGUE_BATCH03_ACQUIRED_2026-11-05.md). Formal 45/74, 70.6%, P7 0/8 unchanged.
+
+---
+
+
 **PORTFOLIO IMAGE ACQUISITION BATCH 02 PASS (5 Nov 2026):** [10 more model-matched photo candidates](../catalogue_acquisition/batch02/PREVIEW.md) from Commons were downloaded into **separate staging**, all individually free-licence verified, optimized, with SHA256, photographer and attribution. [Batch02 acquisition run #42010192161](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42010192161) SUCCESS. [Combined catalogue acquisition index](../catalogue_acquisition/INDEX.md): **20 unique staged photos**, spanning **16 existing wrong-model assignments** and **4 proposed new models**; **9 existing wrong-image models remain**. Photos are **NOT visually approved nor integrated**. The current 100-inventory/39-model Qt showcase is unchanged. Formal 45/74, 70.6%, P7 0/8; main untouched.
 
 ---
