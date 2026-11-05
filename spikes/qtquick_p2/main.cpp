@@ -368,6 +368,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p6-contract-detail-smoke", "Test no-PII selected rental contract details and safe close on native Qt Quick."});
     parser.addOption({"ux-ctrl-002-smoke", "Verify owner-approved Qt directional keys, semantic danger and read-only contract Enter."});
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
+    parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
     parser.addOption({"portfolio-catalog-smoke", "CI-only real 100-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
@@ -4180,36 +4181,40 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"P4 Fleet tab controls not found";
                 app.exit(231);return;
             }
-            search->forceActiveFocus(Qt::TabFocusReason);
-            QTest::keyClick(window,Qt::Key_Tab);
-            QCoreApplication::processEvents();
-            if(!status->hasActiveFocus()) {
-                qCritical()<<"P4 Tab search to status failed";
-                app.exit(232);return;
-            }
+            // UX-SHELL-004 matches real visual reading order: All -> Name -> Search.
+            status->forceActiveFocus(Qt::TabFocusReason);
             QTest::keyClick(window,Qt::Key_Tab);
             QCoreApplication::processEvents();
             if(!sort->hasActiveFocus()) {
-                qCritical()<<"P4 Tab status to sort failed";
-                app.exit(233);return;
+                qCritical()<<"P4 Tab status to sort failed";app.exit(232);return;
+            }
+            QTest::keyClick(window,Qt::Key_Tab);
+            QCoreApplication::processEvents();
+            if(!search->hasActiveFocus()) {
+                qCritical()<<"P4 Tab sort to search failed";app.exit(233);return;
+            }
+            QTest::keyClick(window,Qt::Key_Backtab);
+            QCoreApplication::processEvents();
+            if(!sort->hasActiveFocus()) {
+                qCritical()<<"P4 Shift+Tab search to sort failed";app.exit(234);return;
             }
             QTest::keyClick(window,Qt::Key_Backtab);
             QCoreApplication::processEvents();
             if(!status->hasActiveFocus()) {
-                qCritical()<<"P4 Shift+Tab sort to status failed";
-                app.exit(234);return;
+                qCritical()<<"P4 Shift+Tab sort to status failed";app.exit(235);return;
             }
-            QTest::keyClick(window,Qt::Key_Backtab);
-            QCoreApplication::processEvents();
-            if(!search->hasActiveFocus()) {
-                qCritical()<<"P4 Shift+Tab status to search failed";
-                app.exit(235);return;
-            }
+            search->forceActiveFocus(Qt::TabFocusReason);
+            search->setProperty("text","AB");
+            search->setProperty("cursorPosition",1);
             QTest::keyClick(window,Qt::Key_Left);
-            if(!search->hasActiveFocus()||!fleet.selectedId().isEmpty()) {
-                qCritical()<<"P4 TextField Left intercepted";
+            QCoreApplication::processEvents();
+            if(!search->hasActiveFocus() ||
+               search->property("cursorPosition").toInt()!=0 ||
+               !fleet.selectedId().isEmpty()) {
+                qCritical()<<"P4 nonempty TextField caret Left intercepted";
                 app.exit(236);return;
             }
+            search->setProperty("text","");
             // An invisible Fleet selection must survive Escape on Overview.
             // Only the visible workspace may own selection-dismissal.
             fleet.selectById("C001");
@@ -4822,6 +4827,157 @@ int main(int argc, char *argv[]) {
                 app.exit(346);return;
             }
             qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
+            app.exit(0);
+        });
+    }
+    if (parser.isSet("ux-shell-004-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 980;
+        const bool compact=parser.isSet("compact");
+        window->resize(compact?1280:1500,compact?720:860);
+        window->setProperty("workspace",1);
+        QTimer::singleShot(1250,&app,[&,window,compact] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *hit=self(self,child,name))return hit;
+                return nullptr;
+            };
+            auto *root=window->contentItem();
+            const auto get=[&](const QString &name)->QQuickItem* {
+                if(auto *item=find(find,root,name))return item;
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *sidebar=get("appSidebar");
+            auto *toggle=get("sidebarToggleButton");
+            auto *fleetNav=get("workspaceNavFleet");
+            auto *overviewNav=get("workspaceNavOverview");
+            auto *fleetIcon=get("workspaceIconFleet");
+            auto *search=get("fleetSearchField");
+            auto *status=get("fleetStatusCombo");
+            auto *sort=get("fleetSortCombo");
+            if(!sidebar||!toggle||!fleetNav||!overviewNav||
+               !fleetIcon||!search||!status||!sort ||
+               !fleetIcon->isVisible() ||
+               window->property("sidebarCollapsed").toBool() ||
+               sidebar->width()<210) {
+                qCritical()<<"UX-SHELL-004 expanded UI/accessible icons missing";
+                app.exit(981);return;
+            }
+            const auto key=[&](Qt::Key k) {
+                QTest::keyClick(window,k);
+                QCoreApplication::processEvents();
+            };
+            const auto capture=[&](const QString &mode)->bool {
+                const QString size=compact?"1280x720":"1500x860";
+                const QImage shot=window->grabWindow();
+                return !shot.isNull() &&
+                       shot.size()==QSize(compact?1280:1500,compact?720:860) &&
+                       shot.save("ux-shell-004-"+mode+"-"+size+".png","PNG");
+            };
+            QByteArray originalFleet,originalRentals;
+            if(!readFile(vehicles,&originalFleet)||
+               !readFile(rentals,&originalRentals)||
+               originalFleet!=beforeVehicles||
+               originalRentals!=beforeRentals) {
+                qCritical()<<"UX-SHELL-004 fixture baseline mismatch";
+                app.exit(982);return;
+            }
+            if(!capture("expanded")) {
+                qCritical()<<"UX-SHELL-004 expanded screenshot invalid";
+                app.exit(983);return;
+            }
+            toggle->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Space);
+            QTest::qWait(80);
+            if(!window->property("sidebarCollapsed").toBool() ||
+               sidebar->width()>82 || !fleetIcon->isVisible() ||
+               window->property("workspace").toInt()!=1 ||
+               toggle->property("text").toString()!="Expand sidebar") {
+                qCritical()<<"UX-SHELL-004 compact navigation regression"
+                           <<sidebar->width()<<toggle->property("text");
+                app.exit(984);return;
+            }
+            if(!capture("collapsed")) {
+                qCritical()<<"UX-SHELL-004 collapsed screenshot invalid";
+                app.exit(985);return;
+            }
+            overviewNav->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Down);
+            if(!fleetNav->hasActiveFocus()||
+               window->property("workspace").toInt()!=1) {
+                qCritical()<<"UX-SHELL-004 compact sidebar focus changed workspace";
+                app.exit(986);return;
+            }
+            key(Qt::Key_Right);
+            if(!search->hasActiveFocus()) {
+                qCritical()<<"UX-SHELL-004 icon nav Right missed Fleet Search";
+                app.exit(987);return;
+            }
+            toggle->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Space);
+            QTest::qWait(80);
+            if(window->property("sidebarCollapsed").toBool() ||
+               sidebar->width()<210 ||
+               toggle->property("text").toString()!="Collapse sidebar") {
+                qCritical()<<"UX-SHELL-004 expanded sidebar restoration failed";
+                app.exit(988);return;
+            }
+            // Real Qt keyboard: All -> Name -> Search (visible left-to-right),
+            // then reverse toward All, without modifying filter/sort values.
+            status->forceActiveFocus(Qt::TabFocusReason);
+            key(Qt::Key_Right);
+            if(!sort->hasActiveFocus() ||
+               status->property("currentText").toString()!="All") {
+                qCritical()<<"UX-SHELL-004 All Right failed or changed filter";
+                app.exit(989);return;
+            }
+            key(Qt::Key_Right);
+            if(!search->hasActiveFocus() ||
+               sort->property("currentText").toString()!="Name") {
+                qCritical()<<"UX-SHELL-004 Name Right failed or changed sort";
+                app.exit(990);return;
+            }
+            search->setProperty("text","");
+            search->setProperty("cursorPosition",0);
+            key(Qt::Key_Left);
+            if(!sort->hasActiveFocus()) {
+                qCritical()<<"UX-SHELL-004 empty Search Left did not focus Name";
+                app.exit(991);return;
+            }
+            key(Qt::Key_Left);
+            if(!status->hasActiveFocus()) {
+                qCritical()<<"UX-SHELL-004 Name Left did not focus All";
+                app.exit(992);return;
+            }
+            key(Qt::Key_Right);
+            key(Qt::Key_Right);
+            search->setProperty("text","AB");
+            search->setProperty("cursorPosition",1);
+            key(Qt::Key_Left);
+            if(!search->hasActiveFocus()||
+               search->property("cursorPosition").toInt()!=0) {
+                qCritical()<<"UX-SHELL-004 text caret Left incorrectly moved focus";
+                app.exit(993);return;
+            }
+            search->setProperty("text","");
+            key(Qt::Key_Down);
+            auto *gallery=get("fleetGalleryToggle");
+            if(!gallery||!gallery->hasActiveFocus()) {
+                qCritical()<<"UX-SHELL-004 Search Down missed Gallery";
+                app.exit(994);return;
+            }
+            QByteArray finalFleet,finalRentals;
+            if(!readFile(vehicles,&finalFleet)||
+               !readFile(rentals,&finalRentals)||
+               finalFleet!=originalFleet||finalRentals!=originalRentals) {
+                qCritical()<<"UX-SHELL-004 focus or collapse changed protected files";
+                app.exit(995);return;
+            }
+            qInfo()<<"UX-SHELL-004 icon sidebar collapse/expand, Fleet filter arrows, native caret, and no writes PASS"
+                   <<(compact?"1280x720":"1500x860");
             app.exit(0);
         });
     }

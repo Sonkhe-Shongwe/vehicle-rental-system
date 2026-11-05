@@ -2,33 +2,34 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Native Button retains Enter/Space activation, Tab order and accessibility.
-// Group-local arrows move focus; Enter/Space activates the native Button.
+// Native Button keeps accessible workspace names even in compact icon mode.
+// Arrows change focus only. Enter/Space activate a page deliberately.
 Button {
     id: nav
     required property string modelData
     required property int index
     property bool currentWorkspace: false
+    property bool sidebarCollapsed: false
     property var workspaceItems: null
     signal enterContent()
     Layout.fillWidth: true
+    Layout.minimumHeight: 48
+    implicitHeight: 48
     objectName: "workspaceNav" + modelData
     text: modelData
     activeFocusOnTab: true
     hoverEnabled: true
-    // Workspace choices are mutually exclusive; expose active state without
-    // changing native Button activation or the existing C++ workspace routing.
+    ToolTip.visible: nav.sidebarCollapsed && nav.hovered
+    ToolTip.text: nav.text
     Accessible.role: Accessible.RadioButton
     Accessible.name: modelData + " workspace"
     Accessible.checkable: true
     Accessible.checked: nav.currentWorkspace
-    Accessible.description: "Up and Down focus workspace names; Enter activates. Right enters the active workspace."
+    Accessible.description: "Up and Down focus workspaces. Enter activates; Right enters the active page."
     Keys.onPressed: (event) => {
         if (event.modifiers !== Qt.NoModifier || !nav.activeFocus)
             return
         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            // Qt Quick Buttons may activate Space but not Return without
-            // default-button policy. Explicitly mirror mouse click here.
             nav.clicked()
             event.accepted = true
             return
@@ -53,20 +54,44 @@ Button {
         event.accepted = true
     }
     background: Rectangle {
-        radius: 10
+        radius: 12
         color: nav.currentWorkspace ? colors.navy :
                nav.hovered ? colors.neutralHover : "transparent"
-        // White-on-Navy focus avoids confusing the selected workspace
-        // state with keyboard focus; unfocused active workspace remains Navy.
         border.width: nav.activeFocus ? colors.focusWidth : 0
         border.color: nav.currentWorkspace ? "white" : colors.navy
+        Rectangle {
+            visible: nav.currentWorkspace
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            width: 3
+            height: 24
+            radius: 2
+            color: "#76D6C6"
+        }
     }
-    contentItem: Text {
-        text: nav.text
-        color: nav.currentWorkspace ? "white" : colors.navy
-        font.bold: nav.currentWorkspace
-        verticalAlignment: Text.AlignVCenter
-        leftPadding: 13
+    contentItem: Item {
+        SidebarGlyph {
+            objectName: "workspaceIcon" + nav.modelData
+            kind: nav.modelData
+            glyphColor: nav.currentWorkspace ? "#FFFFFF" : colors.navy
+            width: 22
+            height: 22
+            x: nav.sidebarCollapsed ? (parent.width - width) / 2 : 12
+            y: (parent.height - height) / 2
+        }
+        Text {
+            visible: !nav.sidebarCollapsed
+            x: 46
+            y: 0
+            width: Math.max(0,parent.width - x - 7)
+            height: parent.height
+            text: nav.text
+            color: nav.currentWorkspace ? "white" : colors.navy
+            font.pixelSize: 14
+            font.bold: nav.currentWorkspace
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+        }
     }
     DesignTokens { id: colors }
 }

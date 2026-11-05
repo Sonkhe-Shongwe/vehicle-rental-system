@@ -26,6 +26,8 @@ ApplicationWindow {
     readonly property color ink: designTokens.ink
     property int workspace: 1
     property bool gallery: true
+    // Shell presentation only: never changes workspace, selection or C++ records.
+    property bool sidebarCollapsed: false
     // Confirmed receipt survives closing the ephemeral preview dialog.
     // Only the C++-verified success branch populates this display string.
     property string bookingReceiptNotice: ""
@@ -881,17 +883,94 @@ ApplicationWindow {
         spacing: 0
 
         Rectangle {
+            id: appSidebar
+            objectName: "appSidebar"
             Layout.fillHeight: true
-            Layout.preferredWidth: 194
+            Layout.preferredWidth: window.sidebarCollapsed ? 76 : 218
             color: ice
+            border.width: 1
+            border.color: designTokens.border
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 20
-                spacing: 13
+                anchors.margins: window.sidebarCollapsed ? 12 : 14
+                spacing: 12
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.bottomMargin: 17
+                    spacing: 8
+                    Rectangle {
+                        visible: !window.sidebarCollapsed
+                        Layout.preferredWidth: visible ? 34 : 0
+                        Layout.preferredHeight: 34
+                        radius: 10
+                        color: navy
+                        Label {
+                            anchors.centerIn: parent
+                            text: "R"
+                            font.pixelSize: 20
+                            font.bold: true
+                            color: "white"
+                        }
+                    }
+                    ColumnLayout {
+                        visible: !window.sidebarCollapsed
+                        Layout.fillWidth: true
+                        spacing: 1
+                        Label {
+                            text: "rental studio"
+                            color: navy
+                            font.pixelSize: 15
+                            font.bold: true
+                        }
+                        Label {
+                            text: "DESKTOP OPERATIONS"
+                            color: ink
+                            font.pixelSize: 8
+                            font.bold: true
+                            font.letterSpacing: 0.4
+                        }
+                    }
+                    Button {
+                        id: sidebarToggle
+                        objectName: "sidebarToggleButton"
+                        text: window.sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        Layout.alignment: window.sidebarCollapsed ?
+                                          Qt.AlignHCenter : Qt.AlignRight
+                        activeFocusOnTab: true
+                        hoverEnabled: true
+                        ToolTip.visible: hovered
+                        ToolTip.text: text
+                        Accessible.name: text
+                        Accessible.description: "Toggle navigation labels. Workspace and record selection remain unchanged."
+                        background: Rectangle {
+                            radius: 10
+                            color: sidebarToggle.hovered ? designTokens.neutralHover : designTokens.surface
+                            border.width: sidebarToggle.activeFocus ? 3 : 1
+                            border.color: sidebarToggle.activeFocus ? navy : designTokens.border
+                        }
+                        contentItem: Item {
+                            SidebarGlyph {
+                                anchors.centerIn: parent
+                                width: 22
+                                height: 22
+                                kind: window.sidebarCollapsed ? "expand" : "collapse"
+                                glyphColor: navy
+                            }
+                        }
+                        onClicked: window.sidebarCollapsed = !window.sidebarCollapsed
+                    }
+                }
                 Label {
-                    text: "R  rental studio"
-                    font.pixelSize: 19; font.bold: true; color: navy
-                    Layout.bottomMargin: 28
+                    visible: !window.sidebarCollapsed
+                    text: "WORKSPACES"
+                    font.pixelSize: 10
+                    font.bold: true
+                    font.letterSpacing: 1.2
+                    color: ink
+                    Layout.leftMargin: 12
+                    Layout.bottomMargin: 2
                 }
                 Repeater {
                     id: workspaceItems
@@ -899,6 +978,7 @@ ApplicationWindow {
                                ["Overview", "Fleet", "Rentals", "SQLite Lab"] :
                                ["Overview", "Fleet", "Rentals"]
                     delegate: WorkspaceNavButton {
+                        sidebarCollapsed: window.sidebarCollapsed
                         currentWorkspace: window.workspace === index
                         workspaceItems: workspaceItems
                         onClicked: window.workspace = index
@@ -906,8 +986,16 @@ ApplicationWindow {
                     }
                 }
                 Item { Layout.fillHeight: true }
+                Rectangle {
+                    visible: !window.sidebarCollapsed
+                    Layout.fillWidth: true
+                    implicitHeight: 1
+                    color: designTokens.border
+                }
                 Label {
                     objectName: "sessionModeSidebar"
+                    visible: !window.sidebarCollapsed
+                    Layout.fillWidth: true
                     text: p7SqlLabEnabled
                           ? "Fictional SQLite Lab\nSeparate from the demo fleet"
                           : portfolioShowcase
@@ -915,7 +1003,8 @@ ApplicationWindow {
                           : persistentFictionalDemo
                           ? "Fictional demo\nBookings survive restart"
                           : "Fictional demo\nChanges reset when you close"
-                    color: ink; font.pixelSize: 11
+                    color: ink
+                    font.pixelSize: 11
                     wrapMode: Text.WordWrap
                     Accessible.name: text
                 }
@@ -1280,7 +1369,61 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
-                                AccessibleTextField {
+                                ComboBox {
+                                    id: fleetStatusCombo
+                                    objectName: "fleetStatusCombo"
+                                    activeFocusOnTab: true
+                                    Layout.preferredWidth: 138
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetStatusCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetStatusCombo.activeFocus ? 2 : 1
+                                    }
+                                    model: ["All", "Available", "Rented"]
+                                    // Only LEFT/RIGHT when the native popup is closed:
+                                    // Up/Down, Enter and popup selection stay native.
+                                    Keys.priority: Keys.BeforeItem
+                                    Keys.onPressed: (event) => {
+                                        if (event.modifiers !== Qt.NoModifier ||
+                                                (fleetStatusCombo.popup && fleetStatusCombo.popup.visible)) return
+                                        if (event.key === Qt.Key_Right &&
+                                                window.focusEnabled(fleetSortCombo))
+                                            event.accepted = true
+                                        else if (event.key === Qt.Key_Left && window.focusSidebar())
+                                            event.accepted = true
+                                    }
+                                    Accessible.name: "Filter fleet status"
+                                    onActivated: fleet.status = currentText
+                                }
+                                ComboBox {
+                                    id: fleetSortCombo
+                                    objectName: "fleetSortCombo"
+                                    activeFocusOnTab: true
+                                    Layout.preferredWidth: 116
+                                    Layout.minimumHeight: 44
+                                    background: Rectangle {
+                                        radius: 8
+                                        color: "#FFFFFF"
+                                        border.color: fleetSortCombo.activeFocus ? navy : designTokens.border
+                                        border.width: fleetSortCombo.activeFocus ? 2 : 1
+                                    }
+                                    model: ["Name", "Rate"]
+                                    Keys.priority: Keys.BeforeItem
+                                    Keys.onPressed: (event) => {
+                                        if (event.modifiers !== Qt.NoModifier ||
+                                                (fleetSortCombo.popup && fleetSortCombo.popup.visible)) return
+                                        if (event.key === Qt.Key_Left &&
+                                                window.focusEnabled(fleetStatusCombo))
+                                            event.accepted = true
+                                        else if (event.key === Qt.Key_Right &&
+                                                 window.focusEnabled(search))
+                                            event.accepted = true
+                                    }
+                                    Accessible.name: "Sort fleet"
+                                    onActivated: fleet.sortBy = currentText
+                                }                                AccessibleTextField {
                                     id: search
                                     fieldPurpose: "Search fleet"
                                     objectName: "fleetSearchField"
@@ -1299,44 +1442,21 @@ ApplicationWindow {
                                     Keys.onPressed: (event) => {
                                         if (event.modifiers !== Qt.NoModifier ||
                                                 inputMethodComposing) return
-                                        if (event.key === Qt.Key_Down &&
-                                                window.focusEnabled(window.gallery
-                                                  ? fleetGalleryToggle : fleetTableToggle))
+                                        // At the empty-field boundary, Left enters the
+                                        // visible Name -> All filter group. Nonempty text
+                                        // retains Qt's native caret movement.
+                                        if (event.key === Qt.Key_Left && text.length === 0 &&
+                                                cursorPosition === 0 && selectedText.length === 0 &&
+                                                window.focusEnabled(fleetSortCombo)) {
                                             event.accepted = true
+                                        } else if (event.key === Qt.Key_Down &&
+                                                window.focusEnabled(window.gallery
+                                                  ? fleetGalleryToggle : fleetTableToggle)) {
+                                            event.accepted = true
+                                        }
                                     }
                                 }
-                                ComboBox {
-                                    id: fleetStatusCombo
-                                    objectName: "fleetStatusCombo"
-                                    activeFocusOnTab: true
-                                    Layout.preferredWidth: 138
-                                    Layout.minimumHeight: 44
-                                    background: Rectangle {
-                                        radius: 8
-                                        color: "#FFFFFF"
-                                        border.color: fleetStatusCombo.activeFocus ? navy : designTokens.border
-                                        border.width: fleetStatusCombo.activeFocus ? 2 : 1
-                                    }
-                                    model: ["All", "Available", "Rented"]
-                                    Accessible.name: "Filter fleet status"
-                                    onActivated: fleet.status = currentText
-                                }
-                                ComboBox {
-                                    id: fleetSortCombo
-                                    objectName: "fleetSortCombo"
-                                    activeFocusOnTab: true
-                                    Layout.preferredWidth: 116
-                                    Layout.minimumHeight: 44
-                                    background: Rectangle {
-                                        radius: 8
-                                        color: "#FFFFFF"
-                                        border.color: fleetSortCombo.activeFocus ? navy : designTokens.border
-                                        border.width: fleetSortCombo.activeFocus ? 2 : 1
-                                    }
-                                    model: ["Name", "Rate"]
-                                    Accessible.name: "Sort fleet"
-                                    onActivated: fleet.sortBy = currentText
-                                }
+
                             }
                             RowLayout {
                                 Layout.fillWidth: true

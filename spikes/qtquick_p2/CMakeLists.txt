@@ -85,7 +85,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
+    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml P7FictionalSqlLab.qml P7LabSnapshotCard.qml)
 if(BUILD_TESTING)
@@ -321,6 +321,18 @@ if(BUILD_TESTING)
         rental_studio_ux_ctrl_002_wide
         rental_studio_ux_ctrl_002_compact PROPERTIES
         ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    # UX-SHELL-004: owner-requested collapsible icon navigation and deliberate
+    # All -> Name -> Search horizontal focus, preserving native caret semantics.
+    foreach(SIZE wide compact)
+        set(SHELL_ARGS --ux-shell-004-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND SHELL_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_ux_shell_004_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${SHELL_ARGS})
+        set_tests_properties(rental_studio_ux_shell_004_${SIZE} PROPERTIES
+            ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
     # UX-CTRL-003: real bidirectional and boundary-aware Qt Quick keyboard
     # navigation across Overview, Fleet and Rentals at both logical sizes.
     add_test(NAME rental_studio_ux_ctrl_003_wide
