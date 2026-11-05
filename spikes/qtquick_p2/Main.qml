@@ -3025,8 +3025,6 @@ ApplicationWindow {
                         // Qt's default small title bar. The approved contract card already
                         // provides its own prominent RENTAL CONTRACT heading.
                         title: "Rental contract"
-                        Accessible.name: "Rental contract details for " +
-                                         (rentalsModel.selectedContract.rentalId || "selected rental")
                         header: Item {
                             objectName: "rentalContractSuppressedDefaultHeader"
                             implicitHeight: 0
