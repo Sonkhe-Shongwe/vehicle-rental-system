@@ -1,0 +1,77 @@
+{
+  "batch": "01",
+  "date": "2026-11-05",
+  "scope": "Separate offline image acquisition, not linked to QML",
+  "sources": [
+    {
+      "slug": "hyundai_creta",
+      "make": "Hyundai",
+      "model": "Creta",
+      "file_title": "Hyundai Creta A740048.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "volkswagen_polo",
+      "make": "Volkswagen",
+      "model": "Polo",
+      "file_title": "VW Polo (32865914808).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "haval_jolion",
+      "make": "Haval",
+      "model": "Jolion",
+      "file_title": "Haval Jolion 1.5T Active 2022.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "nissan_navara",
+      "make": "Nissan",
+      "model": "Navara",
+      "file_title": "2021 Nissan Navara facelift.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "isuzu_dmax",
+      "make": "Isuzu",
+      "model": "D-Max",
+      "file_title": "Isuzu D-Max (45114138465).jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mazda_cx5",
+      "make": "Mazda",
+      "model": "CX-5",
+      "file_title": "Mazda-CX-5.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "honda_cbr500r",
+      "make": "Honda",
+      "model": "CBR500R",
+      "file_title": "Honda CBR500R.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "kawasaki_ninja400",
+      "make": "Kawasaki",
+      "model": "Ninja 400",
+      "file_title": "Kawasaki Ninja 400.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "mercedes_g_class",
+      "make": "Mercedes-Benz",
+      "model": "G-Class",
+      "file_title": "2020 Mercedes G 63 AMG 4Matic Auto.jpg",
+      "expected_license": "FREE_CC"
+    },
+    {
+      "slug": "volkswagen_golf_gti",
+      "make": "Volkswagen",
+      "model": "Golf GTI",
+      "file_title": "Volkswagen GOLF GTI (7BA-CDDNP) front.jpg",
+      "expected_license": "FREE_CC"
+    }
+  ]
+}

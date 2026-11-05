@@ -1,0 +1,40 @@
+name: Acquire 10 free model-specific catalogue photos
+on:
+  push:
+    branches: [feature/p7-sqlite-sandbox-20261102]
+    paths:
+      - '.github/workflows/catalogue-batch01-free-images.yml'
+      - 'catalogue_acquisition/batch01/sources.json'
+      - 'tools/acquire_catalogue_batch01.py'
+permissions:
+  contents: write
+concurrency:
+  group: rental-studio-model-image-batch01
+  cancel-in-progress: false
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free image conversion package
+        run: python -m pip install --quiet pillow
+      - name: Verify Python syntax
+        run: python -m py_compile tools/acquire_catalogue_batch01.py
+      - name: Download and licence-check ten nominated Commons files
+        run: python tools/acquire_catalogue_batch01.py
+      - name: Commit only verified, offline, model-specific image staging
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalogue_acquisition/batch01/images catalogue_acquisition/batch01/IMAGE_CREDITS.md catalogue_acquisition/batch01/source_manifest.json
+          if git diff --cached --quiet; then
+            echo "No new images to commit."
+          else
+            git commit -m "assets(catalogue): acquire ten sourced free vehicle photos [skip ci]"
+            git push origin HEAD:feature/p7-sqlite-sandbox-20261102
+          fi
