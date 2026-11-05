@@ -12,6 +12,19 @@ QtObject {
     readonly property color ink: "#5F6F82"
     readonly property color border: "#D8E2E8"
     readonly property color rented: "#1D4ED8"
+    // Precision Automotive Light: semantic shell roles derived from the
+    // selected Navy/Emerald tokens. Keep these consistent across workspaces.
+    readonly property color sidebarSelected: "#D7F0EA"
+    readonly property color quietSurface: "#F1F5F8"
+    readonly property color pageHeading: navy
+    readonly property color secondaryText: ink
+    readonly property int sidebarExpandedWidth: 218
+    readonly property int sidebarCollapsedWidth: 76
+    readonly property int pageHeadingSizeWide: 30
+    readonly property int pageHeadingSizeCompact: 27
+    readonly property int pageSubtitleSize: 13
+    readonly property int sidebarActionHeight: 48
+    readonly property int componentRadius: 10
     // Owner-approved UX-CTRL-002 semantic states, not a new competing theme.
     readonly property color primaryHover: "#0C625C"
     readonly property color warningSurface: "#FFF2D5"

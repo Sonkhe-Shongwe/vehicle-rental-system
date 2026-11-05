@@ -369,6 +369,7 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ux-ctrl-002-smoke", "Verify owner-approved Qt directional keys, semantic danger and read-only contract Enter."});
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
     parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
+    parser.addOption({"pa-shell-001-smoke", "Precision Automotive Light real booking shortcut, icon rail and focus restoration."});
     parser.addOption({"portfolio-catalog-smoke", "CI-only real 131-vehicle offline portfolio demo check."});
     parser.addOption({"p6-fleet-add-smoke", "Native fictional fleet creation test."});
     parser.addOption({"fleet-photo-smoke", "Native fictional offline photo source, safe import and gallery/inspector test."});
@@ -4868,6 +4869,124 @@ int main(int argc, char *argv[]) {
                 app.exit(346);return;
             }
             qInfo()<<"P5 real Fleet-to-Rentals guided keyboard booking PASS"<<suffix;
+            app.exit(0);
+        });
+    }
+    // Precision Automotive Light: native shell and the existing real booking
+    // modal. This is a presentation-only shortcut, not a new domain action.
+    if (parser.isSet("pa-shell-001-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window) return 1001;
+        const bool compact=parser.isSet("compact");
+        const QSize expected(compact?1280:1500,compact?720:860);
+        window->resize(expected);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1250,&app,[&,window,compact,expected] {
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *match=self(self,child,name))return match;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name)->QQuickItem* {
+                if(auto *item=find(find,window->contentItem(),name))return item;
+                return window->findChild<QQuickItem*>(name);
+            };
+            auto *newRental=get("sidebarNewRentalButton");
+            auto *logoActionIcon=get("sidebarNewRentalIcon");
+            auto *toggle=get("sidebarToggleButton");
+            auto *sidebar=get("appSidebar");
+            auto *heading=get("workspacePageHeading");
+            auto *subtitle=get("workspacePageSubtitle");
+            auto *bookingField=get("bookingVehicleId");
+            auto *dialog=window->findChild<QObject*>("rentalBookingDialog");
+            if(!newRental||!logoActionIcon||!toggle||!sidebar||
+               !heading||!subtitle||!bookingField||!dialog||
+               !newRental->isVisible()||!logoActionIcon->isVisible()||
+               newRental->property("text").toString()!="New rental"||
+               heading->property("text").toString()!="Overview"||
+               sidebar->width()<210) {
+                qCritical()<<"Precision Automotive initial real Qt shell missing";
+                app.exit(1002);return;
+            }
+            QByteArray initialFleet,initialRentals;
+            if(!readFile(vehicles,&initialFleet)||!readFile(rentals,&initialRentals)||
+               initialFleet!=beforeVehicles || initialRentals!=beforeRentals) {
+                qCritical()<<"Precision Automotive initial protected fixtures changed";
+                app.exit(1003);return;
+            }
+            const auto capture=[&](const QString &state)->bool {
+                const QString size=compact?QStringLiteral("1280x720"):
+                                           QStringLiteral("1500x860");
+                const QImage screenshot=window->grabWindow();
+                return !screenshot.isNull() && screenshot.size()==expected &&
+                    screenshot.save(QStringLiteral("pa-shell-001-%1-%2.png")
+                        .arg(state,size),"PNG");
+            };
+            if(!capture("overview-expanded")) {
+                qCritical()<<"Precision Automotive Overview capture failed";
+                app.exit(1004);return;
+            }
+            newRental->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(160);
+            if(window->property("workspace").toInt()!=2 ||
+               !dialog->property("visible").toBool() ||
+               !bookingField->hasActiveFocus() ||
+               bookingActions.canConfirm()) {
+                qCritical()<<"Sidebar shortcut did not open real safe booking flow";
+                app.exit(1005);return;
+            }
+            if(!capture("real-booking-dialog")) {
+                qCritical()<<"Precision Automotive booking capture failed";
+                app.exit(1006);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(150);
+            if(dialog->property("visible").toBool() ||
+               !newRental->hasActiveFocus() || bookingActions.canConfirm()) {
+                qCritical()<<"Sidebar booking Escape did not restore invoker";
+                app.exit(1007);return;
+            }
+            toggle->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(110);
+            if(!window->property("sidebarCollapsed").toBool() ||
+               sidebar->width()>82 || !newRental->isVisible() ||
+               !logoActionIcon->isVisible()) {
+                qCritical()<<"Precision Automotive icon-only New Rental missing";
+                app.exit(1008);return;
+            }
+            window->setProperty("workspace",1);
+            QCoreApplication::processEvents();
+            if(!capture("fleet-collapsed")) {
+                qCritical()<<"Precision Automotive collapsed Fleet capture failed";
+                app.exit(1009);return;
+            }
+            newRental->forceActiveFocus(Qt::TabFocusReason);
+            QTest::keyClick(window,Qt::Key_Space);
+            QTest::qWait(160);
+            if(window->property("workspace").toInt()!=2 ||
+               !dialog->property("visible").toBool() ||
+               !bookingField->hasActiveFocus()) {
+                qCritical()<<"Collapsed New Rental did not open real dialog";
+                app.exit(1010);return;
+            }
+            QTest::keyClick(window,Qt::Key_Escape);
+            QTest::qWait(150);
+            QByteArray finalFleet,finalRentals;
+            if(dialog->property("visible").toBool() ||
+               !newRental->hasActiveFocus() || bookingActions.canConfirm() ||
+               !readFile(vehicles,&finalFleet)||!readFile(rentals,&finalRentals)||
+               finalFleet!=initialFleet || finalRentals!=initialRentals) {
+                qCritical()<<"Precision Automotive shortcut changed protected data/focus";
+                app.exit(1011);return;
+            }
+            qInfo()<<"Precision Automotive Light real native shell PASS"
+                   <<(compact?"1280x720":"1500x860")
+                   <<"Overview/Fleet, expanded/collapsed New Rental, safe Escape";
             app.exit(0);
         });
     }

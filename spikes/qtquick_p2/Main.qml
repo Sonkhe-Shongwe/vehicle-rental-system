@@ -28,6 +28,8 @@ ApplicationWindow {
     property bool gallery: true
     // Shell presentation only: never changes workspace, selection or C++ records.
     property bool sidebarCollapsed: false
+    // Return focus to the actual invoker of the native booking dialogue.
+    property bool bookingFromSidebar: false
     // Confirmed receipt survives closing the ephemeral preview dialog.
     // Only the C++-verified success branch populates this display string.
     property string bookingReceiptNotice: ""
@@ -81,6 +83,22 @@ ApplicationWindow {
         return true
     }
 
+    // Precision Automotive shell shortcut. This reuses the existing native
+    // booking dialogue and C++ preview/confirm path; no new booking logic.
+    function beginNewRental(fromSidebar) {
+        if (bookingDialog.visible) return false
+        window.bookingFromSidebar = !!fromSidebar
+        window.bookingReceiptNotice = ""
+        window.bookingCancelledNotice = ""
+        bookingActions.discardPreview()
+        window.workspace = 2
+        Qt.callLater(function() {
+            if (window.workspace === 2 && !bookingDialog.visible)
+                bookingDialog.open()
+        })
+        return true
+    }
+
     // Carry the exact selected, AVAILABLE Fleet ID into the existing native
     // guided booking modal. C++ quote/confirm still owns all business rules.
     function bookSelectedFleetVehicle() {
@@ -88,6 +106,7 @@ ApplicationWindow {
                 !fleet.selectedAvailable)
             return
         const selectedId = fleet.selectedId
+        window.bookingFromSidebar = false
         window.bookingReceiptNotice = ""
         window.bookingCancelledNotice = ""
         bookingActions.discardPreview()
@@ -886,7 +905,8 @@ ApplicationWindow {
             id: appSidebar
             objectName: "appSidebar"
             Layout.fillHeight: true
-            Layout.preferredWidth: window.sidebarCollapsed ? 76 : 218
+            Layout.preferredWidth: window.sidebarCollapsed ?
+                designTokens.sidebarCollapsedWidth : designTokens.sidebarExpandedWidth
             color: ice
             border.width: 1
             border.color: designTokens.border
@@ -909,7 +929,7 @@ ApplicationWindow {
                             text: "R"
                             font.pixelSize: 20
                             font.bold: true
-                            color: "white"
+                            color: "#87E9D3"
                         }
                     }
                     ColumnLayout {
@@ -917,13 +937,13 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         spacing: 1
                         Label {
-                            text: "rental studio"
+                            text: "Rental Studio"
                             color: navy
                             font.pixelSize: 15
                             font.bold: true
                         }
                         Label {
-                            text: "DESKTOP OPERATIONS"
+                            text: "VEHICLE OPERATIONS"
                             color: ink
                             font.pixelSize: 8
                             font.bold: true
@@ -962,6 +982,13 @@ ApplicationWindow {
                         onClicked: window.sidebarCollapsed = !window.sidebarCollapsed
                     }
                 }
+                PrecisionPrimaryButton {
+                    id: sidebarNewRentalButton
+                    objectName: "sidebarNewRentalButton"
+                    compact: window.sidebarCollapsed
+                    text: "New rental"
+                    onClicked: window.beginNewRental(true)
+                }
                 Label {
                     visible: !window.sidebarCollapsed
                     text: "WORKSPACES"
@@ -992,9 +1019,20 @@ ApplicationWindow {
                     implicitHeight: 1
                     color: designTokens.border
                 }
-                Label {
-                    objectName: "sessionModeSidebar"
+                RowLayout {
                     visible: !window.sidebarCollapsed
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Rectangle {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: 5
+                        implicitWidth: 7
+                        implicitHeight: 7
+                        radius: 4
+                        color: designTokens.teal
+                    }
+                    Label {
+                    objectName: "sessionModeSidebar"
                     Layout.fillWidth: true
                     text: p7SqlLabEnabled
                           ? "Fictional SQLite Lab\nSeparate from the demo fleet"
@@ -1007,6 +1045,7 @@ ApplicationWindow {
                     font.pixelSize: 11
                     wrapMode: Text.WordWrap
                     Accessible.name: text
+                    }
                 }
             }
         }
@@ -1014,29 +1053,66 @@ ApplicationWindow {
         ColumnLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.margins: 24
-            spacing: 18
+            Layout.margins: window.height < 800 ? 18 : 24
+            spacing: window.height < 800 ? 12 : 18
 
             RowLayout {
                 Layout.fillWidth: true
-                Label {
-                    text: window.workspace === 0 ? "Overview" :
-                          window.workspace === 1 ? "Fleet management" :
-                          window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
-                    font.pixelSize: 30; font.bold: true; color: navy
+                spacing: 12
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 3
+                    Label {
+                        objectName: "workspacePageHeading"
+                        text: window.workspace === 0 ? "Overview" :
+                              window.workspace === 1 ? "Fleet" :
+                              window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
+                        font.pixelSize: window.height < 800 ?
+                            designTokens.pageHeadingSizeCompact : designTokens.pageHeadingSizeWide
+                        font.weight: Font.DemiBold
+                        color: designTokens.pageHeading
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                    }
+                    Label {
+                        objectName: "workspacePageSubtitle"
+                        text: window.workspace === 0
+                            ? "Fleet, rentals and daily operations at a glance"
+                            : window.workspace === 1
+                            ? "Browse, search and manage your vehicle fleet"
+                            : window.workspace === 2
+                            ? "Manage active rentals, returns and rental history"
+                            : "Isolated fictional persistence preview"
+                        color: designTokens.secondaryText
+                        font.pixelSize: designTokens.pageSubtitleSize
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                    }
                 }
-                Item { Layout.fillWidth: true }
-                Label {
-                    objectName: "sessionModeNotice"
-                    text: p7SqlLabEnabled ? "FICTIONAL · ISOLATED SQLITE LAB"
-                          : portfolioShowcase ? "FICTIONAL · " + fleet.totalCount + "-VEHICLE SHOWCASE"
-                          : persistentFictionalDemo ? "FICTIONAL · BOOKINGS SAVED"
-                          : "FICTIONAL · RESETS ON EXIT"
-                    color: ink; font.pixelSize: 12
-                    Accessible.name: text
+                Rectangle {
+                    Layout.alignment: Qt.AlignTop
+                    Layout.preferredHeight: 34
+                    Layout.preferredWidth: sessionModeNotice.implicitWidth + 22
+                    radius: 9
+                    color: designTokens.quietSurface
+                    border.width: 1
+                    border.color: designTokens.border
+                    Label {
+                        id: sessionModeNotice
+                        objectName: "sessionModeNotice"
+                        anchors.centerIn: parent
+                        text: p7SqlLabEnabled ? "FICTIONAL · ISOLATED SQLITE LAB"
+                              : portfolioShowcase ? "FICTIONAL · " + fleet.totalCount + "-VEHICLE SHOWCASE"
+                              : persistentFictionalDemo ? "FICTIONAL · BOOKINGS SAVED"
+                              : "FICTIONAL · RESETS ON EXIT"
+                        color: ink
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        Accessible.name: text
+                    }
                 }
             }
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#D8E2E8" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: designTokens.border }
 
             StackLayout {
                 Layout.fillWidth: true
@@ -2298,11 +2374,7 @@ ApplicationWindow {
                             }
                             Keys.onPressed: (event) => window.rentalActionKey(event,0)
                             Accessible.name: "Create a new fictional rental"
-                            onClicked: {
-                                window.bookingReceiptNotice = ""
-                                window.bookingCancelledNotice = ""
-                                bookingDialog.open()
-                            }
+                            onClicked: window.beginNewRental(false)
                         }
                         DomainMessage {
                             objectName: "rentalBookingMessage"
@@ -2339,8 +2411,12 @@ ApplicationWindow {
                             if (window.bookingReceiptNotice === "")
                                 window.bookingCancelledNotice = "Booking cancelled. No rental saved."
                             Qt.callLater(function() {
-                                if (newBookingButton.visible && newBookingButton.enabled)
+                                if (window.bookingFromSidebar && sidebarNewRentalButton.visible &&
+                                        sidebarNewRentalButton.enabled)
+                                    sidebarNewRentalButton.forceActiveFocus(Qt.TabFocusReason)
+                                else if (newBookingButton.visible && newBookingButton.enabled)
                                     newBookingButton.forceActiveFocus(Qt.TabFocusReason)
+                                window.bookingFromSidebar = false
                             })
                         }
                         contentItem: ColumnLayout {

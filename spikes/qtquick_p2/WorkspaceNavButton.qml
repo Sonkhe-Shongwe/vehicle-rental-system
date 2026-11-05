@@ -54,11 +54,13 @@ Button {
         event.accepted = true
     }
     background: Rectangle {
-        radius: 12
-        color: nav.currentWorkspace ? colors.navy :
+        radius: colors.componentRadius
+        // Calm Light navigation: selected state is a quiet mint surface,
+        // not another heavy dark button competing with New Rental.
+        color: nav.currentWorkspace ? colors.sidebarSelected :
                nav.hovered ? colors.neutralHover : "transparent"
         border.width: nav.activeFocus ? colors.focusWidth : 0
-        border.color: nav.currentWorkspace ? "white" : colors.navy
+        border.color: colors.navy
         Rectangle {
             visible: nav.currentWorkspace
             anchors.left: parent.left
@@ -66,14 +68,14 @@ Button {
             width: 3
             height: 24
             radius: 2
-            color: "#76D6C6"
+            color: colors.teal
         }
     }
     contentItem: Item {
         SidebarGlyph {
             objectName: "workspaceIcon" + nav.modelData
             kind: nav.modelData
-            glyphColor: nav.currentWorkspace ? "#FFFFFF" : colors.navy
+            glyphColor: nav.currentWorkspace ? colors.teal : colors.navy
             width: 22
             height: 22
             x: nav.sidebarCollapsed ? (parent.width - width) / 2 : 12
@@ -86,7 +88,7 @@ Button {
             width: Math.max(0,parent.width - x - 7)
             height: parent.height
             text: nav.text
-            color: nav.currentWorkspace ? "white" : colors.navy
+            color: colors.navy
             font.pixelSize: 14
             font.bold: nav.currentWorkspace
             elide: Text.ElideRight

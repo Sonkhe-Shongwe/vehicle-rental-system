@@ -112,7 +112,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
+    QML_FILES Main.qml DesignTokens.qml PrecisionPrimaryButton.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml P7FictionalSqlLab.qml P7LabSnapshotCard.qml)
 if(BUILD_TESTING)
@@ -128,7 +128,19 @@ if(BUILD_TESTING)
                 PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
         endforeach()
     endif()
-    # R0 actual 100-entry gallery at two sizes, original five-vehicle tests intact.
+    # Precision Automotive real native shell: sidebar action, booking modal,
+    # visible screenshots and untouched protected five-fixture records.
+    foreach(SIZE wide compact)
+        set(PA_ARGS --pa-shell-001-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND PA_ARGS --compact)
+        endif()
+        add_test(NAME rental_studio_pa_shell_001_${SIZE}
+            COMMAND rental_studio_qtquick_spike ${PA_ARGS})
+        set_tests_properties(rental_studio_pa_shell_001_${SIZE}
+            PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
+    # Real 131-entry fictional gallery at both sizes; five-fixture tests intact.
     foreach(SIZE wide compact)
         set(PORTFOLIO_ARGS --portfolio-catalog-smoke)
         if(SIZE STREQUAL "compact")

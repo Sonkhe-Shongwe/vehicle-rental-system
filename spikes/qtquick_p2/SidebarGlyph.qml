@@ -41,6 +41,11 @@ Canvas {
             ctx.moveTo(8, 13);ctx.lineTo(14, 13)
             ctx.moveTo(8, 17);ctx.lineTo(12, 17)
             ctx.stroke()
+        } else if (kind === "add") {
+            ctx.beginPath()
+            ctx.moveTo(11, 4); ctx.lineTo(11, 18)
+            ctx.moveTo(4, 11); ctx.lineTo(18, 11)
+            ctx.stroke()
         } else if (kind === "SQLite Lab") {
             ctx.beginPath()
             ctx.moveTo(3, 6);ctx.bezierCurveTo(3, 2, 19, 2, 19, 6)
