@@ -24,7 +24,8 @@ ApplicationWindow {
     readonly property color ice: designTokens.ice
     readonly property color mint: designTokens.mint
     readonly property color ink: designTokens.ink
-    property int workspace: 1
+    // Direction A: lead with the operational Overview on normal launch.
+    property int workspace: 0
     property bool gallery: true
     // Shell presentation only: never changes workspace, selection or C++ records.
     property bool sidebarCollapsed: false
