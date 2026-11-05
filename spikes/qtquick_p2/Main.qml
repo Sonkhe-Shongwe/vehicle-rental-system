@@ -2462,12 +2462,13 @@ ApplicationWindow {
                     RowLayout {
                         Layout.fillWidth: true
                         Label {
-                            text: "Rental records"
-                            color: navy; font.pixelSize: 21; font.bold: true
+                            objectName: "rentalSectionHeading"
+                            text: "Contract management"
+                            color: navy; font.pixelSize: 20; font.weight: Font.DemiBold
                         }
                         Item { Layout.fillWidth: true }
                         Label {
-                            text: "C++ domain · Fictional rental workflow"
+                            text: rentalsModel.snapshotAvailable ? "C++ SNAPSHOT · FICTIONAL" : "RECORDS UNAVAILABLE"
                             color: ink; font.pixelSize: 12
                         }
                     }
@@ -2735,6 +2736,25 @@ ApplicationWindow {
                             }
                         }
                     }
+                    Rectangle {
+                        objectName: "rentalActionPanel"
+                        Layout.fillWidth: true
+                        implicitHeight: rentalActionContent.implicitHeight + 28
+                        radius: 12
+                        color: designTokens.surface
+                        border.color: designTokens.border
+                        border.width: 1
+                        ColumnLayout {
+                            id: rentalActionContent
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 10
+                            Label {
+                                text: "CONTRACT ACTIONS"
+                                color: navy
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
                     RowLayout {
                         Layout.fillWidth: true
                         Button {
@@ -2869,6 +2889,8 @@ ApplicationWindow {
                             Accessible.name: text
                         }
                     }
+                        }
+                    }
                     ConfirmActionDialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
@@ -2944,10 +2966,26 @@ ApplicationWindow {
                     // rental ID lookup have separate, predictable rows.
                     // This is presentation only. C++ still owns all filters,
                     // record selection, persisted operations and validation.
-                    ColumnLayout {
-                        objectName: "rentalToolbar"
+                    Rectangle {
+                        objectName: "rentalFilterPanel"
                         Layout.fillWidth: true
-                        spacing: 8
+                        implicitHeight: rentalToolbar.implicitHeight + 28
+                        radius: 12
+                        color: designTokens.surface
+                        border.color: designTokens.border
+                        border.width: 1
+                    ColumnLayout {
+                        id: rentalToolbar
+                        objectName: "rentalToolbar"
+                        anchors.fill: parent
+                        anchors.margins: 14
+                        spacing: 10
+                        Label {
+                            text: "CONTRACT VIEWS · FILTERS DO NOT EDIT RECORDS"
+                            color: navy
+                            font.pixelSize: 12
+                            font.weight: Font.DemiBold
+                        }
                         RowLayout {
                             objectName: "rentalStatusRow"
                             Layout.fillWidth: true
@@ -3144,20 +3182,53 @@ ApplicationWindow {
                             }
                         }
                     }
+                    }
                     Rectangle {
                         id: rentalRecordsPanel
                         objectName: "rentalRecordsPanel"
                         Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(460, Math.max(360, 135 + 77 * rentalsModel.count))
-                        color: "white"
+                        Layout.preferredHeight: Math.min(490, Math.max(365, 165 + 77 * rentalsModel.count))
+                        color: designTokens.surface
                         radius: 12
+                        border.color: designTokens.border
+                        border.width: 1
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: 16
                             spacing: 12
-                            Label {
-                                text: rentalsModel.count + " rental records"
-                                color: navy; font.bold: true
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "CONTRACT REGISTER"
+                                    color: navy
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    objectName: "rentalRegisterCount"
+                                    text: rentalsModel.count + (rentalsModel.count === 1 ?
+                                          " record shown" : " records shown")
+                                    color: ink
+                                    font.pixelSize: 12
+                                    Accessible.name: text
+                                }
+                            }
+                            RowLayout {
+                                objectName: "rentalTableHeader"
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 28
+                                spacing: 16
+                                Label { text: "RENTAL ID"; color: ink; font.pixelSize: 11; Layout.preferredWidth: 74 }
+                                Label { text: "VEHICLE"; color: ink; font.pixelSize: 11; Layout.preferredWidth: 94 }
+                                Label { text: "STATUS"; color: ink; font.pixelSize: 11; Layout.preferredWidth: 100 }
+                                Label { text: "RETURN TIMING"; color: ink; font.pixelSize: 11; Layout.fillWidth: true }
+                                Label { text: "BOOKED VALUE"; color: ink; font.pixelSize: 11 }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                color: designTokens.border
                             }
                             Item {
                                 // The actual list retains its size and keyboard behavior.
@@ -3228,8 +3299,9 @@ ApplicationWindow {
                                             Layout.preferredWidth: 94
                                         }
                                         RentalStatusLabel {
-                                            statusValue: rentalRow.status
-                                            Layout.preferredWidth: 100
+                                             objectName: "rentalStatusPill"
+                                             statusValue: rentalRow.status
+                                             Layout.preferredWidth: 100
                                         }
                                         Label {
                                             objectName: "rentalDueLabel" + rentalRow.rentalId
