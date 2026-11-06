@@ -3932,7 +3932,23 @@ ApplicationWindow {
                                     asynchronous: true
                                     fillMode: Image.PreserveAspectCrop
                                     visible: status === Image.Ready && source !== ""
-                                    opacity: window.height < 800 ? 0.34 : 0.42
+                                    // Preserve the actual source photo's tonal detail.
+                                    // A directional overlay, rather than global
+                                    // dimming, protects the white text at the left.
+                                    opacity: 0.92
+                                    Accessible.ignored: true
+                                }
+                                Rectangle {
+                                    id: rentalInspectorPhotoShade
+                                    objectName: "rentalInspectorPhotoShade"
+                                    anchors.fill: parent
+                                    color: "transparent"
+                                    gradient: Gradient {
+                                        orientation: Gradient.Horizontal
+                                        GradientStop { position: 0.0; color: "#F5072A28" }
+                                        GradientStop { position: 0.48; color: "#D9072A28" }
+                                        GradientStop { position: 1.0; color: "#38072A28" }
+                                    }
                                     Accessible.ignored: true
                                 }
                                 ColumnLayout {
