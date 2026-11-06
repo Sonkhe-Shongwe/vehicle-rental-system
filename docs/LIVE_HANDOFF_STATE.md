@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**FLEET R2 PHASE 1B SOURCE CHANGE, EXACT-SOURCE CI PENDING (6 NOV 2026):** QML-only compact Gallery initial scroll reset on first selected row focus and initial load (normal scrolling preserved); exact source-backed photo creator/licence credit relocated off photographic overlay into white inspector body; wide desktop factual C++ selected vehicle ID/type row. C++ booking, rates, selection, fixtures, persistence, P7 fictional-only and photo attribution remain unchanged. **New executable has not been native verified**. Previous tested source `9a82004`, [CI #42254221304](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42254221304) 142/142 each platform and Windows packaged 8/8. Next: run CI and inspect actual Fleet Gallery/Table captures at both 1500x860 and 1280x720, repair failures before promotion. Missing original R2 PNG ZIP, physical Windows MinGW/DPI/Narrator/photography and all owner visual signoffs remain OPEN; formal **45/74, weighted 70.6%, P7 0/8** unchanged. No merge or release.
+
+---
+
 **Reconciled:** 6 November 2026, after failed Fleet source, repaired source and completed exact-source cross-platform native CI plus real screenshots.
 
 ## Exact state

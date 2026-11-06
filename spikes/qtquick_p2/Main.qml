@@ -2096,9 +2096,22 @@ ApplicationWindow {
                                     if (activeFocus) {
                                         const selected = fleet.selectedVisibleIndex()
                                         currentIndex = selected >= 0 ? selected : 0
+                                        if (selected === 0) {
+                                            Qt.callLater(function() {
+                                                if (galleryView.activeFocus &&
+                                                    galleryView.currentIndex === 0)
+                                                    galleryView.positionViewAtBeginning()
+                                            })
+                                        }
                                     }
                                 }
                                 model: fleet.visibleModel
+                                // Initial first selection stays visible at the top.
+                                // Operators remain free to scroll afterward.
+                                Component.onCompleted: Qt.callLater(function() {
+                                    if (galleryView.count > 0 && galleryView.currentIndex <= 0)
+                                        galleryView.positionViewAtBeginning()
+                                })
                                 // Keep original keyboard grid semantics:
                                 // three columns at 1500, two at 1280. The
                                 // former width heuristic is unsuitable after
@@ -2657,33 +2670,6 @@ ApplicationWindow {
                                         radius: 4
                                     }
                                 }
-                                Label {
-                                    objectName: "fleetInspectorPhotoCredit"
-                                    anchors.left: parent.left
-                                    // Keep model credit away from the top-left media
-                                    // badge and from the bottom-left View full action.
-                                    anchors.bottom: fleetViewFullPhotoButton.top
-                                    anchors.bottomMargin: 7
-                                    anchors.leftMargin: 6
-                                    width: parent.width - 12
-                                    visible: inspectorPhoto.visible
-                                    readonly property var record:
-                                        fleetPhotos.revision >= 0 && fleet.selectedId !== ""
-                                            ? fleetPhotos.attributionFor(fleet.selectedId) : ({})
-                                    text: record.kind === "custom"
-                                        ? "Custom demo image · unverified"
-                                        : record.creator
-                                          ? record.creator + " · " + record.licence
-                                          : "Source details unavailable"
-                                    font.pixelSize: 10
-                                    elide: Text.ElideRight
-                                    color: navy
-                                    padding: 2
-                                    z: 1
-                                    background: Rectangle { color: "#EFFFFFFF"; radius: 4 }
-                                    Accessible.name: text
-                                    Accessible.description: "Image credits follow the exact selected source"
-                                }
                                 // Optional full-size, uncropped inspection of
                                 // already decoded media. Does not modify source
                                 // images or imply this is the stock unit.
@@ -2753,6 +2739,26 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            // Exact image attribution belongs to white factual
+                            // details, separate from the selected photograph.
+                            Label {
+                                objectName: "fleetInspectorPhotoCredit"
+                                visible: fleet.selectedId !== "" && inspectorPhoto.visible
+                                readonly property var record:
+                                    fleetPhotos.revision >= 0 && fleet.selectedId !== ""
+                                        ? fleetPhotos.attributionFor(fleet.selectedId) : ({})
+                                text: record.kind === "custom"
+                                    ? "Custom demo image · unverified"
+                                    : record.creator
+                                      ? record.creator + " · " + record.licence
+                                      : "Source details unavailable"
+                                color: designTokens.secondaryText
+                                font.pixelSize: 10
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                Accessible.name: text
+                                Accessible.description: "Image credits follow the exact selected source"
+                            }
                             // Selection context is in the dark photographic header.
                             // The neutral empty selection remains explicit and honest.
                             Label {
@@ -2779,6 +2785,33 @@ ApplicationWindow {
                                 font.weight: Font.DemiBold
                                 font.letterSpacing: 0.6
                                 Layout.fillWidth: true
+                            }
+                            // Actual selected C++ identity, never invented specs.
+                            RowLayout {
+                                objectName: "fleetInspectorIdentityFacts"
+                                visible: fleet.selectedId !== "" && window.height >= 800
+                                Layout.fillWidth: true
+                                spacing: 8
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+                                    Label { text: "VEHICLE ID"; color: designTokens.secondaryText; font.pixelSize: 10 }
+                                    Label {
+                                        objectName: "fleetInspectorIdentityId"
+                                        text: fleet.selectedId
+                                        color: navy; font.pixelSize: 13; font.weight: Font.DemiBold
+                                    }
+                                }
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+                                    Label { text: "CATEGORY"; color: designTokens.secondaryText; font.pixelSize: 10 }
+                                    Label {
+                                        objectName: "fleetInspectorIdentityType"
+                                        text: fleet.selectedType
+                                        color: navy; font.pixelSize: 13; font.weight: Font.DemiBold
+                                    }
+                                }
                             }
                             Rectangle { Layout.fillWidth: true; height: 1; color: designTokens.border }
                             Label {
