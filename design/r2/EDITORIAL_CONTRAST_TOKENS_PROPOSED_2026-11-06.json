@@ -1,0 +1,99 @@
+{
+  "$status": "PROPOSED tokens inferred from approved 1672x941 hybrid raster; owner exact-pixel approval pending. Existing semantic tokens preserved.",
+  "$source": "APPROVED_HYBRID_MASTER.png / SHA256 0077ea102c26f8922d7fdebfbec1564146e81dc1a37d604951781e536648c29e",
+  "color": {
+    "shell": "#151B1B",
+    "titlebar": "#202628",
+    "shellFooter": "#0B3E33",
+    "canvas": "#F7F8FA",
+    "surface": "#FFFFFF",
+    "surfaceQuiet": "#F1F5F3",
+    "mint": "#D7F0E5",
+    "textPrimary": "#14202A",
+    "textMuted": "#5F6F78",
+    "textInverse": "#FFFFFF",
+    "emerald": "#0F766E",
+    "emeraldDeep": "#06664E",
+    "emeraldHover": "#0C625C",
+    "heroFrom": "#072A28",
+    "heroTo": "#041A19",
+    "heroAccent": "#0D5948",
+    "border": "#DEE7E3",
+    "warning": "#975500",
+    "warningSurface": "#FFF3DF",
+    "danger": "#B42318",
+    "rentedBlue": "#1D4ED8",
+    "focusDark": "#63ECD1"
+  },
+  "typography": {
+    "candidate": "Inter (SIL OFL 1.1); Segoe UI fallback; NOT confirmed exact screenshot face",
+    "wideTitle": 32,
+    "compactTitle": 28,
+    "subtitle": 15,
+    "section": 20,
+    "kpiNumber": 32,
+    "kpiLabel": 13,
+    "body": 14,
+    "rowTitle": 15,
+    "meta": 12,
+    "eyebrow": 11,
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ],
+    "numeric": "tabular"
+  },
+  "geometry": {
+    "spacing": [
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      32
+    ],
+    "cardRadius": 14,
+    "heroRadius": 18,
+    "controlRadius": 10,
+    "minActionHeight": 44,
+    "wideGutter": 24,
+    "compactGutter": 16,
+    "cardGap": 16,
+    "existingExpandedSidebar": 218,
+    "existingCollapsedSidebar": 76
+  },
+  "icon": {
+    "candidate": "Lucide static SVG ISC and inherited Feather MIT where applicable",
+    "viewBox": [
+      24,
+      24
+    ],
+    "stroke": 2,
+    "caps": "round",
+    "joins": "round",
+    "sizes": [
+      18,
+      20,
+      24
+    ]
+  },
+  "viewport": {
+    "wide": [
+      1500,
+      860
+    ],
+    "compact": [
+      1280,
+      720
+    ]
+  },
+  "guardrails": {
+    "notAllDark": true,
+    "noUnverifiedBusinessValues": true,
+    "noNewWorkspace": true,
+    "P7fictionalOnly": true
+  }
+}

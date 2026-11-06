@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**PRIORITY DESIGN GATE, 6 NOV 2026:** Owner selected mixed charcoal shell + white workspace + evergreen hero/inspector **Editorial Contrast R2** over all-dark and all-light themes. [Visual source-of-truth](../design/r2/EDITORIAL_CONTRAST_VISUAL_MASTER_2026-11-06.md) + [reference-image pack manifest](../design/r2/EDITORIAL_CONTRAST_REFERENCE_MANIFEST_2026-11-06.md) now documented. **No implementation until owner reviews the spec.** Then bounded shared shell/type/icon sample with exact Qt screenshots, followed by Overview, Fleet, Rentals, mandatory visual fidelity and physical owner gates. Existing code QA native `db005e2` / #42199989157 remains green; formal 45/74, weighted 70.6%, P7 0/8 unchanged. Do not let AI-generated false availability, invented services or synthetic photos overwrite real C++ authority.
+
+---
+
 **NEXT OWNER GATE (6 Nov 2026):** Fleet photo source attribution and visual non-overlap were [native verified at `db005e2`, CI #42199989157](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42199989157). The next authorized priority is **physical Windows Qt Creator MinGW, 100/125/150% scaling, keyboard/Narrator and Direction A Overview/Fleet/Rentals image/visual acceptance**. No further photo sourcing or feature expansion is implied; [evidence](DIRECTION_A_FLEET_EXACT_PHOTO_ATTRIBUTION_NATIVE_VERIFIED_2026-11-06.md), formal **45/74, fixed 70.6%, P7 0/8** unchanged.
 
 ---

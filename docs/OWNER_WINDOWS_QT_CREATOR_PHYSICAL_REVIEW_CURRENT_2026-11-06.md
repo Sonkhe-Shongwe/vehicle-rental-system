@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current physical Windows review sheet
 
+**Owner device screenshot evidence, 6 November 2026:** Owner provided genuine Qt Creator 6.10.2 MinGW configuration images and then a real running Rental Studio Overview screenshot at the fictional 131-vehicle demo. The default Application Manager deploy misconfiguration was resolved by selecting an ordinary deployment configuration. **This confirms local launch observed, but exact pulled local HEAD, complete MinGW build logs, actual local CTests, 100/125/150% scaling, Narrator/keyboard matrix and final owner design verdict remain NOT TESTED or NOT RECORDED.** Do not mark all PC-01 or physical phase criteria PASS on a launch screenshot alone. The newly selected [Editorial Contrast R2](../design/r2/EDITORIAL_CONTRAST_VISUAL_MASTER_2026-11-06.md) is a proposed replacement visual target, not the current compiled UI.
+
 **Prepared:** 6 November 2026. **Status:** AWAITING OWNER-DEVICE EVIDENCE; every new physical check below is **NOT TESTED**. This is a current-source companion to [the already-approved single-session P1/P2/P4 review process](P1_P2_P4_ONE_SESSION_PHYSICAL_REVIEW_2026-11-03.md), not a new milestone, feature or acceptance scheme.
 
 ## Exact source and safety

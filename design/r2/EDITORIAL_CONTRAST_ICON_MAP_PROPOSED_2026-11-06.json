@@ -1,0 +1,53 @@
+{
+  "$status": "PROPOSED icon asset map, not proof of exact bitmap vector paths; no font or SVG binary committed",
+  "library": "Lucide official",
+  "license": "ISC; inherited Feather icons MIT",
+  "common": {
+    "viewBox": "0 0 24 24",
+    "strokeWidth": 2,
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round",
+    "renderSizes": [
+      18,
+      20,
+      24
+    ]
+  },
+  "mapping": {
+    "Overview": "layout-grid",
+    "Fleet": "car-front",
+    "Rentals": "clipboard-list",
+    "New Rental": "plus",
+    "Collapse sidebar": "panel-left-close",
+    "Total vehicles": "car-front",
+    "Available": "layers",
+    "Rented": "key-round",
+    "Active contracts": "clipboard-list",
+    "Booked value": "database",
+    "Overdue": "clock-3",
+    "Returned/Archived": "archive",
+    "Search": "search",
+    "Filter": "list-filter",
+    "Grid view": "layout-grid",
+    "List view": "list",
+    "More": "ellipsis",
+    "Photo viewer": "images",
+    "History": "history",
+    "Return rental": "undo-2",
+    "Archive": "archive",
+    "Delete": "trash-2",
+    "Next": "chevron-right",
+    "Open": "arrow-right",
+    "Vehicle available": "circle-check",
+    "Calendar": "calendar-days",
+    "Warning": "triangle-alert",
+    "Close": "x"
+  },
+  "brand": "Original custom rounded-square R mark, not a third-party logo. Implement as own vector.",
+  "guardrails": [
+    "Use locally bundled licensed vectors, not screenshot crops",
+    "No icon-only status and no emoji substitutes",
+    "No icons that imply unimplemented service/notes/maintenance functionality",
+    "Verify high DPI and keyboard accessible names"
+  ]
+}
