@@ -2976,19 +2976,6 @@ ApplicationWindow {
                         id: rentalPageContent
                         width: Math.max(0, rentalsPageScroll.width - 18)
                         spacing: window.height < 800 ? 8 : 10
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Label {
-                            objectName: "rentalSectionHeading"
-                            text: "Contract management"
-                            color: navy; font.pixelSize: 20; font.weight: Font.DemiBold
-                        }
-                        Item { Layout.fillWidth: true }
-                        Label {
-                            text: rentalsModel.snapshotAvailable ? "C++ SNAPSHOT · FICTIONAL" : "RECORDS UNAVAILABLE"
-                            color: ink; font.pixelSize: 12
-                        }
-                    }
                     Label {
                         Layout.fillWidth: true
                         text: persistentFictionalDemo
@@ -3337,37 +3324,59 @@ ApplicationWindow {
                         spacing: 10
                         Repeater {
                             model: [
-                                { label: "ACTIVE CONTRACTS", count: rentalsModel.activeCount, tint: teal },
-                                { label: "OVERDUE RETURNS", count: rentalsModel.overdueCount, tint: designTokens.warningInk },
-                                { label: "RETURNED / ARCHIVED", count: rentalsModel.historyCount, tint: navy }
+                                { id: "rentalMetricActive", label: "ACTIVE CONTRACTS", count: rentalsModel.activeCount, tint: teal, money: false, icon: "key-round" },
+                                { id: "rentalMetricOverdue", label: "OVERDUE RETURNS", count: rentalsModel.overdueCount, tint: designTokens.warningInk, money: false, icon: "clock-3" },
+                                { id: "rentalMetricHistory", label: "RETURNED / ARCHIVED", count: rentalsModel.historyCount, tint: navy, money: false, icon: "layers" },
+                                { id: "rentalMetricBookedValue", label: "ACTIVE BOOKED VALUE", count: rentalsModel.activeBookedValue, tint: teal, money: true, icon: "database" }
                             ]
                             delegate: Rectangle {
                                 required property var modelData
+                                objectName: modelData.id
+                                readonly property double metricValue: modelData.count
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 62
+                                Layout.preferredHeight: window.height < 800 ? 70 : 78
                                 radius: 12
                                 color: designTokens.surface
                                 border.color: designTokens.border
                                 Accessible.role: Accessible.StaticText
-                                Accessible.name: modelData.label + ": " + modelData.count
-                                RowLayout {
+                                Accessible.name: modelData.label + ": " +
+                                    (modelData.money ? "R " + Number(modelData.count).toFixed(2)
+                                                     : String(modelData.count))
+                                ColumnLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 12
-                                    spacing: 10
-                                    Label {
-                                        text: rentalsModel.snapshotAvailable
-                                            ? String(modelData.count).padStart(2, "0") : "—"
-                                        color: modelData.tint
-                                        font.pixelSize: 25
-                                        font.weight: Font.DemiBold
+                                    anchors.margins: window.height < 800 ? 9 : 11
+                                    spacing: 3
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        Label {
+                                            text: modelData.label
+                                            color: designTokens.secondaryText
+                                            font.pixelSize: window.height < 800 ? 10 : 11
+                                            font.weight: Font.DemiBold
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                        R2LucideIcon {
+                                            iconName: modelData.icon === "clock-3"
+                                                ? "circle-check" : modelData.icon
+                                            tone: "emerald"
+                                            Layout.preferredWidth: 18
+                                            Layout.preferredHeight: 18
+                                            Accessible.ignored: true
+                                        }
                                     }
                                     Label {
-                                        text: modelData.label
-                                        color: navy
-                                        font.pixelSize: 11
+                                        text: !rentalsModel.snapshotAvailable ? "—" :
+                                            modelData.money
+                                                ? "R " + Number(modelData.count).toFixed(2)
+                                                : String(modelData.count).padStart(2, "0")
+                                        color: modelData.tint
+                                        font.family: designTokens.shellFontFamily
+                                        font.pixelSize: window.height < 800 ? 22 : 27
                                         font.weight: Font.DemiBold
                                         Layout.fillWidth: true
-                                        wrapMode: Text.WordWrap
+                                        elide: Text.ElideRight
                                     }
                                 }
                             }
@@ -3383,19 +3392,51 @@ ApplicationWindow {
                             Layout.minimumWidth: 0
                             spacing: window.height < 800 ? 8 : 10
                     Rectangle {
-                        objectName: "rentalFilterPanel"
+                        id: rentalRecordsPanel
+                        objectName: "rentalRecordsPanel"
                         Layout.fillWidth: true
-                        implicitHeight: rentalToolbar.implicitHeight + 22
-                        radius: 12
+                        Layout.minimumWidth: 0
+                        Layout.preferredHeight: window.height < 800 ? 540 : 560
                         color: designTokens.surface
+                        radius: 12
                         border.color: designTokens.border
                         border.width: 1
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 16
+                            spacing: 12
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    objectName: "rentalSectionHeading"
+                                    text: "CONTRACT REGISTER"
+                                    color: navy
+                                    font.pixelSize: window.height < 800 ? 16 : 18
+                                    font.weight: Font.DemiBold
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    objectName: "rentalRegisterCount"
+                                    text: rentalsModel.count + (rentalsModel.count === 1 ?
+                                          " record shown" : " records shown")
+                                    color: ink
+                                    font.pixelSize: 12
+                                    Accessible.name: text
+                                }
+                            }
+                    Rectangle {
+                        objectName: "rentalFilterPanel"
+                        Layout.fillWidth: true
+                        implicitHeight: rentalToolbar.implicitHeight + 6
+                        radius: 0
+                        color: "transparent"
+                        border.width: 0
                     ColumnLayout {
                         id: rentalToolbar
                         objectName: "rentalToolbar"
                         anchors.fill: parent
-                        anchors.margins: 11
-                        spacing: 5
+                        anchors.margins: 3
+                        spacing: 4
                         Label {
                             text: "CONTRACT FILTERS · VIEWS DO NOT EDIT RECORDS"
                             color: navy
@@ -3454,6 +3495,9 @@ ApplicationWindow {
                             }
                             Item { Layout.fillWidth: true }
                             Label {
+                                // The register header already exposes this count,
+                                // so do not squeeze the compact 62% filter row.
+                                visible: false
                                 objectName: "rentalVisibleCount"
                                 text: rentalsModel.count + (rentalsModel.count === 1
                                       ? " matching contract" : " matching contracts")
@@ -3602,38 +3646,6 @@ ApplicationWindow {
                         }
                     }
                     }
-                    Rectangle {
-                        id: rentalRecordsPanel
-                        objectName: "rentalRecordsPanel"
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-                        Layout.preferredHeight: window.height < 800 ? 420 : 445
-                        color: designTokens.surface
-                        radius: 12
-                        border.color: designTokens.border
-                        border.width: 1
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 16
-                            spacing: 12
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Label {
-                                    text: "CONTRACT REGISTER"
-                                    color: navy
-                                    font.pixelSize: 12
-                                    font.weight: Font.DemiBold
-                                }
-                                Item { Layout.fillWidth: true }
-                                Label {
-                                    objectName: "rentalRegisterCount"
-                                    text: rentalsModel.count + (rentalsModel.count === 1 ?
-                                          " record shown" : " records shown")
-                                    color: ink
-                                    font.pixelSize: 12
-                                    Accessible.name: text
-                                }
-                            }
                             RowLayout {
                                 objectName: "rentalTableHeader"
                                 Layout.fillWidth: true
@@ -3704,6 +3716,16 @@ ApplicationWindow {
                                                          (rentalList.activeFocus &&
                                                           rentalList.currentIndex === index)
                                         selected: rentalRow.rentalId === rentalsModel.selectedRentalId
+                                        Rectangle {
+                                            objectName: "rentalSelectedRail"
+                                            visible: rentalRow.rentalId === rentalsModel.selectedRentalId
+                                            anchors.left: parent.left
+                                            anchors.top: parent.top
+                                            anchors.bottom: parent.bottom
+                                            width: 3
+                                            radius: 2
+                                            color: teal
+                                        }
                                     }
                                     contentItem: RowLayout {
                                         anchors.margins: 10
@@ -3847,8 +3869,11 @@ ApplicationWindow {
                         Layout.alignment: Qt.AlignTop
                         Layout.fillHeight: false
                         Layout.preferredHeight: rentalActionContent.implicitHeight + 28
-                        Layout.minimumWidth: 305
-                        Layout.preferredWidth: window.width < 1400 ? 305 : 328
+                        // The register keeps about 62% of content width and
+                        // the selected-contract inspector uses the other 38%.
+                        Layout.minimumWidth: 320
+                        Layout.preferredWidth: Math.max(320,
+                            (rentalPageContent.width - 12) * 0.38)
                         Layout.maximumWidth: Layout.preferredWidth
                         implicitHeight: rentalActionContent.implicitHeight + 28
                         radius: 12
@@ -3860,41 +3885,83 @@ ApplicationWindow {
                             anchors.fill: parent
                             anchors.margins: 12
                             spacing: 5
-                            Label {
-                                text: "SELECTED CONTRACT"
-                                color: ink
-                                font.pixelSize: 11
-                                font.weight: Font.DemiBold
-                            }
-                            RowLayout {
+                            Rectangle {
+                                id: rentalInspectorHero
+                                objectName: "rentalInspectorHero"
                                 Layout.fillWidth: true
-                                Label {
-                                    objectName: "rentalInspectorId"
-                                    text: rentalsModel.selectedContract.rentalId || "Select a contract"
-                                    color: navy
-                                    font.pixelSize: 23
-                                    font.weight: Font.DemiBold
-                                    Layout.fillWidth: true
-                                    elide: Text.ElideRight
+                                Layout.preferredHeight: window.height < 800 ? 135 : 148
+                                radius: 12
+                                color: "#072A28"
+                                clip: true
+                                readonly property string selectedVehicleId:
+                                    rentalsModel.selectedContract.vehicleId || ""
+                                Image {
+                                    id: rentalInspectorPhoto
+                                    objectName: "rentalInspectorPhoto"
+                                    anchors.fill: parent
+                                    source: rentalInspectorHero.selectedVehicleId !== "" &&
+                                            fleetPhotos.revision >= 0 &&
+                                            fleetPhotos.hasPhoto(rentalInspectorHero.selectedVehicleId)
+                                        ? "image://fleetphotos/" +
+                                          rentalInspectorHero.selectedVehicleId +
+                                          "?v=" + fleetPhotos.revision : ""
+                                    asynchronous: true
+                                    fillMode: Image.PreserveAspectCrop
+                                    visible: status === Image.Ready && source !== ""
+                                    opacity: 0.24
+                                    Accessible.ignored: true
                                 }
-                                RentalStatusLabel {
-                                    objectName: "rentalInspectorStatus"
-                                    visible: rentalsModel.selectedContract.status !== undefined
-                                    statusValue: rentalsModel.selectedContract.status || ""
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 13
+                                    spacing: 5
+                                    Label {
+                                        text: "SELECTED CONTRACT"
+                                        color: "#D7F0E5"
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        Label {
+                                            objectName: "rentalInspectorId"
+                                            text: rentalsModel.selectedContract.rentalId || "Select a contract"
+                                            color: "#FFFFFF"
+                                            font.pixelSize: 24
+                                            font.weight: Font.DemiBold
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                        }
+                                        RentalStatusLabel {
+                                            objectName: "rentalInspectorStatus"
+                                            visible: rentalsModel.selectedContract.status !== undefined
+                                            statusValue: rentalsModel.selectedContract.status || ""
+                                        }
+                                    }
+                                    Label {
+                                        objectName: "rentalInspectorVehicle"
+                                        text: rentalsModel.selectedContract.vehicleId !== undefined
+                                            ? ((fleet.vehicleNames[rentalsModel.selectedContract.vehicleId] ||
+                                               ("Vehicle " + rentalsModel.selectedContract.vehicleId)) +
+                                               " · " + rentalsModel.selectedContract.vehicleId)
+                                            : "Select a contract from the register"
+                                        color: "#D7F0E5"
+                                        font.pixelSize: 12
+                                        font.weight: Font.DemiBold
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
+                                    Item { Layout.fillHeight: true }
+                                    Label {
+                                        objectName: "rentalInspectorPhotoDisclosure"
+                                        text: "MODEL REFERENCE · NOT ACTUAL RENTAL UNIT"
+                                        visible: rentalInspectorPhoto.visible
+                                        color: "#D7F0E5"
+                                        font.pixelSize: 9
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                    }
                                 }
-                            }
-                            Label {
-                                objectName: "rentalInspectorVehicle"
-                                text: rentalsModel.selectedContract.vehicleId !== undefined
-                                    ? ((fleet.vehicleNames[rentalsModel.selectedContract.vehicleId] ||
-                                       ("Vehicle " + rentalsModel.selectedContract.vehicleId)) +
-                                       " · " + rentalsModel.selectedContract.vehicleId)
-                                    : "Select a contract from the register"
-                                color: navy
-                                font.pixelSize: 12
-                                font.weight: Font.DemiBold
-                                Layout.fillWidth: true
-                                elide: Text.ElideRight
                             }
                             Label {
                                 objectName: "rentalInspectorDate"
@@ -3905,6 +3972,20 @@ ApplicationWindow {
                                 color: ink
                                 font.pixelSize: 11
                                 Layout.fillWidth: true
+                            }
+                            Label {
+                                objectName: "rentalInspectorDueState"
+                                visible: rentalsModel.selectedContract.dueState !== undefined
+                                text: rentalsModel.selectedContract.dueState !== undefined
+                                    ? window.dueStateLabel(rentalsModel.selectedContract.dueState)
+                                    : ""
+                                color: rentalsModel.selectedContract.dueState === "Overdue" ||
+                                       rentalsModel.selectedContract.dueState === "DueToday"
+                                    ? designTokens.warningInk : ink
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                Layout.fillWidth: true
+                                Accessible.name: text
                             }
                             Label {
                                 objectName: "rentalInspectorValue"

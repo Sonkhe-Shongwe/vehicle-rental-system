@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE RENTALS R2 PHASE 1A, EXACT-SOURCE CI NOT YET VERIFIED (6 NOV 2026):** New bounded QML register/inspector composition on draft PR #17: redundant Contract management heading removed beneath global Rentals heading, **four** real C++-backed KPI cards including contractual active booked value (never payment), white dominant register left (~62%) with the original status/derived due/ID-search filters moved INSIDE its own card above records, evergreen selected-contract inspector right (~38%) with actual selected C++ R001/C002/status/timing and optional labelled MODEL REFERENCE photo. White inspector body retains existing genuine return/archive/delete confirmation actions, protected booking dialogs and PII-free contract details. Selected row adds slim emerald rule. Expanded native Rental screenshots/tests check real money source, ratio, filter nesting, status/due/actions and fixture nonmutation. **This new executable source has not passed CI or screenshot review**, so prior verified executable is `558006e`, [SUCCESS #42264261740](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42264261740) 142/142 both platforms and Windows 8/8/PS5.1. No C++ domain, payment, lifecycle, source-data or P7 persistent-policy change. Physical Windows owner MinGW/100–150%/Narrator and original R2 image ZIP/three visual signoffs remain OPEN; **45/74 70.6% weighted, P7 0/8** unchanged. NEXT run exact-source CI, inspect 1500x860/1280x720 Rentals screenshots, repair any defects; do not call this visually approved or merge.
+
+---
+
 **Reconciled 6 Nov 2026:** R2 Fleet Phase 1B exact-source native CI and real Gallery screenshot inspection complete.
 
 ## Exact state

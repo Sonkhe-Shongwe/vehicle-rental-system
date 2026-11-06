@@ -5248,19 +5248,60 @@ int main(int argc, char *argv[]) {
             auto *actions=get("rentalActionPanel");
             auto *filters=get("rentalFilterPanel");
             auto *records=get("rentalRecordsPanel");
+            auto *summary=get("rentalEditorialSummary");
+            auto *bookedMetric=get("rentalMetricBookedValue");
+            auto *hero=get("rentalInspectorHero");
+            auto *heroId=get("rentalInspectorId");
+            auto *heroVehicle=get("rentalInspectorVehicle");
+            auto *dueState=get("rentalInspectorDueState");
             auto *header=get("rentalTableHeader");
             auto *count=get("rentalRegisterCount");
             auto *booking=get("rentalNewBookingButton");
             auto *returnAction=get("rentalReturnButton");
             auto *archiveAction=get("rentalArchiveButton");
             if(!scroll||!heading||!actions||!filters||!records||
+               !summary||!bookedMetric||!hero||!heroId||!heroVehicle||!dueState||
                !header||!count||!booking||!returnAction||!archiveAction||
-               heading->property("text").toString()!=QStringLiteral("Contract management")||
-               actions->width()<300||filters->width()<300||
+               heading->property("text").toString()!=QStringLiteral("CONTRACT REGISTER")||
+               actions->width()<320||filters->width()<300||
                records->width()<300||!booking->isVisible()||
                !count->property("text").toString().contains(QStringLiteral("record"))) {
                 qCritical()<<"PA Rentals 004 missing rendered controls";
                 app.exit(1081);return;
+            }
+            // R2 source-backed 62/38 single-card register and evergreen inspector:
+            // filters are INSIDE the register, not a detached tall panel.
+            const auto sceneRect=[](QQuickItem *item) {
+                return item->mapRectToScene(
+                    QRectF(0,0,item->width(),item->height()));
+            };
+            const qreal inspectorShare=actions->width()/
+                (records->width()+actions->width());
+            const QRectF recordsRect=sceneRect(records);
+            const QRectF filterRect=sceneRect(filters);
+            if(qAbs(inspectorShare-0.38)>0.05 ||
+               !recordsRect.contains(filterRect) ||
+               hero->property("color").value<QColor>()!=QColor("#072A28") ||
+               qAbs(bookedMetric->property("metricValue").toDouble()-
+                    rentalModel.activeBookedValue())>0.01) {
+                qCritical()<<"R2 Rentals register ratio/filter nesting or money source wrong"
+                           <<inspectorShare<<recordsRect<<filterRect;
+                app.exit(1085);return;
+            }
+            // The inspector must reflect the real C++ selection, with no
+            // fabricated default contract or unauthorized return action.
+            if(!rentalModel.selectById(QStringLiteral("R001"))) {
+                qCritical()<<"R2 Rentals protected example contract missing";
+                app.exit(1086);return;
+            }
+            QTest::qWait(90);
+            if(heroId->property("text").toString()!=QStringLiteral("R001") ||
+               !heroVehicle->property("text").toString().contains("C002") ||
+               !dueState->property("text").toString().contains("Overdue") ||
+               !returnAction->isEnabled() ||
+               archiveAction->isEnabled()) {
+                qCritical()<<"R2 Rentals C++ selection/due/action state regression";
+                app.exit(1087);return;
             }
             const auto capture=[&](const QString &state)->bool {
                 const QString size=compact?QStringLiteral("1280x720"):
