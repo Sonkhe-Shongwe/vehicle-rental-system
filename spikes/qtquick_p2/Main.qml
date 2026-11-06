@@ -3716,7 +3716,7 @@ ApplicationWindow {
                                                      rentalId + ", " + status +
                                                      ", vehicle " + vehicleId +
                                                      ", " + window.dueStateLabel(dueState) +
-                                                     ", total " + window.rentalMoney(total)
+                                                     ", total R " + Number(total).toFixed(2)
                                     onClicked: rentalsModel.selectById(rentalId)
                                     background: FocusFrame {
                                         hovered: rentalRow.hovered
