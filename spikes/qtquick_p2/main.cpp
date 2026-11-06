@@ -1750,6 +1750,31 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Replacement photo write or on-screen notice failed";
                 app.exit(733);return;
             }
+            // Custom photos expose both View full and Restore default.
+            // Guard independent hit targets in the actual compact/wide Qt UI.
+            auto *customView=find(find,window->contentItem(),
+                                  "fleetViewFullPhotoButton");
+            auto *customRestore=find(find,window->contentItem(),
+                                     "fleetRestoreDefaultPhotoButton");
+            const auto sceneRect=[](QQuickItem *item) {
+                return item->mapRectToScene(
+                    QRectF(0,0,item->width(),item->height()));
+            };
+            if(!customView || !customRestore ||
+               !inWindow(customView) || !inWindow(customRestore) ||
+               sceneRect(customView).intersects(sceneRect(customRestore)) ||
+               !sceneRect(selectedArt).contains(sceneRect(customView)) ||
+               !sceneRect(selectedArt).contains(sceneRect(customRestore))) {
+                qCritical()<<"Custom photo View full / Restore default overlap or clip";
+                app.exit(769);return;
+            }
+            const QImage customActionsShot=window->grabWindow();
+            if(customActionsShot.size()!=window->size() ||
+               !customActionsShot.save(
+                   "ux-q3-custom-photo-actions-"+photoViewport+".png","PNG")) {
+                qCritical()<<"Custom Fleet photo actions screenshot failed";
+                app.exit(770);return;
+            }
             window->setProperty("photoChangeTargetId","C001");
             if(!applyPhoto(QUrl("https://invalid.example/image.jpg")) ||
                !QFileInfo::exists(c001Sidecar)) {

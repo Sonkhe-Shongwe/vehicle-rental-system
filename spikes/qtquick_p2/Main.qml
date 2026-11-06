@@ -2507,7 +2507,10 @@ ApplicationWindow {
                                     id: fleetViewFullPhotoButton
                                     objectName: "fleetViewFullPhotoButton"
                                     text: "View full"
-                                    anchors.right: parent.right
+                                    // The restore control occupies bottom-right
+                                    // when a disposable custom photo is present.
+                                    // Keep both read-only/photo actions reachable.
+                                    anchors.left: parent.left
                                     anchors.bottom: parent.bottom
                                     anchors.margins: 6
                                     height: window.height < 800 ? 27 : 30
