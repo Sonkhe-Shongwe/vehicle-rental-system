@@ -1238,83 +1238,28 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         spacing: 12
                         Button {
-                            id: overviewActiveButton
-                            objectName: "overviewOpenActive"
-                            text: "Review active rentals"
-                            Layout.minimumHeight: 44
-                            hoverEnabled: true
-                            background: Rectangle {
-                                radius: 8
-                                color: overviewActiveButton.down || overviewActiveButton.hovered
-                                    ? "#0C625C" : teal
-                                border.color: navy
-                                border.width: overviewActiveButton.activeFocus ? 3 : 0
-                            }
-                            contentItem: Text {
-                                text: overviewActiveButton.text
-                                color: "#FFFFFF"
-                                font.bold: true
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            activeFocusOnTab: true
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastOverviewQuickFocus = 0
-                            }
-                            Keys.onPressed: (event) => window.overviewQuickKey(event,0)
-                            Accessible.name: "Review active rentals"
-                            onClicked: {
-                                rentalsModel.statusFilter = "Active"
-                                window.workspace = 2
-                            }
-                        }
-                        Button {
-                            id: overviewFleetButton
-                            objectName: "overviewOpenFleet"
-                            text: "Open Fleet"
-                            Layout.minimumHeight: 44
-                            hoverEnabled: true
-                            background: Rectangle {
-                                radius: 8
-                                color: overviewFleetButton.hovered
-                                       ? designTokens.neutralHover : "#FFFFFF"
-                                border.color: overviewFleetButton.activeFocus ? navy : designTokens.border
-                                border.width: overviewFleetButton.activeFocus ? 3 : 1
-                            }
-                            contentItem: Text {
-                                text: overviewFleetButton.text
-                                color: navy
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            activeFocusOnTab: true
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastOverviewQuickFocus = 1
-                            }
-                            Keys.onPressed: (event) => window.overviewQuickKey(event,1)
-                            Accessible.name: "Open Fleet"
-                            onClicked: window.workspace = 1
-                        }
-                        Button {
                             id: overviewOverdueAction
                             objectName: "overviewReviewOverdue"
-                            text: "Review overdue"
+                            text: rentalsModel.oldestOverdueRentalId !== ""
+                                ? "Review rental " + rentalsModel.oldestOverdueRentalId
+                                : "No overdue returns"
                             Layout.minimumHeight: 44
                             enabled: rentalsModel.oldestOverdueRentalId !== ""
+                            visible: enabled
                             hoverEnabled: true
                             background: Rectangle {
                                 radius: 8
                                 color: !overviewOverdueAction.enabled
-                                    ? designTokens.disabledSurface
+                                    ? "#304C5B"
                                     : overviewOverdueAction.hovered
-                                      ? designTokens.warningSurface : "#FFFFFF"
-                                border.color: overviewOverdueAction.activeFocus ? navy : teal
+                                      ? "#A6F2E5" : "#80E4D3"
+                                border.color: overviewOverdueAction.activeFocus ? "#FFFFFF" : "transparent"
                                 border.width: overviewOverdueAction.activeFocus ? 3 : 1
                             }
                             contentItem: Text {
                                 text: overviewOverdueAction.text
                                 color: overviewOverdueAction.enabled
-                                    ? designTokens.warningInk : designTokens.disabledInk
+                                    ? "#123F45" : "#C3D5D9"
                                 font.bold: true
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
@@ -1339,11 +1284,38 @@ ApplicationWindow {
                                 })
                             }
                         }
+                        Button {
+                            id: overviewFleetButton
+                            objectName: "overviewOpenFleet"
+                            text: "Browse fleet"
+                            Layout.minimumHeight: 44
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewFleetButton.hovered
+                                       ? designTokens.neutralHover : "#FFFFFF"
+                                border.color: overviewFleetButton.activeFocus ? navy : designTokens.border
+                                border.width: overviewFleetButton.activeFocus ? 3 : 1
+                            }
+                            contentItem: Text {
+                                text: overviewFleetButton.text
+                                color: navy
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastOverviewQuickFocus = 1
+                            }
+                            Keys.onPressed: (event) => window.overviewQuickKey(event,1)
+                            Accessible.name: "Browse fleet"
+                            onClicked: window.workspace = 1
+                        }
                     }
                             }
                             Item {
                                 id: overviewHeroPhotoBox
-                                Layout.preferredWidth: window.height < 800 ? 158 : 212
+                                Layout.preferredWidth: window.height < 800 ? 191 : 267
                                 Layout.preferredHeight: window.height < 800 ? 152 : 192
                                 Rectangle {
                                     anchors.fill: parent
@@ -1474,14 +1446,51 @@ ApplicationWindow {
                             anchors.fill: parent
                             anchors.margins: 14
                             spacing: 7
-                            Label {
-                                text: "Recent rental contracts"
-                                font.pixelSize: 17
-                                font.bold: true
-                                color: navy
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+                                Label {
+                                    text: "Recent contracts"
+                                    font.pixelSize: 17
+                                    font.weight: Font.DemiBold
+                                    color: navy
+                                    Layout.fillWidth: true
+                                }
+                        Button {
+                            id: overviewActiveButton
+                            objectName: "overviewOpenActive"
+                            text: "VIEW ACTIVE  ›"
+                            Layout.minimumHeight: 44
+                            Layout.preferredWidth: 127
+                            hoverEnabled: true
+                            background: Rectangle {
+                                radius: 8
+                                color: overviewActiveButton.hovered ? designTokens.mint : "transparent"
+                                border.color: overviewActiveButton.activeFocus ? navy : "transparent"
+                                border.width: overviewActiveButton.activeFocus ? 3 : 0
+                            }
+                            contentItem: Text {
+                                text: overviewActiveButton.text
+                                color: teal
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastOverviewQuickFocus = 0
+                            }
+                            Keys.onPressed: (event) => window.overviewQuickKey(event,0)
+                            Accessible.name: "Review active rentals"
+                            onClicked: {
+                                rentalsModel.statusFilter = "Active"
+                                window.workspace = 2
+                            }
+                        }
                             }
                             Label {
-                                text: "Latest contract start dates. Not an activity log or payments."
+                                text: "Ordered by start date · Booked amounts are not payments."
                                 font.pixelSize: 11
                                 color: ink
                                 Layout.fillWidth: true
@@ -1505,7 +1514,7 @@ ApplicationWindow {
                                     Keys.onPressed: (event) => window.overviewRecentKey(event,index)
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 0
-                                    Layout.minimumHeight: 44
+                                    Layout.minimumHeight: window.height < 800 ? 54 : 62
                                     hoverEnabled: true
                                     background: Rectangle {
                                         radius: 8
@@ -1514,14 +1523,61 @@ ApplicationWindow {
                                         border.color: parent.activeFocus ? navy : designTokens.border
                                         border.width: parent.activeFocus ? 2 : 1
                                     }
-                                    contentItem: Text {
-                                        text: parent.text
-                                        color: navy
-                                        font.pixelSize: 12
-                                        leftPadding: 12
-                                        horizontalAlignment: Text.AlignLeft
-                                        verticalAlignment: Text.AlignVCenter
-                                        elide: Text.ElideRight
+                                    contentItem: RowLayout {
+                                        spacing: 9
+                                        Label {
+                                            text: modelData.rentalId
+                                            font.pixelSize: 13
+                                            font.weight: Font.DemiBold
+                                            color: navy
+                                            Layout.preferredWidth: 50
+                                        }
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
+                                            spacing: 3
+                                            Label {
+                                                text: "Vehicle " + modelData.vehicleId
+                                                font.pixelSize: 12
+                                                font.weight: Font.DemiBold
+                                                color: navy
+                                                Layout.fillWidth: true
+                                                elide: Text.ElideRight
+                                            }
+                                            Label {
+                                                text: "Started " + modelData.startDate
+                                                font.pixelSize: 11
+                                                color: ink
+                                                Layout.fillWidth: true
+                                                elide: Text.ElideRight
+                                            }
+                                        }
+                                        Rectangle {
+                                            Layout.preferredWidth: 84
+                                            Layout.preferredHeight: 25
+                                            radius: 13
+                                            color: modelData.status === "Active" ? mint :
+                                                   modelData.status === "Returned" ? "#EAF1FF" :
+                                                   designTokens.quietSurface
+                                            Label {
+                                                anchors.centerIn: parent
+                                                text: modelData.status.toUpperCase()
+                                                font.pixelSize: 10
+                                                font.weight: Font.DemiBold
+                                                color: modelData.status === "Active" ? teal :
+                                                       modelData.status === "Returned" ?
+                                                       designTokens.rented : ink
+                                            }
+                                        }
+                                        Label {
+                                            text: "R " + Number(modelData.total).toFixed(2)
+                                            color: navy
+                                            font.pixelSize: 13
+                                            font.weight: Font.DemiBold
+                                            Layout.preferredWidth: 108
+                                            horizontalAlignment: Text.AlignRight
+                                            elide: Text.ElideRight
+                                        }
                                     }
                                     text: modelData.rentalId + "  ·  " + modelData.vehicleId +
                                           "  ·  " + modelData.startDate + "  ·  " + modelData.status +
