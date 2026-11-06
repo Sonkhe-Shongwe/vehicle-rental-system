@@ -3495,14 +3495,16 @@ ApplicationWindow {
                             }
                             Item { Layout.fillWidth: true }
                             Label {
-                                // The register header already exposes this count,
-                                // so do not squeeze the compact 62% filter row.
-                                visible: false
+                                // Keep the source-backed count visible for
+                                // operators and native filter/keyboard tests.
+                                // Compact wording avoids squeezing five filters.
                                 objectName: "rentalVisibleCount"
-                                text: rentalsModel.count + (rentalsModel.count === 1
-                                      ? " matching contract" : " matching contracts")
+                                text: window.height < 800
+                                    ? rentalsModel.count + " matching"
+                                    : rentalsModel.count + (rentalsModel.count === 1
+                                          ? " matching contract" : " matching contracts")
                                 color: ink
-                                font.pixelSize: 12
+                                font.pixelSize: window.height < 800 ? 10 : 12
                                 Accessible.name: text
                             }
                         }
