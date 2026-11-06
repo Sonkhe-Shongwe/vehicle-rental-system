@@ -5157,6 +5157,17 @@ int main(int argc, char *argv[]) {
                            <<inspectorShare<<hero->width()<<inspector->width();
                 app.exit(1071);return;
             }
+            // At the compact desktop target, two fully legible photo-led
+            // rows must fit without an automatic second-row scroll crop.
+            if(compact &&
+               (gallery->property("cellHeight").toReal()>236 ||
+                gallery->property("contentY").toReal()>3 ||
+                gallery->property("count").toInt()<4)) {
+                qCritical()<<"R2 compact Fleet first row cropped by gallery scroll"
+                           <<gallery->property("contentY")
+                           <<gallery->property("cellHeight");
+                app.exit(1072);return;
+            }
             const QPointF galleryX=gallery->mapToScene(QPointF(0,0));
             const QPointF inspectorX=inspector->mapToScene(QPointF(0,0));
             if(gallery->width()<280 || inspector->width()<320 ||
