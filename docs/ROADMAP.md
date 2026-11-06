@@ -1,5 +1,11 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**EDITORIAL CONTRAST R2 VISUAL WORK, STAGE 1 COMPLETE (6 NOV):** Shared dark-shell/light-canvas/QML navigation source [`7c9a7f6` has exact-source native #42226245697 PASS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42226245697), 140/140 each hosted OS, Windows packaged 8/8, PS5.1 PASS, wide/compact real screenshot visual repair verified. **Next:** legitimate icon/font assets and four-KPI Overview; later Fleet then Rentals. The three-concept full visual target remains unimplemented and owner approval OPEN. [Detailed evidence](EDITORIAL_CONTRAST_R2_SHELL_NATIVE_VERIFICATION_2026-11-06.md); 45/74, weighted 70.6%, P7 0/8 unchanged.
+
+
+
+---
+
 **PRIORITY DESIGN GATE, 6 NOV 2026:** Owner selected mixed charcoal shell + white workspace + evergreen hero/inspector **Editorial Contrast R2** over all-dark and all-light themes. [Visual source-of-truth](../design/r2/EDITORIAL_CONTRAST_VISUAL_MASTER_2026-11-06.md) + [reference-image pack manifest](../design/r2/EDITORIAL_CONTRAST_REFERENCE_MANIFEST_2026-11-06.md) now documented. **No implementation until owner reviews the spec.** Then bounded shared shell/type/icon sample with exact Qt screenshots, followed by Overview, Fleet, Rentals, mandatory visual fidelity and physical owner gates. Existing code QA native `db005e2` / #42199989157 remains green; formal 45/74, weighted 70.6%, P7 0/8 unchanged. Do not let AI-generated false availability, invented services or synthetic photos overwrite real C++ authority.
 
 ---
