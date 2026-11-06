@@ -35,6 +35,22 @@ qt_add_resources(rental_studio_qtquick_spike "fleet_demo_photo_candidates"
         "${PROJECT_SOURCE_DIR}/assets/toyota_corolla.jpg"
         "${PROJECT_SOURCE_DIR}/assets/ford_ranger.jpg"
         "${PROJECT_SOURCE_DIR}/assets/hyundai_i20.jpg")
+# R2 licensed, offline local SVG icon resources.
+set(R2_ICON_NAMES layout-grid car-front clipboard-list plus layers key-round database circle-check)
+set(R2_ICON_ASSETS)
+foreach(R2_TONE inverse active emerald)
+    foreach(R2_NAME IN LISTS R2_ICON_NAMES)
+        list(APPEND R2_ICON_ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets/r2_icons/${R2_TONE}/${R2_NAME}.svg")
+    endforeach()
+endforeach()
+qt_add_resources(rental_studio_qtquick_spike "r2_lucide_icons"
+    PREFIX "/r2-icons"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/assets/r2_icons"
+    FILES ${R2_ICON_ASSETS} "${CMAKE_CURRENT_SOURCE_DIR}/assets/r2_icons/LICENSE-LUCIDE.txt")
+find_package(Qt6 6.5 COMPONENTS Svg QUIET)
+if(TARGET Qt6::Svg)
+    target_link_libraries(rental_studio_qtquick_spike PRIVATE Qt6::Svg)
+endif()
 # R0 portfolio: embedded fingerprint-guarded demo and optional local CC0 photos.
 qt_add_resources(rental_studio_qtquick_spike "portfolio_seed"
     PREFIX "/portfolio-demo"
@@ -126,7 +142,7 @@ qt_policy(SET QTP0001 NEW)
 qt_add_qml_module(rental_studio_qtquick_spike
     URI RentalStudioSpike
     VERSION 1.0
-    QML_FILES Main.qml DesignTokens.qml PrecisionPrimaryButton.qml OverviewAvailabilityPanel.qml FleetStatusPill.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
+    QML_FILES Main.qml DesignTokens.qml PrecisionPrimaryButton.qml OverviewAvailabilityPanel.qml FleetStatusPill.qml FocusFrame.qml DangerButton.qml VehicleSilhouette.qml WorkspaceNavButton.qml SidebarGlyph.qml R2LucideIcon.qml FleetAddDialog.qml FleetRemoveDialog.qml P6ArchivedDeleteDialog.qml
               AccessibleTextField.qml DomainMessage.qml RentalStatusLabel.qml
               ConfirmActionDialog.qml OverviewMetricCard.qml EditorialVehiclePreview.qml P7FictionalSqlLab.qml P7LabSnapshotCard.qml)
 if(BUILD_TESTING)

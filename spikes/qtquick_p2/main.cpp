@@ -5362,6 +5362,9 @@ int main(int argc, char *argv[]) {
             auto *toggle=get("sidebarToggleButton");
             auto *sidebar=get("appSidebar");
             auto *overviewNav=get("workspaceNavOverview");
+            auto *overviewIcon=get("workspaceIconOverview");
+            auto *fleetIcon=get("workspaceIconFleet");
+            auto *rentalsIcon=get("workspaceIconRentals");
             auto *decorativeWave=get("editorialSidebarWave");
             auto *brandMark=get("editorialBrandMark");
             auto *heading=get("workspacePageHeading");
@@ -5369,7 +5372,8 @@ int main(int argc, char *argv[]) {
             auto *bookingField=get("bookingVehicleId");
             auto *dialog=window->findChild<QObject*>("rentalBookingDialog");
             if(!newRental||!logoActionIcon||!toggle||!sidebar||
-               !overviewNav||!decorativeWave||!brandMark||
+               !overviewNav||!overviewIcon||!fleetIcon||!rentalsIcon||
+               !decorativeWave||!brandMark||
                !heading||!subtitle||!bookingField||!dialog||
                !newRental->isVisible()||!logoActionIcon->isVisible()||
                newRental->property("text").toString()!="New rental"||
@@ -5387,6 +5391,21 @@ int main(int argc, char *argv[]) {
                !decorativeWave->isVisible()) {
                 qCritical()<<"Editorial Contrast hybrid shell or selected workspace absent";
                 app.exit(1012);return;
+            }
+            // Real Qt must decode the locally packaged vectors at both sizes.
+            for(QQuickItem *icon : {overviewIcon,fleetIcon,rentalsIcon,logoActionIcon}) {
+                if(!icon->property("assetReady").toBool()) {
+                    qCritical()<<"R2 Lucide SVG could not decode"
+                               <<icon->objectName()<<icon->property("assetUrl");
+                    app.exit(1014);return;
+                }
+            }
+            if(overviewIcon->property("iconName").toString()!="layout-grid" ||
+               fleetIcon->property("iconName").toString()!="car-front" ||
+               rentalsIcon->property("iconName").toString()!="clipboard-list" ||
+               logoActionIcon->property("iconName").toString()!="plus") {
+                qCritical()<<"R2 Lucide icon mapping regression";
+                app.exit(1015);return;
             }
             // Real Qt Linux originally clipped the toggle behind oversized
             // brand text, despite 140/140 green CI. Reject it geometrically.

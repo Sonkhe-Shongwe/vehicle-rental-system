@@ -27,10 +27,11 @@ Button {
         border.color: action.activeFocus ? colors.shellFocus : "#159473"
     }
     contentItem: Item {
-        SidebarGlyph {
+        R2LucideIcon {
             objectName: "sidebarNewRentalIcon"
-            kind: "add"
-            glyphColor: action.enabled ? "#FFFFFF" : colors.disabledInk
+            iconName: "plus"
+            tone: "inverse"
+            opacity: action.enabled ? 1 : 0.45
             width: 19
             height: 19
             x: action.compact ? (parent.width - width) / 2 : 12

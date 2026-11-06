@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE ICON PILOT, EXECUTABLE NOT YET TESTED (6 NOV 2026):** Eight source-pinned Lucide SVGs (`53fab88ff9d1b48f4704b5b5b560d6b4d560bf4c`) and 24 locally packaged variants under ISC/Feather notice replace Canvas glyphs for three primary workspace navigation buttons, New Rental and Overview KPIs. Custom brand, P7 experimental Lab glyph and C++ authoritative business logic remain unchanged. Native wide/compact shell tests now demand SVG decode and exact mapping. This change **requires fresh exact-source native CI and screenshots**; prior passed executable remains `6d7582b`, [#42233254772](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42233254772), 140/140 each platform, Windows packaged 8/8 and PS5.1 PASS. Inter not bundled; system Segoe UI/fallback typography remains provisional pending font comparison. Direct original R2 ZIP unavailable; owner MinGW, DPI, Narrator, photos and final visual approval open. Formal owner **45/74 weighted 70.6%, P7 0/8** unchanged. Next: native Linux/Windows CI + dual-size screen review, fix any faults before checkpoint. No merge or release.
+
+---
+
 **Reconciled:** 6 November 2026, after exact-source R2 Overview Phase 2A Linux/Windows native completion and four real Qt screenshot inspections.
 
 ## Exact state

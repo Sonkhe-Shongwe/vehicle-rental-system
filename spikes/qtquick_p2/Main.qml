@@ -1213,7 +1213,7 @@ ApplicationWindow {
                             metricLabel: "Total vehicles"
                             value: String(fleet.totalCount)
                             note: fleet.carCount + " cars · " + fleet.motorcycleCount + " motorcycles"
-                            metricIcon: "Fleet"
+                            metricIcon: "car-front"
                             accent: navy
                             compact: window.height < 800
                             Layout.preferredHeight: window.height < 800 ? 81 : 94
@@ -1226,7 +1226,7 @@ ApplicationWindow {
                                 ? Math.round(100 * fleet.availableCount / fleet.totalCount) +
                                   "% of fleet ready"
                                 : "No fleet vehicles"
-                            metricIcon: "check"
+                            metricIcon: "layers"
                             accent: teal
                             compact: window.height < 800
                             Layout.preferredHeight: window.height < 800 ? 81 : 94
@@ -1236,7 +1236,7 @@ ApplicationWindow {
                             metricLabel: "Active rentals"
                             value: String(rentalsModel.activeCount)
                             note: "Confirmed contracts"
-                            metricIcon: "Rentals"
+                            metricIcon: "key-round"
                             accent: navy
                             compact: window.height < 800
                             Layout.preferredHeight: window.height < 800 ? 81 : 94
@@ -1246,7 +1246,7 @@ ApplicationWindow {
                             metricLabel: "Active booked value"
                             value: "R " + Number(rentalsModel.activeBookedValue).toFixed(2)
                             note: "Contract value, not payments"
-                            metricIcon: "Rentals"
+                            metricIcon: "database"
                             accent: teal
                             compact: window.height < 800
                             Layout.preferredHeight: window.height < 800 ? 81 : 94

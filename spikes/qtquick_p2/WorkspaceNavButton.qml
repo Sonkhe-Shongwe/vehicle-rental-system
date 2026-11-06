@@ -73,8 +73,20 @@ Button {
         }
     }
     contentItem: Item {
-        SidebarGlyph {
+        R2LucideIcon {
             objectName: "workspaceIcon" + nav.modelData
+            visible: nav.modelData !== "SQLite Lab"
+            iconName: nav.modelData === "Fleet" ? "car-front" :
+                      nav.modelData === "Rentals" ? "clipboard-list" : "layout-grid"
+            tone: nav.currentWorkspace ? "active" : "inverse"
+            width: 22
+            height: 22
+            x: nav.sidebarCollapsed ? (parent.width - width) / 2 : 12
+            y: (parent.height - height) / 2
+        }
+        SidebarGlyph {
+            objectName: "workspaceLabGlyph"
+            visible: nav.modelData === "SQLite Lab"
             kind: nav.modelData
             glyphColor: nav.currentWorkspace ? colors.shellSelectedInk :
                         colors.shellText

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 // R2 presentation only. C++ remains the source of fleet/rental values.
-// Existing local Canvas glyphs are interim pending licensed Lucide Qt testing.
+// Pinned, locally bundled Lucide SVG icons are used.
 Rectangle {
     id: card
     property string metricLabel: ""
@@ -28,12 +28,12 @@ Rectangle {
         height: width
         radius: 9
         color: colors.quietSurface
-        SidebarGlyph {
+        R2LucideIcon {
             anchors.centerIn: parent
             width: 19
             height: 19
-            kind: card.metricIcon
-            glyphColor: card.accent
+            iconName: card.metricIcon
+            tone: "emerald"
             Accessible.ignored: true
         }
     }
