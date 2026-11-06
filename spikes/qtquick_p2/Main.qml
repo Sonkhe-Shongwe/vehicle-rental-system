@@ -2976,17 +2976,27 @@ ApplicationWindow {
                         id: rentalPageContent
                         width: Math.max(0, rentalsPageScroll.width - 18)
                         spacing: window.height < 800 ? 8 : 10
-                    Label {
-                        Layout.fillWidth: true
-                        text: persistentFictionalDemo
-                              ? "Persistent fictional-only demo. Bookings survive restart in a fixed local synthetic workspace. No real customer details."
-                              : "Demo records only. Booking and returns use authoritative C++ domain transactions on isolated temporary copies. No operational customer records."
-                        color: ink; wrapMode: Text.WordWrap; font.pixelSize: 12
-                    }
+                    // R2 density pass: combine the fictional-only disclosure with
+                    // the contextual New rental command. Keep the actual C++-backed
+                    // booking control and its visible result message intact.
                     RowLayout {
+                        objectName: "rentalActionToolbar"
                         Layout.fillWidth: true
-                        Button {
-                            id: newBookingButton
+                        Layout.minimumHeight: 44
+                        spacing: 10
+                        Label {
+                            objectName: "rentalFictionalDisclosure"
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            text: persistentFictionalDemo
+                                ? "FICTIONAL DEMO · Synthetic local workspace · Bookings saved on this device · No real customer records"
+                                : "FICTIONAL DEMO · Validated C++ rental transactions on temporary copies · No real customer records"
+                            color: designTokens.secondaryText
+                            font.pixelSize: window.height < 800 ? 11 : 12
+                            elide: Text.ElideRight
+                            Accessible.name: text
+                        }
+                        Button {                            id: newBookingButton
                             objectName: "rentalNewBookingButton"
                             text: "New rental"
                             Layout.minimumHeight: 44
@@ -3015,6 +3025,9 @@ ApplicationWindow {
                         }
                         DomainMessage {
                             objectName: "rentalBookingMessage"
+                            Layout.fillWidth: false
+                            Layout.preferredWidth: text === "" ? 0 : Math.min(230, implicitWidth)
+                            Layout.maximumWidth: 230
                             emphasized: window.bookingReceiptNotice !== ""
                             text: window.bookingReceiptNotice !== ""
                                   ? window.bookingReceiptNotice
