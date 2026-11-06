@@ -2531,8 +2531,10 @@ ApplicationWindow {
                                 Label {
                                     objectName: "fleetInspectorPhotoCredit"
                                     anchors.left: parent.left
-                                    anchors.top: fleetPhotoDisclaimer.bottom
-                                    anchors.topMargin: 7
+                                    // Keep model credit away from the top-left media
+                                    // badge and from the bottom-left View full action.
+                                    anchors.bottom: fleetViewFullPhotoButton.top
+                                    anchors.bottomMargin: 7
                                     anchors.leftMargin: 6
                                     width: parent.width - 12
                                     visible: inspectorPhoto.visible

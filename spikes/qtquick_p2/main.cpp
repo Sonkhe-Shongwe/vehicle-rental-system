@@ -1441,6 +1441,29 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet photo disclaimer overflowed the Inspector";
                 app.exit(728);return;
             }
+            // Exact native geometry: credit must be visible in the selected
+            // photo stage, with no overlap of the existing reference badge or
+            // the bottom-left read-only View full control.
+            auto *creditBadge=find(find,window->contentItem(),
+                                   "fleetInspectorPhotoCredit");
+            auto *creditView=find(find,window->contentItem(),
+                                  "fleetViewFullPhotoButton");
+            if(!creditBadge || !creditView ||
+               !inWindow(creditBadge)) {
+                qCritical()<<"Fleet photo credit hidden or inaccessible";
+                app.exit(774);return;
+            }
+            const auto mediaRect=[](QQuickItem *item) {
+                return item->mapRectToScene(
+                    QRectF(0,0,item->width(),item->height()));
+            };
+            const QRectF creditRect=mediaRect(creditBadge);
+            if(!artRect.contains(creditRect) ||
+               creditRect.intersects(mediaRect(photoDisclaimer)) ||
+               creditRect.intersects(mediaRect(creditView))) {
+                qCritical()<<"Fleet photo credit obscures source badge or View full";
+                app.exit(775);return;
+            }
             const QString photoViewport=compact?"1280x720":"1500x860";
             // The real native inspector must offer an uncropped, read-only
             // reference view for decoded photos, with honest disclosure and
