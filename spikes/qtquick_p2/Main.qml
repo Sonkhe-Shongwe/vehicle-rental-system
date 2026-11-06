@@ -1923,7 +1923,9 @@ ApplicationWindow {
                                 }
                                 Item { Layout.fillWidth: true }
                                 RowLayout {
-                                    visible: window.width >= 1430
+                                    // Badges duplicate the authoritative Fleet
+                                    // snapshot and must not force gallery overflow.
+                                    visible: window.width >= 1650
                                     spacing: 6
                                     Layout.preferredWidth: visible ? implicitWidth : 0
                                     Rectangle {
@@ -2097,9 +2099,11 @@ ApplicationWindow {
                                     }
                                 }
                                 model: fleet.visibleModel
-                                // The approved 60/40 split favours a compact,
-                                // two-column gallery at the target desktop sizes.
-                                cellWidth: width < 790 ? width / 2 : width / 3
+                                // Keep original keyboard grid semantics:
+                                // three columns at 1500, two at 1280. The
+                                // former width heuristic is unsuitable after
+                                // allocating 40% to the selected inspector.
+                                cellWidth: window.width < 1430 ? width / 2 : width / 3
                                 // Photo-led cards need enough vertical room to retain
                                 // recognisable vehicle framing at compact widths.
                                 cellHeight: 272
