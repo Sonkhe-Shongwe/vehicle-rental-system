@@ -3607,7 +3607,12 @@ ApplicationWindow {
                         }
                     Rectangle {
                         objectName: "rentalActionPanel"
-                        Layout.fillHeight: true
+                        // Content-sized inspector stays top-aligned beside filters.
+                        // Stretching it to the register column used to distribute
+                        // spare vertical space and clip destructive actions at 720px.
+                        Layout.alignment: Qt.AlignTop
+                        Layout.fillHeight: false
+                        Layout.preferredHeight: rentalActionContent.implicitHeight + 28
                         Layout.minimumWidth: 305
                         Layout.preferredWidth: window.width < 1400 ? 305 : 328
                         Layout.maximumWidth: Layout.preferredWidth
