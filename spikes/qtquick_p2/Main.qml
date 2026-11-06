@@ -15,7 +15,6 @@ ApplicationWindow {
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
-    color: designTokens.canvas
     // Keep the native Windows titlebar to preserve window accessibility.
     // MotionPolicy is C++-owned; no OS rules or filesystem access in QML.
     readonly property bool reducedMotion: motionPolicy.reducedMotion
