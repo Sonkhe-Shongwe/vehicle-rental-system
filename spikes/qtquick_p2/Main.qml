@@ -3334,46 +3334,53 @@ ApplicationWindow {
                                 objectName: modelData.id
                                 readonly property double metricValue: modelData.count
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: window.height < 800 ? 70 : 78
-                                radius: 12
+                                Layout.preferredHeight: window.height < 800 ? 80 : 94
+                                radius: 14
                                 color: designTokens.surface
                                 border.color: designTokens.border
                                 Accessible.role: Accessible.StaticText
                                 Accessible.name: modelData.label + ": " +
-                                    (modelData.money ? "R " + Number(modelData.count).toFixed(2)
+                                    (modelData.money ? window.rentalMoney(modelData.count)
                                                      : String(modelData.count))
                                 ColumnLayout {
                                     anchors.fill: parent
-                                    anchors.margins: window.height < 800 ? 9 : 11
-                                    spacing: 3
+                                    anchors.margins: window.height < 800 ? 10 : 13
+                                    spacing: 4
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 6
+                                        spacing: 8
                                         Label {
                                             text: modelData.label
                                             color: designTokens.secondaryText
-                                            font.pixelSize: window.height < 800 ? 10 : 11
+                                            font.pixelSize: window.height < 800 ? 11 : 12
                                             font.weight: Font.DemiBold
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight
                                         }
-                                        R2LucideIcon {
-                                            iconName: modelData.icon === "clock-3"
-                                                ? "circle-check" : modelData.icon
-                                            tone: "emerald"
-                                            Layout.preferredWidth: 18
-                                            Layout.preferredHeight: 18
-                                            Accessible.ignored: true
+                                        Rectangle {
+                                            Layout.preferredWidth: window.height < 800 ? 26 : 30
+                                            Layout.preferredHeight: window.height < 800 ? 26 : 30
+                                            radius: 9
+                                            color: designTokens.mint
+                                            R2LucideIcon {
+                                                anchors.centerIn: parent
+                                                iconName: modelData.icon === "clock-3"
+                                                    ? "circle-check" : modelData.icon
+                                                tone: "emerald"
+                                                width: 19
+                                                height: 19
+                                                Accessible.ignored: true
+                                            }
                                         }
                                     }
                                     Label {
                                         text: !rentalsModel.snapshotAvailable ? "—" :
                                             modelData.money
-                                                ? "R " + Number(modelData.count).toFixed(2)
+                                                ? window.rentalMoney(modelData.count)
                                                 : String(modelData.count).padStart(2, "0")
                                         color: modelData.tint
                                         font.family: designTokens.shellFontFamily
-                                        font.pixelSize: window.height < 800 ? 22 : 27
+                                        font.pixelSize: window.height < 800 ? 25 : 32
                                         font.weight: Font.DemiBold
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
@@ -3398,7 +3405,7 @@ ApplicationWindow {
                         Layout.minimumWidth: 0
                         // Compact retains the full first two contract rows while
                         // preserving genuine page scroll and keyboard access.
-                        Layout.preferredHeight: window.height < 800 ? 560 : 560
+                        Layout.preferredHeight: window.height < 800 ? 560 : 530
                         color: designTokens.surface
                         radius: 12
                         border.color: designTokens.border
@@ -3413,7 +3420,7 @@ ApplicationWindow {
                                     objectName: "rentalSectionHeading"
                                     text: "CONTRACT REGISTER"
                                     color: navy
-                                    font.pixelSize: window.height < 800 ? 16 : 18
+                                    font.pixelSize: window.height < 800 ? 17 : 20
                                     font.weight: Font.DemiBold
                                 }
                                 Item { Layout.fillWidth: true }
@@ -3709,7 +3716,7 @@ ApplicationWindow {
                                                      rentalId + ", " + status +
                                                      ", vehicle " + vehicleId +
                                                      ", " + window.dueStateLabel(dueState) +
-                                                     ", total R " + Number(total).toFixed(2)
+                                                     ", total " + window.rentalMoney(total)
                                     onClicked: rentalsModel.selectById(rentalId)
                                     background: FocusFrame {
                                         hovered: rentalRow.hovered
@@ -3760,7 +3767,7 @@ ApplicationWindow {
                                             Accessible.name: "Return due: " + text
                                         }
                                         Label {
-                                            text: "R " + Number(rentalRow.total).toFixed(2)
+                                            text: window.rentalMoney(rentalRow.total)
                                             color: navy; font.bold: true
                                         }
                                     }
@@ -3893,7 +3900,7 @@ ApplicationWindow {
                                 id: rentalInspectorHero
                                 objectName: "rentalInspectorHero"
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: window.height < 800 ? 135 : 148
+                                Layout.preferredHeight: window.height < 800 ? 135 : 166
                                 radius: 12
                                 color: "#072A28"
                                 clip: true
@@ -3912,7 +3919,7 @@ ApplicationWindow {
                                     asynchronous: true
                                     fillMode: Image.PreserveAspectCrop
                                     visible: status === Image.Ready && source !== ""
-                                    opacity: 0.24
+                                    opacity: window.height < 800 ? 0.34 : 0.42
                                     Accessible.ignored: true
                                 }
                                 ColumnLayout {
@@ -3994,8 +4001,8 @@ ApplicationWindow {
                             Label {
                                 objectName: "rentalInspectorValue"
                                 text: rentalsModel.selectedContract.total !== undefined
-                                    ? "Booked value · R " +
-                                      Number(rentalsModel.selectedContract.total).toFixed(2)
+                                    ? "Booked value · " +
+                                      window.rentalMoney(rentalsModel.selectedContract.total)
                                     : "Contract values are not payments"
                                 color: navy
                                 font.pixelSize: 12
