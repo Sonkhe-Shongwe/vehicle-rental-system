@@ -94,7 +94,7 @@ jobs:
           arch: linux_gcc_64
           cache: true
       - name: Configure opt-in spike alongside legacy app
-        run: cmake -S . -B build-p2 -G Ninja -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR"
+        run: cmake -S . -B build-p2 -G Ninja -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON -DBUILD_R2_INTER_FONT_TRIAL=ON -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR"
       - name: Build unchanged legacy app and new QML executable
         run: cmake --build build-p2 --parallel 2
       - name: Run complete legacy + P2 native CTest
@@ -153,7 +153,7 @@ jobs:
       - name: Configure on exact Qt kit
         shell: pwsh
         run: |
-          cmake -S . -B build-p2 -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          cmake -S . -B build-p2 -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON -DBUILD_QTQUICK_P2_SPIKE=ON -DBUILD_P7_SQLITE_SANDBOX=ON -DBUILD_R2_INTER_FONT_TRIAL=ON "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build unchanged legacy app and new Qt Quick executable
         shell: pwsh

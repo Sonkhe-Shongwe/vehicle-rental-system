@@ -35,6 +35,34 @@ qt_add_resources(rental_studio_qtquick_spike "fleet_demo_photo_candidates"
         "${PROJECT_SOURCE_DIR}/assets/toyota_corolla.jpg"
         "${PROJECT_SOURCE_DIR}/assets/ford_ranger.jpg"
         "${PROJECT_SOURCE_DIR}/assets/hyundai_i20.jpg")
+# R2 deliberate Inter-vs-system typography trial (OFF in normal offline builds).
+# CI opts in to fetch verified pinned official bytes and bundle the TTF locally.
+option(BUILD_R2_INTER_FONT_TRIAL "Embed an opt-in source-verified Inter variable font for Qt screenshot comparison" OFF)
+if(BUILD_R2_INTER_FONT_TRIAL)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(R2_INTER_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/r2_inter_font")
+    set(R2_INTER_FILE "${R2_INTER_BUILD_DIR}/InterVariable.ttf")
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/fetch_r2_inter_trial.py"
+                --output "${R2_INTER_FILE}"
+        RESULT_VARIABLE R2_INTER_FETCH_RESULT
+        OUTPUT_VARIABLE R2_INTER_FETCH_OUT
+        ERROR_VARIABLE R2_INTER_FETCH_ERR
+    )
+    if(NOT R2_INTER_FETCH_RESULT EQUAL 0 OR NOT EXISTS "${R2_INTER_FILE}")
+        message(FATAL_ERROR "Inter pilot font source verification failed: ${R2_INTER_FETCH_OUT} ${R2_INTER_FETCH_ERR}")
+    endif()
+    message(STATUS "${R2_INTER_FETCH_OUT}")
+    qt_add_resources(rental_studio_qtquick_spike "r2_inter_font_trial"
+        PREFIX "/r2-fonts"
+        BASE "${R2_INTER_BUILD_DIR}"
+        FILES "${R2_INTER_FILE}")
+    qt_add_resources(rental_studio_qtquick_spike "r2_inter_font_license"
+        PREFIX "/r2-font-notices"
+        BASE "${CMAKE_CURRENT_SOURCE_DIR}/assets/r2_fonts"
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/assets/r2_fonts/INTER_OFL.txt")
+    target_compile_definitions(rental_studio_qtquick_spike PRIVATE RENTAL_STUDIO_R2_INTER_TRIAL=1)
+endif()
 # R2 licensed, offline local SVG icon resources.
 set(R2_ICON_NAMES layout-grid car-front clipboard-list plus layers key-round database circle-check)
 set(R2_ICON_ASSETS)
@@ -180,6 +208,20 @@ if(BUILD_TESTING)
             COMMAND rental_studio_qtquick_spike ${PA_RENTALS_ARGS})
         set_tests_properties(rental_studio_pa_rentals_004_${SIZE}
             PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+    endforeach()
+    # R2 real Qt opt-in Inter font trial, wide/compact. The original
+    # pa-shell-001 screenshots provide the unchanged Segoe/system baseline.
+    foreach(SIZE wide compact)
+        set(R2_FONT_ARGS --r2-font-inter --r2-font-trial-smoke)
+        if(SIZE STREQUAL "compact")
+            list(APPEND R2_FONT_ARGS --compact)
+        endif()
+        if(BUILD_R2_INTER_FONT_TRIAL)
+            add_test(NAME rental_studio_r2_inter_font_${SIZE}
+                COMMAND rental_studio_qtquick_spike ${R2_FONT_ARGS})
+            set_tests_properties(rental_studio_r2_inter_font_${SIZE}
+                PROPERTIES ENVIRONMENT "QT_QUICK_BACKEND=software" TIMEOUT 65)
+        endif()
     endforeach()
     # Precision Automotive Light dashboard: real totals, availability ring,
     # latest contracts, 1280/1500 captures and no fixture modification.

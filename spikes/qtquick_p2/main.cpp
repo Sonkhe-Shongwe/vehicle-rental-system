@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QFontDatabase>
+#include <QFontInfo>
 #include <QScreen>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -402,6 +404,8 @@ int main(int argc, char *argv[]) {
     parser.addOption({"ux-ctrl-003-smoke", "Verify bidirectional cross-region Qt Quick keyboard navigation with no fixture writes."});
     parser.addOption({"ux-shell-004-smoke", "Native collapsible icon sidebar and Fleet All/Name/Search navigation proof."});
     parser.addOption({"pa-shell-001-smoke", "Precision Automotive Light real booking shortcut, icon rail and focus restoration."});
+    parser.addOption({"r2-font-inter", "Opt in to the locally embedded official Inter font trial."});
+    parser.addOption({"r2-font-trial-smoke", "CI-only real Qt Inter font and dual-size screenshot check."});
     parser.addOption({"pa-overview-002-smoke", "Native Precision Automotive Overview real C++ totals, availability ring and recent panel."});
     parser.addOption({"pa-fleet-003-smoke", "Native Precision Automotive Fleet gallery/table/inspector presentation and data-safety proof."});
     parser.addOption({"pa-rentals-004-smoke", "Inspect the actual Precision Automotive Rentals contract panels, register and status."});
@@ -429,6 +433,34 @@ int main(int argc, char *argv[]) {
     parser.addOption({"p7-fictional-sql-app-smoke", "CI-only native test of the real app's isolated fictional SQLite Lab."});
 #endif
     parser.process(app);
+    // Load bundled font only on explicit request. No silent font substitution
+    // and no download, file IO, or network access at application runtime.
+    QString r2FontTrialFamily;
+    if(parser.isSet("r2-font-trial-smoke") && !parser.isSet("r2-font-inter")) {
+        qCritical()<<"R2 font trial smoke requires the opt-in Inter font";
+        return 1050;
+    }
+    if(parser.isSet("r2-font-inter")) {
+#ifdef RENTAL_STUDIO_R2_INTER_TRIAL
+        const int fontId=QFontDatabase::addApplicationFont(
+            QStringLiteral(":/r2-fonts/InterVariable.ttf"));
+        if(fontId<0 || QFontDatabase::applicationFontFamilies(fontId).isEmpty()) {
+            qCritical()<<"R2 pinned Inter font could not load from Qt resources";
+            return 1051;
+        }
+        r2FontTrialFamily=QFontDatabase::applicationFontFamilies(fontId).first();
+        if(!r2FontTrialFamily.contains(QStringLiteral("Inter"),Qt::CaseInsensitive)) {
+            qCritical()<<"R2 source is not an Inter family"<<r2FontTrialFamily;
+            return 1052;
+        }
+        QFont inter=app.font();
+        inter.setFamily(r2FontTrialFamily);
+        app.setFont(inter);
+#else
+        qCritical()<<"R2 font trial is not built into this offline executable";
+        return 1053;
+#endif
+    }
     bool p7SqlLabEnabled=false;
     bool p7SqlLabSmoke=false;
 #ifdef RENTAL_STUDIO_P7_SQL_LAB
@@ -1141,6 +1173,7 @@ int main(int argc, char *argv[]) {
                             new FleetPhotoProvider(fleetPhotos));
     engine.rootContext()->setContextProperty("fleetPhotos", &fleetPhotos);
     engine.rootContext()->setContextProperty("motionPolicy", &motion);
+    engine.rootContext()->setContextProperty("r2FontTrialFamily",r2FontTrialFamily);
     engine.rootContext()->setContextProperty("persistentFictionalDemo",persistentDemo);
     engine.rootContext()->setContextProperty("portfolioShowcase",portfolioShowcase);
     engine.rootContext()->setContextProperty("fleet", &fleet);
@@ -5197,6 +5230,80 @@ int main(int argc, char *argv[]) {
             qInfo()<<"Precision Automotive Rentals source PASS"
                    <<(compact?"1280x720":"1500x860")
                    <<"real contract panels and unchanged fixtures";
+            app.exit(0);
+        });
+    }
+    if(parser.isSet("r2-font-trial-smoke")) {
+        auto *window=qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+        if(!window)return 1054;
+        const bool compact=parser.isSet("compact");
+        const QSize size(compact?1280:1500,compact?720:860);
+        window->resize(size);
+        window->setProperty("workspace",0);
+        QTimer::singleShot(1400,&app,[&,window,size]{
+            const auto find=[](const auto &self,QQuickItem *item,
+                               const QString &name)->QQuickItem* {
+                if(!item)return nullptr;
+                if(item->objectName()==name)return item;
+                for(auto *child:item->childItems())
+                    if(auto *match=self(self,child,name))return match;
+                return nullptr;
+            };
+            const auto get=[&](const QString &name)->QQuickItem* {
+                return find(find,window->contentItem(),name);
+            };
+            auto *heading=get("workspacePageHeading");
+            auto *subtitle=get("workspacePageSubtitle");
+            auto *metrics=get("overviewMetricGrid");
+            auto *hero=get("editorialOverviewHero");
+            auto *readiness=get("overviewAvailabilityPanel");
+            auto *disclosure=get("overviewDemoDisclosure");
+            if(!heading||!subtitle||!metrics||!hero||!readiness||!disclosure ||
+               r2FontTrialFamily.isEmpty()) {
+                qCritical()<<"R2 Inter trial missing actual QML content or font";
+                app.exit(1055);return;
+            }
+            const QFont headingFont=heading->property("font").value<QFont>();
+            const QString resolved=QFontInfo(headingFont).family();
+            if(!headingFont.family().contains(QStringLiteral("Inter"),Qt::CaseInsensitive) ||
+               !resolved.contains(QStringLiteral("Inter"),Qt::CaseInsensitive) ||
+               !app.font().family().contains(QStringLiteral("Inter"),Qt::CaseInsensitive)) {
+                qCritical()<<"R2 font did not actually render using Inter"
+                           <<headingFont.family()<<resolved<<app.font().family();
+                app.exit(1056);return;
+            }
+            const auto rect=[](QQuickItem *item) {
+                return item->mapRectToScene(QRectF(0,0,item->width(),item->height()));
+            };
+            const QRectF win(0,0,size.width(),size.height());
+            for(auto *item:{heading,subtitle,metrics,hero,readiness,disclosure}) {
+                if(!item->isVisible() || !win.contains(rect(item))) {
+                    qCritical()<<"R2 Inter caused QML clipping"
+                               <<item->objectName()<<rect(item);
+                    app.exit(1057);return;
+                }
+            }
+            if(rect(metrics).bottom()>rect(hero).top()+2 ||
+               rect(hero).right()>rect(readiness).left()+2) {
+                qCritical()<<"R2 Inter lost the approved KPI/hero layout";
+                app.exit(1058);return;
+            }
+            const QString dimensions=QString::number(size.width())+"x"+
+                                     QString::number(size.height());
+            const QImage shot=window->grabWindow();
+            if(shot.isNull() || shot.size()!=size ||
+               !shot.save("pa-shell-001-inter-font-"+dimensions+".png","PNG")) {
+                qCritical()<<"R2 Inter native screenshot failed";
+                app.exit(1059);return;
+            }
+            QByteArray vf,rf;
+            if(!readFile(vehicles,&vf)||!readFile(rentals,&rf)||
+               vf!=beforeVehicles||rf!=beforeRentals) {
+                qCritical()<<"R2 Inter trial changed protected fictional data";
+                app.exit(1060);return;
+            }
+            qInfo()<<"R2 Inter installed, used by Qt and source unchanged PASS"
+                   <<resolved<<dimensions;
             app.exit(0);
         });
     }

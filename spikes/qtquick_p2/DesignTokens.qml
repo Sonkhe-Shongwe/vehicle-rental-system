@@ -31,9 +31,10 @@ QtObject {
     readonly property color shellAction: "#087A5C"
     readonly property color shellActionHover: "#07906B"
     readonly property color shellFooterWave: "#0B3E33"
-    // This first pilot relies on Windows' installed Segoe UI, with native
-    // platform sans fallback elsewhere. No unlicensed font is bundled.
-    readonly property string shellFontFamily: "Segoe UI"
+    // The explicit R2 typography trial uses the C++-registered Inter family.
+    // Normal builds keep Windows Segoe UI with system sans fallback unchanged.
+    readonly property string shellFontFamily:
+        r2FontTrialFamily !== "" ? r2FontTrialFamily : "Segoe UI"
     readonly property int sidebarExpandedWidth: 218
     readonly property int sidebarCollapsedWidth: 76
     readonly property int pageHeadingSizeWide: 32

@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE R2 TYPOGRAPHY PILOT, EXACT-SOURCE CI PENDING (6 NOV 2026):** Optional and source-verifiable Inter variable TTF trial added to the Qt build via Google Fonts official Inter mirror pinned at `38411257417e616c5d4daa1b9e91a3dbcebe1c2e`, exact Git blob `047c92f6e2212473dc436020afed689527076d44` (876576 bytes) and SIL OFL 1.1 licence. A build-only verified fetch stages the font for embedding into the Qt test binary (`BUILD_R2_INTER_FONT_TRIAL=ON` in CI; default OFF for offline local builds). **No runtime network**. Explicit `--r2-font-inter` registers the actual font in QFontDatabase; native wide/compact CI tests check that Qt resolves Inter, no panel clipping, unchanged fictional data and real screenshots. Normal app launch remains Segoe/system baseline; **font is not yet selected as the owner's production typography**. New source CI is PENDING and should not be marked verified. Prior passing executable stays `a770ee6` / [#42237746398](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42237746398) 140/140 each OS and Windows packaged 8/8. R2 concept ZIP still absent, physical owner MinGW/DPI/Narrator/photo acceptance OPEN. Formal **45/74, 70.6% weighted, P7 0/8** unchanged; main/release protected. **Next:** check exact-source native CI (expect 142/142 if both opt-in tests register), examine font screenshot pairs on both OS at 1500x860/1280x720 and repair issues before checkpoint.
+
+---
+
 **Reconciled:** 6 November 2026, after source-pinned R2 Lucide native CI, full packaged Windows checks and genuine two-resolution Linux/Windows screenshot inspection.
 
 ## Exact state
