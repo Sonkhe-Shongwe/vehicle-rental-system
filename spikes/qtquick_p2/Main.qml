@@ -1796,9 +1796,12 @@ ApplicationWindow {
                 }
 
                 RowLayout {
+                    id: fleetWorkspaceRow
+                    objectName: "fleetWorkspaceRow"
                     spacing: 14
                     ColumnLayout {
                         Layout.fillWidth: true; Layout.fillHeight: true
+                        Layout.minimumWidth: 360
                         spacing: 14
                         ColumnLayout {
                             objectName: "fleetToolbar"
@@ -2094,6 +2097,8 @@ ApplicationWindow {
                                     }
                                 }
                                 model: fleet.visibleModel
+                                // The approved 60/40 split favours a compact,
+                                // two-column gallery at the target desktop sizes.
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 // Photo-led cards need enough vertical room to retain
                                 // recognisable vehicle framing at compact widths.
@@ -2193,7 +2198,9 @@ ApplicationWindow {
                                                       + "?v=" + fleetPhotos.revision : ""
 
                                                 visible: photoAvailable && status === Image.Ready
-                                                fillMode: Image.PreserveAspectFit
+                                                // An editorial thumbnail crop only; full-size
+                                                // source and licensing remain accessible in Fleet.
+                                                fillMode: Image.PreserveAspectCrop
                                                 cache: false
                                                 Accessible.name: "Illustrative photo for " + vehicleCard.displayName
                                             }
@@ -2469,19 +2476,26 @@ ApplicationWindow {
                         }
                     }
                     Rectangle {
+                        id: vehicleInspectorPanel
                         objectName: "vehicleInspector"
-                        Layout.preferredWidth: 282
+                        // Real source-backed register (60%) and inspector (40%).
+                        // Preserve a safe 320px minimum during manual resizing.
+                        Layout.preferredWidth: Math.max(320,
+                            (fleetWorkspaceRow.width - fleetWorkspaceRow.spacing) * 0.40)
+                        Layout.minimumWidth: 320
+                        Layout.maximumWidth: Layout.preferredWidth
                         Layout.fillHeight: true
                         color: designTokens.surface
                         border.color: designTokens.border
-                        radius: 12
+                        radius: 14
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: window.height < 800 ? 14 : 18
                             spacing: window.height < 800 ? 8 : 11
                             RowLayout {
                                 Label {
-                                    text: "Vehicle details"; color: navy; font.pixelSize: 17
+                                    text: fleet.selectedId === "" ? "Vehicle details" : "Selected vehicle"
+                                    color: navy; font.pixelSize: 17
                                     font.weight: Font.DemiBold
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
@@ -2509,19 +2523,60 @@ ApplicationWindow {
                                 }
                             }
                             Rectangle {
+                                id: fleetInspectorHero
                                 objectName: "fleetInspectorSelectedArt"
                                 visible: fleet.selectedId !== ""
                                 Layout.fillWidth: true
-                                // Keep a useful image area even in the 720px Inspector.
-                                Layout.preferredHeight: window.height < 800 ? 170 : 194
-                                Layout.minimumHeight: window.height < 800 ? 160 : 180
-                                color: ice
-                                radius: 10
+                                // Dark contextual selected-vehicle header remains
+                                // compact enough to preserve lifecycle controls.
+                                Layout.preferredHeight: window.height < 800 ? 180 : 204
+                                Layout.minimumHeight: window.height < 800 ? 170 : 188
+                                color: "#072A28"
+                                radius: 12
                                 clip: true
+                                Accessible.role: Accessible.Grouping
+                                Accessible.name: "Selected " + fleet.selectedName +
+                                                 ", " + fleet.selectedId + ", " +
+                                                 (fleet.selectedAvailable ? "available" : "rented")
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.topMargin: 43
+                                    color: "#123B35"
+                                    radius: 9
+                                    z: 0
+                                }
+                                Column {
+                                    id: fleetSelectedHeroCaption
+                                    objectName: "fleetSelectedHeroCaption"
+                                    x: 14
+                                    y: 6
+                                    width: parent.width - 28
+                                    spacing: 1
+                                    z: 4
+                                    Label {
+                                        objectName: "fleetSelectedHeroName"
+                                        width: parent.width
+                                        text: fleet.selectedName
+                                        color: "#FFFFFF"
+                                        font.pixelSize: window.height < 800 ? 15 : 17
+                                        font.weight: Font.DemiBold
+                                        elide: Text.ElideRight
+                                    }
+                                    Label {
+                                        objectName: "fleetSelectedHeroIdentity"
+                                        width: parent.width
+                                        text: fleet.selectedId + " · " + fleet.selectedType +
+                                              " · " + (fleet.selectedAvailable ? "Available" : "Rented")
+                                        color: "#A9E8D5"
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
+                                    }
+                                }
                                 Image {
                                     id: inspectorPhoto
                                     objectName: "fleetInspectorPhoto"
                                     anchors.fill: parent
+                                    anchors.topMargin: 43
                                     readonly property bool photoAvailable:
 
                                         fleetPhotos.revision >= 0 &&
@@ -2537,7 +2592,9 @@ ApplicationWindow {
                                     // Failed or loading image cannot conceal the fallback silhouette.
 
                                     visible: photoAvailable && status === Image.Ready
-                                    fillMode: Image.PreserveAspectFit
+                                    // The original uncropped photo is still available
+                                    // via View full; its recorded credit is retained.
+                                    fillMode: Image.PreserveAspectCrop
                                     cache: false
                                     Accessible.name: "Illustrative model photo for " + fleet.selectedName
                                     Accessible.description: "Reference picture only, not the actual rental vehicle"
@@ -2582,6 +2639,7 @@ ApplicationWindow {
                                     anchors.top: parent.top
                                     anchors.left: parent.left
                                     anchors.margins: 6
+                                    anchors.topMargin: 50
                                     font.pixelSize: 10
                                     text: inspectorPhoto.visible ? "Reference image" : "Illustration"
                                     color: navy
@@ -2656,6 +2714,7 @@ ApplicationWindow {
                                     anchors.top: parent.top
                                     anchors.right: parent.right
                                     anchors.margins: 6
+                                    anchors.topMargin: 50
                                     z: 2
                                     visible: !persistentFictionalDemo
                                     activeFocusOnTab: true
@@ -2690,21 +2749,34 @@ ApplicationWindow {
                                     }
                                 }
                             }
+                            // Selection context is in the dark photographic header.
+                            // The neutral empty selection remains explicit and honest.
                             Label {
-                                text: fleet.selectedId === "" ? "Select a vehicle" : fleet.selectedName
+                                visible: fleet.selectedId === ""
+                                text: "Select a vehicle"
                                 color: navy
                                 font.pixelSize: window.height < 800 ? 18 : 20
                                 font.weight: Font.DemiBold
                                 Layout.fillWidth: true
+                            }
+                            Label {
+                                visible: fleet.selectedId === ""
+                                text: "Choose a Gallery card or Table row to see verified vehicle details."
+                                color: ink
+                                Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                             }
                             Label {
-                                text: fleet.selectedId === "" ?
-                                    "Choose a Gallery card or Table row to see verified vehicle details." :
-                                    fleet.selectedId + " · " + fleet.selectedType
-                                color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap
+                                objectName: "fleetInspectorDetailsHeading"
+                                visible: fleet.selectedId !== ""
+                                text: "VEHICLE DETAILS"
+                                color: designTokens.secondaryText
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 0.6
+                                Layout.fillWidth: true
                             }
-                            Rectangle { Layout.fillWidth: true; height: 1; color: "#D8E2E8" }
+                            Rectangle { Layout.fillWidth: true; height: 1; color: designTokens.border }
                             Label {
                                 text: fleet.selectedId === "" ? "" : fleet.selectedDetails
                                 color: ink; wrapMode: Text.WordWrap

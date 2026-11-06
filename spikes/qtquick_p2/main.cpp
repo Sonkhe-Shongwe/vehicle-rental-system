@@ -5063,6 +5063,11 @@ int main(int argc, char *argv[]) {
             auto *gallery=get("fleetGallery");
             auto *table=get("fleetTable");
             auto *inspector=get("vehicleInspector");
+            auto *hero=get("fleetInspectorSelectedArt");
+            auto *heroName=get("fleetSelectedHeroName");
+            auto *heroIdentity=get("fleetSelectedHeroIdentity");
+            auto *detailsHeading=get("fleetInspectorDetailsHeading");
+            auto *bookButton=get("fleetBookSelectedButton");
             auto *rateBand=get("fleetInspectorRateBand");
             auto *rate=get("fleetInspectorRateValue");
             auto *status=get("fleetInspectorStatusPill");
@@ -5070,8 +5075,9 @@ int main(int argc, char *argv[]) {
             auto *cardPill=get("fleetCardStatusPill");
             auto *search=get("fleetSearchField");
             auto *switchToTable=get("fleetTableToggle");
-            if(!toolbar||!gallery||!table||!inspector||!rateBand||
-               !rate||!status||!cardRate||!cardPill||!search||
+            if(!toolbar||!gallery||!table||!inspector||!hero||
+               !heroName||!heroIdentity||!detailsHeading||!bookButton||
+               !rateBand||!rate||!status||!cardRate||!cardPill||!search||
                !switchToTable || gallery->property("count").toInt()<1 ||
                !gallery->isVisible() ||
                search->property("placeholderText").toString()!=
@@ -5102,9 +5108,39 @@ int main(int argc, char *argv[]) {
                            <<rate->property("text")<<status->property("available");
                 app.exit(1064);return;
             }
+            // Verify dark C++-selected identity, truthful booking gating and
+            // the R2 60/40 gallery-to-inspector split at both desktop sizes.
+            if(hero->property("color").value<QColor>()!=QColor("#072A28") ||
+               heroName->property("text").toString()!=fleet.selectedName() ||
+               !heroIdentity->property("text").toString().contains("C001") ||
+               !heroIdentity->property("text").toString().contains("Available") ||
+               detailsHeading->property("text").toString()!="VEHICLE DETAILS" ||
+               !bookButton->isEnabled()) {
+                qCritical()<<"R2 Fleet selected-vehicle header or booking state wrong";
+                app.exit(1069);return;
+            }
+            fleet.selectById("C002");
+            QTest::qWait(80);
+            if(fleet.selectedAvailable() || bookButton->isEnabled() ||
+               !heroIdentity->property("text").toString().contains("C002") ||
+               !heroIdentity->property("text").toString().contains("Rented")) {
+                qCritical()<<"R2 Fleet rented vehicle falsely bookable";
+                app.exit(1070);return;
+            }
+            fleet.selectById("C001");
+            QTest::qWait(80);
+            const qreal inspectorShare=inspector->width()/
+                (gallery->width()+inspector->width());
+            if(qAbs(inspectorShare-0.40)>0.045 ||
+               hero->width()<inspector->width()-45 ||
+               !hero->isVisible() || !detailsHeading->isVisible()) {
+                qCritical()<<"R2 Fleet 60/40 geometry or contextual inspector missing"
+                           <<inspectorShare<<hero->width()<<inspector->width();
+                app.exit(1071);return;
+            }
             const QPointF galleryX=gallery->mapToScene(QPointF(0,0));
             const QPointF inspectorX=inspector->mapToScene(QPointF(0,0));
-            if(gallery->width()<280 || inspector->width()<260 ||
+            if(gallery->width()<280 || inspector->width()<320 ||
                galleryX.x()<0 || inspectorX.x()<galleryX.x()+gallery->width()-2 ||
                inspectorX.x()+inspector->width()>window->width()-5) {
                 qCritical()<<"PA Fleet 003 columns clipped or overlapping"

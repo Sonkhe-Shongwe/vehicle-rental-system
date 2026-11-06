@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE FLEET R2 PHASE 1A, SOURCE PENDING NATIVE CI (6 NOV 2026):** Draft PR #17 contains a bounded Fleet UI redesign: gallery/inspector 60/40 proportions (safe minimum right width), selected-photo header deep evergreen `#072A28`, original selected C++ vehicle name/ID/type/status in the dark header, larger photo-led Gallery thumbnails, and clean white vehicle detail/rate/actions body. Existing local reference-image credits, change/reset/full-photo actions, Gallery/Table switching, keyboard focus, authorized removal and C++ availability/rate/booking state are preserved. Native Fleet wide/compact smoke now asserts 60/40 geometry, real C001 available vs C002 rented booking gating, dark selected identity and visible white details. **This source is NOT yet exact-source verified.** Last passing executable remains `a909a78`, [CI #42246522764 SUCCESS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42246522764), 142/142 each Linux/Windows, Windows packaged 8/8. R2 reference full-res PNG ZIP absent, Inter remains opt-in only, physical Windows MinGW/DPI/Narrator/photo and three workspace owner approvals OPEN, formal **45/74 weighted 70.6%, P7 0/8** unchanged. Next: run complete exact-source Qt Linux/Windows CI, inspect real Fleet gallery at 1500x860 and 1280x720 and repair any clipping before checkpoint promotion. Draft PR unmerged, main untouched, no release.
+
+---
+
 **Reconciled:** 6 November 2026 after R2 Overview Phase 2B tested SHA, full hosted native CI, Windows packaged verification and four real Qt screenshot reviews.
 
 ## Exact state
