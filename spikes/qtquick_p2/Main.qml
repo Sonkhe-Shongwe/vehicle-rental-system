@@ -3396,7 +3396,9 @@ ApplicationWindow {
                         objectName: "rentalRecordsPanel"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        Layout.preferredHeight: window.height < 800 ? 540 : 560
+                        // Compact retains the full first two contract rows while
+                        // preserving genuine page scroll and keyboard access.
+                        Layout.preferredHeight: window.height < 800 ? 560 : 560
                         color: designTokens.surface
                         radius: 12
                         border.color: designTokens.border
