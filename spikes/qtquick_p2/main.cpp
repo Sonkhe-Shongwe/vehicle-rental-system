@@ -5221,6 +5221,8 @@ int main(int argc, char *argv[]) {
                 return window->findChild<QQuickItem*>(name);
             };
             auto *total=get("overviewTotalCard");
+            auto *availableCard=get("overviewAvailableCard");
+            auto *metrics=get("overviewMetricGrid");
             auto *active=get("overviewActiveCard");
             auto *donut=get("overviewAvailabilityPanel");
             auto *ring=get("overviewAvailabilityRing");
@@ -5233,7 +5235,7 @@ int main(int argc, char *argv[]) {
             auto *vehicleName=get("overviewRecentVehicleName0");
             auto *review=get("overviewReviewOverdue");
             auto *disclosure=get("overviewDemoDisclosure");
-            if(!total||!active||!donut||!ring||
+            if(!total||!availableCard||!metrics||!active||!donut||!ring||
                !percent||!value||!due||!history||!recent||!row||
                !vehicleName||!review||!disclosure) {
                 qCritical()<<"PA Overview controls or real history row missing";
@@ -5244,6 +5246,12 @@ int main(int argc, char *argv[]) {
                   ? qRound(100.0*fleet.availableCount()/fleet.totalCount())
                   : 0)+QStringLiteral("%");
             if(total->property("value").toString()!=QString::number(fleet.totalCount()) ||
+               availableCard->property("value").toString()!=
+                    QString::number(fleet.availableCount()) ||
+               !availableCard->property("note").toString().contains(
+                    fleet.totalCount()>0
+                      ? QString::number(qRound(100.0*fleet.availableCount()/fleet.totalCount()))+"%"
+                      : QStringLiteral("No fleet")) ||
                active->property("value").toString()!=QString::number(rentalModel.activeCount()) ||
                donut->property("total").toInt()!=fleet.totalCount() ||
                donut->property("available").toInt()!=fleet.availableCount() ||
@@ -5274,6 +5282,17 @@ int main(int argc, char *argv[]) {
             const auto availabilityTopLeft=donut->mapToScene(QPointF(0,0));
             const auto recentTopLeft=recent->mapToScene(QPointF(0,0));
             const auto heroTopLeft=hero->mapToScene(QPointF(0,0));
+            const auto metricsTopLeft=metrics->mapToScene(QPointF(0,0));
+            const auto availableTopLeft=availableCard->mapToScene(QPointF(0,0));
+            // R2 composition: KPI strip must precede and fit above the hero.
+            if(metrics->width()<800 || metricsTopLeft.y()>=heroTopLeft.y() ||
+               availableTopLeft.y()<metricsTopLeft.y()-2 ||
+               availableCard->width()<170 ||
+               availableTopLeft.x()+availableCard->width()>window->width()-5 ||
+               hero->property("color").value<QColor>()!=QColor("#072A28")) {
+                qCritical()<<"R2 Overview KPI/hero layout or palette regression";
+                app.exit(1028);return;
+            }
             const auto readyTopLeft=ready->mapToScene(QPointF(0,0));
             if(donut->width()<290||recent->width()<440||
                hero->width()<430||ready->width()<290||

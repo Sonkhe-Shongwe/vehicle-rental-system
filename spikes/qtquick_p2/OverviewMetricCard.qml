@@ -2,61 +2,73 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Direction A: compact contract/fleet facts, not navigation shortcuts.
+// R2 presentation only. C++ remains the source of fleet/rental values.
+// Existing local Canvas glyphs are interim pending licensed Lucide Qt testing.
 Rectangle {
     id: card
     property string metricLabel: ""
     property string value: ""
     property string note: ""
     property string metricIcon: ""
-    property color accent: colors.navy
+    property color accent: colors.teal
     property bool compact: false
     DesignTokens { id: colors }
     Layout.fillWidth: true
-    Layout.minimumWidth: 130
-    radius: 13
+    Layout.minimumWidth: 170
+    radius: 14
     color: colors.surface
     border.color: colors.border
     border.width: 1
     Accessible.role: Accessible.StaticText
     Accessible.name: metricLabel + ": " + value + ". " + note
     Rectangle {
-        x: 14
-        y: 14
-        width: 3
-        height: parent.height - 28
-        radius: 1.5
-        color: card.accent
+        x: 13
+        y: card.compact ? 10 : 13
+        width: card.compact ? 27 : 32
+        height: width
+        radius: 9
+        color: colors.quietSurface
+        SidebarGlyph {
+            anchors.centerIn: parent
+            width: 19
+            height: 19
+            kind: card.metricIcon
+            glyphColor: card.accent
+            Accessible.ignored: true
+        }
     }
     ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: card.compact ? 27 : 31
-        anchors.rightMargin: 13
+        anchors.leftMargin: card.compact ? 49 : 54
+        anchors.rightMargin: 9
         anchors.topMargin: card.compact ? 7 : 10
-        anchors.bottomMargin: card.compact ? 7 : 9
+        anchors.bottomMargin: card.compact ? 6 : 9
         spacing: 1
         Label {
             text: card.metricLabel.toUpperCase()
-            color: colors.ink
-            font.pixelSize: 10
+            color: colors.secondaryText
+            font.family: colors.shellFontFamily
+            font.pixelSize: card.compact ? 9 : 10
             font.weight: Font.DemiBold
-            font.letterSpacing: 0.8
+            font.letterSpacing: 0.5
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
         Label {
             objectName: "overviewMetricValue"
             text: card.value
-            color: card.accent
-            font.pixelSize: card.compact ? 21 : 28
+            color: colors.pageHeading
+            font.family: colors.shellFontFamily
+            font.pixelSize: card.compact ? 20 : 26
             font.weight: Font.DemiBold
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
         Label {
             text: card.note
-            color: colors.ink
-            font.pixelSize: card.compact ? 10 : 11
+            color: colors.secondaryText
+            font.family: colors.shellFontFamily
+            font.pixelSize: card.compact ? 9 : 10
             Layout.fillWidth: true
             elide: Text.ElideRight
         }

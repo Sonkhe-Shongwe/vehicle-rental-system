@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE SOURCE CHANGE, CI NOT YET VERIFIED (6 NOV 2026):** R2 Overview Phase 2A on draft P7 branch has a bounded QML-only presentation and native test change: four source-backed KPIs (including available count and percent), KPI-first geometry, evergreen hero and C++-selected model reference where available, and local icon-led white metric cards. The typography uses installed Segoe UI/system fallback; **Lucide and Inter binaries are not bundled**. Existing authoritative C++ booking, Fleet status, contractual money, persistence, P7 isolation and keyboard routing were not changed. This new code commit is **pending exact-source Linux/Windows CI and real screenshots**; prior verified executable remains `7c9a7f6` / [SUCCESS #42226245697](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42226245697), 140/140 each platform. Direct original R2 image ZIP unavailable here; pixel-level comparison and final owner Windows MinGW/100-150%/Narrator/photo approval remain OPEN. **Acceptance 45/74, weighted 70.6%, P7 0/8 unchanged. NEXT:** confirm new commit SHA and CI, inspect both screenshot sizes, repair any failures before updating LATEST_CHECKPOINT/TESTING.
+
+---
+
 **Reconciled:** 6 November 2026, following exact-source Editorial Contrast R2 shell header repair, completed Linux and Windows native CI and visual screenshot inspection.
 
 ## Exact state
