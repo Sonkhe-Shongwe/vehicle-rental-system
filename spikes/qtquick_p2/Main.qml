@@ -1067,7 +1067,7 @@ ApplicationWindow {
                         objectName: "workspacePageHeading"
                         text: window.workspace === 0 ? "Your fleet. Your next move." :
                               window.workspace === 1 ? "Your fleet, beautifully organised." :
-                              window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
+                              window.workspace === 2 ? "Every contract, in clear view." : "Fictional SQLite Lab"
                         font.pixelSize: window.height < 800 ?
                             designTokens.pageHeadingSizeCompact : designTokens.pageHeadingSizeWide
                         font.weight: Font.DemiBold
@@ -1082,7 +1082,7 @@ ApplicationWindow {
                             : window.workspace === 1
                             ? "Explore every vehicle, understand availability and take the right action"
                             : window.workspace === 2
-                            ? "Manage active rentals, returns and rental history"
+                            ? "The register comes first. Actions follow the selected contract."
                             : "Isolated fictional persistence preview"
                         color: designTokens.secondaryText
                         font.pixelSize: designTokens.pageSubtitleSize
@@ -2741,7 +2741,7 @@ ApplicationWindow {
                     ColumnLayout {
                         id: rentalPageContent
                         width: Math.max(0, rentalsPageScroll.width - 18)
-                        spacing: 14
+                        spacing: window.height < 800 ? 8 : 10
                     RowLayout {
                         Layout.fillWidth: true
                         Label {
@@ -3019,194 +3019,7 @@ ApplicationWindow {
                             }
                         }
                     }
-                    Rectangle {
-                        objectName: "rentalActionPanel"
-                        Layout.fillWidth: true
-                        implicitHeight: rentalActionContent.implicitHeight + 28
-                        radius: 12
-                        color: designTokens.surface
-                        border.color: designTokens.border
-                        border.width: 1
-                        ColumnLayout {
-                            id: rentalActionContent
-                            anchors.fill: parent
-                            anchors.margins: 14
-                            spacing: 10
-                            Label {
-                                text: "CONTRACT ACTIONS"
-                                color: navy
-                                font.pixelSize: 12
-                                font.weight: Font.DemiBold
-                            }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Button {
-                            id: returnSelectedButton
-                            objectName: "rentalReturnButton"
-                            text: "Return selected rental"
-                            activeFocusOnTab: true
-                            hoverEnabled: true
-                            Layout.minimumHeight: 44
-                            background: Rectangle {
-                                radius: 8
-                                color: !returnSelectedButton.enabled ? designTokens.disabledSurface :
-                                       returnSelectedButton.hovered ? mint : designTokens.surface
-                                border.color: returnSelectedButton.activeFocus ? navy : teal
-                                border.width: returnSelectedButton.activeFocus ? designTokens.focusWidth : 1
-                            }
-                            contentItem: Text {
-                                text: returnSelectedButton.text
-                                color: returnSelectedButton.enabled ? teal : designTokens.disabledInk
-                                font.weight: Font.DemiBold
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastRentalActionFocus = 1
-                            }
-                            Keys.onPressed: (event) => window.rentalActionKey(event,1)
-                            enabled: rentalActions.canReturnSelected
-                            Accessible.name: "Return the selected active rental"
-                            onClicked: {
-                                returnConfirmation.targetId = rentalsModel.selectedRentalId
-                                returnConfirmation.reviewInvalidated = false
-                                returnConfirmation.reviewInvalidationReason = ""
-                                returnConfirmation.open()
-                            }
-                        }
-                        Button {
-                            id: archiveActionButton
-                            objectName: "rentalArchiveButton"
-                            text: "Archive returned"
-                            activeFocusOnTab: true
-                            hoverEnabled: true
-                            Layout.minimumHeight: 44
-                            background: Rectangle {
-                                radius: 8
-                                color: !archiveActionButton.enabled ? designTokens.disabledSurface :
-                                       archiveActionButton.hovered ? designTokens.neutralHover : designTokens.surface
-                                border.color: archiveActionButton.activeFocus ? navy : designTokens.border
-                                border.width: archiveActionButton.activeFocus ? designTokens.focusWidth : 1
-                            }
-                            contentItem: Text {
-                                text: archiveActionButton.text
-                                color: archiveActionButton.enabled ? navy : designTokens.disabledInk
-                                font.weight: Font.DemiBold
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastRentalActionFocus = 2
-                            }
-                            Keys.onPressed: (event) => window.rentalActionKey(event,2)
-                            enabled: archiveActions.canArchiveSelected
-                            Accessible.name: "Archive selected returned rental"
-                            onClicked: {
-                                archiveConfirmation.targetId = rentalsModel.selectedRentalId
-                                archiveConfirmation.reviewInvalidated = false
-                                archiveConfirmation.reviewInvalidationReason = ""
-                                archiveConfirmation.open()
-                            }
-                        }
-                        DangerButton {
-                            id: deleteArchivedButton
-                            objectName: "rentalDeleteArchivedButton"
-                            text: "Delete archived"
-                            activeFocusOnTab: true
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastRentalActionFocus = 3
-                            }
-                            Keys.onPressed: (event) => window.rentalActionKey(event,3)
-                            enabled: archivedDelete.canDeleteSelected
-                            Accessible.name: "Permanently delete selected archived fictional rental"
-                            Accessible.description: archivedDelete.canDeleteSelected
-                                ? "Requires exact DELETE rental ID confirmation"
-                                : "Select an archived rental in a disposable fictional demo"
-                            onClicked: {
-                                archivedDelete.clearMessage()
-                                archivedDeleteDialog.targetId = rentalsModel.selectedRentalId
-                                archivedDeleteDialog.open()
-                            }
-                        }
-                        DomainMessage {
-                            objectName: "rentalReturnMessage"
-                            visible: text !== ""
-                            text: rentalActions.lastReturnMessage
-                        }
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Label {
-                            text: "Return lookup"
-                            color: navy
-                            font.pixelSize: 12
-                        }
-                        AccessibleTextField {
-                            id: returnLookupField
-                            objectName: "returnLookupField"
-                            fieldPurpose: "Find active rental to return by rental ID or vehicle ID"
-                            placeholderText: "Rental ID or vehicle ID"
-                            Layout.preferredWidth: 195
-                            onTextEdited: {
-                                // Editing a new target must never leave the
-                                // previous contract eligible for confirmation.
-                                rentalsModel.clearSelection()
-                                window.returnLookupFeedback = ""
-                            }
-                            onAccepted: window.findActiveReturn()
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastRentalReturnFocus = 0
-                            }
-                            Keys.onPressed: (event) => {
-                                if (event.modifiers !== Qt.NoModifier ||
-                                        inputMethodComposing) return
-                                if (event.key === Qt.Key_Up &&
-                                        window.focusRentalAction())
-                                    event.accepted = true
-                                else if (event.key === Qt.Key_Down &&
-                                         window.focusRentalStatus())
-                                    event.accepted = true
-                            }
-                        }
-                        Button {
-                            id: returnLookupButton
-                            objectName: "returnLookupButton"
-                            text: "Locate return"
-                            activeFocusOnTab: true
-                            onActiveFocusChanged: {
-                                if (activeFocus) window.lastRentalReturnFocus = 1
-                            }
-                            Keys.onPressed: (event) => {
-                                if (window.activateFocusedButton(event,returnLookupButton))
-                                    return
-                                if (event.modifiers !== Qt.NoModifier) return
-                                if (event.key === Qt.Key_Left)
-                                    window.focusEnabled(returnLookupField)
-                                else if (event.key === Qt.Key_Up)
-                                    window.focusRentalAction()
-                                else if (event.key === Qt.Key_Down)
-                                    window.focusRentalStatus()
-                                else return
-                                event.accepted = true
-                            }
-                            Layout.minimumHeight: 36
-                            Accessible.name: "Locate active rental for return"
-                            Accessible.description: "Select only. Opens no confirmation and writes nothing."
-                            onClicked: window.findActiveReturn()
-                        }
-                        Label {
-                            objectName: "returnLookupFeedback"
-                            Layout.fillWidth: true
-                            text: window.returnLookupFeedback
-                            color: ink
-                            font.pixelSize: 12
-                            elide: Text.ElideRight
-                            Accessible.name: text
-                        }
-                    }
-                        }
-                    }
+
                     ConfirmActionDialog {
                         id: returnConfirmation
                         objectName: "rentalReturnDialog"
@@ -3284,10 +3097,52 @@ ApplicationWindow {
                     // rental ID lookup have separate, predictable rows.
                     // This is presentation only. C++ still owns all filters,
                     // record selection, persisted operations and validation.
+                    RowLayout {
+                        objectName: "rentalEditorialSummary"
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Repeater {
+                            model: [
+                                { label: "ACTIVE CONTRACTS", count: rentalsModel.activeCount, tint: teal },
+                                { label: "OVERDUE RETURNS", count: rentalsModel.overdueCount, tint: designTokens.warningInk },
+                                { label: "RETURNED / ARCHIVED", count: rentalsModel.historyCount, tint: navy }
+                            ]
+                            delegate: Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 62
+                                radius: 12
+                                color: designTokens.surface
+                                border.color: designTokens.border
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: modelData.label + ": " + modelData.count
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 12
+                                    spacing: 10
+                                    Label {
+                                        text: rentalsModel.snapshotAvailable
+                                            ? String(modelData.count).padStart(2, "0") : "—"
+                                        color: modelData.tint
+                                        font.pixelSize: 25
+                                        font.weight: Font.DemiBold
+                                    }
+                                    Label {
+                                        text: modelData.label
+                                        color: navy
+                                        font.pixelSize: 11
+                                        font.weight: Font.DemiBold
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.WordWrap
+                                    }
+                                }
+                            }
+                        }
+                    }
                     Rectangle {
                         objectName: "rentalFilterPanel"
                         Layout.fillWidth: true
-                        implicitHeight: rentalToolbar.implicitHeight + 28
+                        implicitHeight: rentalToolbar.implicitHeight + 22
                         radius: 12
                         color: designTokens.surface
                         border.color: designTokens.border
@@ -3296,10 +3151,10 @@ ApplicationWindow {
                         id: rentalToolbar
                         objectName: "rentalToolbar"
                         anchors.fill: parent
-                        anchors.margins: 14
-                        spacing: 10
+                        anchors.margins: 11
+                        spacing: 5
                         Label {
-                            text: "CONTRACT VIEWS · FILTERS DO NOT EDIT RECORDS"
+                            text: "CONTRACT FILTERS · VIEWS DO NOT EDIT RECORDS"
                             color: navy
                             font.pixelSize: 12
                             font.weight: Font.DemiBold
@@ -3504,11 +3359,16 @@ ApplicationWindow {
                         }
                     }
                     }
+                    RowLayout {
+                        objectName: "rentalContractWorkspace"
+                        Layout.fillWidth: true
+                        spacing: 12
                     Rectangle {
                         id: rentalRecordsPanel
                         objectName: "rentalRecordsPanel"
                         Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(490, Math.max(365, 165 + 77 * rentalsModel.count))
+                        Layout.minimumWidth: 0
+                        Layout.preferredHeight: window.height < 800 ? 420 : 445
                         color: designTokens.surface
                         radius: 12
                         border.color: designTokens.border
@@ -3738,6 +3598,264 @@ ApplicationWindow {
                                 }
                             }
                         }
+                    }
+                    Rectangle {
+                        objectName: "rentalActionPanel"
+                        Layout.fillHeight: true
+                        Layout.minimumWidth: 305
+                        Layout.preferredWidth: window.width < 1400 ? 305 : 328
+                        Layout.maximumWidth: Layout.preferredWidth
+                        implicitHeight: rentalActionContent.implicitHeight + 28
+                        radius: 12
+                        color: designTokens.surface
+                        border.color: designTokens.border
+                        border.width: 1
+                        ColumnLayout {
+                            id: rentalActionContent
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 5
+                            Label {
+                                text: "SELECTED CONTRACT"
+                                color: ink
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    objectName: "rentalInspectorId"
+                                    text: rentalsModel.selectedContract.rentalId || "Select a contract"
+                                    color: navy
+                                    font.pixelSize: 23
+                                    font.weight: Font.DemiBold
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                RentalStatusLabel {
+                                    objectName: "rentalInspectorStatus"
+                                    visible: rentalsModel.selectedContract.status !== undefined
+                                    statusValue: rentalsModel.selectedContract.status || ""
+                                }
+                            }
+                            Label {
+                                objectName: "rentalInspectorVehicle"
+                                text: rentalsModel.selectedContract.vehicleId !== undefined
+                                    ? ((fleet.vehicleNames[rentalsModel.selectedContract.vehicleId] ||
+                                       ("Vehicle " + rentalsModel.selectedContract.vehicleId)) +
+                                       " · " + rentalsModel.selectedContract.vehicleId)
+                                    : "Select a contract from the register"
+                                color: navy
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                            }
+                            Label {
+                                objectName: "rentalInspectorDate"
+                                text: rentalsModel.selectedContract.expectedReturnDate !== undefined
+                                    ? "Expected return · " +
+                                      rentalsModel.selectedContract.expectedReturnDate
+                                    : "No rental selected"
+                                color: ink
+                                font.pixelSize: 11
+                                Layout.fillWidth: true
+                            }
+                            Label {
+                                objectName: "rentalInspectorValue"
+                                text: rentalsModel.selectedContract.total !== undefined
+                                    ? "Booked value · R " +
+                                      Number(rentalsModel.selectedContract.total).toFixed(2)
+                                    : "Contract values are not payments"
+                                color: navy
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                                Layout.fillWidth: true
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                color: designTokens.border
+                            }
+                            Label {
+                                text: "CONTRACT ACTIONS"
+                                color: navy
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 5
+                        Button {
+                            id: returnSelectedButton
+                            objectName: "rentalReturnButton"
+                            text: "Return selected rental"
+                            activeFocusOnTab: true
+                            hoverEnabled: true
+                            Layout.minimumHeight: 44
+                            Layout.fillWidth: true
+                            background: Rectangle {
+                                radius: 8
+                                color: !returnSelectedButton.enabled ? designTokens.disabledSurface :
+                                       returnSelectedButton.hovered ? mint : designTokens.surface
+                                border.color: returnSelectedButton.activeFocus ? navy : teal
+                                border.width: returnSelectedButton.activeFocus ? designTokens.focusWidth : 1
+                            }
+                            contentItem: Text {
+                                text: returnSelectedButton.text
+                                color: returnSelectedButton.enabled ? teal : designTokens.disabledInk
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 1
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,1)
+                            enabled: rentalActions.canReturnSelected
+                            Accessible.name: "Return the selected active rental"
+                            onClicked: {
+                                returnConfirmation.targetId = rentalsModel.selectedRentalId
+                                returnConfirmation.reviewInvalidated = false
+                                returnConfirmation.reviewInvalidationReason = ""
+                                returnConfirmation.open()
+                            }
+                        }
+                        Button {
+                            id: archiveActionButton
+                            objectName: "rentalArchiveButton"
+                            text: "Archive returned"
+                            activeFocusOnTab: true
+                            hoverEnabled: true
+                            Layout.minimumHeight: 44
+                            Layout.fillWidth: true
+                            background: Rectangle {
+                                radius: 8
+                                color: !archiveActionButton.enabled ? designTokens.disabledSurface :
+                                       archiveActionButton.hovered ? designTokens.neutralHover : designTokens.surface
+                                border.color: archiveActionButton.activeFocus ? navy : designTokens.border
+                                border.width: archiveActionButton.activeFocus ? designTokens.focusWidth : 1
+                            }
+                            contentItem: Text {
+                                text: archiveActionButton.text
+                                color: archiveActionButton.enabled ? navy : designTokens.disabledInk
+                                font.weight: Font.DemiBold
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 2
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,2)
+                            enabled: archiveActions.canArchiveSelected
+                            Accessible.name: "Archive selected returned rental"
+                            onClicked: {
+                                archiveConfirmation.targetId = rentalsModel.selectedRentalId
+                                archiveConfirmation.reviewInvalidated = false
+                                archiveConfirmation.reviewInvalidationReason = ""
+                                archiveConfirmation.open()
+                            }
+                        }
+                        DangerButton {
+                            id: deleteArchivedButton
+                            objectName: "rentalDeleteArchivedButton"
+                            text: "Delete archived"
+                            activeFocusOnTab: true
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 44
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalActionFocus = 3
+                            }
+                            Keys.onPressed: (event) => window.rentalActionKey(event,3)
+                            enabled: archivedDelete.canDeleteSelected
+                            Accessible.name: "Permanently delete selected archived fictional rental"
+                            Accessible.description: archivedDelete.canDeleteSelected
+                                ? "Requires exact DELETE rental ID confirmation"
+                                : "Select an archived rental in a disposable fictional demo"
+                            onClicked: {
+                                archivedDelete.clearMessage()
+                                archivedDeleteDialog.targetId = rentalsModel.selectedRentalId
+                                archivedDeleteDialog.open()
+                            }
+                        }
+                        DomainMessage {
+                            objectName: "rentalReturnMessage"
+                            visible: text !== ""
+                            text: rentalActions.lastReturnMessage
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        AccessibleTextField {
+                            id: returnLookupField
+                            objectName: "returnLookupField"
+                            fieldPurpose: "Find active rental to return by rental ID or vehicle ID"
+                            placeholderText: "Rental ID or vehicle ID"
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 100
+                            onTextEdited: {
+                                // Editing a new target must never leave the
+                                // previous contract eligible for confirmation.
+                                rentalsModel.clearSelection()
+                                window.returnLookupFeedback = ""
+                            }
+                            onAccepted: window.findActiveReturn()
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalReturnFocus = 0
+                            }
+                            Keys.onPressed: (event) => {
+                                if (event.modifiers !== Qt.NoModifier ||
+                                        inputMethodComposing) return
+                                if (event.key === Qt.Key_Up &&
+                                        window.focusRentalAction())
+                                    event.accepted = true
+                                else if (event.key === Qt.Key_Down &&
+                                         window.focusRentalStatus())
+                                    event.accepted = true
+                            }
+                        }
+                        Button {
+                            id: returnLookupButton
+                            objectName: "returnLookupButton"
+                            text: "Locate return"
+                            activeFocusOnTab: true
+                            onActiveFocusChanged: {
+                                if (activeFocus) window.lastRentalReturnFocus = 1
+                            }
+                            Keys.onPressed: (event) => {
+                                if (window.activateFocusedButton(event,returnLookupButton))
+                                    return
+                                if (event.modifiers !== Qt.NoModifier) return
+                                if (event.key === Qt.Key_Left)
+                                    window.focusEnabled(returnLookupField)
+                                else if (event.key === Qt.Key_Up)
+                                    window.focusRentalAction()
+                                else if (event.key === Qt.Key_Down)
+                                    window.focusRentalStatus()
+                                else return
+                                event.accepted = true
+                            }
+                            Layout.minimumHeight: 44
+                            Layout.preferredWidth: 108
+                            Accessible.name: "Locate active rental for return"
+                            Accessible.description: "Select only. Opens no confirmation and writes nothing."
+                            onClicked: window.findActiveReturn()
+                        }
+                        Label {
+                            objectName: "returnLookupFeedback"
+                            Layout.fillWidth: true
+                            visible: text !== ""
+                            text: window.returnLookupFeedback
+                            color: ink
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                            Accessible.name: text
+                        }
+                    }
+                        }
+                    }
                     }
                     Dialog {
                         id: contractDetailsDialog
