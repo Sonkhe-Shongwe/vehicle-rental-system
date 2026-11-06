@@ -1537,7 +1537,9 @@ ApplicationWindow {
                                             Layout.minimumWidth: 0
                                             spacing: 3
                                             Label {
-                                                text: "Vehicle " + modelData.vehicleId
+                                                objectName: "overviewRecentVehicleName" + index
+                                                text: fleet.vehicleNames[modelData.vehicleId] ||
+                                                      ("Vehicle " + modelData.vehicleId)
                                                 font.pixelSize: 12
                                                 font.weight: Font.DemiBold
                                                 color: navy
@@ -1583,7 +1585,9 @@ ApplicationWindow {
                                           "  ·  " + modelData.startDate + "  ·  " + modelData.status +
                                           "  ·  R " + Number(modelData.total).toFixed(2)
                                     Accessible.name: "Review rental " + modelData.rentalId +
-                                                     ", vehicle " + modelData.vehicleId +
+                                                     ", " + (fleet.vehicleNames[modelData.vehicleId] ||
+                                                       ("Vehicle " + modelData.vehicleId)) +
+                                                     ", vehicle ID " + modelData.vehicleId +
                                                      ", started " + modelData.startDate +
                                                      ", " + modelData.status +
                                                      ", booked value R " +
@@ -1704,7 +1708,7 @@ ApplicationWindow {
                         ColumnLayout {
                             objectName: "fleetToolbar"
                             Layout.fillWidth: true
-                            spacing: 9
+                            spacing: window.height < 800 ? 5 : 7
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
@@ -1807,9 +1811,9 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Label {
-                                    text: window.gallery ? "Gallery" : "Table"
+                                    text: "Vehicle collection"
                                     color: navy
-                                    font.pixelSize: 13
+                                    font.pixelSize: window.height < 800 ? 16 : 18
                                     font.weight: Font.DemiBold
                                 }
                                 Label {
@@ -1819,6 +1823,39 @@ ApplicationWindow {
                                     font.pixelSize: 12
                                 }
                                 Item { Layout.fillWidth: true }
+                                RowLayout {
+                                    visible: window.width >= 1430
+                                    spacing: 6
+                                    Layout.preferredWidth: visible ? implicitWidth : 0
+                                    Rectangle {
+                                        implicitWidth: 102
+                                        implicitHeight: 27
+                                        radius: 13
+                                        color: designTokens.mint
+                                        Label {
+                                            anchors.centerIn: parent
+                                            text: fleet.availableCount + " AVAILABLE"
+                                            color: teal
+                                            font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                            Accessible.name: fleet.availableCount + " fleet vehicles available"
+                                        }
+                                    }
+                                    Rectangle {
+                                        implicitWidth: 88
+                                        implicitHeight: 27
+                                        radius: 13
+                                        color: "#EAF1FF"
+                                        Label {
+                                            anchors.centerIn: parent
+                                            text: fleet.rentedCount + " RENTED"
+                                            color: designTokens.rented
+                                            font.pixelSize: 10
+                                            font.weight: Font.DemiBold
+                                            Accessible.name: fleet.rentedCount + " vehicles rented"
+                                        }
+                                    }
+                                }
                                 Button {
                                     id: fleetGalleryToggle
                                     objectName: "fleetGalleryToggle"
@@ -1938,6 +1975,7 @@ ApplicationWindow {
                                 objectName: "fleetAddMessage"
                                 text: window.photoChangeNotice !== ""
                                       ? window.photoChangeNotice : fleetAdmin.lastMessage
+                                visible: text !== ""
                             }
                         }
 

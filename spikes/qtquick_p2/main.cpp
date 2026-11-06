@@ -198,6 +198,8 @@ class FleetController final : public QObject {
     Q_PROPERTY(int totalCount READ totalCount NOTIFY fleetChanged)
     Q_PROPERTY(int availableCount READ availableCount NOTIFY fleetChanged)
     Q_PROPERTY(QVariantList availableHighlights READ availableHighlights NOTIFY fleetChanged)
+    // Complete, unfiltered fictional fleet names for read-only cross-workspace labels.
+    Q_PROPERTY(QVariantMap vehicleNames READ vehicleNames NOTIFY fleetChanged)
     Q_PROPERTY(int carCount READ carCount NOTIFY fleetChanged)
     Q_PROPERTY(int motorcycleCount READ motorcycleCount NOTIFY fleetChanged)
     Q_PROPERTY(int rentedCount READ rentedCount NOTIFY fleetChanged)
@@ -257,6 +259,16 @@ public:
     int totalCount() const { return m_source.rowCount(); }
     int availableCount() const { return m_source.availableCount(); }
     QVariantList availableHighlights() const { return m_source.availableHighlights(); }
+    QVariantMap vehicleNames() const {
+        QVariantMap names;
+        for (int row = 0; row < m_source.rowCount(); ++row) {
+            const auto index = m_source.index(row, 0);
+            const QString id = m_source.data(index, FleetModel::VehicleId).toString();
+            if (const auto *vehicle = m_source.findById(id))
+                names.insert(id, vehicle->displayName());
+        }
+        return names;
+    }
     int carCount() const { return m_source.countType(QStringLiteral("Car")); }
     int motorcycleCount() const { return m_source.countType(QStringLiteral("Motorcycle")); }
     int rentedCount() const { return totalCount() - availableCount(); }
@@ -5136,11 +5148,12 @@ int main(int argc, char *argv[]) {
             auto *history=get("overviewHistoryText");
             auto *recent=get("overviewRecentPanel");
             auto *row=get("overviewRecentRow0");
+            auto *vehicleName=get("overviewRecentVehicleName0");
             auto *review=get("overviewReviewOverdue");
             auto *disclosure=get("overviewDemoDisclosure");
             if(!total||!active||!donut||!ring||
                !percent||!value||!due||!history||!recent||!row||
-               !review||!disclosure) {
+               !vehicleName||!review||!disclosure) {
                 qCritical()<<"PA Overview controls or real history row missing";
                 app.exit(1021);return;
             }
@@ -5157,6 +5170,9 @@ int main(int argc, char *argv[]) {
                value->property("value").toString()!=
                     QStringLiteral("R %1").arg(rentalModel.activeBookedValue(),0,'f',2) ||
                !row->property("text").toString().contains("R001") ||
+               vehicleName->property("text").toString()!=
+                   fleet.vehicleNames().value("C002").toString() ||
+               vehicleName->property("text").toString().isEmpty() ||
                !disclosure->property("text").toString().contains("No payment")) {
                 qCritical()<<"PA Overview data mismatch"<<expectedPercent
                            <<percent->property("text")<<donut->property("rented");
