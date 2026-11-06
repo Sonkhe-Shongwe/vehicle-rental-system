@@ -1,5 +1,7 @@
 # Rental Studio 2.0 | Current AI handoff
 
+**LIVE CONTINUITY FIRST:** [Current active work state](LIVE_HANDOFF_STATE.md) is now updated at each material active-development step; [copy-ready evergreen continuation prompt](AI_CONTINUATION_PROMPT.md). Use the live work state for pending changes and this document for verified cross-chat facts. No autonomous updates between conversations.
+
 **CURRENT ACTIVE HANDOFF, 6 NOV 2026:** [`7a7d6ad`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/7a7d6adfbf5c9763ddb6d835e1e8958cbfbc2a11) is the last **native-verified executable source** (Linux and Windows **140/140** each, Windows packaged **8/8**, PowerShell 5.1 PASS), [CI #42178840695](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42178840695). Direction A Editorial Automotive Light now has real Qt Overview and Fleet visual increments, true make/model names in recent contracts, and validated wide/compact screenshots. **Next: Rentals redesign and inspector/photo refinement.** Owner physical Windows/DPI/Narrator and final visual signoff **not done**. Draft PR #17; `main` protected; formal **45/74, 70.6%, P7 0/8** unchanged. [Full dated continuation evidence](DIRECTION_A_OVERVIEW_FLEET_HANDOFF_AND_NATIVE_VERIFICATION_2026-11-06.md). Check live GitHub head/CI before starting a new task; do not treat docs-only commits as a new executable tested SHA.
 
 ---
