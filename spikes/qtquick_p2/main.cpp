@@ -5168,6 +5168,26 @@ int main(int argc, char *argv[]) {
                            <<gallery->property("cellHeight");
                 app.exit(1072);return;
             }
+            // Verify the actual C++ historical-record warning is not drawn
+            // underneath the inspector edge at either approved window size.
+            // This caught a wide-only layout clip despite previous green CTests.
+            auto *historyNotice=get("fleetRentalHistoryHint");
+            if(!historyNotice || !historyNotice->isVisible() ||
+               historyNotice->height()<10 ||
+               !fleetRemove.hasRentalHistory(QStringLiteral("C001"))) {
+                qCritical()<<"R2 Fleet historical removal explanation not rendered";
+                app.exit(1073);return;
+            }
+            const QPointF noticeBottom=historyNotice->mapToScene(
+                QPointF(0,historyNotice->height()));
+            const QPointF inspectorBottom=inspector->mapToScene(
+                QPointF(0,inspector->height()));
+            if(noticeBottom.y()>inspectorBottom.y()-5 ||
+               noticeBottom.y()>window->height()-5) {
+                qCritical()<<"R2 Fleet historical removal explanation clipped"
+                           <<noticeBottom<<inspectorBottom<<window->height();
+                app.exit(1074);return;
+            }
             const QPointF galleryX=gallery->mapToScene(QPointF(0,0));
             const QPointF inspectorX=inspector->mapToScene(QPointF(0,0));
             if(gallery->width()<280 || inspector->width()<320 ||

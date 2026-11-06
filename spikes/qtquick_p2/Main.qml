@@ -2508,7 +2508,10 @@ ApplicationWindow {
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: window.height < 800 ? 14 : 18
-                            spacing: window.height < 800 ? 8 : 12
+                            // Keep the owner's wide hero and larger price while
+                            // fitting the genuine history-removal notice inside
+                            // the inspector instead of clipping it at 860px.
+                            spacing: window.height < 800 ? 8 : 9
                             RowLayout {
                                 Label {
                                     text: fleet.selectedId === "" ? "Vehicle details" : "Selected vehicle"
@@ -2856,7 +2859,10 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                            Item { Layout.fillHeight: true }
+                            // Avoid distributing surplus height above actions:
+                            // in the wide layout it pushed the final lifecycle
+                            // explanation outside the white inspector boundary.
+                            Item { Layout.preferredHeight: window.height < 800 ? 0 : 4 }
                             Label {
                                 objectName: "inspectorHint"
                                 text: fleet.selectedId === ""
