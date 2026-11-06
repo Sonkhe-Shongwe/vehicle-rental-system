@@ -3139,6 +3139,15 @@ ApplicationWindow {
                             }
                         }
                     }
+                    RowLayout {
+                        objectName: "rentalContractWorkspace"
+                        Layout.fillWidth: true
+                        spacing: 12
+                        ColumnLayout {
+                            objectName: "rentalRegisterColumn"
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            spacing: window.height < 800 ? 8 : 10
                     Rectangle {
                         objectName: "rentalFilterPanel"
                         Layout.fillWidth: true
@@ -3359,10 +3368,6 @@ ApplicationWindow {
                         }
                     }
                     }
-                    RowLayout {
-                        objectName: "rentalContractWorkspace"
-                        Layout.fillWidth: true
-                        spacing: 12
                     Rectangle {
                         id: rentalRecordsPanel
                         objectName: "rentalRecordsPanel"
@@ -3599,6 +3604,7 @@ ApplicationWindow {
                             }
                         }
                     }
+                        }
                     Rectangle {
                         objectName: "rentalActionPanel"
                         Layout.fillHeight: true
@@ -3846,7 +3852,6 @@ ApplicationWindow {
                         Label {
                             objectName: "returnLookupFeedback"
                             Layout.fillWidth: true
-                            visible: text !== ""
                             text: window.returnLookupFeedback
                             color: ink
                             font.pixelSize: 12
