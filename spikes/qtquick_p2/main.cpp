@@ -1474,16 +1474,20 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet photo disclaimer overflowed the Inspector";
                 app.exit(728);return;
             }
-            // Exact native geometry: credit must be visible in the selected
-            // photo stage, with no overlap of the existing reference badge or
-            // the bottom-left read-only View full control.
+            // R2 white details credit is no longer placed over photography.
+            // Native test must enforce the new truthful credit placement
+            // while retaining the original source, View full and badge checks.
             auto *creditBadge=find(find,window->contentItem(),
                                    "fleetInspectorPhotoCredit");
             auto *creditView=find(find,window->contentItem(),
                                   "fleetViewFullPhotoButton");
-            if(!creditBadge || !creditView ||
-               !inWindow(creditBadge)) {
-                qCritical()<<"Fleet photo credit hidden or inaccessible";
+            auto *inspectorPanel=find(find,window->contentItem(),
+                                     "vehicleInspector");
+            if(!creditBadge || !creditView || !inspectorPanel ||
+               !inWindow(creditBadge) ||
+               !creditBadge->property("text").toString().contains(
+                   QStringLiteral("CC0 1.0"))) {
+                qCritical()<<"Fleet photo credit absent or false source record";
                 app.exit(774);return;
             }
             const auto mediaRect=[](QQuickItem *item) {
@@ -1491,11 +1495,26 @@ int main(int argc, char *argv[]) {
                     QRectF(0,0,item->width(),item->height()));
             };
             const QRectF creditRect=mediaRect(creditBadge);
-            if(!artRect.contains(creditRect) ||
+            const QRectF inspectorRect=mediaRect(inspectorPanel);
+            if(!inspectorRect.contains(creditRect) ||
+               creditRect.top()<artRect.bottom()-2 ||
                creditRect.intersects(mediaRect(photoDisclaimer)) ||
                creditRect.intersects(mediaRect(creditView))) {
-                qCritical()<<"Fleet photo credit obscures source badge or View full";
+                qCritical()<<"R2 Fleet attribution not in white inspector below photograph";
                 app.exit(775);return;
+            }
+            if(!compact) {
+                auto *factId=find(find,window->contentItem(),
+                                  "fleetInspectorIdentityId");
+                auto *factType=find(find,window->contentItem(),
+                                    "fleetInspectorIdentityType");
+                if(!factId || !factType ||
+                   factId->property("text").toString()!=QStringLiteral("C001") ||
+                   factType->property("text").toString()!=fleet.selectedType() ||
+                   !inWindow(factId) || !inWindow(factType)) {
+                    qCritical()<<"R2 Fleet factual wide inspector identity regression";
+                    app.exit(776);return;
+                }
             }
             const QString photoViewport=compact?"1280x720":"1500x860";
             // The real native inspector must offer an uncropped, read-only
