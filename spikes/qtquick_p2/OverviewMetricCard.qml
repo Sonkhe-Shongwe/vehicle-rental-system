@@ -8,6 +8,11 @@ Rectangle {
     id: card
     property string metricLabel: ""
     property string value: ""
+    // Formatting is a view-only concern. Preserve the underlying card.value
+    // and its existing spoken name for native accessibility/API tests.
+    readonly property string displayValue: card.value.startsWith("R ")
+        ? "R " + card.value.slice(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",")
+        : card.value
     property string note: ""
     property string metricIcon: ""
     property color accent: colors.teal
@@ -24,14 +29,14 @@ Rectangle {
     Rectangle {
         x: 13
         y: card.compact ? 10 : 13
-        width: card.compact ? 27 : 32
+        width: card.compact ? 29 : 36
         height: width
-        radius: 9
-        color: colors.quietSurface
+        radius: 10
+        color: colors.mint
         R2LucideIcon {
             anchors.centerIn: parent
-            width: 19
-            height: 19
+            width: card.compact ? 19 : 22
+            height: width
             iconName: card.metricIcon
             tone: "emerald"
             Accessible.ignored: true
@@ -39,27 +44,27 @@ Rectangle {
     }
     ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: card.compact ? 49 : 54
-        anchors.rightMargin: 9
+        anchors.leftMargin: card.compact ? 51 : 59
+        anchors.rightMargin: 10
         anchors.topMargin: card.compact ? 7 : 10
         anchors.bottomMargin: card.compact ? 6 : 9
-        spacing: 1
+        spacing: 2
         Label {
             text: card.metricLabel.toUpperCase()
             color: colors.secondaryText
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 10 : 12
+            font.pixelSize: card.compact ? 11 : 13
             font.weight: Font.DemiBold
-            font.letterSpacing: 0.5
+            font.letterSpacing: 0.2
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
         Label {
             objectName: "overviewMetricValue"
-            text: card.value
+            text: card.displayValue
             color: colors.pageHeading
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 23 : 30
+            font.pixelSize: card.compact ? 25 : 34
             font.weight: Font.DemiBold
             Layout.fillWidth: true
             elide: Text.ElideRight
@@ -68,7 +73,7 @@ Rectangle {
             text: card.note
             color: colors.secondaryText
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 10 : 11
+            font.pixelSize: card.compact ? 10 : 12
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
