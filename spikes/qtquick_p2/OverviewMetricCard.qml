@@ -11,7 +11,7 @@ Rectangle {
     // Formatting is a view-only concern. Preserve the underlying card.value
     // and its existing spoken name for native accessibility/API tests.
     readonly property string displayValue: card.value.startsWith("R ")
-        ? "R " + card.value.slice(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",")
+        ? "R " + card.value.slice(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         : card.value
     property string note: ""
     property string metricIcon: ""
