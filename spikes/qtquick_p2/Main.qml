@@ -1066,7 +1066,7 @@ ApplicationWindow {
                     Label {
                         objectName: "workspacePageHeading"
                         text: window.workspace === 0 ? "Your fleet. Your next move." :
-                              window.workspace === 1 ? "Fleet" :
+                              window.workspace === 1 ? "Your fleet, beautifully organised." :
                               window.workspace === 2 ? "Rentals" : "Fictional SQLite Lab"
                         font.pixelSize: window.height < 800 ?
                             designTokens.pageHeadingSizeCompact : designTokens.pageHeadingSizeWide
@@ -1080,7 +1080,7 @@ ApplicationWindow {
                         text: window.workspace === 0
                             ? "An immediate view of what is ready, active and needs attention"
                             : window.workspace === 1
-                            ? "Browse, search and manage your vehicle fleet"
+                            ? "Explore every vehicle, understand availability and take the right action"
                             : window.workspace === 2
                             ? "Manage active rentals, returns and rental history"
                             : "Isolated fictional persistence preview"
@@ -1811,6 +1811,7 @@ ApplicationWindow {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Label {
+                                    objectName: "fleetCollectionHeading"
                                     text: "Vehicle collection"
                                     color: navy
                                     font.pixelSize: window.height < 800 ? 16 : 18
@@ -2001,7 +2002,7 @@ ApplicationWindow {
                                 cellWidth: width < 790 ? width / 2 : width / 3
                                 // Photo-led cards need enough vertical room to retain
                                 // recognisable vehicle framing at compact widths.
-                                cellHeight: 304
+                                cellHeight: 272
                                 ScrollBar.vertical: ScrollBar {}
                                 Column {
                                     objectName: "fleetGalleryEmpty"
@@ -2050,7 +2051,7 @@ ApplicationWindow {
                                     required property double dailyRate
                                     required property bool available
                                     width: galleryView.cellWidth - 12
-                                    height: 286
+                                    height: 257
                                     activeFocusOnTab: false
                                     Accessible.role: Accessible.ListItem
                                     Accessible.name: displayName + ", " + vehicleId
@@ -2070,11 +2071,11 @@ ApplicationWindow {
                                         selected: fleet.selectedId === vehicleCard.vehicleId
                                     }
                                     contentItem: ColumnLayout {
-                                        spacing: 6
-                                        anchors.margins: 11
+                                        spacing: 5
+                                        anchors.margins: 10
                                         Rectangle {
                                             Layout.fillWidth: true
-                                            Layout.preferredHeight: 166
+                                            Layout.preferredHeight: 154
                                             color: designTokens.quietSurface
                                             radius: 9
                                             clip: true
