@@ -2508,11 +2508,12 @@ ApplicationWindow {
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: window.height < 800 ? 14 : 18
-                            spacing: window.height < 800 ? 8 : 11
+                            spacing: window.height < 800 ? 8 : 12
                             RowLayout {
                                 Label {
                                     text: fleet.selectedId === "" ? "Vehicle details" : "Selected vehicle"
-                                    color: navy; font.pixelSize: 17
+                                    color: navy
+                                    font.pixelSize: window.height < 800 ? 17 : 19
                                     font.weight: Font.DemiBold
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
@@ -2546,8 +2547,8 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 // Dark contextual selected-vehicle header remains
                                 // compact enough to preserve lifecycle controls.
-                                Layout.preferredHeight: window.height < 800 ? 180 : 204
-                                Layout.minimumHeight: window.height < 800 ? 170 : 188
+                                Layout.preferredHeight: window.height < 800 ? 180 : 226
+                                Layout.minimumHeight: window.height < 800 ? 170 : 204
                                 color: "#072A28"
                                 radius: 12
                                 clip: true
@@ -2575,7 +2576,7 @@ ApplicationWindow {
                                         width: parent.width
                                         text: fleet.selectedName
                                         color: "#FFFFFF"
-                                        font.pixelSize: window.height < 800 ? 15 : 17
+                                        font.pixelSize: window.height < 800 ? 15 : 19
                                         font.weight: Font.DemiBold
                                         elide: Text.ElideRight
                                     }
@@ -2585,7 +2586,7 @@ ApplicationWindow {
                                         text: fleet.selectedId + " · " + fleet.selectedType +
                                               " · " + (fleet.selectedAvailable ? "Available" : "Rented")
                                         color: "#A9E8D5"
-                                        font.pixelSize: 11
+                                        font.pixelSize: window.height < 800 ? 11 : 12
                                         elide: Text.ElideRight
                                     }
                                 }
@@ -2781,7 +2782,7 @@ ApplicationWindow {
                                 visible: fleet.selectedId !== ""
                                 text: "VEHICLE DETAILS"
                                 color: designTokens.secondaryText
-                                font.pixelSize: 11
+                                font.pixelSize: window.height < 800 ? 11 : 12
                                 font.weight: Font.DemiBold
                                 font.letterSpacing: 0.6
                                 Layout.fillWidth: true
@@ -2822,7 +2823,7 @@ ApplicationWindow {
                                 objectName: "fleetInspectorRateBand"
                                 visible: fleet.selectedId !== ""
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: window.height < 800 ? 60 : 66
+                                Layout.preferredHeight: window.height < 800 ? 60 : 76
                                 radius: 10
                                 color: fleet.selectedAvailable ? designTokens.mint :
                                        designTokens.quietSurface
@@ -2843,7 +2844,7 @@ ApplicationWindow {
                                             objectName: "fleetInspectorRateValue"
                                             text: "R " + fleet.selectedRate
                                             color: navy
-                                            font.pixelSize: 19
+                                            font.pixelSize: window.height < 800 ? 19 : 23
                                             font.weight: Font.DemiBold
                                             Accessible.name: "Daily rental rate " + text +
                                                 ". No payment has been collected."
@@ -2863,7 +2864,8 @@ ApplicationWindow {
                                       : fleet.selectedAvailable
                                         ? "Available for a new rental. Review the authoritative C++ quote before confirming."
                                         : "Already rented. Return the active rental before booking this vehicle again."
-                                color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap; font.pixelSize: 12
+                                color: ink; Layout.fillWidth: true; wrapMode: Text.WordWrap
+                                font.pixelSize: window.height < 800 ? 12 : 13
                             }
                             Button {
                                 id: bookSelectedFleetButton
