@@ -5344,12 +5344,13 @@ int main(int argc, char *argv[]) {
             auto *sidebar=get("appSidebar");
             auto *overviewNav=get("workspaceNavOverview");
             auto *decorativeWave=get("editorialSidebarWave");
+            auto *brandMark=get("editorialBrandMark");
             auto *heading=get("workspacePageHeading");
             auto *subtitle=get("workspacePageSubtitle");
             auto *bookingField=get("bookingVehicleId");
             auto *dialog=window->findChild<QObject*>("rentalBookingDialog");
             if(!newRental||!logoActionIcon||!toggle||!sidebar||
-               !overviewNav||!decorativeWave||
+               !overviewNav||!decorativeWave||!brandMark||
                !heading||!subtitle||!bookingField||!dialog||
                !newRental->isVisible()||!logoActionIcon->isVisible()||
                newRental->property("text").toString()!="New rental"||
@@ -5367,6 +5368,20 @@ int main(int argc, char *argv[]) {
                !decorativeWave->isVisible()) {
                 qCritical()<<"Editorial Contrast hybrid shell or selected workspace absent";
                 app.exit(1012);return;
+            }
+            // Real Qt Linux originally clipped the toggle behind oversized
+            // brand text, despite 140/140 green CI. Reject it geometrically.
+            const auto sceneRect=[](QQuickItem *item) {
+                return item->mapRectToScene(
+                    QRectF(0,0,item->width(),item->height()));
+            };
+            const QRectF shellBounds=sceneRect(sidebar);
+            if(!shellBounds.contains(sceneRect(toggle)) ||
+               !shellBounds.contains(sceneRect(brandMark)) ||
+               !shellBounds.contains(sceneRect(newRental)) ||
+               sceneRect(brandMark).intersects(sceneRect(toggle))) {
+                qCritical()<<"Editorial Contrast sidebar branding clips the toggle or action";
+                app.exit(1013);return;
             }
             QByteArray initialFleet,initialRentals;
             if(!readFile(vehicles,&initialFleet)||!readFile(rentals,&initialRentals)||

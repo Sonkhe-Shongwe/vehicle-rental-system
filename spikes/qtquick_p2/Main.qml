@@ -972,12 +972,12 @@ ApplicationWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.bottomMargin: 17
-                    spacing: 8
+                    spacing: 5
                     Rectangle {
                         visible: !window.sidebarCollapsed
                         objectName: "editorialBrandMark"
-                        Layout.preferredWidth: visible ? 40 : 0
-                        Layout.preferredHeight: 40
+                        Layout.preferredWidth: visible ? 36 : 0
+                        Layout.preferredHeight: 36
                         radius: 10
                         color: "#075A48"
                         border.width: 1
@@ -994,16 +994,21 @@ ApplicationWindow {
                     ColumnLayout {
                         visible: !window.sidebarCollapsed
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 0
                         spacing: 1
                         Label {
                             text: "Rental Studio"
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                             color: designTokens.shellText
-                            font.pixelSize: 15
+                            font.pixelSize: 14
                             font.family: designTokens.shellFontFamily
                             font.bold: true
                         }
                         Label {
                             text: "VEHICLE OPERATIONS"
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                             color: designTokens.shellMuted
                             font.pixelSize: 8
                             font.bold: true
@@ -1014,8 +1019,8 @@ ApplicationWindow {
                         id: sidebarToggle
                         objectName: "sidebarToggleButton"
                         text: window.sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
+                        Layout.preferredWidth: 36
+                        Layout.preferredHeight: 36
                         Layout.alignment: window.sidebarCollapsed ?
                                           Qt.AlignHCenter : Qt.AlignRight
                         activeFocusOnTab: true
