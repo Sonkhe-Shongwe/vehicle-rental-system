@@ -15,6 +15,8 @@ ApplicationWindow {
 
     // Shared owner-selected tokens; preserve the existing local bindings.
     DesignTokens { id: designTokens }
+    color: designTokens.canvas
+    // Keep the native Windows titlebar to preserve window accessibility.
     // MotionPolicy is C++-owned; no OS rules or filesystem access in QML.
     readonly property bool reducedMotion: motionPolicy.reducedMotion
     readonly property int selectionFadeMs: motionPolicy.selectionFadeMs
@@ -936,9 +938,34 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.preferredWidth: window.sidebarCollapsed ?
                 designTokens.sidebarCollapsedWidth : designTokens.sidebarExpandedWidth
-            color: ice
+            color: designTokens.shell
             border.width: 1
-            border.color: designTokens.border
+            border.color: designTokens.shellBorder
+            clip: true
+            // Approved reference: discreet evergreen footer sweeps only.
+            // Decorations are clipped and sit behind the real controls.
+            Rectangle {
+                id: editorialSidebarWave
+                objectName: "editorialSidebarWave"
+                width: 475; height: 240
+                x: -165
+                y: appSidebar.height - 181
+                rotation: -14
+                radius: 120
+                color: designTokens.shellFooterWave
+                opacity: 0.68
+                Accessible.ignored: true
+            }
+            Rectangle {
+                width: 450; height: 170
+                x: -200
+                y: appSidebar.height - 101
+                rotation: -14
+                radius: 85
+                color: "#082F2A"
+                opacity: 0.52
+                Accessible.ignored: true
+            }
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: window.sidebarCollapsed ? 12 : 14
@@ -949,16 +976,20 @@ ApplicationWindow {
                     spacing: 8
                     Rectangle {
                         visible: !window.sidebarCollapsed
-                        Layout.preferredWidth: visible ? 34 : 0
-                        Layout.preferredHeight: 34
+                        objectName: "editorialBrandMark"
+                        Layout.preferredWidth: visible ? 40 : 0
+                        Layout.preferredHeight: 40
                         radius: 10
-                        color: navy
+                        color: "#075A48"
+                        border.width: 1
+                        border.color: "#1C896F"
                         Label {
                             anchors.centerIn: parent
                             text: "R"
                             font.pixelSize: 20
                             font.bold: true
-                            color: "#87E9D3"
+                            color: "#A2F6DB"
+                            font.family: designTokens.shellFontFamily
                         }
                     }
                     ColumnLayout {
@@ -967,13 +998,14 @@ ApplicationWindow {
                         spacing: 1
                         Label {
                             text: "Rental Studio"
-                            color: navy
+                            color: designTokens.shellText
                             font.pixelSize: 15
+                            font.family: designTokens.shellFontFamily
                             font.bold: true
                         }
                         Label {
                             text: "VEHICLE OPERATIONS"
-                            color: ink
+                            color: designTokens.shellMuted
                             font.pixelSize: 8
                             font.bold: true
                             font.letterSpacing: 0.4
@@ -995,9 +1027,9 @@ ApplicationWindow {
                         Accessible.description: "Toggle navigation labels. Workspace and record selection remain unchanged."
                         background: Rectangle {
                             radius: 10
-                            color: sidebarToggle.hovered ? designTokens.neutralHover : designTokens.surface
+                            color: sidebarToggle.hovered ? designTokens.shellHover : "#1B2826"
                             border.width: sidebarToggle.activeFocus ? 3 : 1
-                            border.color: sidebarToggle.activeFocus ? navy : designTokens.border
+                            border.color: sidebarToggle.activeFocus ? designTokens.shellFocus : designTokens.shellBorder
                         }
                         contentItem: Item {
                             SidebarGlyph {
@@ -1005,7 +1037,7 @@ ApplicationWindow {
                                 width: 22
                                 height: 22
                                 kind: window.sidebarCollapsed ? "expand" : "collapse"
-                                glyphColor: navy
+                                glyphColor: designTokens.shellText
                             }
                         }
                         onClicked: window.sidebarCollapsed = !window.sidebarCollapsed
@@ -1022,9 +1054,10 @@ ApplicationWindow {
                     visible: !window.sidebarCollapsed
                     text: "WORKSPACES"
                     font.pixelSize: 10
+                    font.family: designTokens.shellFontFamily
                     font.bold: true
                     font.letterSpacing: 1.2
-                    color: ink
+                    color: designTokens.shellMuted
                     Layout.leftMargin: 12
                     Layout.bottomMargin: 2
                 }
@@ -1046,7 +1079,7 @@ ApplicationWindow {
                     visible: !window.sidebarCollapsed
                     Layout.fillWidth: true
                     implicitHeight: 1
-                    color: designTokens.border
+                    color: designTokens.shellBorder
                 }
                 RowLayout {
                     visible: !window.sidebarCollapsed
@@ -1070,8 +1103,9 @@ ApplicationWindow {
                           : persistentFictionalDemo
                           ? "Fictional demo\nBookings survive restart"
                           : "Fictional demo\nChanges reset when you close"
-                    color: ink
+                    color: designTokens.shellMuted
                     font.pixelSize: 11
+                    font.family: designTokens.shellFontFamily
                     wrapMode: Text.WordWrap
                     Accessible.name: text
                     }
@@ -1099,6 +1133,7 @@ ApplicationWindow {
                         font.pixelSize: window.height < 800 ?
                             designTokens.pageHeadingSizeCompact : designTokens.pageHeadingSizeWide
                         font.weight: Font.DemiBold
+                        font.family: designTokens.shellFontFamily
                         color: designTokens.pageHeading
                         elide: Text.ElideRight
                         Layout.fillWidth: true
@@ -1113,6 +1148,7 @@ ApplicationWindow {
                             ? "The register comes first. Actions follow the selected contract."
                             : "Isolated fictional persistence preview"
                         color: designTokens.secondaryText
+                        font.family: designTokens.shellFontFamily
                         font.pixelSize: designTokens.pageSubtitleSize
                         elide: Text.ElideRight
                         Layout.fillWidth: true

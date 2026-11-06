@@ -5,7 +5,7 @@ import QtQuick
 QtObject {
     readonly property color navy: "#17324D"
     readonly property color teal: "#0F766E"
-    readonly property color canvas: "#F6F8FA"
+    readonly property color canvas: "#F7F8FA"
     readonly property color surface: "#FFFFFF"
     readonly property color ice: "#EAF0F4"
     readonly property color mint: "#E8F5F0"
@@ -14,15 +14,31 @@ QtObject {
     readonly property color rented: "#1D4ED8"
     // Precision Automotive Light: semantic shell roles derived from the
     // selected Navy/Emerald tokens. Keep these consistent across workspaces.
-    readonly property color sidebarSelected: "#D7F0EA"
+    readonly property color sidebarSelected: "#D7F0E5"
     readonly property color quietSurface: "#F1F5F8"
-    readonly property color pageHeading: navy
-    readonly property color secondaryText: ink
+    readonly property color pageHeading: "#14202A"
+    readonly property color secondaryText: "#5F6F78"
+    // Editorial Contrast R2: dark shell around a LIGHT desktop workspace.
+    readonly property color shell: "#151B1B"
+    readonly property color shellText: "#F7FAF9"
+    readonly property color shellMuted: "#B9C9C5"
+    readonly property color shellBorder: "#2C3B39"
+    readonly property color shellHover: "#263734"
+    readonly property color shellSelected: "#D7F0E5"
+    readonly property color shellSelectedInk: "#0B4B3D"
+    readonly property color shellSelectedBorder: "#9DD4BF"
+    readonly property color shellFocus: "#78E6CF"
+    readonly property color shellAction: "#087A5C"
+    readonly property color shellActionHover: "#07906B"
+    readonly property color shellFooterWave: "#0B3E33"
+    // This first pilot relies on Windows' installed Segoe UI, with native
+    // platform sans fallback elsewhere. No unlicensed font is bundled.
+    readonly property string shellFontFamily: "Segoe UI"
     readonly property int sidebarExpandedWidth: 218
     readonly property int sidebarCollapsedWidth: 76
-    readonly property int pageHeadingSizeWide: 30
-    readonly property int pageHeadingSizeCompact: 27
-    readonly property int pageSubtitleSize: 13
+    readonly property int pageHeadingSizeWide: 32
+    readonly property int pageHeadingSizeCompact: 28
+    readonly property int pageSubtitleSize: 15
     readonly property int sidebarActionHeight: 48
     readonly property int componentRadius: 10
     // Owner-approved UX-CTRL-002 semantic states, not a new competing theme.

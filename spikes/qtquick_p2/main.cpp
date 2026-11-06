@@ -5342,11 +5342,14 @@ int main(int argc, char *argv[]) {
             auto *logoActionIcon=get("sidebarNewRentalIcon");
             auto *toggle=get("sidebarToggleButton");
             auto *sidebar=get("appSidebar");
+            auto *overviewNav=get("workspaceNavOverview");
+            auto *decorativeWave=get("editorialSidebarWave");
             auto *heading=get("workspacePageHeading");
             auto *subtitle=get("workspacePageSubtitle");
             auto *bookingField=get("bookingVehicleId");
             auto *dialog=window->findChild<QObject*>("rentalBookingDialog");
             if(!newRental||!logoActionIcon||!toggle||!sidebar||
+               !overviewNav||!decorativeWave||
                !heading||!subtitle||!bookingField||!dialog||
                !newRental->isVisible()||!logoActionIcon->isVisible()||
                newRental->property("text").toString()!="New rental"||
@@ -5354,6 +5357,16 @@ int main(int argc, char *argv[]) {
                sidebar->width()<210) {
                 qCritical()<<"Precision Automotive initial real Qt shell missing";
                 app.exit(1002);return;
+            }
+            // Real native Qt geometry and colour assertions prevent the
+            // reference's charcoal shell and white canvas from degenerating
+            // into all-dark or earlier all-light variants.
+            if(sidebar->property("color").value<QColor>()!=QColor("#151B1B") ||
+               window->color()!=QColor("#F7F8FA") ||
+               !overviewNav->property("currentWorkspace").toBool() ||
+               !decorativeWave->isVisible()) {
+                qCritical()<<"Editorial Contrast hybrid shell or selected workspace absent";
+                app.exit(1012);return;
             }
             QByteArray initialFleet,initialRentals;
             if(!readFile(vehicles,&initialFleet)||!readFile(rentals,&initialRentals)||
@@ -5428,7 +5441,7 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Precision Automotive shortcut changed protected data/focus";
                 app.exit(1011);return;
             }
-            qInfo()<<"Precision Automotive Light real native shell PASS"
+            qInfo()<<"Editorial Contrast real Qt hybrid shell PASS"
                    <<(compact?"1280x720":"1500x860")
                    <<"Overview/Fleet, expanded/collapsed New Rental, safe Escape";
             app.exit(0);

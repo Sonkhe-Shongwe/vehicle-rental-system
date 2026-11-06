@@ -15,7 +15,9 @@ Canvas {
         ctx.clearRect(0, 0, width, height)
         ctx.save()
         ctx.translate((width - 22) / 2, (height - 22) / 2)
-        ctx.lineWidth = 1.8
+        // Original native-drawn icons share a deliberate two-pixel stroke.
+        // A separately licensed full icon asset pass remains outstanding.
+        ctx.lineWidth = 2
         ctx.lineCap = "round"
         ctx.lineJoin = "round"
         ctx.strokeStyle = glyph.glyphColor

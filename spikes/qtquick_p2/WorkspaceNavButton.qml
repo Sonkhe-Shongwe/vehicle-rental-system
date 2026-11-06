@@ -55,12 +55,13 @@ Button {
     }
     background: Rectangle {
         radius: colors.componentRadius
-        // Calm Light navigation: selected state is a quiet mint surface,
-        // not another heavy dark button competing with New Rental.
-        color: nav.currentWorkspace ? colors.sidebarSelected :
-               nav.hovered ? colors.neutralHover : "transparent"
-        border.width: nav.activeFocus ? colors.focusWidth : 0
-        border.color: colors.navy
+        // Mint active state on charcoal shell. Focus remains distinct.
+        color: nav.currentWorkspace ? colors.shellSelected :
+               nav.hovered ? colors.shellHover : "transparent"
+        border.width: nav.activeFocus ? colors.focusWidth :
+                      (nav.currentWorkspace ? 1 : 0)
+        border.color: nav.activeFocus ? colors.shellFocus :
+                      colors.shellSelectedBorder
         Rectangle {
             visible: nav.currentWorkspace
             anchors.left: parent.left
@@ -68,14 +69,15 @@ Button {
             width: 3
             height: 24
             radius: 2
-            color: colors.teal
+            color: colors.shellAction
         }
     }
     contentItem: Item {
         SidebarGlyph {
             objectName: "workspaceIcon" + nav.modelData
             kind: nav.modelData
-            glyphColor: nav.currentWorkspace ? colors.teal : colors.navy
+            glyphColor: nav.currentWorkspace ? colors.shellSelectedInk :
+                        colors.shellText
             width: 22
             height: 22
             x: nav.sidebarCollapsed ? (parent.width - width) / 2 : 12
@@ -88,7 +90,9 @@ Button {
             width: Math.max(0,parent.width - x - 7)
             height: parent.height
             text: nav.text
-            color: colors.navy
+            color: nav.currentWorkspace ? colors.shellSelectedInk :
+                   colors.shellText
+            font.family: colors.shellFontFamily
             font.pixelSize: 14
             font.bold: nav.currentWorkspace
             elide: Text.ElideRight

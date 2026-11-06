@@ -22,9 +22,9 @@ Button {
     background: Rectangle {
         radius: colors.componentRadius
         color: !action.enabled ? colors.disabledSurface :
-               (action.down || action.hovered) ? colors.primaryHover : colors.teal
-        border.width: action.activeFocus ? colors.focusWidth : 0
-        border.color: colors.navy
+               (action.down || action.hovered) ? colors.shellActionHover : colors.shellAction
+        border.width: action.activeFocus ? colors.focusWidth : 1
+        border.color: action.activeFocus ? colors.shellFocus : "#159473"
     }
     contentItem: Item {
         SidebarGlyph {
@@ -44,6 +44,7 @@ Button {
             height: parent.height
             color: action.enabled ? "#FFFFFF" : colors.disabledInk
             font.pixelSize: 14
+            font.family: colors.shellFontFamily
             font.weight: Font.DemiBold
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
