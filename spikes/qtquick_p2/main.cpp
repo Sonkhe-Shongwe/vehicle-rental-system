@@ -1175,6 +1175,16 @@ int main(int argc, char *argv[]) {
     startupWindow->setPosition(startupArea.x()+
             std::max(0,(startupArea.width()-startupW)/2),
         startupArea.y()+std::max(0,(startupArea.height()-startupH)/2));
+    // Normal Direction A launch starts in Overview (workspace 0).
+    // Historical P2 Fleet-only smokes explicitly open Fleet first, without
+    // changing any real operator navigation, selection or domain records.
+    if (parser.isSet("ui-smoke") || parser.isSet("input-smoke") ||
+        parser.isSet("arrows-smoke") || parser.isSet("focus-edges-smoke")) {
+        startupWindow->setProperty("workspace", 1);
+        QCoreApplication::processEvents();
+        if (parser.isSet("ui-smoke"))
+            QTest::qWait(100);
+    }
     if(parser.isSet("portfolio-catalog-smoke")) {
         startupWindow->resize(parser.isSet("compact")?1280:1500,
                               parser.isSet("compact")?720:860);
@@ -5242,7 +5252,7 @@ int main(int argc, char *argv[]) {
                !heading||!subtitle||!bookingField||!dialog||
                !newRental->isVisible()||!logoActionIcon->isVisible()||
                newRental->property("text").toString()!="New rental"||
-               heading->property("text").toString()!="Overview"||
+               heading->property("text").toString()!="Your fleet. Your next move."||
                sidebar->width()<210) {
                 qCritical()<<"Precision Automotive initial real Qt shell missing";
                 app.exit(1002);return;

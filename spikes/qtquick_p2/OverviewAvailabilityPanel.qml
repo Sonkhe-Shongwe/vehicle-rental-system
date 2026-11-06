@@ -151,7 +151,7 @@ Rectangle {
             }
             Label {
                 objectName: "overviewHistoryText"
-                text: panel.rentalSnapshotAvailable ? "Returned / archived: " + panel.history : ""
+                text: panel.rentalSnapshotAvailable ? "Returned or archived: " + panel.history : ""
                 font.pixelSize: 10
                 color: colors.ink
                 Layout.fillWidth: true
