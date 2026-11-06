@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**NEXT VISUAL DEVELOPMENT MILESTONE (6 NOV 2026):** Direction A Rentals is now [native-verified at `e215c4c`, CI #42191631534](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42191631534) with 140/140 per OS, joining previously verified Overview and Fleet. **Priority 1:** Fleet inspector-to-gallery visual integration and quality/provenance of model-reference photography. **Priority 2:** full three-workspace physical Windows Qt Creator 6.10.2 MinGW, DPI scaling/Narrator/keyboard review and owner aesthetic acceptance. [Detailed Rentals verification](DIRECTION_A_RENTALS_NATIVE_VERIFIED_AND_CLIPPING_REPAIR_2026-11-06.md). Avoid reopening accepted P5/P6 signoffs; no score increase without formal approval.
+
+---
+
 **ACTIVE NEXT DESIGN MILESTONE (6 Nov 2026):** Direction A Overview and Fleet are implemented and [verified at executable `7a7d6ad`, CI #42178840695](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42178840695) with 140/140 native CTests each OS. **Priority 1: Rentals Direction A**, contract-first register and compact contextual controls, preserving the existing C++ lifecycle and accessibility. **Priority 2: Fleet inspector visual integration and reference-photo consistency.** Physical owner Qt/Windows acceptance, premium design approval and P7 policy gate stay OPEN. [Handoff evidence](DIRECTION_A_OVERVIEW_FLEET_HANDOFF_AND_NATIVE_VERIFICATION_2026-11-06.md).
 
 ---
