@@ -5341,10 +5341,14 @@ int main(int argc, char *argv[]) {
             auto *row=get("overviewRecentRow0");
             auto *vehicleName=get("overviewRecentVehicleName0");
             auto *review=get("overviewReviewOverdue");
+            auto *heroPhotoBox=get("overviewHeroPhotoBox");
+            auto *heroPhoto=get("overviewHeroPhoto");
+            auto *readyChevron=get("overviewReadyChevron");
             auto *disclosure=get("overviewDemoDisclosure");
             if(!total||!availableCard||!metrics||!active||!donut||!ring||
                !percent||!value||!due||!history||!recent||!row||
-               !vehicleName||!review||!disclosure) {
+               !vehicleName||!review||!heroPhotoBox||!heroPhoto||
+               !readyChevron||!disclosure) {
                 qCritical()<<"PA Overview controls or real history row missing";
                 app.exit(1021);return;
             }
@@ -5401,6 +5405,25 @@ int main(int argc, char *argv[]) {
                 app.exit(1028);return;
             }
             const auto readyTopLeft=ready->mapToScene(QPointF(0,0));
+            // R2 reference specifies a 65/35 hero/readiness composition,
+            // preserved across both real native desktop target resolutions.
+            const qreal heroShare=hero->width()/(hero->width()+donut->width());
+            const QRectF heroPhotoBounds=heroPhotoBox->mapRectToScene(
+                QRectF(0,0,heroPhotoBox->width(),heroPhotoBox->height()));
+            const QRectF heroBounds=hero->mapRectToScene(
+                QRectF(0,0,hero->width(),hero->height()));
+            if(qAbs(heroShare-0.65)>0.045 ||
+               !heroBounds.contains(heroPhotoBounds) ||
+               heroPhotoBox->width()<(compact?180:250) ||
+               !readyChevron->property("assetReady").toBool() ||
+               readyChevron->property("iconName").toString()!="chevron-right" ||
+               hero->property("featuredVehicleId").toString()!="C002" ||
+               !heroPhoto->property("source").toString().contains("C002")) {
+                qCritical()<<"R2 Overview 65/35 split/photo/right-vector regression"
+                           <<heroShare<<heroPhotoBounds<<heroBounds
+                           <<hero->property("featuredVehicleId");
+                app.exit(1029);return;
+            }
             if(donut->width()<290||recent->width()<440||
                hero->width()<430||ready->width()<290||
                heroTopLeft.x()<0||heroTopLeft.y()<0||

@@ -64,7 +64,7 @@ if(BUILD_R2_INTER_FONT_TRIAL)
     target_compile_definitions(rental_studio_qtquick_spike PRIVATE RENTAL_STUDIO_R2_INTER_TRIAL=1)
 endif()
 # R2 licensed, offline local SVG icon resources.
-set(R2_ICON_NAMES layout-grid car-front clipboard-list plus layers key-round database circle-check)
+set(R2_ICON_NAMES layout-grid car-front clipboard-list plus layers key-round database circle-check chevron-right)
 set(R2_ICON_ASSETS)
 foreach(R2_TONE inverse active emerald)
     foreach(R2_NAME IN LISTS R2_ICON_NAMES)

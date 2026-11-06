@@ -96,10 +96,14 @@ Button {
                 font.weight: Font.DemiBold
             }
         }
-        Label {
-            text: "›"
-            font.pixelSize: 19
-            color: "#0F766E"
+        R2LucideIcon {
+            objectName: "overviewReadyChevron"
+            iconName: "chevron-right"
+            tone: "emerald"
+            Layout.preferredWidth: 18
+            Layout.preferredHeight: 18
+            Layout.alignment: Qt.AlignVCenter
+            Accessible.ignored: true
         }
     }
 }

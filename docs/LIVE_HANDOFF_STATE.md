@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Live work handoff
 
+**ACTIVE R2 OVERVIEW PHASE 2B, EXECUTABLE NOT YET VERIFIED (6 NOV 2026):** Source-only visual refinement on draft PR #17: KPI label/value/note hierarchy increased toward the approved R2 reference without changing card heights; readiness panel now occupies the approved ~35% of the overview hero row at both target desktop sizes; verified vehicle model-reference photo uses contained editorial crop with Fleet's full-image access preserved; a locally bundled, source-pinned Lucide `chevron-right` replaces the ready-vehicle typographic chevron. The new native Overview test checks exact C++ overdue vehicle C002, image source, containment, 65/35 geometry and actual SVG decoding. **New executable has NOT yet passed exact-source CI**, latest proven executable remains `eb20c0e`, [#42241419346 SUCCESS](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42241419346), 142/142 each hosted OS and Windows packaged 8/8. Inter remains opt-in only. Owner R2 full-resolution source ZIP, physical Windows MinGW/DPI/Narrator, final photo/three-workspace signoff remain OPEN. C++ domain and protected fixtures unchanged; formal **45/74, weighted 70.6%, P7 0/8** unchanged. **Next:** complete new SHA native Linux/Windows CI, review both size screenshot artifacts, repair any regression before checkpoint promotion. No merge or release.
+
+---
+
 **Reconciled:** 6 November 2026 after exact-source native font trial and screenshot comparison.
 
 ## Exact state

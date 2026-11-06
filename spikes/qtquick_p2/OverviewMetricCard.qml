@@ -48,7 +48,7 @@ Rectangle {
             text: card.metricLabel.toUpperCase()
             color: colors.secondaryText
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 9 : 10
+            font.pixelSize: card.compact ? 10 : 12
             font.weight: Font.DemiBold
             font.letterSpacing: 0.5
             Layout.fillWidth: true
@@ -59,7 +59,7 @@ Rectangle {
             text: card.value
             color: colors.pageHeading
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 20 : 26
+            font.pixelSize: card.compact ? 23 : 30
             font.weight: Font.DemiBold
             Layout.fillWidth: true
             elide: Text.ElideRight
@@ -68,7 +68,7 @@ Rectangle {
             text: card.note
             color: colors.secondaryText
             font.family: colors.shellFontFamily
-            font.pixelSize: card.compact ? 9 : 10
+            font.pixelSize: card.compact ? 10 : 11
             Layout.fillWidth: true
             elide: Text.ElideRight
         }

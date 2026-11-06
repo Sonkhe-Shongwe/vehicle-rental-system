@@ -1272,6 +1272,8 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         Layout.preferredHeight: window.height < 800 ? 198 : 226
+                        // Fixed readiness fraction below leaves ~65% for the
+                        // source-backed photo/priority hero at both target sizes.
                         color: "#072A28"
                         radius: 16
                         clip: true
@@ -1439,6 +1441,7 @@ ApplicationWindow {
                             }
                             Item {
                                 id: overviewHeroPhotoBox
+                                objectName: "overviewHeroPhotoBox"
                                 Layout.preferredWidth: window.height < 800 ? 191 : 267
                                 Layout.preferredHeight: window.height < 800 ? 152 : 192
                                 Rectangle {
@@ -1449,6 +1452,7 @@ ApplicationWindow {
                                     clip: true
                                     Image {
                                         id: overviewHeroPhoto
+                                        objectName: "overviewHeroPhoto"
                                         anchors.fill: parent
                                         anchors.margins: 3
                                         source: editorialOverviewHero.featuredVehicleId !== "" &&
@@ -1458,7 +1462,9 @@ ApplicationWindow {
                                               editorialOverviewHero.featuredVehicleId +
                                               "?v=" + fleetPhotos.revision : ""
                                         asynchronous: true
-                                        fillMode: Image.PreserveAspectFit
+                                        // Editorial photo-led crop is safe because Fleet
+                                        // still provides the source and full-image view.
+                                        fillMode: Image.PreserveAspectCrop
                                         visible: status === Image.Ready && source !== ""
                                         Accessible.ignored: true
                                     }
@@ -1489,7 +1495,10 @@ ApplicationWindow {
                     }
                         OverviewAvailabilityPanel {
                             objectName: "overviewAvailabilityPanel"
-                            Layout.preferredWidth: window.height < 800 ? 305 : 340
+                            // Approved R2 65/35 split, with a safe floor during
+                            // smaller manual window resize. No demo values added.
+                            Layout.preferredWidth: Math.max(290,
+                                (overviewScroll.width - 12) * 0.35)
                             Layout.minimumWidth: 290
                             Layout.maximumWidth: Layout.preferredWidth
                             Layout.preferredHeight: window.height < 800 ? 198 : 226
