@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Documentation and evidence index
 
+**Fleet photo exact-source verification, 6 Nov 2026:** [Full dated report](DIRECTION_A_FLEET_EXACT_PHOTO_ATTRIBUTION_NATIVE_VERIFIED_2026-11-06.md) contains tested `db005e2` / [CI #42199989157](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42199989157), 140/140 each OS, Windows package 8/8, and the initial CI-green badge-overlap regression caught in actual screenshots and repaired with real geometry tests. [Live state](LIVE_HANDOFF_STATE.md) records the owner-gated next step.
+
+---
+
 **UX-VIS-002 SINGLE CONTRACT HEADING, EXACT-SOURCE VERIFIED (5 Nov 2026):** [Executable source `509692a`](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/commit/509692a2e39b391bec5ff7653b50d7206ad3e807) passed [native GitHub Actions #42022249850](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42022249850): **130/130 CTests on EACH Ubuntu GCC and Windows MSVC / Qt 6.8.3**, zero failures, Windows packaged fictional **8/8**, PowerShell 5.1 **PASS**. The real contract dialog now suppresses redundant Qt title chrome while retaining its semantic title; actual 1280x720 and 1500x860 Windows screenshot ZIP #13411829588 was inspected, with single header, card order, Mint booked-total panel, and Close visible without clipping. [Full dated evidence](UX_VIS_002_SINGLE_CONTRACT_HEADING_NATIVE_VERIFIED_2026-11-05.md) records two failed intermediate runs, corrections, hashes, limits and manual review path. **Owner physical Windows Qt Creator MinGW, OS scaling and Narrator NOT accepted; 45/74 owner-accepted, 70.6% weighted, P7 0/8 unchanged; main untouched, PR #17 DRAFT.**
 
 ---

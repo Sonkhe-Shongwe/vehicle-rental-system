@@ -1,5 +1,9 @@
 # Rental Studio 2.0 | Active P0-P9 roadmap
 
+**NEXT OWNER GATE (6 Nov 2026):** Fleet photo source attribution and visual non-overlap were [native verified at `db005e2`, CI #42199989157](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42199989157). The next authorized priority is **physical Windows Qt Creator MinGW, 100/125/150% scaling, keyboard/Narrator and Direction A Overview/Fleet/Rentals image/visual acceptance**. No further photo sourcing or feature expansion is implied; [evidence](DIRECTION_A_FLEET_EXACT_PHOTO_ATTRIBUTION_NATIVE_VERIFIED_2026-11-06.md), formal **45/74, fixed 70.6%, P7 0/8** unchanged.
+
+---
+
 **NEXT VISUAL DEVELOPMENT MILESTONE (6 NOV 2026):** Direction A Rentals is now [native-verified at `e215c4c`, CI #42191631534](https://github.com/Sonkhe-Shongwe/vehicle-rental-system/actions/runs/42191631534) with 140/140 per OS, joining previously verified Overview and Fleet. **Priority 1:** Fleet inspector-to-gallery visual integration and quality/provenance of model-reference photography. **Priority 2:** full three-workspace physical Windows Qt Creator 6.10.2 MinGW, DPI scaling/Narrator/keyboard review and owner aesthetic acceptance. [Detailed Rentals verification](DIRECTION_A_RENTALS_NATIVE_VERIFIED_AND_CLIPPING_REPAIR_2026-11-06.md). Avoid reopening accepted P5/P6 signoffs; no score increase without formal approval.
 
 ---
