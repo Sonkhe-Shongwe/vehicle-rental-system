@@ -1268,6 +1268,15 @@ int main(int argc, char *argv[]) {
                     qCritical()<<"Catalogue model/photo identity mismatch"<<id;
                     app.exit(719);return;
                 }
+                const auto record=fleetPhotos.attributionFor(id);
+                if(record.value("kind").toString()!="reference" ||
+                   record.value("creator").toString().isEmpty() ||
+                   record.value("licence").toString().isEmpty() ||
+                   !record.value("sourcePage").toString().startsWith(
+                       "https://commons.wikimedia.org/wiki/File:")) {
+                    qCritical()<<"Portfolio displayed photo lacks exact-source credit"<<id;
+                    app.exit(773);return;
+                }
                 const QString size=parser.isSet("compact")
                     ? QStringLiteral("1280x720") : QStringLiteral("1500x860");
                 const QImage photoShot=startupWindow->grabWindow();
@@ -1364,6 +1373,14 @@ int main(int argc, char *argv[]) {
                 qCritical()<<"Fleet seeded photo / generic motorcycle fallback failed";
                 app.exit(711);return;
             }
+            const auto demoCredit=fleetPhotos.attributionFor("C001");
+            if(demoCredit.value("creator").toString()!="01x07x2022000" ||
+               demoCredit.value("licence").toString()!="CC0 1.0" ||
+               !demoCredit.value("sourcePage").toString().contains("Toyota_Corolla_IMG") ||
+               !fleetPhotos.attributionFor("M001").isEmpty()) {
+                qCritical()<<"Fleet demo exact-source attribution or silhouette identity invalid";
+                app.exit(771);return;
+            }
             // Verify photo-led gallery proportions in the actual native
             // scene, not only the existence of a provider URL.
             auto *galleryPhoto=find(find,window->contentItem(),
@@ -1444,7 +1461,14 @@ int main(int argc, char *argv[]) {
                                        "fleetFullPhotoDisclosure");
             auto *fullClose=find(find,window->contentItem(),
                                   "fleetFullPhotoClose");
+            auto *fullCredit=find(find,window->contentItem(),
+                                   "fleetFullPhotoCredit");
+            auto *fullSource=find(find,window->contentItem(),
+                                   "fleetFullPhotoSource");
             if(!fullPhoto || !fullHeading || !fullDisclosure || !fullClose ||
+               !fullCredit || !fullSource ||
+               !fullCredit->property("text").toString().contains("01x07x2022000") ||
+               !fullSource->property("text").toString().contains("Toyota_Corolla_IMG") ||
                fullPhoto->property("status").toInt()!=1 ||
                !fullPhoto->property("source").toString().contains("C001") ||
                !fullHeading->property("text").toString().contains("Toyota Corolla") ||
@@ -1756,6 +1780,16 @@ int main(int argc, char *argv[]) {
                                   "fleetViewFullPhotoButton");
             auto *customRestore=find(find,window->contentItem(),
                                      "fleetRestoreDefaultPhotoButton");
+            const auto customCredit=fleetPhotos.attributionFor("C001");
+            auto *inspectorCredit=find(find,window->contentItem(),
+                                       "fleetInspectorPhotoCredit");
+            if(customCredit.value("kind").toString()!="custom" ||
+               !customCredit.value("sourcePage").toString().isEmpty() ||
+               !inspectorCredit ||
+               !inspectorCredit->property("text").toString().contains("unverified")) {
+                qCritical()<<"Custom Fleet photo inherited false source licence";
+                app.exit(772);return;
+            }
             const auto sceneRect=[](QQuickItem *item) {
                 return item->mapRectToScene(
                     QRectF(0,0,item->width(),item->height()));

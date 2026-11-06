@@ -4,6 +4,9 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QImageReader>
 #include <QRegularExpression>
 #include <QSaveFile>
@@ -76,6 +79,65 @@ QString seed(const QString &id,const QPair<QString,QString> &identity,
         QStringLiteral(".jpg");
     return !slug.isEmpty() && QFile::exists(resource)?resource:QString{};
 }
+QVariantMap photoAttribution(const QString &resource) {
+    // Keys come from actual offline resources, not guessed model names.
+    static const QHash<QString,QVariantMap> credits=[] {
+        QHash<QString,QVariantMap> entries;
+        const auto readManifest=[&](const QString &manifest,
+                                    const QString &localPrefix,
+                                    const QString &resourcePrefix) {
+            QFile file(manifest);
+            if(!file.open(QIODevice::ReadOnly))return;
+            const QJsonDocument doc=QJsonDocument::fromJson(file.readAll());
+            if(!doc.isObject())return;
+            for(const QJsonValue &value:doc.object().value("images").toArray()) {
+                const QJsonObject row=value.toObject();
+                const QString path=row.value("local_file").toString();
+                const QString creator=row.value("creator").toString().trimmed();
+                const QString licence=row.value("licence").toString().trimmed();
+                const QString source=row.value("source_page").toString();
+                const QString licencePage=row.value("licence_url").toString();
+                if(!path.startsWith(localPrefix) || !path.endsWith(".jpg") ||
+                   creator.isEmpty() || licence.isEmpty() ||
+                   !source.startsWith("https://commons.wikimedia.org/wiki/File:") ||
+                   !(licencePage.startsWith("https://creativecommons.org/licenses/") ||
+                     licencePage.startsWith("http://creativecommons.org/publicdomain/")))continue;
+                entries.insert(resourcePrefix+path.mid(localPrefix.size()),
+                               {{"creator",creator},{"licence",licence},
+                                {"sourcePage",source},{"licencePage",licencePage},
+                                {"kind",QStringLiteral("reference")}});
+            }
+        };
+        for(int batch=1;batch<=5;++batch) {
+            const QString folder=QStringLiteral("batch%1").arg(batch,2,10,QChar('0'));
+            readManifest(QStringLiteral(":/fleet-credit-data/")+folder+
+                             QStringLiteral("/source_manifest.json"),
+                         QStringLiteral("catalogue_acquisition/")+folder+QLatin1Char('/'),
+                         QStringLiteral(":/catalogue-photos/")+folder+QLatin1Char('/'));
+        }
+        readManifest(QStringLiteral(":/portfolio-credit-data/source_manifest.json"),
+                     QStringLiteral("assets/portfolio/"),
+                     QStringLiteral(":/portfolio-photos/"));
+        // Three existing original CC0 photos, independently logged in assets/README.md.
+        entries.insert(QStringLiteral(":/fleet-demo-photos/toyota_corolla.jpg"),
+                       {{"creator",QStringLiteral("01x07x2022000")},{"licence",QStringLiteral("CC0 1.0")},
+                        {"sourcePage",QStringLiteral("https://commons.wikimedia.org/wiki/File:Toyota_Corolla_IMG_6391.JPG")},
+                        {"licencePage",QStringLiteral("https://creativecommons.org/publicdomain/zero/1.0/")},
+                        {"kind",QStringLiteral("reference")}});
+        entries.insert(QStringLiteral(":/fleet-demo-photos/ford_ranger.jpg"),
+                       {{"creator",QStringLiteral("Hyins")},{"licence",QStringLiteral("CC0 1.0")},
+                        {"sourcePage",QStringLiteral("https://commons.wikimedia.org/wiki/File:2nd_Gen_2025_Ford_Ranger_T6_RA_XLT_4WD_P789_China_Front_Three_Quarter_View.jpg")},
+                        {"licencePage",QStringLiteral("https://creativecommons.org/publicdomain/zero/1.0/")},
+                        {"kind",QStringLiteral("reference")}});
+        entries.insert(QStringLiteral(":/fleet-demo-photos/hyundai_i20.jpg"),
+                       {{"creator",QStringLiteral("Trop86")},{"licence",QStringLiteral("CC0 1.0")},
+                        {"sourcePage",QStringLiteral("https://commons.wikimedia.org/wiki/File:Hyundai_i20_133151.jpg")},
+                        {"licencePage",QStringLiteral("https://creativecommons.org/publicdomain/zero/1.0/")},
+                        {"kind",QStringLiteral("reference")}});
+        return entries;
+    }();
+    return credits.value(resource);
+}
 // Only app-reencoded fictional sidecars are expected on disk. Validate
 // bounds from image headers before ever asking Qt to decompress the pixels.
 bool safeSidecarFolder(const QString &root) {
@@ -113,6 +175,20 @@ QString FleetPhotoStore::seededResource(const QString &id) const {
 }
 QString FleetPhotoStore::imagePath(const QString &id) const {
     return QDir(m_root).filePath(QStringLiteral("fleet_images/%1.png").arg(id));
+}
+QVariantMap FleetPhotoStore::attributionFor(const QString &id) const {
+    if(!hasLiveVehicle(id))return {};
+    const QString sidecar=imagePath(id);
+    if(QFileInfo::exists(sidecar)) {
+        if(!safeSidecar(m_root,sidecar))return {};
+        return {{"creator",QStringLiteral("Operator-selected fictional image")},
+                {"licence",QStringLiteral("Not verified")},
+                {"sourcePage",QString{}},{"licencePage",QString{}},
+                {"kind",QStringLiteral("custom")}};
+    }
+    const QString resource=seededResource(id);
+    if(resource.isEmpty() || !QImageReader(resource).canRead())return {};
+    return photoAttribution(resource);
 }
 bool FleetPhotoStore::hasPhoto(const QString &id) const {
     if(!hasLiveVehicle(id))return false;

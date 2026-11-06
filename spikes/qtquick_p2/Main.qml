@@ -254,6 +254,9 @@ ApplicationWindow {
         height: Math.min(660, parent ? parent.height - 40 : 600)
         x: parent ? (parent.width - width) / 2 : 0
         y: parent ? (parent.height - height) / 2 : 0
+        readonly property var activeCredit: fleetPhotos.revision >= 0 &&
+            window.fullPhotoTargetId !== ""
+            ? fleetPhotos.attributionFor(window.fullPhotoTargetId) : ({})
         onClosed: {
             window.fullPhotoTargetId = ""
             window.fullPhotoTargetName = ""
@@ -307,6 +310,31 @@ ApplicationWindow {
                 color: window.ink
                 font.pixelSize: 12
                 Accessible.name: text
+            }
+            Label {
+                objectName: "fleetFullPhotoCredit"
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: fleetFullPhotoDialog.activeCredit.kind === "custom"
+                    ? "Operator-selected fictional photo · licence not verified"
+                    : fleetFullPhotoDialog.activeCredit.creator
+                      ? "Photo: " + fleetFullPhotoDialog.activeCredit.creator +
+                        " · " + fleetFullPhotoDialog.activeCredit.licence
+                      : "Photo source metadata unavailable; do not assume a licence."
+                color: window.navy
+                font.pixelSize: 12
+                Accessible.name: text
+            }
+            Label {
+                objectName: "fleetFullPhotoSource"
+                Layout.fillWidth: true
+                visible: !!fleetFullPhotoDialog.activeCredit.sourcePage
+                text: "Original source: " + (fleetFullPhotoDialog.activeCredit.sourcePage || "")
+                color: window.ink
+                font.pixelSize: 11
+                elide: Text.ElideMiddle
+                Accessible.name: text
+                Accessible.description: "Offline source reference; no network request is made"
             }
             RowLayout {
                 Layout.fillWidth: true
@@ -2499,6 +2527,31 @@ ApplicationWindow {
                                         color: "#EFFFFFFF"
                                         radius: 4
                                     }
+                                }
+                                Label {
+                                    objectName: "fleetInspectorPhotoCredit"
+                                    anchors.left: parent.left
+                                    anchors.top: fleetPhotoDisclaimer.bottom
+                                    anchors.topMargin: 7
+                                    anchors.leftMargin: 6
+                                    width: parent.width - 12
+                                    visible: inspectorPhoto.visible
+                                    readonly property var record:
+                                        fleetPhotos.revision >= 0 && fleet.selectedId !== ""
+                                            ? fleetPhotos.attributionFor(fleet.selectedId) : ({})
+                                    text: record.kind === "custom"
+                                        ? "Custom demo image · unverified"
+                                        : record.creator
+                                          ? record.creator + " · " + record.licence
+                                          : "Source details unavailable"
+                                    font.pixelSize: 10
+                                    elide: Text.ElideRight
+                                    color: navy
+                                    padding: 2
+                                    z: 1
+                                    background: Rectangle { color: "#EFFFFFFF"; radius: 4 }
+                                    Accessible.name: text
+                                    Accessible.description: "Image credits follow the exact selected source"
                                 }
                                 // Optional full-size, uncropped inspection of
                                 // already decoded media. Does not modify source

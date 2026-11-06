@@ -77,6 +77,20 @@ qt_add_resources(rental_studio_qtquick_spike "curated_model_family_photos"
     FILES
         "${PROJECT_SOURCE_DIR}/catalogue_acquisition/model_photo_map.tsv"
         ${CURATED_PHOTO_FILES})
+# Exact existing author/source/licence metadata, bundled for offline display.
+qt_add_resources(rental_studio_qtquick_spike "curated_photo_credit_metadata"
+    PREFIX "/fleet-credit-data"
+    BASE "${PROJECT_SOURCE_DIR}/catalogue_acquisition"
+    FILES
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/batch01/source_manifest.json"
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/batch02/source_manifest.json"
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/batch03/source_manifest.json"
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/batch04/source_manifest.json"
+        "${PROJECT_SOURCE_DIR}/catalogue_acquisition/batch05/source_manifest.json")
+qt_add_resources(rental_studio_qtquick_spike "portfolio_photo_credit_metadata"
+    PREFIX "/portfolio-credit-data"
+    BASE "${PROJECT_SOURCE_DIR}/assets/portfolio"
+    FILES "${PROJECT_SOURCE_DIR}/assets/portfolio/source_manifest.json")
 # Explicit fictional-only integration into this REAL Qt Quick executable.
 # NOT the default workspace, not commercial storage and not a Widgets change.
 if(BUILD_P7_SQLITE_SANDBOX)

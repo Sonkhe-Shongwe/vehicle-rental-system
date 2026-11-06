@@ -6,6 +6,7 @@
 #include <functional>
 #include <QQuickImageProvider>
 #include <QString>
+#include <QVariantMap>
 
 class FleetPhotoStore final : public QObject {
     Q_OBJECT
@@ -27,6 +28,8 @@ public:
     Q_INVOKABLE bool chooseFile(const QUrl &file);
     Q_INVOKABLE void discardStaged();
     Q_INVOKABLE bool hasPhoto(const QString &vehicleId) const;
+    // Actual chosen resource provenance; empty for missing or unsafe media.
+    Q_INVOKABLE QVariantMap attributionFor(const QString &vehicleId) const;
     // The QML replacement path must be explicit, fictional-only and report
     // its actual storage outcome. C++ Fleet Add uses saveStagedFor directly.
     void setReplacementEnabled(bool enabled) { m_replacementEnabled=enabled; }
